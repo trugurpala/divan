@@ -1,0 +1,8 @@
+{
+  "name": "react-pack",
+  "description": "React skill paketi: react-best-practices, composition-patterns, web-design-guidelines (Vercel Labs, MIT)",
+  "version": "0.1.0",
+  "author": { "name": "DEGISTIR: Adin" },
+  "license": "MIT (Vercel Labs / agent-skills)",
+  "keywords": ["react", "nextjs", "components", "design"]
+}

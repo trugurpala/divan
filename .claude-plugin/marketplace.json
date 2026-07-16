@@ -1,0 +1,41 @@
+{
+  "name": "divan",
+  "owner": {
+    "name": "DEGISTIR: Adin",
+    "email": "degistir@ornek.com"
+  },
+  "metadata": {
+    "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam (uctan-uca orkestrator) + planlama, TDD, debugging, UI/UX ve React paketleri.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sadrazam",
+      "source": "./plugins/sadrazam",
+      "description": "Bas vezir: her istegi Divan Protokolu ile bastan sona bitmis, dogrulanmis teslimata cevirir",
+      "version": "0.1.0",
+      "strict": true
+    },
+    {
+      "name": "core-pack",
+      "source": "./plugins/core-pack",
+      "description": "Cekirdek gelistirme disiplini: beyin firtinasi, plan yazma/yurutme, sistematik debugging, TDD, tamamlama-oncesi dogrulama",
+      "version": "0.1.0",
+      "strict": true
+    },
+    {
+      "name": "ui-pack",
+      "source": "./plugins/ui-pack",
+      "description": "UI/UX paketi: ozgun frontend tasarim, tarayici testi (Playwright) ve design-system uretici",
+      "version": "0.1.0",
+      "strict": true
+    },
+    {
+      "name": "react-pack",
+      "source": "./plugins/react-pack",
+      "description": "React paketi: best practices, composition patterns ve web tasarim kurallari",
+      "version": "0.1.0",
+      "strict": true
+    }
+  ]
+}
