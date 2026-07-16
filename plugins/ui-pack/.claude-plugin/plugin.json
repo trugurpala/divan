@@ -2,7 +2,7 @@
   "name": "ui-pack",
   "description": "UI/UX skill paketi: frontend-design ve webapp-testing (Anthropic, Apache 2.0) + ui-ux-pro-max (Next Level Builder, MIT)",
   "version": "0.1.0",
-  "author": { "name": "DEGISTIR: Adin" },
+  "author": { "name": "trugurpala" },
   "license": "Karma: Apache-2.0 ve MIT (her skill klasorunde kendi lisansi)",
   "keywords": ["ui", "ux", "design", "frontend", "testing"]
 }
