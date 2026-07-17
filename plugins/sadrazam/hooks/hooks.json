@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f .divan/progress.md ]; then echo '--- DEFTER: kaldigin yer ---'; head -30 .divan/progress.md; elif [ -f BLUEPRINT.md ]; then echo '--- BLUEPRINT ozeti ---'; head -20 BLUEPRINT.md; fi; true"
+          }
+        ]
+      }
+    ]
+  }
+}

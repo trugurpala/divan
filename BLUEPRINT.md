@@ -35,6 +35,7 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17g: 8-katman karnesine göre eksikler kapandı - subagents (kâşif: keşif öncüsü, müfettiş: bağımsız denetçi) ve hooks (SessionStart: defteri otomatik oku) eklendi; teftiş v3 bunları da denetliyor; docs uyumluluk matrisi. Sadrazam v0.4.0.
 - 2026-07-17f: Hafıza katmanı geldi — defterdar skill'i (AGENTS.md+BLUEPRINT+.divan/ nizamı, 4 şablon), /defter komutu, Sadrazam'a zorunlu kayıt nizamı, para-dokunan işlere spec-first+risk-register kuralı. Sadrazam v0.3.0. Dünya standardı boşluk analizi raporuna dayanır.
 - 2026-07-17e: Akıl sayfaları (Değer, GitHub Kullanımı, Test ve Teftiş) docs/ altına; gerçek Playwright testi tests/site_testi.py yazıldı, canlıda TEMİZ geçti; haftalık site-testi CI eklendi. Wiki push GitHub kısıtı yüzünden bekliyor (ilk sayfa UI ister).
 - 2026-07-17d: İlk vizyondaki komutlar tamamlandı (/ferman, /vezir, /teftis); GitHub Pages, Discussions, issue etiketleri açıldı. Upstream tamlık doğrulandı (birebir).

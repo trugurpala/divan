@@ -82,6 +82,17 @@ for dosya in list(KOK.glob("**/*.json")) + list(KOK.glob("*.md")) + [KOK / "LICE
 for g in ["THIRD_PARTY_LICENSES.md", "LICENSE", "README.md", "BLUEPRINT.md", "UPSTREAM.md", "CONTRIBUTING.md"]:
     if not (KOK / g).exists(): hatalar.append(f"{g} eksik")
 
+
+# 5) Subagent ve hook denetimi
+for aj in KOK.glob("plugins/*/agents/*.md"):
+    metin = aj.read_text(encoding="utf-8", errors="ignore")
+    fm = re.match(r"^---\s*\n(.*?)\n---", metin, re.S)
+    if not fm or not re.search(r"^name:", fm.group(1), re.M) or not re.search(r"^description:", fm.group(1), re.M):
+        hatalar.append(f"{aj.relative_to(KOK)}: subagent frontmatter eksik (name/description)")
+for hk in KOK.glob("plugins/*/hooks/hooks.json"):
+    try: json.loads(hk.read_text(encoding="utf-8"))
+    except Exception as e: hatalar.append(f"{hk.relative_to(KOK)}: hooks.json bozuk: {e}")
+
 for u in uyarilar: print(f"UYARI: {u}")
 if hatalar:
     print("\nTEFTIS BASARISIZ:")
