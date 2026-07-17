@@ -25,6 +25,8 @@ standardını destekleyen tüm ajanlarla uyumludur.
 Sadrazam kuruluyken: `/ferman <iş>` işi baştan sona teslim eder,
 `/vezir <fikir>` Divan'a yeni skill yetiştirir, `/teftis` repoyu denetler.
 
+**Codex tek komut (Windows):** `irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex`
+
 **Canlı sayfa:** https://trugurpala.github.io/divan/
 
 ## Vezirler (paketler)
