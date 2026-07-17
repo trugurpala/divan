@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.2-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.10.1 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
+**Sürüm:** v0.10.2 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Wiki kaynağı:** [docs/Home.md](docs/Home.md) · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Aday Meclisi:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
 
 ## Neden Divan?
 
@@ -42,10 +42,14 @@ Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
 1. Kaynağı ve gerçek repo kimliğini bulur.
 2. Lisans, köken, hook/script ve araç yetkilerini denetler.
 3. Mevcut 41 vezirle çakışmayı ve gerçek ürün boşluğunu ölçer.
-4. Gerekirse en küçük özgün skill'i yazar ve davranış eval'ini ekler.
-5. Yerel test + Agent Skills + Claude Code doğrulamasını geçirir.
-6. README, katalog, Wiki kaynağı, CHANGELOG ve BLUEPRINT'i aynı değişiklikte günceller.
-7. Yayın istenmişse PR'ı ara sonuç sayar; `main` ve canlı yüz doğrulanmadan
+4. Haftalık **Meclis** keşfi ve yapılandırılmış topluluk formuyla aday üretir;
+   hiçbir adayı otomatik kurmaz.
+5. Kimlik, lisans, yürütme yüzeyi ve kanıta göre ADOPT, ADAPT, REFERENCE veya
+   REJECT kararını [aday defterine](docs/Aday-Meclisi.md) işler.
+6. Gerekirse en küçük özgün skill'i yazar ve davranış eval'ini ekler.
+7. Yerel test + Agent Skills + Claude Code doğrulamasını geçirir.
+8. README, katalog, Wiki kaynağı, CHANGELOG ve BLUEPRINT'i aynı değişiklikte günceller.
+9. Yayın istenmişse PR'ı ara sonuç sayar; `main` ve canlı yüz doğrulanmadan
    “yayımlandı” demez.
 
 Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-claude-repo-kurasyonu.md).
@@ -146,7 +150,7 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 
 Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
 ancak henüz v1.0 değildir. 41 skill yapısal olarak doğrulanır; 4 özgün skill için
-12 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Henüz güvenilir bir
+13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Henüz güvenilir bir
 gerçek ajan adaptörüyle yayımlanmış karşılaştırma sonucu, bağımsız kullanıcı
 kanıtı veya ölçülmüş verim benchmark'ı yoktur. Bunlar gelmeden hız, gelir veya
 “dünyanın en iyisi” iddiası yapılmaz.

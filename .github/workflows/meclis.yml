@@ -1,0 +1,159 @@
+name: meclis
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 5 * * 1'
+  issues:
+    types: [opened, edited]
+  pull_request:
+    paths:
+      - 'registry/**'
+      - 'scripts/meclis.py'
+      - 'tests/test_meclis.py'
+      - 'docs/Aday-Meclisi.md'
+      - '.github/ISSUE_TEMPLATE/kaynak-adayi.yml'
+      - '.github/workflows/meclis.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'registry/**'
+      - 'scripts/meclis.py'
+      - 'tests/test_meclis.py'
+      - 'docs/Aday-Meclisi.md'
+      - '.github/ISSUE_TEMPLATE/kaynak-adayi.yml'
+      - '.github/workflows/meclis.yml'
+
+jobs:
+  check:
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python scripts/meclis.py --check
+          python -m unittest tests.test_meclis -v
+
+  classify-intake:
+    if: github.event_name == 'issues' && startsWith(github.event.issue.title, '[Kaynak adayı]:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const labels = [
+              { name: 'kaynak-adayi', color: '1d76db', description: 'Meclis incelemesi bekleyen dış kaynak' },
+              { name: 'teftis-bekliyor', color: 'fbca04', description: 'Kimlik, lisans ve güvenlik teftişi tamamlanmadı' },
+            ];
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({ owner, repo, ...label });
+              } catch (error) {
+                if (error.status !== 422) throw error;
+              }
+            }
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: context.issue.number,
+              labels: labels.map(label => label.name),
+            });
+            const marker = '<!-- meclis-intake -->';
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: context.issue.number, per_page: 100,
+            });
+            if (!comments.some(comment => comment.body.includes(marker))) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: context.issue.number,
+                body: `${marker}\nAday Meclis'e alındı. Bu kayıt kurulum veya kabul değildir. Sıradaki kapılar: kanonik kimlik → tam lisans → yürütme yüzeyi → ürün boşluğu → ADOPT/ADAPT/REFERENCE/REJECT kararı.`,
+              });
+            }
+
+  discover:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const registry = JSON.parse(fs.readFileSync('registry/candidates.json', 'utf8'));
+            const known = new Set(registry.candidates.map(candidate => candidate.canonical_url.toLowerCase()));
+            const upstream = fs.readFileSync('UPSTREAM.md', 'utf8');
+            for (const match of upstream.matchAll(/https:\/\/github\.com\/[^/\s)]+\/[^/\s)]+/g)) {
+              known.add(match[0].replace(/[.,;]+$/, '').toLowerCase());
+            }
+            known.add(`https://github.com/${owner}/${repo}`.toLowerCase());
+
+            const queries = [
+              'topic:agent-skills archived:false',
+              'topic:claude-code-plugin archived:false',
+              '"agent skills" in:name,description,readme archived:false',
+            ];
+            const found = new Map();
+            for (const q of queries) {
+              const { data } = await github.rest.search.repos({ q, sort: 'updated', order: 'desc', per_page: 20 });
+              for (const item of data.items) {
+                const url = item.html_url.toLowerCase();
+                if (known.has(url) || item.archived || item.fork || found.has(url)) continue;
+                found.set(url, item);
+              }
+            }
+            const candidates = [...found.values()]
+              .sort((a, b) => Date.parse(b.pushed_at || 0) - Date.parse(a.pushed_at || 0))
+              .slice(0, 10);
+            if (!candidates.length) {
+              core.info('Yeni aday bulunmadı.');
+              return;
+            }
+
+            const date = new Date().toISOString().slice(0, 10);
+            const title = `Meclis keşfi: ${date}`;
+            const { data: existing } = await github.rest.issues.listForRepo({ owner, repo, state: 'all', per_page: 100 });
+            if (existing.some(issue => issue.title === title)) {
+              core.info(`${title} zaten var.`);
+              return;
+            }
+            for (const label of [
+              { name: 'kaynak-adayi', color: '1d76db', description: 'Meclis incelemesi bekleyen dış kaynak' },
+              { name: 'otomatik-kesif', color: 'c5def5', description: 'Salt-okunur haftalık keşif tarafından bulundu' },
+            ]) {
+              try {
+                await github.rest.issues.createLabel({ owner, repo, ...label });
+              } catch (error) {
+                if (error.status !== 422) throw error;
+              }
+            }
+            const rows = candidates.map(item => {
+              const license = item.license?.spdx_id || 'UNKNOWN';
+              return `| [${item.full_name}](${item.html_url}) | ${license} | ${item.stargazers_count} | ${item.pushed_at || 'unknown'} | ${String(item.description || '').replace(/\|/g, '\\|')} |`;
+            }).join('\n');
+            const body = [
+              'Haftalık salt-okunur GitHub keşfi aşağıdaki adayları buldu.',
+              '',
+              '> Bu issue kurulum, güvenlik onayı veya kalite sıralaması değildir. Yıldız yalnız keşif sinyalidir. Her aday Kaynak Küratörü kapılarından geçmeden `registry/candidates.json` dosyasına alınmaz.',
+              '',
+              '| Repo | GitHub lisans beyanı | Yıldız | Son push | Açıklama |',
+              '|---|---|---:|---|---|',
+              rows,
+              '',
+              'Triage: kanonik kimlik → gerçek LICENSE dosyası → yürütme yüzeyi → mevcut 41 skill ile çakışma → ADOPT/ADAPT/REFERENCE/REJECT.',
+            ].join('\n');
+            await github.rest.issues.create({
+              owner, repo, title, body,
+              labels: ['kaynak-adayi', 'otomatik-kesif'],
+            });

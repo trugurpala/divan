@@ -182,6 +182,8 @@ def surum_kayitlarini_denetle(
         "Wiki ana sayfa": (kok / "docs" / "Home.md", f"v{surum}"),
         "Wiki durum": (kok / "docs" / "Durum-ve-Yol-Haritasi.md", f"v{surum}"),
         "Wiki manifest": (kok / "wiki-pages.json", "docs/Home.md"),
+        "Aday Meclisi": (kok / "docs" / "Aday-Meclisi.md", "never-auto-install"),
+        "Aday defteri": (kok / "registry" / "candidates.json", "never-auto-install"),
     }
     for ad, (yol, beklenen) in kayitlar.items():
         if not yol.is_file():

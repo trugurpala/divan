@@ -67,6 +67,7 @@ class RepositoryTests(unittest.TestCase):
             (root / "docs").mkdir()
             (root / "site").mkdir()
             (root / "evals").mkdir()
+            (root / "registry").mkdir()
             (root / ".divan").mkdir()
             records = {
                 "VERSION": "0.10.0\n",
@@ -81,6 +82,8 @@ class RepositoryTests(unittest.TestCase):
                 "docs/Home.md": "Divan Wiki v0.10.0\n",
                 "docs/Durum-ve-Yol-Haritasi.md": "Durum v0.10.0\n",
                 "wiki-pages.json": '{"pages": [{"source": "docs/Home.md"}]}\n',
+                "docs/Aday-Meclisi.md": "never-auto-install\n",
+                "registry/candidates.json": '{"autonomy": "never-auto-install"}\n',
                 ".divan/progress.md": "## Sıradaki kesin adım\nEval runner\n",
             }
             for relative, content in records.items():

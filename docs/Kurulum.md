@@ -23,7 +23,7 @@ macOS/Linux:
 curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=main bash
 ```
 En güvenli kullanımda betiği önce indirip inceleyin. `DIVAN_REF` bir sürüm
-etiketi veya commit ile kaynak içeriğini sabitler; v0.10.1 etiketi yayımlanana
+etiketi veya commit ile kaynak içeriğini sabitler; v0.10.2 etiketi yayımlanana
 kadar çalışan varsayılan `main`dir. Kurucu, aynı adlı mevcut
 skill klasörlerini birleştirmez: tarihli yedeğe taşır ve kurulum kaydı üretir.
 Sonra Codex'i yeniden başlat. Skill'ler tetikleyici cümlelerle çalışır

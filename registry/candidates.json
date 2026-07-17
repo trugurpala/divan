@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "autonomy": "never-auto-install",
+  "candidates": [
+    {
+      "id": "punkpeye-awesome-mcp-servers",
+      "name": "Awesome MCP Servers",
+      "canonical_url": "https://github.com/punkpeye/awesome-mcp-servers",
+      "type": "registry-index",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "MCP ekosistemi keşfi ve topluluk ölçekli aday kabul akışı",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/punkpeye/awesome-mcp-servers/blob/main/LICENSE",
+        "scope_note": "MIT yalnız indeks deposunu kapsar; listelenen her sunucunun lisansı ayrıca denetlenir."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Yaklaşık üç bin bağlantılık bir indeks; Glama puanı lisans, kod güvenliği veya Divan ürün uyumu yerine geçmez.",
+      "evidence": [
+        "https://github.com/punkpeye/awesome-mcp-servers",
+        "https://github.com/punkpeye/awesome-mcp-servers/blob/main/CONTRIBUTING.md",
+        "https://github.com/punkpeye/awesome-mcp-servers/blob/main/.github/workflows/check-glama.yml",
+        "https://github.com/punkpeye/awesome-mcp-servers/blob/main/LICENSE"
+      ],
+      "observed_at": "2026-07-18",
+      "next_review": "2026-10-18",
+      "rationale": "İçeriği topluca almak yerine yapılandırılmış katkı ve otomatik aday teftişi fikri özgün Meclis akışına uyarlandı."
+    }
+  ]
+}

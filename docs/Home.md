@@ -1,4 +1,4 @@
-# Divan Wiki · v0.10.1
+# Divan Wiki · v0.10.2
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -6,7 +6,7 @@
 kalıcı bir teslim akışına çeviren Agent Skills pazarıdır. 41 vezir, 5 paket,
 proje hafızası, davranış eval'i ve yayın teftişi tek çatıdadır.
 
-> **Güncel durum:** v0.10.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel durum:** v0.10.2 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -28,6 +28,7 @@ Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 - [[Kurulum]] — Claude Code, Codex, Cursor ve diğer uyumlu hostlar
 - [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] — kurunca ne değişir?
 - [[Vezir Kataloğu|Vezir-Katalogu]] — 41 skill ve tetikleyicileri
+- [[Aday Meclisi|Aday-Meclisi]] — sürekli keşif ve ADOPT/ADAPT/REFERENCE/REJECT kararları
 - [[Orkestrasyon Kararı|Orkestrasyon-Karari]] — Ocak, Sefer ve Ordu
 - [[Test ve Teftiş|Test-ve-Teftis]] — yerel, CI, tarayıcı ve yayın kanıtı
 - [[Standartlar ve Limitler|Standartlar-ve-Limitler]] — kabul kapıları
