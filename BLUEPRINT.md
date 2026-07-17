@@ -69,6 +69,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18c: v0.9.0 yayın zinciri tamamlandı — PR #1 taslaktan çıkarıldı;
+  `teftis` #29 ve `site-testi` #8 geçti; squash commit `6893e804` ile `main`e
+  birleşti. Varsayılan dal ve GitHub Pages yeniden okunarak v0.9.0/41 vezir
+  vitrini doğrulandı. GitHub tag/release olmadığı açıkça kaydedildi.
 - 2026-07-18b: v0.9.0 yayın disiplini — canlı `main`in v0.7'de kaldığı ve
   v0.8.2 işinin taslak PR'da beklediği doğrulandı. PR'ı teslim sayan varsayım
   kaldırıldı; Türkçe+İngilizce vitrin, CHANGELOG, VERSION, kalıcı plan/ADR ve
