@@ -31,3 +31,14 @@ bir yöntemdir (bkz. THIRD_PARTY_LICENSES.md).
 Denetim usulü: `/tmp`'ye taze upstream klonu çek, vendored dizinle md5
 kıyasla; fark = ya upstream güncellemesi (kürasyonla al) ya bilinçli yama
 (bu tabloda belgeli olmalı). Tabloda olmayan fark teftiş konusudur.
+
+## Seferberlik genişlemesi (2026-07-17)
+| Paket | Yeni vezirler | Kaynak | Lisans |
+|---|---|---|---|
+| core-pack (+7) | dispatching-parallel-agents, finishing-a-development-branch, receiving/requesting-code-review, subagent-driven-development, using-git-worktrees, writing-skills | obra/superpowers | MIT |
+| zanaat-pack (yeni, 7) | algorithmic-art, canvas-design, claude-api, mcp-builder, slack-gif-creator, theme-factory, web-artifacts-builder | anthropics/skills | Apache 2.0 (LICENSE.txt doğrulandı; docx/pdf/pptx/xlsx proprietary — ALINMADI) |
+| react-pack (+5) | deploy-to-vercel, vercel-react-native-skills, vercel-react-view-transitions, vercel-optimize, writing-guidelines | vercel-labs/agent-skills | MIT |
+
+Ek bilinçli yamalar: writing-guidelines ve vercel-react-view-transitions
+frontmatter'ından açılı ayraçlar kaldırıldı (spec); react-view-transitions ve
+react-native-skills klasörleri name alanıyla eşitlendi (spec: klasör=name).

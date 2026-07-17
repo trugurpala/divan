@@ -1,7 +1,7 @@
 {
   "name": "core-pack",
   "description": "Cekirdek gelistirme disiplini: brainstorming, writing-plans, executing-plans, systematic-debugging, test-driven-development, verification-before-completion",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": { "name": "trugurpala" },
   "license": "MIT (icerdigi skill'ler: Jesse Vincent / superpowers, MIT)",
   "keywords": ["planning", "tdd", "debugging", "workflow"]

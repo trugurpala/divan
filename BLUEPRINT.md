@@ -35,6 +35,7 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17j: SEFERBERLİK — ordu 15ten 34 vezire çıktı: core-pack +7 (superpowers MIT), yeni zanaat-pack 7 (Anthropic Apache, Ehl-i Hiref), react-pack +5 (Vercel MIT). Teftiş 2 upstream spec ihlali daha yakalayıp onardı; 4 yama UPSTREAM.mdde belgeli. 5 paket.
 - 2026-07-17i: Codex tek-komut kurulum scriptleri (kur-codex.ps1 Windows / kur-codex.sh unix) eklendi; git gerektirmez (zip indirir). Kurulum belgesi güncellendi.
 - 2026-07-17h: Canlı upstream denetimi — 12 taşınan vezirin 12si bugünkü kaynaklarla birebir (tek fark bilinçli spec yaması, UPSTREAM.md tablosunda belgeli). Komut/subagent çakışması yok. docs/Kaldirma.md (komple kaldırma rehberi) eklendi.
 - 2026-07-17g: 8-katman karnesine göre eksikler kapandı - subagents (kâşif: keşif öncüsü, müfettiş: bağımsız denetçi) ve hooks (SessionStart: defteri otomatik oku) eklendi; teftiş v3 bunları da denetliyor; docs uyumluluk matrisi. Sadrazam v0.4.0.

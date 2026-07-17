@@ -36,6 +36,7 @@ Sadrazam kuruluyken: `/ferman <iş>` işi baştan sona teslim eder,
 | **sadrazam** | Uçtan uca orkestratör: Ferman → Divan → Plan → İcra → Teftiş → Takdim | Özgün, MIT |
 | **core-pack** | Beyin fırtınası, plan yazma/yürütme, sistematik debugging, TDD, doğrulama | obra/superpowers, MIT |
 | **ui-pack** | Özgün frontend tasarım, tarayıcı testi, design-system üretici | Anthropic Apache 2.0 + Next Level Builder MIT |
+| **zanaat-pack** | Ehl-i Hiref: algoritmik sanat, canvas/poster, tema, MCP inşası, web artifact, GIF, Claude API | anthropics/skills, Apache 2.0 |
 | **react-pack** | React best practices, composition patterns, web tasarım kuralları | Vercel Labs, MIT |
 
 ## Divan Protokolü

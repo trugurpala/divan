@@ -20,7 +20,7 @@
       "name": "core-pack",
       "source": "./plugins/core-pack",
       "description": "Cekirdek gelistirme disiplini: beyin firtinasi, plan yazma/yurutme, sistematik debugging, TDD, tamamlama-oncesi dogrulama",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "strict": true
     },
     {
@@ -34,6 +34,13 @@
       "name": "react-pack",
       "source": "./plugins/react-pack",
       "description": "React paketi: best practices, composition patterns ve web tasarim kurallari",
+      "version": "0.2.0",
+      "strict": true
+    },
+    {
+      "name": "zanaat-pack",
+      "source": "./plugins/zanaat-pack",
+      "description": "Ehl-i Hiref: sanat/zanaat vezirleri (Anthropic Apache 2.0)",
       "version": "0.1.0",
       "strict": true
     }
