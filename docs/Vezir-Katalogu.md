@@ -34,12 +34,13 @@ Bu sayfa frontmatter'lardan otomatik üretilir.
 | **web-design-guidelines** | Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".… |
 | **writing-guidelines** | Review docs/prose for Writing Guidelines compliance. Use when asked to "review my docs", "check writing style", "audit prose", "review docs voice and tone", or "check this page against the writing handbook".… |
 
-## sadrazam (4 vezir)
+## sadrazam (5 vezir)
 
 | Vezir | Ne yapar / ne zaman |
 |---|---|
 | **defterdar** | Persistent project memory keeper for the USER's project (Ottoman treasurer-scribe). Creates and maintains AGENTS.md, BLUEPRINT.md (vision, ADR decision records, roadmap, status log), a .divan/ progress journal, decision … |
 | **musavir** | Technology stack advisor (counselor vizier). Recommends the current world-standard stack by project type - landing page, SaaS, e-commerce, mobile, AI app, fintech/borsa - covering framework, database, ORM, auth, payments… |
+| **ordu-nizami** | Native-first agent orchestration for Claude Code and Codex. Chooses the smallest safe lane: one session, bounded subagents, or isolated worktrees and explicitly enabled experimental Agent Teams.… |
 | **sadrazam** | End-to-end delivery orchestrator (the "Grand Vizier"). Use whenever the user asks to build, create, produce, or ship anything substantial — a feature, an app, a document, a campaign — especially with phrases like "baştan… |
 | **vezir-yetistirme** | Skill-creation coach for the Divan marketplace ("training a new vizier"). Use when the user wants to add a new skill to Divan, write a SKILL.md, contribute to the marketplace, or says things like "yeni skill yaz", "Divan… |
 

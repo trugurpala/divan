@@ -3,10 +3,15 @@
 Vibe coding'in tek gerçek sigortası budur: ajanın "çalışıyor" demesi değil,
 **localde kanıt üretmesi**. Divan'ın üç katmanlı test aklı:
 
-## 1. Statik teftiş (her push, saniyeler)
-`python scripts/validate.py` — JSON şemaları, Agent Skills spec uyumu
-(name=klasör, ≤64/≤1024, `<>` yasağı), ad çakışması, proprietary sızıntı.
-CI'da otomatik; localde push'tan önce elle koş.
+## 1. Statik ve resmî teftiş (her push)
+`python scripts/validate.py` — JSON, temel frontmatter, name=klasör,
+≤64/≤1024, ad çakışması, sürüm ve vitrin tutarlılığı. CI bunun ardından
+`skills-ref==0.1.1` ile 38 skill'i ve Claude Code 2.1.212 ile marketplace ile
+beş paketi doğrular. Yerelde önce bağımlılıksız teftişi çalıştır:
+```
+python scripts/validate.py
+python -m unittest discover -s tests -p 'test_*.py'
+```
 
 ## 2. Soğuk klon testi (kullanıcının gerçeği)
 ```
@@ -20,7 +25,7 @@ Senin makinende çalışan değil, **taze klonda çalışan** bakidir.
 "Padişah sensin" metnini doğrular, konsol hatalarını sayar, ekran görüntüsü
 alır. Localde:
 ```
-pip install playwright && playwright install chromium
+pip install playwright==1.61.0 && playwright install chromium
 python tests/site_testi.py
 ```
 Ürün kodun için aynı disiplin: ui-pack'teki **webapp-testing** skill'i,

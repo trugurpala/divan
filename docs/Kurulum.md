@@ -7,6 +7,7 @@
 /plugin install core-pack@divan
 /plugin install ui-pack@divan
 /plugin install react-pack@divan
+/plugin install zanaat-pack@divan
 ```
 Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall <paket>@divan`
 
@@ -14,12 +15,16 @@ Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall
 
 Windows (PowerShell):
 ```powershell
+$env:DIVAN_REF = "v0.8.0"
 irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
 ```
 macOS/Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.8.0 bash
 ```
+En güvenli kullanımda betiği önce indirip inceleyin. `DIVAN_REF` bir sürüm
+etiketi veya commit ile kaynak içeriğini sabitler. Kurucu, aynı adlı mevcut
+skill klasörlerini birleştirmez: tarihli yedeğe taşır ve kurulum kaydı üretir.
 Sonra Codex'i yeniden başlat. Skill'ler tetikleyici cümlelerle çalışır
 ("baştan sona yap", "defter kur"); /komutlar, hook ve subagent'lar Claude
 Code'a özgüdür — Codex'te hafıza AGENTS.md üzerinden yürür.
@@ -37,9 +42,9 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 
 | Katman | Claude Code | Codex / Cursor / diğer |
 |---|---|---|
-| Skills (15 vezir) | ✓ /plugin ile | ✓ Agent Skills standardı — klasör kopyala |
+| Skills (38 vezir) | ✓ /plugin ile | ✓ Agent Skills standardı — klasör kopyala |
 | Memory (defterdar dosyaları: AGENTS.md, BLUEPRINT, .divan/) | ✓ | ✓ düz dosya + AGENTS.md'yi Codex/Cursor doğal okur |
-| Komutlar (/ferman /defter /teftis) | ✓ | ✗ Claude Code'a özgü (skill tetikleyicileri yine çalışır) |
+| Komutlar (/ferman /sefer /defter /teftis) | ✓ | ✗ Claude Code'a özgü (skill tetikleyicileri yine çalışır) |
 | Subagents (kâşif, müfettiş) | ✓ | ✗ Claude Code'a özgü |
 | Hooks (oturum başında defteri otomatik oku) | ✓ | ✗ Claude Code'a özgü |
 | Marketplace tek komut kurulum | ✓ | ✗ elle kopyalama |

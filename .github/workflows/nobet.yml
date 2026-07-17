@@ -9,6 +9,7 @@ permissions:
 jobs:
   upstream-nobet:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -16,9 +17,17 @@ jobs:
           python-version: '3.12'
       - id: nobet
         run: |
-          python scripts/upstream-denetim.py > rapor.txt 2>&1 && echo "degisim=yok" >> $GITHUB_OUTPUT || echo "degisim=var" >> $GITHUB_OUTPUT
+          set +e
+          python scripts/upstream-denetim.py > rapor.txt 2>&1
+          kod=$?
+          set -e
+          case "$kod" in
+            0) echo "durum=yok" >> "$GITHUB_OUTPUT" ;;
+            2) echo "durum=var" >> "$GITHUB_OUTPUT" ;;
+            *) echo "durum=hata" >> "$GITHUB_OUTPUT" ;;
+          esac
           cat rapor.txt
-      - if: steps.nobet.outputs.degisim == 'var'
+      - if: steps.nobet.outputs.durum == 'var'
         uses: actions/github-script@v7
         with:
           script: |
@@ -30,3 +39,7 @@ jobs:
               body: 'Aylık nöbet upstream farkları buldu. Kürasyon kararı bekliyor:\n\n```\n' + rapor + '\n```',
               labels: ['nobet']
             });
+      - if: steps.nobet.outputs.durum == 'hata'
+        run: |
+          echo "Upstream denetimi calistirilamadi; rapor yukarida." >&2
+          exit 1

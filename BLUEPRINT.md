@@ -18,6 +18,10 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 3. **Lisans stratejisi:** Derleme ve özgün skill'ler MIT. Üçüncü taraf
    skill'ler kendi lisanslarını korur (THIRD_PARTY_LICENSES.md). Anthropic'in
    proprietary document-skills'i (docx/pdf/pptx/xlsx) ASLA dahil edilmez.
+4. **Orkestrasyon stratejisi:** Divan üçüncü taraf bir harness'e bağımlı olmaz.
+   Varsayılan tek oturumdur; bağımsız işler yerel subagent'larla, eşzamanlı
+   yazım worktree izolasyonuyla yürür. Agent Teams deneysel ve açık tercihtir.
+   Gerekçe ve aday karnesi `docs/Orkestrasyon-Karari.md` içindedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -38,16 +42,25 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Yol Haritası
 - **v0.1 ✓** 4 paket, 13 skill, landing page, CI, teftiş
+- **v0.7.1 (hazır)** Güvenli davranış, resmî doğrulayıcılar, geri alınabilir kurulum, doğru upstream nöbeti ve belge eşitlemesi
+- **v0.8.0 (aday)** 38. skill `ordu-nizami`, `/sefer`, Claude+Codex repo
+  rehberleri, veriye dayalı harness kararı ve görsel mimari
 - **v0.2** Özgün Türkçe skill'ler, kalıcı domain, README demo GIF, logo
 - **v0.5** awesome-claude-skills listelerine PR, topluluk geri bildirimi
 - **v1.0** Kararlı sürüm + dokümantasyon
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17o: v0.8 yerel orkestrasyon — Claude Code, Codex ve yedi aday
+  birincil kaynaklarla yeniden incelendi; ağırlıklı puan kartı oluşturuldu.
+  Harici harness bağımlılığı reddedildi. `ordu-nizami` ve `/sefer` ile Ocak →
+  Sefer → Ordu kademeleri, worktree sahipliği ve deneysel Agent Teams sınırları
+  ürüne işlendi. 38 vezir.
+- 2026-07-17n: v0.7.1 sağlamlaştırması — Agent Skills resmî doğrulayıcısının bulduğu 1024+ açıklama düzeltildi; 37 skill üç katmanlı CI'a alındı; otomatik git init/commit ve sessiz üzerine yazma kaldırıldı; Codex kurucuları yedek+manifestli yapıldı; upstream nöbeti SHA-256 ve simetrik karşılaştırmaya geçti; belge/lisans/site sayıları eşitlendi.
 - 2026-07-17m: PADİŞAH DÜZELTMESİ — vitrin (README/katalog/landing) v0.3te kalmıştı, v0.7 gerçeğine eşitlendi. Bir daha olamaz: teftiş v4 vitrin tutarlılığını denetliyor (katalog sayısı, paket adları, komutlar READMEde yoksa CI KIRILIR); sadrazama Vitrin Kanunu eklendi.
 - 2026-07-17l: Kural Hazinesi seferi — awesome-cursorrules (CC0, lisans bizzat okundu) hazinesinden kürasyonla kural-hazinesi veziri; Karpathy-skills LİSANSSIZ çıktığı için REDDEDİLDİ, yerine özgün temkin veziri (4 ihtiyat ilkesi) yazıldı. 37 vezir.
 - 2026-07-17k: Keşif raporu işlendi — MÜŞAVİR veziri (stack danışmanı: proje türüne göre 2026 varsayılanları + tazelik protokolü) ve AYLIK NÖBET (upstream değişim bekçisi: cron + otomatik issue) eklendi. v0.6 vendoring hedef listesi BLUEPRINTe girdi. 35 vezir.
-- 2026-07-17j: SEFERBERLİK — ordu 15ten 34 vezire çıktı: core-pack +7 (superpowers MIT), yeni zanaat-pack 7 (Anthropic Apache, Ehl-i Hiref), react-pack +5 (Vercel MIT). Teftiş 2 upstream spec ihlali daha yakalayıp onardı; 4 yama UPSTREAM.mdde belgeli. 5 paket.
+- 2026-07-17j: SEFERBERLİK — ordu 15ten 34 vezire çıktı: core-pack +7 (superpowers MIT), yeni zanaat-pack 7 (Anthropic Apache, Ehl-i Hiref), react-pack +5 (Vercel MIT). İki name/klasör uyumsuzluğu giderildi; o tarihte yapılan gereksiz açılı-ayraç yamaları v0.7.1'de upstream'e döndürüldü. 5 paket.
 - 2026-07-17i: Codex tek-komut kurulum scriptleri (kur-codex.ps1 Windows / kur-codex.sh unix) eklendi; git gerektirmez (zip indirir). Kurulum belgesi güncellendi.
 - 2026-07-17h: Canlı upstream denetimi — 12 taşınan vezirin 12si bugünkü kaynaklarla birebir (tek fark bilinçli spec yaması, UPSTREAM.md tablosunda belgeli). Komut/subagent çakışması yok. docs/Kaldirma.md (komple kaldırma rehberi) eklendi.
 - 2026-07-17g: 8-katman karnesine göre eksikler kapandı - subagents (kâşif: keşif öncüsü, müfettiş: bağımsız denetçi) ve hooks (SessionStart: defteri otomatik oku) eklendi; teftiş v3 bunları da denetliyor; docs uyumluluk matrisi. Sadrazam v0.4.0.
@@ -56,7 +69,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - 2026-07-17d: İlk vizyondaki komutlar tamamlandı (/ferman, /vezir, /teftis); GitHub Pages, Discussions, issue etiketleri açıldı. Upstream tamlık doğrulandı (birebir).
 - 2026-07-16: v0.1 derlendi (vibeforge → Divan rebrand, Sadrazam yazıldı,
   landing yayında). GitHub push token bekliyor.
-- 2026-07-17c: Teftiş v2 (spec tam denetim) 3 gerçek kusur yakaladı: 2 Vercel skill klasör-ad uyuşmazlığı (yüklenmiyordu, düzeltildi), 1 frontmatter <> ihlali (düzeltildi). Wiki içeriği docs/ altında; GitHub wiki ilk sayfa açılınca aynalanacak.
+- 2026-07-17c: Teftiş v2 iki gerçek Vercel skill klasör-ad uyuşmazlığı yakaladı. Aynı turdaki açılı-ayraç yasağı varsayımının Agent Skills standardında olmadığı v0.7.1'de resmî doğrulayıcıyla teyit edilip düzeltildi. Wiki içeriği docs/ altında; GitHub wiki ilk sayfa açılınca aynalanacak.
 - 2026-07-17b: Topluluk dosyaları (CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, şablonlar), UPSTREAM.md ve vezir-yetistirme meta-skill eklendi.
 - 2026-07-17: Teftiş script'i + CI + BLUEPRINT eklendi. SEO güncellemesi
   site/index.html'de hazır; push sonrası canlıya alınacak.

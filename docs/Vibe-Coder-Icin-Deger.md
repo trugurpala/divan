@@ -10,10 +10,15 @@ kıdemli mühendis disipliniyle uygular.** Kurulum öncesi ve sonrası fark:
 | Arayüz istedin | Jenerik "AI slop" tasarım | frontend-design + ui-ux-pro-max: özgün estetik yön |
 | "Bitti" dedi | Sözüne inanmak zorundasın | verification-before-completion: test çıktısı göstermeden bitti diyemez |
 | Fikrin dağınık | Ne sorduğunu unutuyor | brainstorming: seçenekleri tartıp gerekçeli seçer |
+| İş büyüdü | Her şeyi aynı bağlamda karıştırır | `/sefer`: tek oturum, sınırları belirli subagent veya izole worktree arasından en küçüğünü seçer |
 
 Somut bir gün: sabah `/ferman kullanıcı girişi ekle` dersin — ajan planı
 yazar, testleri önce yazar, kodu geçirir, tarayıcıda dener (webapp-testing =
 Playwright), kanıtı gösterir, sonraki adımları önerir. Sen kahveni içersin.
+
+Birden çok bağımsız parça varsa `/sefer` kullanırsın. Divan sırf “çok ajanlı”
+görünmek için swarm kurmaz; çakışan yazımı ayırır, maliyet sınırı koyar ve
+birleşik sonucu yeniden test eder.
 
 **Neden ~1.4K token'a mal oluyor da MCP'nin 55K'sına olmuyor?** Skill'ler
 aşamalı yüklenir: boşta yalnızca ad+açıklama; gövde tetiklenince okunur.

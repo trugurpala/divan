@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+import importlib.util
+import os
+import pathlib
+import subprocess
+import tempfile
+import unittest
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("divan_validate", ROOT / "scripts" / "validate.py")
+assert SPEC and SPEC.loader
+VALIDATE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(VALIDATE)
+
+
+class FrontmatterTests(unittest.TestCase):
+    def test_inline_scalar(self) -> None:
+        self.assertEqual(VALIDATE.frontmatter_alani("name: sadrazam", "name"), "sadrazam")
+
+    def test_literal_block_scalar(self) -> None:
+        value = VALIDATE.frontmatter_alani("description: |-\n  ilk satir\n  ikinci satir", "description")
+        self.assertEqual(value, "ilk satir\nikinci satir")
+
+    def test_folded_block_scalar(self) -> None:
+        value = VALIDATE.frontmatter_alani("description: >\n  ilk satir\n  ikinci satir", "description")
+        self.assertEqual(value, "ilk satir ikinci satir")
+
+    def test_indented_plain_scalar(self) -> None:
+        value = VALIDATE.frontmatter_alani("description:\n  ilk satir\n  ikinci satir\nlicense: MIT", "description")
+        self.assertEqual(value, "ilk satir ikinci satir")
+
+
+class RepositoryTests(unittest.TestCase):
+    def test_repository_passes_local_audit(self) -> None:
+        errors, _warnings, packages, skills = VALIDATE.denetle(ROOT)
+        self.assertEqual(errors, [])
+        self.assertEqual((packages, skills), (5, 38))
+
+    def test_shell_installer_backs_up_collisions(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
+            base = pathlib.Path(temporary)
+            skills_dir = base / "skills"
+            state_dir = base / "state"
+            env = os.environ.copy()
+            env.update(
+                {
+                    "DIVAN_SOURCE_DIR": str(ROOT),
+                    "CODEX_SKILLS_DIR": str(skills_dir),
+                    "DIVAN_STATE_DIR": str(state_dir),
+                }
+            )
+            command = ["bash", str(ROOT / "scripts" / "kur-codex.sh")]
+            subprocess.run(command, check=True, env=env, capture_output=True, text=True)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 38)
+
+            marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
+            marker.write_text("koru", encoding="utf-8")
+            subprocess.run(command, check=True, env=env, capture_output=True, text=True)
+            self.assertFalse(marker.exists())
+            backups = list(state_dir.glob("divan-backups/*/sadrazam/kullanici-dosyasi.txt"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual(backups[0].read_text(encoding="utf-8"), "koru")
+
+
+if __name__ == "__main__":
+    unittest.main()

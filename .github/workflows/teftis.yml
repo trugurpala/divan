@@ -1,11 +1,28 @@
 name: teftis
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python scripts/validate.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Yerel testler
+        run: |
+          python -m unittest discover -s tests -p 'test_*.py'
+          python scripts/validate.py
+      - name: Agent Skills resmi dogrulayici
+        run: |
+          pip install skills-ref==0.1.1
+          for skill in plugins/*/skills/*; do agentskills validate "$skill"; done
+      - name: Claude Code resmi dogrulayici
+        run: |
+          npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate . --strict
+          for plugin in plugins/*; do npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate "$plugin" --strict; done

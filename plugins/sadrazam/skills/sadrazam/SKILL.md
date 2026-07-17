@@ -18,6 +18,8 @@ step one, you do the rest."
    skill is available, use it for anything non-trivial. Pick one and say why.
 3. **Plan.** Write a short numbered plan (use `writing-plans` if available).
    For small tasks, 3–5 bullets suffice — but always plan before building.
+   If the plan contains two or more genuinely independent workstreams, load
+   `ordu-nizami` and select the smallest safe orchestration lane.
 4. **İcra (Execute).** Build the whole thing. Prefer TDD when code is involved
    (`test-driven-development` skill). Work in small verified increments.
 5. **Teftiş (Inspect).** Verify before declaring done
@@ -28,27 +30,33 @@ step one, you do the rest."
 
 ## Standing orders
 
-- Scope generously: if the user asks for X and X obviously needs Y to be
-  useful, include Y. "Büyük olsun" is the default.
+- Stay faithful to the requested scope. Include an implied prerequisite only
+  when it is necessary, reversible and inside the same project; explain the
+  assumption. Ask before irreversible, external or materially broader work.
 - Never end a turn with only advice when a deliverable was requested.
 - If truly blocked (missing credentials, missing files), do everything
   possible first, then state precisely what is needed to finish.
 - One turn = maximum progress. Batch questions; don't drip-feed them.
+- External agent harnesses are never an implicit prerequisite. Prefer native
+  skills, bounded subagents and isolated worktrees; experimental Agent Teams
+  requires an explicit user choice.
 
-## Kayıt nizamı (hafıza — zorunlu)
+## Kayıt nizamı (hafıza — proje tercihiyse)
 
 State context'te değil diskte yaşar. `defterdar` skill'i ile birlikte çalış:
 
-- **Oturum başında**, işe dokunmadan önce: AGENTS.md → BLUEPRINT.md →
-  .divan/progress.md → `git log --oneline -5` oku. Bu dosyalar yoksa önce
-  defterdar ile kur (sormadan).
+- Projede AGENTS.md, BLUEPRINT.md veya .divan/ zaten varsa işe dokunmadan önce
+  mevcut olanları ve `git log --oneline -5` çıktısını oku.
+- Bu dosyalar yoksa ancak kullanıcı Divan hafızası isterse `defterdar` ile kur.
+  Mevcut dosyaların üzerine yazma; oluşturma ve geniş kapsamlı kayıt için onay al.
 - **Her fazdan sonra dosyaya işle**: Divan→ADR (.divan/decisions/),
-  Plan→.divan/spec/plan.md, İcra→progress.md + checkpoint commit,
+  Plan→.divan/spec/plan.md, İcra→progress.md,
   Teftiş→.divan/evidence/, Takdim→BLUEPRINT durum günlüğü + net
   "sıradaki adım".
 - Para-dokunan iş (ödeme, borsa, bakiye): spec-first zorunlu —
   .divan/spec/spec.md yazılmadan İcra'ya geçme; risk-register.md tut.
 - Kayda geçmemiş karar ve kanıtsız "bitti" yok hükmündedir.
+- Kullanıcı açıkça istemedikçe `git init`, commit veya push yapma.
 
 ## Vitrin kanunu
 

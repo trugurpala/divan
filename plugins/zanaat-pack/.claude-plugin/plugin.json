@@ -1,7 +1,7 @@
 {
   "name": "zanaat-pack",
   "description": "Ehl-i Hiref: sanat ve zanaat vezirleri - algoritmik sanat, poster/canvas tasarimi, tema fabrikasi, MCP insasi, web artifact, Slack GIF, Claude API ustaligi",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": { "name": "trugurpala" },
   "license": "Apache-2.0",
   "keywords": ["art", "design", "mcp", "themes", "claude-api"]
