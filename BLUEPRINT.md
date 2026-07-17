@@ -43,14 +43,17 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ## Yol Haritası
 - **v0.1 ✓** 4 paket, 13 skill, landing page, CI, teftiş
 - **v0.7.1 (hazır)** Güvenli davranış, resmî doğrulayıcılar, geri alınabilir kurulum, doğru upstream nöbeti ve belge eşitlemesi
-- **v0.8.0 (aday)** 38. skill `ordu-nizami`, `/sefer`, Claude+Codex repo
-  rehberleri, veriye dayalı harness kararı ve görsel mimari
+- **v0.8.1 (aday)** 38. skill `ordu-nizami`, `/sefer`, Claude+Codex repo
+  rehberleri, veriye dayalı harness kararı ve görsel mimari; 39–40. skill'ler
+  `arama-ustasi` ve `baglam-muhafizi`; ölçülebilir eval sözleşmesi
 - **v0.2** Özgün Türkçe skill'ler, kalıcı domain, README demo GIF, logo
 - **v0.5** awesome-claude-skills listelerine PR, topluluk geri bildirimi
 - **v1.0** Kararlı sürüm + dokümantasyon
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17p: v0.8.1 — kanıtlı repo araması, bağlam bütçesi/maskeleme ve
+  skill'li-baseline eval protokolü eklendi. 40 vezir.
 - 2026-07-17o: v0.8 yerel orkestrasyon — Claude Code, Codex ve yedi aday
   birincil kaynaklarla yeniden incelendi; ağırlıklı puan kartı oluşturuldu.
   Harici harness bağımlılığı reddedildi. `ordu-nizami` ve `/sefer` ile Ocak →

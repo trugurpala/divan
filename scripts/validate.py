@@ -88,6 +88,63 @@ def oku_json(yol: pathlib.Path, hatalar: list[str], etiket: str) -> dict:
     return veri
 
 
+def eval_sozlesmesini_denetle(
+    skill_dizini: pathlib.Path, skill_adi: str, hatalar: list[str]
+) -> None:
+    """Varsa skill eval sozlesmesini yapisal ve yol-guvenli olarak denetle."""
+    eval_yolu = skill_dizini / "evals" / "evals.json"
+    if not eval_yolu.exists():
+        return
+
+    etiket = str(eval_yolu.relative_to(KOK)) if eval_yolu.is_relative_to(KOK) else str(eval_yolu)
+    veri = oku_json(eval_yolu, hatalar, etiket)
+    if veri.get("skill_name") != skill_adi:
+        hatalar.append(
+            f"{etiket}: skill_name ('{veri.get('skill_name')}') != '{skill_adi}'"
+        )
+
+    evalar = veri.get("evals")
+    if not isinstance(evalar, list) or len(evalar) < 2:
+        hatalar.append(f"{etiket}: en az 2 eval ornegi olmali")
+        return
+
+    gorulen_id: set[int] = set()
+    kok = skill_dizini.resolve()
+    for sira, eval_veri in enumerate(evalar, start=1):
+        onek = f"{etiket}: eval[{sira}]"
+        if not isinstance(eval_veri, dict):
+            hatalar.append(f"{onek} nesne olmali")
+            continue
+        eval_id = eval_veri.get("id")
+        if not isinstance(eval_id, int) or isinstance(eval_id, bool):
+            hatalar.append(f"{onek}.id benzersiz tamsayi olmali")
+        elif eval_id in gorulen_id:
+            hatalar.append(f"{onek}.id tekrarli: {eval_id}")
+        else:
+            gorulen_id.add(eval_id)
+
+        for alan in ["prompt", "expected_output"]:
+            if not isinstance(eval_veri.get(alan), str) or not eval_veri[alan].strip():
+                hatalar.append(f"{onek}.{alan} dolu metin olmali")
+
+        beklentiler = eval_veri.get("expectations")
+        if not isinstance(beklentiler, list) or not beklentiler or not all(
+            isinstance(b, str) and b.strip() for b in beklentiler
+        ):
+            hatalar.append(f"{onek}.expectations en az bir dolu metin icermeli")
+
+        dosyalar = eval_veri.get("files", [])
+        if not isinstance(dosyalar, list) or not all(isinstance(d, str) for d in dosyalar):
+            hatalar.append(f"{onek}.files metin yollarindan olusan dizi olmali")
+            continue
+        for dosya in dosyalar:
+            hedef = (skill_dizini / dosya).resolve()
+            if not hedef.is_relative_to(kok):
+                hatalar.append(f"{onek}.files skill disina cikiyor: {dosya}")
+            elif not hedef.is_file():
+                hatalar.append(f"{onek}.files bulunamadi: {dosya}")
+
+
 def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     hatalar: list[str] = []
     uyarilar: list[str] = []
@@ -167,6 +224,8 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         lisans = frontmatter_alani(fmt, "license") or ""
         if lisans.lower().startswith("proprietary"):
             hatalar.append(f"{goreli}: PROPRIETARY icerik")
+
+        eval_sozlesmesini_denetle(skill.parent, ad, hatalar)
 
         govde_satir = metin[govde_baslangici:].count("\n")
         if govde_satir > 500:

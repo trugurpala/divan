@@ -4,7 +4,7 @@
 
 <img src="docs/assets/muhurdar-idle.png" alt="Divan'ın Mühürdar maskotu" width="128" align="right">
 
-**Vibe coder'ın vezirler kurulu — 38 skill, 5 paket, hafıza, bağımsız denetçi.**
+**Vibe coder'ın vezirler kurulu — 40 skill, 5 paket, hafıza, bağımsız denetçi.**
 Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim eder
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
@@ -39,12 +39,12 @@ macOS/Linux ve ayrıntılar: [docs/Kurulum.md](docs/Kurulum.md)
 | `/vezir <fikir>` | Divan'a standartlara uygun yeni skill yetiştirir |
 | `/teftis` | Repoyu ve hafıza sağlığını denetler |
 
-## Paketler (38 vezir)
+## Paketler (40 vezir)
 
 | Paket | Öne çıkanlar | Kaynak / Lisans |
 |---|---|---|
 | **sadrazam** (5) | Uçtan uca orkestratör · **ordu-nizamı** (yerel üç kademeli ajan sevki) · **defterdar** (kalıcı proje hafızası: AGENTS.md+BLUEPRINT+.divan) · **müşavir** (2026 stack danışmanı, tazelik protokollü) · vezir-yetiştirme. Ayrıca: kâşif+müfettiş subagent'ları, oturum başında defteri okuyan hook | Özgün, MIT |
-| **core-pack** (15) | Beyin fırtınası→plan→TDD→doğrulama zinciri, sistematik debugging, code review (isteme+alma), paralel ajan sevki, git worktrees · **temkin** (4 ihtiyat ilkesi) · **kural-hazinesi** (9 CC0 seçme kural) | superpowers MIT + özgün + CC0 |
+| **core-pack** (17) | Beyin fırtınası→plan→TDD→doğrulama zinciri, sistematik debugging, code review, worktrees · **arama-ustası** (kanıtlı rg + isteğe bağlı AST) · **bağlam-muhafızı** (bütçe, maskeleme, devir) · **temkin** · **kural-hazinesi** | superpowers MIT + özgün + MIT uyarlama + CC0 |
 | **ui-pack** (3) | Şablon kokmayan frontend tasarım, tarayıcıda Playwright testi, 84 stillik design-system üretici | Apache 2.0 + MIT |
 | **react-pack** (8) | React best practices, composition, view transitions, React Native, Vercel deploy/optimize, web tasarım ve yazım kuralları | Vercel Labs, MIT |
 | **zanaat-pack** (7) | Ehl-i Hiref: algoritmik sanat, canvas/poster, tema fabrikası, MCP inşası, web artifact, Slack GIF, Claude API | Anthropic, Apache 2.0 |

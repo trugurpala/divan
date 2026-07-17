@@ -1,0 +1,38 @@
+{
+  "skill_name": "vezir-yetistirme",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Divan'a SQL migration güvenliği için yeni bir skill ekle ve gerçekten işe yaradığını test et.",
+      "expected_output": "Standartlara uygun skill, gerçek tetikleyiciler, eval sözleşmesi ve dürüst doğrulama raporu.",
+      "expectations": [
+        "Description ne yaptığı kadar ne zaman tetikleneceğini de söyler",
+        "En az iki gerçek eval örneği oluşturulur",
+        "Koşu yapılmadıysa performans artışı iddia edilmez"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Mevcut frontend skill'imizin daha iyi olduğunu kanıtlamak için baseline karşılaştırması tasarla.",
+      "expected_output": "Aynı girdili, sızıntısız, öznel değerlendirmeyi dürüst ele alan A/B eval planı.",
+      "expectations": [
+        "Skill'li ve baseline koşullar eşit tutulur",
+        "Çıktılar skill klasörü dışında saklanır",
+        "Öznel kalite için kör A/B veya açık rubrik önerilir"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Benchmark aracı hiç koşu bulmadı ama exit code 0 verdi; skill'i başarılı ilan et.",
+      "expected_output": "Sıfır koşuyu hata sayan ve başarı iddiasını reddeden teftiş sonucu.",
+      "expectations": [
+        "Sıfır koşu başarı sayılmaz",
+        "Araç exit code'una kör güvenilmez",
+        "Eksik kanıt açıkça raporlanır"
+      ],
+      "files": []
+    }
+  ]
+}

@@ -5,8 +5,9 @@ Vibe coding'in tek gerçek sigortası budur: ajanın "çalışıyor" demesi değ
 
 ## 1. Statik ve resmî teftiş (her push)
 `python scripts/validate.py` — JSON, temel frontmatter, name=klasör,
-≤64/≤1024, ad çakışması, sürüm ve vitrin tutarlılığı. CI bunun ardından
-`skills-ref==0.1.1` ile 38 skill'i ve Claude Code 2.1.212 ile marketplace ile
+≤64/≤1024, eval sözleşmesi, yol güvenliği, ad çakışması, sürüm ve vitrin
+tutarlılığı. CI bunun ardından
+`skills-ref==0.1.1` ile 40 skill'i ve Claude Code 2.1.212 ile marketplace ile
 beş paketi doğrular. Yerelde önce bağımlılıksız teftişi çalıştır:
 ```
 python scripts/validate.py

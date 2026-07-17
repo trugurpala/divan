@@ -6,7 +6,7 @@ marketplace'idir — vibe coder'ın eli ayağı.
 
 ## Sayfalar
 - [[Kurulum]] — Claude Code, Cursor ve Codex'te kurma
-- [[Vezir Katalogu]] — 38 skill'in tam listesi ve tetikleyicileri
+- [[Vezir Katalogu]] — 40 skill'in tam listesi ve tetikleyicileri
 - [[Orkestrasyon Kararı]] — yerel üç kademeli ajan düzeni ve aday karnesi
 - [[Standartlar ve Limitler]] — spec kuralları, neyi neden denetliyoruz
 - [[SSS]]

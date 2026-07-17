@@ -36,7 +36,30 @@ class RepositoryTests(unittest.TestCase):
     def test_repository_passes_local_audit(self) -> None:
         errors, _warnings, packages, skills = VALIDATE.denetle(ROOT)
         self.assertEqual(errors, [])
-        self.assertEqual((packages, skills), (5, 38))
+        self.assertEqual((packages, skills), (5, 40))
+
+    def test_eval_contract_rejects_empty_and_escaping_inputs(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-test-") as temporary:
+            skill_dir = pathlib.Path(temporary) / "ornek"
+            eval_dir = skill_dir / "evals"
+            eval_dir.mkdir(parents=True)
+            (eval_dir / "evals.json").write_text(
+                """{
+                  "skill_name": "yanlis",
+                  "evals": [
+                    {"id": 1, "prompt": "", "expected_output": "sonuc", "expectations": [], "files": ["../../sir.txt"]},
+                    {"id": 2, "prompt": "ikinci", "expected_output": "sonuc", "expectations": ["olcut"], "files": []}
+                  ]
+                }""",
+                encoding="utf-8",
+            )
+            errors: list[str] = []
+            VALIDATE.eval_sozlesmesini_denetle(skill_dir, "ornek", errors)
+            joined = "\n".join(errors)
+            self.assertIn("skill_name", joined)
+            self.assertIn("prompt", joined)
+            self.assertIn("expectations", joined)
+            self.assertIn("skill disina cikiyor", joined)
 
     def test_shell_installer_backs_up_collisions(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
@@ -53,7 +76,7 @@ class RepositoryTests(unittest.TestCase):
             )
             command = ["bash", str(ROOT / "scripts" / "kur-codex.sh")]
             subprocess.run(command, check=True, env=env, capture_output=True, text=True)
-            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 38)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 40)
 
             marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
             marker.write_text("koru", encoding="utf-8")

@@ -11,6 +11,8 @@ izlenir; lisansı belirsiz içerik alınmaz.
 |---|---|---|---|
 | core-pack | github.com/obra/superpowers | MIT | 2026-07 |
 | core-pack/kural-hazinesi | github.com/PatrickJS/awesome-cursorrules | CC0-1.0 | 2026-07 |
+| core-pack/baglam-muhafizi | github.com/muratcankoylan/Agent-Skills-for-Context-Engineering | MIT | 2026-07 |
+| core-pack/arama-ustasi | özgün; ripgrep ve ast-grep resmî belgeleri | MIT | — |
 | ui-pack (frontend-design, webapp-testing) | github.com/anthropics/skills | Apache-2.0 | 2026-07 |
 | ui-pack (ui-ux-pro-max) | github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT | 2026-07 |
 | react-pack | github.com/vercel-labs/agent-skills | MIT | 2026-07 |
@@ -29,6 +31,9 @@ izlenir; lisansı belirsiz içerik alınmaz.
 - Kural Hazinesi birebir bir skill kopyası değildir; dokuz CC0 kuralın
   kürasyonudur. Bu nedenle kaynak deponun commit'i ayrıca izlenir ve ilerlediğinde
   yeniden kürasyon için raporlanır.
+- Bağlam Muhafızı, MIT kaynak koleksiyonundaki context-optimization fikirlerinin
+  Divan'ın defterdar/ordu düzenine uyarlanmış özgün Türkçe iş akışıdır; kaynak
+  commit'i kör eşitleme yerine yeniden kürasyon için izlenir.
 - Anthropic'in proprietary lisanslı docx/pdf/pptx/xlsx skill'leri alınmaz.
 
 ## Bilinçli yamalar
@@ -46,5 +51,7 @@ tutulur. Agent Skills standardı açılı ayraçları genel olarak yasaklamaz.
 | Karar | Kaynak | Lisans | Not |
 |---|---|---|---|
 | ALINDI | PatrickJS/awesome-cursorrules | CC0-1.0 | Dokuz kural `kural-hazinesi/references/` altında |
+| UYARLANDI | muratcankoylan/Agent-Skills-for-Context-Engineering | MIT | Context bütçesi ve maskeleme ilkeleri özgün `baglam-muhafizi` akışına uyarlandı |
+| KOPYALANMADI | massgen/MassGen file-search | Repo Apache-2.0; skill metadata MIT | Lisans metadata farkı nedeniyle metin taşınmadı; `arama-ustasi` resmî araç belgelerinden özgün yazıldı |
 | REDDEDİLDİ | multica-ai/andrej-karpathy-skills | Lisans yok | Popülerlik yeniden dağıtım hakkı vermez; yerine özgün `temkin` yazıldı |
 | KEŞİF KAYNAĞI | VoltAgent/awesome-agent-skills | MIT | Dizin niteliğinde; alınacak her hedefin lisansı ayrıca incelenir |

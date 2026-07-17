@@ -21,6 +21,8 @@ REPOLAR = [
     "nextlevelbuilder/ui-ux-pro-max-skill",
 ]
 OZGUN = {
+    "arama-ustasi",
+    "baglam-muhafizi",
     "sadrazam",
     "vezir-yetistirme",
     "defterdar",
@@ -31,6 +33,7 @@ OZGUN = {
 }
 KURASYON_KAYNAKLARI = {
     "PatrickJS/awesome-cursorrules": "b044f956f021b6e8877f16781bcfc466a6a120e9",
+    "muratcankoylan/Agent-Skills-for-Context-Engineering": "c578e85e40fe2bda7c1fec91ff64cf5285434934",
 }
 # Bilincli farklarda upstream dosyasinin bilinen taban imzasi da sabitlenir.
 # Boylece upstream ayni dosyayi degistirirse izin listesi bu degisimi gizlemez.

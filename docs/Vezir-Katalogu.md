@@ -1,10 +1,12 @@
 # Vezir Katalogu
 Bu sayfa frontmatter'lardan otomatik üretilir.
 
-## core-pack (15 vezir)
+## core-pack (17 vezir)
 
 | Vezir | Ne yapar / ne zaman |
 |---|---|
+| **arama-ustasi** | Evidence-first codebase search using ripgrep for bounded text discovery and optional ast-grep for syntax-aware structural search. Use when exploring an unfamiliar repository, locating definitions or call sites, estimating refactor impact, finding repeated code shapes or auditing risky patterns… |
+| **baglam-muhafizi** | Context-budget guardian for long-running agent work. Use when a session becomes long or repetitive, tool outputs dominate the conversation, retrieved documents overwhelm the task, compaction or handoff is approaching, or multiple agents need clean partitions… |
 | **brainstorming** | "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."… |
 | **dispatching-parallel-agents** | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies… |
 | **executing-plans** | Use when you have a written implementation plan to execute in a separate session with review checkpoints… |

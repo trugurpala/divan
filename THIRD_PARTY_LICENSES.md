@@ -8,13 +8,14 @@ metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
 |---|---:|---|---|
 | core-pack / Superpowers | 13 | https://github.com/obra/superpowers | MIT — `plugins/core-pack/LICENSE-superpowers-MIT.txt` |
 | core-pack / Kural Hazinesi | 1 (9 referans) | https://github.com/PatrickJS/awesome-cursorrules | CC0-1.0 — upstream `LICENSE` |
+| core-pack / Bağlam Muhafızı kaynak fikirleri | 1 | https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering | MIT — `plugins/core-pack/skills/baglam-muhafizi/LICENSE.txt` |
 | ui-pack / frontend-design, webapp-testing | 2 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
 | ui-pack / ui-ux-pro-max | 1 | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT — `plugins/ui-pack/LICENSE-uiuxpromax-MIT.txt` |
 | react-pack | 8 | https://github.com/vercel-labs/agent-skills | MIT — upstream README lisans beyanı (upstream ayrı LICENSE dosyası sunmuyor) |
 | zanaat-pack | 7 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
 
-Özgün `sadrazam`, `defterdar`, `musavir`, `vezir-yetistirme` ve `temkin`
-içerikleri depo kökündeki MIT lisansı kapsamındadır.
+Özgün `sadrazam`, `defterdar`, `musavir`, `ordu-nizami`, `vezir-yetistirme`,
+`arama-ustasi` ve `temkin` içerikleri depo kökündeki MIT lisansı kapsamındadır.
 
 ## Bu derlemedeki değişiklikler
 
