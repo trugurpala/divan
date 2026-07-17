@@ -5,7 +5,9 @@ Read `AGENTS.md`, `BLUEPRINT.md`, `UPSTREAM.md`, and
 
 Keep Divan native-first and dependency-light. Do not make an external agent
 harness a default dependency. Never vendor content without a verified license,
-and record every imported source and intentional patch. Use parallel agents
+and record every imported source and intentional patch. Record discovery in
+`registry/candidates.json` when Meclis is enabled; a candidate or ADOPT decision
+is not installation without a separate pin, attribution, eval, and audit. Use parallel agents
 only for independent, bounded work; isolate concurrent writes with worktrees.
 
 Before completion, run:

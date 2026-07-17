@@ -19,6 +19,9 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
   bağımlılığını varsayılan yol haline getirme.
 - Lisansı doğrulanmamış içeriği kopyalama. Taşınan her içerik için `UPSTREAM.md`
   ve `THIRD_PARTY_LICENSES.md` kayıtlarını güncel tut.
+- Dış kaynak keşfini doğrudan kuruluma çevirme. Meclis varsa adayı
+  `registry/candidates.json` yaşam döngüsüne işle; ADOPT/ADAPT kararı bile ayrı
+  pin+atıf+eval+teftiş uygulaması ister.
 - Kullanıcı açıkça istemedikçe repo başlatma, commit, push, release veya mevcut
   proje dosyalarının üzerine sessizce yazma.
 - Paralel ajanları yalnızca bağımsız ve sınırları belirli işler için kullan.

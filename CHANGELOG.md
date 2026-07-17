@@ -12,6 +12,33 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Independent adoption evidence and reproducible quality measurements.
 - First published comparison using a declared real-agent adapter and judge.
 
+## [0.10.2] - 2026-07-18
+
+### Added
+
+- **Aday Meclisi:** machine-readable candidate registry with a deterministic
+  human catalog and an explicit `never-auto-install` autonomy boundary.
+- Structured GitHub source-candidate issue form for user gap, exact license,
+  execution surface, and evidence—not popularity alone.
+- Weekly read-only GitHub discovery workflow that opens a bounded triage issue,
+  excludes known/upstream repositories, and never downloads candidate code.
+- Candidate validation for canonical identity, duplicate IDs/URLs, lifecycle
+  state, license evidence, decision consistency, review dates, and proof count.
+
+### Changed
+
+- `kaynak-kuratori` now persists discovery into the Meclis lifecycle and keeps
+  ADOPT/ADAPT decisions separate from actual installation or vendoring.
+- Core pack advanced to 0.5.1; public documentation now exposes how Divan grows
+  continuously without turning an “awesome list” into trusted executable code.
+
+### Verified
+
+- The reference audit of `punkpeye/awesome-mcp-servers` records it as a
+  MIT-licensed registry/index and explicitly re-audits every downstream item.
+- Tests reject duplicate URLs and license-unknown ADOPT decisions and require
+  the generated catalog to match the registry exactly.
+
 ## [0.10.1] - 2026-07-18
 
 ### Added
@@ -110,6 +137,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.10.2]: https://github.com/trugurpala/divan/tree/main
 [0.10.1]: https://github.com/trugurpala/divan/tree/main
 [0.10.0]: https://github.com/trugurpala/divan/tree/main
 [0.9.0]: https://github.com/trugurpala/divan/tree/main

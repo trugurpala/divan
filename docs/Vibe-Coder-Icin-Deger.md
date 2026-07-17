@@ -28,7 +28,7 @@ birleşik sonucu yeniden test eder.
 
 Yeni vezirler de yalnızca “iyi prompt” oldukları için kabul edilmez. Eval
 sözleşmesi gerçek kullanım örneklerini, beklenen çıktıyı ve nesnel beklentileri
-tanımlar. `python evals/run.py --check` mevcut 4 özgün skill'deki 12 vakayı
+tanımlar. `python evals/run.py --check` mevcut 4 özgün skill'deki 13 vakayı
 denetler; gerçek adaptör verildiğinde aynı girdiyi baseline ve skill koşullarında
 çalıştırıp kör A/B kanıtı üretir. Gerçek koşu yoksa başarı yüzdesi de yoktur.
 

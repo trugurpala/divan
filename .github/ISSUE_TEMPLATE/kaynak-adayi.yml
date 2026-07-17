@@ -1,0 +1,66 @@
+name: Kaynak adayı
+description: Divan'ın incelemesi için skill, eklenti, indeks, framework veya standart öner
+title: "[Kaynak adayı]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bu form yalnız aday üretir; hiçbir repo otomatik kurulmaz veya çalıştırılmaz.
+        Popülerlik keşif sinyalidir. Kabul için kimlik, lisans, köken, yürütme yüzeyi,
+        ürün boşluğu ve eval kanıtı ayrıca incelenir.
+  - type: input
+    id: url
+    attributes:
+      label: Kanonik GitHub repo adresi
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Birincil tür
+      options:
+        - Skill / plugin
+        - Registry / index
+        - Framework / library
+        - App / template
+        - Standard / research
+    validations:
+      required: true
+  - type: textarea
+    id: user_gap
+    attributes:
+      label: Hangi gerçek kullanıcı boşluğunu kapatıyor?
+      description: Bir özellik listesi değil, bugün yapılamayan somut işi yaz.
+    validations:
+      required: true
+  - type: input
+    id: license
+    attributes:
+      label: Lisans kanıtı
+      description: SPDX adı ve tam LICENSE dosyası adresi; bilmiyorsan UNKNOWN yaz.
+      placeholder: MIT — https://github.com/owner/repo/blob/main/LICENSE
+    validations:
+      required: true
+  - type: textarea
+    id: execution
+    attributes:
+      label: Yürütme ve yetki yüzeyi
+      description: Hook, shell script, lifecycle komutu, MCP aracı, ağ/secret/dosya erişimi varsa yaz.
+      placeholder: İncelenmedi / yalnız Markdown / scripts/... / ağ erişimi...
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Kanıt ve örnek kullanım
+      description: Resmi belgeler, testler ve tekrar üretilebilir bir görev ekle. Pazarlama iddiasını kanıt diye yazma.
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Kabul
+      options:
+        - label: Bu önerinin otomatik kurulum anlamına gelmediğini ve her downstream kaynağın ayrı lisans/güvenlik denetimi gerektirdiğini anlıyorum.
+          required: true

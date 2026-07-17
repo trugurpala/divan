@@ -16,6 +16,8 @@
       BLUEPRINT, Wiki kaynağı ve site birlikte güncellendi
 - [ ] `python scripts/wiki.py --check` geçti; Wiki etkileniyorsa `wiki-sync`
       kontrolü yeşil
+- [ ] Dış kaynak/aday değiştiyse `python scripts/meclis.py --check` geçti;
+      aday olmanın kurulum olmadığı ve lisans kapsamı açık
 - [ ] `.divan/progress.md` yapılanı, açığı ve sıradaki kesin adımı kaydediyor
 - [ ] PR taslak değil; zorunlu CI kontrolleri yeşil
 - [ ] Yetki ve kapsam varsa `main`e birleşme ile varsayılan dal/canlı yüzey

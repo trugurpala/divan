@@ -3,12 +3,14 @@
 Divan kendini toplulukla geliştirir. Yeni bir vezir (skill) kazandırmak için:
 
 ## Yol
-1. **Öneri:** "Yeni Vezir" issue şablonuyla fikrini aç — tek cümle amaç +
-   hangi ifadelerle tetikleneceği.
+1. **Öneri:** Yeni bir dış kaynak için **Kaynak adayı** formunu; özgün skill
+   fikri için **Yeni Vezir** şablonunu kullan. Kaynak formu gerçek kullanıcı
+   boşluğu, tam lisans kanıtı ve yürütme/yetki yüzeyini zorunlu ister.
 2. **Yaz:** `plugins/<paket>/skills/<skill-adi>/SKILL.md`. Kurallar aşağıda.
    İpucu: Claude Code'da `sadrazam` kuruluysa "Divan'a yeni vezir yaz" de —
    `vezir-yetistirme` skill'i seni adım adım yürütür.
-3. **Teftiş:** `python scripts/validate.py` yerelde temiz çıkmalı.
+3. **Teftiş:** `python scripts/validate.py` yerelde temiz çıkmalı. Aday defteri
+   değiştiyse `python scripts/meclis.py --check` de geçmeli.
 4. **PR aç:** Şablondaki çeklisti doldur.
 
 ## Skill standartları (Agent Skills — agentskills.io)
@@ -23,3 +25,10 @@ Divan kendini toplulukla geliştirir. Yeni bir vezir (skill) kazandırmak için:
 ## Sürüm ve onay
 Küçük düzeltmeler doğrudan PR; yeni paketler önce issue tartışması ister.
 Her PR CI teftişinden geçmeden birleşmez.
+
+## Aday başka, kurulum başka
+
+Meclis'e giren repo Divan'a alınmış değildir. Önce Kaynak Küratörü kimlik,
+lisans, köken, script/hook/araç erişimi ve mevcut yetenek çakışmasını inceler.
+`ADOPT` veya `ADAPT` kararı bile uygulama değildir; pin, atıf, eval ve teftiş
+ayrı PR'da tamamlanır. `registry/candidates.json` tek doğru aday kaynağıdır.

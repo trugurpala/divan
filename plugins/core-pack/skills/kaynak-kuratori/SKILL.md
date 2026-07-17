@@ -88,6 +88,25 @@ Return:
 
 Use current, primary sources for claims that can change. Say `unknown` instead of guessing.
 
+## Meclis döngüsü
+
+Projede `registry/candidates.json` varsa keşfi tek seferlik sohbet sonucu olarak
+bırakma; aday yaşam döngüsüne işle:
+
+1. Otomatik veya topluluk keşfini yalnız `new/triage` aday say; kod indirme,
+   çalıştırma ya da kurulum yapma.
+2. Kanonik URL ve kimlikle mükerrerliği denetle; registry/index içindeki her
+   downstream hedefi ayrı aday ve ayrı lisans kapsamı say.
+3. `PENDING` adayın eksik kanıtını açıkça kaydet. Son karar için en az kimlik ve
+   tam lisans kanıtı iste.
+4. `ADOPT/ADAPT/REFERENCE/REJECT` kararını gerekçesi, yürütme incelemesi,
+   gözlem tarihi ve sonraki inceleme tarihiyle sürümle.
+5. `ADOPT/ADAPT` kararı uygulama değildir. Pin, atıf, eval ve teftişi ayrı bir
+   plan/PR'da tamamla; kullanıcıya aday sayısını kurulu yetenek diye sunma.
+
+Yıldız, son push ve otomatik dış puanlar yalnız triage sırasını etkileyebilir;
+lisans, güvenlik, ürün uyumu veya davranış kalitesi kapılarını geçersiz kılamaz.
+
 ## Stop Conditions
 
 Stop adoption and ask for direction when the candidate requires credentials, paid services, broad machine access, external messaging, destructive changes, or a product decision the user has not authorized. Continue the read-only audit when possible.
