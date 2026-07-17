@@ -1,0 +1,38 @@
+{
+  "skill_name": "arama-ustasi",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Bu TypeScript repoda createSession fonksiyonunun tanımını, bütün çağrılarını ve ilgili testleri bul; hiçbir dosyayı değiştirme.",
+      "expected_output": "Daraltılmış rg aramalarıyla tanım, çağrılar ve testlerden oluşan kanıtlı bir etki haritası.",
+      "expectations": [
+        "Arama dosya türü veya dizinle sınırlandırılır",
+        "Ham geniş çıktı yerine dosya:satır kanıtı özetlenir",
+        "Dosya değiştirilmez"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "JavaScript kaynaklarında ikinci argümanı olmayan fetch çağrılarını yapısal olarak bul. ast-grep kurulu değilse güvenli bir fallback kullan.",
+      "expected_output": "Araç varlığı doğrulanan AST araması veya yaklaşık olduğu açıkça belirtilen dar regex fallback'i.",
+      "expectations": [
+        "ast-grep mevcutmuş gibi varsayılmaz",
+        "sg komutunun ast-grep olduğu doğrulanır",
+        "Regex fallback AST kesinliği iddiasında bulunmaz"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Repoda yanlışlıkla bırakılmış parola veya token örüntülerini ara ama bulunan sırların değerlerini yanıtta gösterme.",
+      "expected_output": "Değerleri maskeleyen, konum ve bulgu türünü bildiren sınırlı güvenlik araması.",
+      "expectations": [
+        "Olası sır değerleri açıklanmaz",
+        "Gürültülü klasörler dışlanır",
+        "Kullanılan kapsam ve komut raporlanır"
+      ],
+      "files": []
+    }
+  ]
+}

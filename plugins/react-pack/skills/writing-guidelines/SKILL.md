@@ -4,7 +4,7 @@ description: Review docs/prose for Writing Guidelines compliance. Use when asked
 metadata:
   author: vercel
   version: "1.0.0"
-  argument-hint: file-or-pattern
+  argument-hint: <file-or-pattern>
 ---
 
 # Writing Guidelines

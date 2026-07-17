@@ -1,15 +1,28 @@
 name: site-testi
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'docs/**'
+      - 'tests/site_testi.py'
+      - '.github/workflows/site-testi.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'tests/site_testi.py'
+      - '.github/workflows/site-testi.yml'
   schedule:
     - cron: '0 6 * * 1'  # her pazartesi 06:00 UTC
+permissions:
+  contents: read
 jobs:
   playwright:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install playwright && playwright install chromium --with-deps
+      - run: pip install playwright==1.61.0 && playwright install chromium --with-deps
       - run: python tests/site_testi.py

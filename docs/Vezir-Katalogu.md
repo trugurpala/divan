@@ -1,14 +1,17 @@
 # Vezir Katalogu
 Bu sayfa frontmatter'lardan otomatik üretilir.
 
-## core-pack (15 vezir)
+## core-pack (18 vezir)
 
 | Vezir | Ne yapar / ne zaman |
 |---|---|
+| **arama-ustasi** | Evidence-first codebase search using ripgrep for bounded text discovery and optional ast-grep for syntax-aware structural search. Use when exploring an unfamiliar repository, locating definitions or call sites, estimating refactor impact, finding repeated code shapes or auditing risky patterns… |
+| **baglam-muhafizi** | Context-budget guardian for long-running agent work. Use when a session becomes long or repetitive, tool outputs dominate the conversation, retrieved documents overwhelm the task, compaction or handoff is approaching, or multiple agents need clean partitions… |
 | **brainstorming** | "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."… |
 | **dispatching-parallel-agents** | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies… |
 | **executing-plans** | Use when you have a written implementation plan to execute in a separate session with review checkpoints… |
 | **finishing-a-development-branch** | Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup… |
+| **kaynak-kuratori** | Evidence-first curator for repository lists, agent skills, plugins and templates. Resolves real targets, separates skills from products and indexes, checks exact licensing and maintenance signals, measures overlap, and recommends adopt, adapt, reference or reject without executing unreviewed code… |
 | **kural-hazinesi** | Curated framework and craft rule library (CC0, from the awesome-cursorrules treasury). Provides battle-tested coding rules for clean code, anti-overengineering, code quality, databases, Docker, Next.js plus Tailwind plus… |
 | **receiving-code-review** | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind … |
 | **requesting-code-review** | Use when completing tasks, implementing major features, or before merging to verify work meets requirements… |
@@ -34,13 +37,14 @@ Bu sayfa frontmatter'lardan otomatik üretilir.
 | **web-design-guidelines** | Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".… |
 | **writing-guidelines** | Review docs/prose for Writing Guidelines compliance. Use when asked to "review my docs", "check writing style", "audit prose", "review docs voice and tone", or "check this page against the writing handbook".… |
 
-## sadrazam (4 vezir)
+## sadrazam (5 vezir)
 
 | Vezir | Ne yapar / ne zaman |
 |---|---|
 | **defterdar** | Persistent project memory keeper for the USER's project (Ottoman treasurer-scribe). Creates and maintains AGENTS.md, BLUEPRINT.md (vision, ADR decision records, roadmap, status log), a .divan/ progress journal, decision … |
 | **musavir** | Technology stack advisor (counselor vizier). Recommends the current world-standard stack by project type - landing page, SaaS, e-commerce, mobile, AI app, fintech/borsa - covering framework, database, ORM, auth, payments… |
-| **sadrazam** | End-to-end delivery orchestrator (the "Grand Vizier"). Use whenever the user asks to build, create, produce, or ship anything substantial — a feature, an app, a document, a campaign — especially with phrases like "baştan… |
+| **ordu-nizami** | Native-first agent orchestration for Claude Code and Codex. Chooses the smallest safe lane: one session, bounded subagents, or isolated worktrees and explicitly enabled experimental Agent Teams.… |
+| **sadrazam** | Uçtan uca teslim orkestratörü. Plan, uygulama ve teftişten sonra PR, `main`, canlı yüzey ve kalıcı kayıtları ayrı ayrı doğrular; yeşil bir özellik dalını yayın saymaz. |
 | **vezir-yetistirme** | Skill-creation coach for the Divan marketplace ("training a new vizier"). Use when the user wants to add a new skill to Divan, write a SKILL.md, contribute to the marketplace, or says things like "yeni skill yaz", "Divan… |
 
 ## ui-pack (3 vezir)

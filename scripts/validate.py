@@ -1,119 +1,368 @@
 #!/usr/bin/env python3
-"""Divan Teftis v2 — Agent Skills spec (agentskills.io) + Claude Code marketplace semasina gore tam denetim."""
-import json, re, sys, pathlib
+"""Divan Teftis v5 — stdlib ile yerel on-denetim.
+
+Resmi Agent Skills ve Claude Code dogrulayicilari CI'da ayrica calisir.
+Bu betik hizli, bagimliliksiz ve vitrin tutarliligini da kapsayan ilk hattir.
+"""
+
+from __future__ import annotations
+
+import ast
+import json
+import pathlib
+import re
+import sys
+
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
-hatalar, uyarilar = [], []
 AD_DESENI = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
-IZINLI_ALANLAR = {"name", "description", "license", "allowed-tools", "metadata", "compatibility", "version"}
+SEMVER_DESENI = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+IZINLI_ALANLAR = {
+    "name",
+    "description",
+    "license",
+    "allowed-tools",
+    "metadata",
+    "compatibility",
+}
 
-# 1) marketplace.json + plugin.json'lar + surum tutarliligi
-mp_yol = KOK / ".claude-plugin" / "marketplace.json"
-try:
-    mp = json.loads(mp_yol.read_text(encoding="utf-8"))
-except Exception as e:
-    hatalar.append(f"marketplace.json bozuk: {e}"); mp = {"plugins": []}
-if not mp.get("name"): hatalar.append("marketplace.json: 'name' zorunlu")
-if not (mp.get("owner") or {}).get("name"): hatalar.append("marketplace.json: owner.name zorunlu")
-for pl in mp.get("plugins", []):
-    if not pl.get("name") or not pl.get("source"):
-        hatalar.append(f"marketplace girdisi eksik (name/source): {pl}")
-        continue
-    pj_yol = KOK / pl["source"] / ".claude-plugin" / "plugin.json"
-    if not pj_yol.exists():
-        hatalar.append(f"{pl['name']}: plugin.json eksik"); continue
+
+def frontmatter(metin: str) -> tuple[str, int] | None:
+    """YAML frontmatter metnini ve govdenin basladigi indeksi dondur."""
+    eslesme = re.match(r"^---\s*\n(.*?)\n---", metin, re.S)
+    if not eslesme:
+        return None
+    return eslesme.group(1), eslesme.end()
+
+
+def frontmatter_alani(fmt: str, alan: str) -> str | None:
+    """Basit ve cok satirli YAML skalerini bagimliliksiz olarak oku.
+
+    Tam YAML semasi resmi dogrulayiciya birakilir. Buradaki amac ozellikle
+    ``description: |-`` gibi bloklarda gercek uzunlugu yanlis olcmemektir.
+    """
+    satirlar = fmt.splitlines()
+    desen = re.compile(rf"^{re.escape(alan)}:\s*(.*)$")
+    for indeks, satir in enumerate(satirlar):
+        eslesme = desen.match(satir)
+        if not eslesme:
+            continue
+        deger = eslesme.group(1).strip()
+        if not deger:
+            blok: list[str] = []
+            for devam in satirlar[indeks + 1 :]:
+                if devam and not devam[0].isspace():
+                    break
+                blok.append(devam)
+            return " ".join(s.strip() for s in blok if s.strip()).strip()
+        if deger not in {"|", "|-", "|+", ">", ">-", ">+"}:
+            if len(deger) >= 2 and deger[0] == deger[-1] and deger[0] in {'"', "'"}:
+                try:
+                    return str(ast.literal_eval(deger))
+                except (SyntaxError, ValueError):
+                    pass
+            return deger
+
+        blok: list[str] = []
+        for devam in satirlar[indeks + 1 :]:
+            if devam and not devam[0].isspace():
+                break
+            blok.append(devam)
+        dolu = [len(s) - len(s.lstrip()) for s in blok if s.strip()]
+        girinti = min(dolu) if dolu else 0
+        parcalar = [s[girinti:] if len(s) >= girinti else "" for s in blok]
+        return "\n".join(parcalar).strip() if deger.startswith("|") else " ".join(
+            s.strip() for s in parcalar
+        ).strip()
+    return None
+
+
+def oku_json(yol: pathlib.Path, hatalar: list[str], etiket: str) -> dict:
     try:
-        pj = json.loads(pj_yol.read_text(encoding="utf-8"))
-    except Exception as e:
-        hatalar.append(f"{pl['name']}/plugin.json bozuk: {e}"); continue
-    if pj.get("name") != pl["name"]:
-        hatalar.append(f"{pl['name']}: plugin.json name uyusmuyor ({pj.get('name')})")
-    if pl.get("version") and pj.get("version") and pl["version"] != pj["version"]:
-        uyarilar.append(f"{pl['name']}: marketplace surumu ({pl['version']}) != plugin.json ({pj['version']})")
-
-# 2) SKILL.md — spec denetimi
-gorulen_adlar = {}
-skiller = sorted(KOK.glob("plugins/*/skills/*/SKILL.md"))
-for sk in skiller:
-    goreli = sk.relative_to(KOK)
-    metin = sk.read_text(encoding="utf-8", errors="ignore")
-    fm = re.match(r"^---\s*\n(.*?)\n---", metin, re.S)
-    if not fm:
-        hatalar.append(f"{goreli}: YAML frontmatter yok"); continue
-    fmt = fm.group(1)
-    # koseli ayrac guvenligi
-    if "<" in fmt or ">" in fmt:
-        hatalar.append(f"{goreli}: frontmatter'da < > karakteri (prompt injection riski, spec yasagi)")
-    # alan denetimi
-    anahtarlar = set(re.findall(r"^([A-Za-z_-]+):", fmt, re.M))
-    fazla = anahtarlar - IZINLI_ALANLAR
-    if fazla:
-        uyarilar.append(f"{goreli}: standart disi frontmatter alanlari: {sorted(fazla)}")
-    ad = re.search(r"^name:\s*(.+)$", fmt, re.M)
-    tarif = re.search(r"^description:\s*(.+)$", fmt, re.M)
-    if not ad:
-        hatalar.append(f"{goreli}: 'name' yok"); continue
-    ad_deger = ad.group(1).strip()
-    if len(ad_deger) > 64: hatalar.append(f"{goreli}: name > 64 karakter")
-    if not AD_DESENI.match(ad_deger):
-        hatalar.append(f"{goreli}: name deseni gecersiz (kucuk harf/rakam/tire): '{ad_deger}'")
-    if ad_deger != sk.parent.name:
-        hatalar.append(f"{goreli}: name ('{ad_deger}') klasor adiyla ('{sk.parent.name}') AYNI DEGIL — skill yuklenmez!")
-    if ad_deger in gorulen_adlar:
-        hatalar.append(f"CAKISMA: '{ad_deger}' hem {gorulen_adlar[ad_deger]} hem {goreli} icinde")
-    gorulen_adlar[ad_deger] = goreli
-    if not tarif:
-        hatalar.append(f"{goreli}: 'description' yok")
-    elif len(tarif.group(1).strip()) > 1024:
-        hatalar.append(f"{goreli}: description > 1024 karakter")
-    govde_satir = metin[fm.end():].count("\n")
-    if govde_satir > 500:
-        uyarilar.append(f"{goreli}: govde {govde_satir} satir (>500 onerisi — references/ dosyalarina bol)")
-
-# 3) Yasaklilar
-for sk in skiller:
-    if re.search(r"^license:\s*Proprietary", sk.read_text(errors="ignore"), re.M):
-        hatalar.append(f"{sk.relative_to(KOK)}: PROPRIETARY icerik!")
-for dosya in list(KOK.glob("**/*.json")) + list(KOK.glob("*.md")) + [KOK / "LICENSE"]:
-    if dosya.is_file() and "DEGISTIR" in dosya.read_text(errors="ignore"):
-        hatalar.append(f"{dosya.relative_to(KOK)}: 'DEGISTIR' kalmis")
-
-# 4) Zorunlu belgeler
-for g in ["THIRD_PARTY_LICENSES.md", "LICENSE", "README.md", "BLUEPRINT.md", "UPSTREAM.md", "CONTRIBUTING.md"]:
-    if not (KOK / g).exists(): hatalar.append(f"{g} eksik")
+        veri = json.loads(yol.read_text(encoding="utf-8"))
+    except Exception as hata:  # JSON ve dosya hatalarini tek raporda topla
+        hatalar.append(f"{etiket} bozuk: {hata}")
+        return {}
+    if not isinstance(veri, dict):
+        hatalar.append(f"{etiket}: kok nesne olmali")
+        return {}
+    return veri
 
 
-# 5) Subagent ve hook denetimi
-for aj in KOK.glob("plugins/*/agents/*.md"):
-    metin = aj.read_text(encoding="utf-8", errors="ignore")
-    fm = re.match(r"^---\s*\n(.*?)\n---", metin, re.S)
-    if not fm or not re.search(r"^name:", fm.group(1), re.M) or not re.search(r"^description:", fm.group(1), re.M):
-        hatalar.append(f"{aj.relative_to(KOK)}: subagent frontmatter eksik (name/description)")
-for hk in KOK.glob("plugins/*/hooks/hooks.json"):
-    try: json.loads(hk.read_text(encoding="utf-8"))
-    except Exception as e: hatalar.append(f"{hk.relative_to(KOK)}: hooks.json bozuk: {e}")
+def eval_sozlesmesini_denetle(
+    skill_dizini: pathlib.Path, skill_adi: str, hatalar: list[str]
+) -> None:
+    """Varsa skill eval sozlesmesini yapisal ve yol-guvenli olarak denetle."""
+    eval_yolu = skill_dizini / "evals" / "evals.json"
+    if not eval_yolu.exists():
+        return
+
+    etiket = str(eval_yolu.relative_to(KOK)) if eval_yolu.is_relative_to(KOK) else str(eval_yolu)
+    veri = oku_json(eval_yolu, hatalar, etiket)
+    if veri.get("skill_name") != skill_adi:
+        hatalar.append(
+            f"{etiket}: skill_name ('{veri.get('skill_name')}') != '{skill_adi}'"
+        )
+
+    evalar = veri.get("evals")
+    if not isinstance(evalar, list) or len(evalar) < 2:
+        hatalar.append(f"{etiket}: en az 2 eval ornegi olmali")
+        return
+
+    gorulen_id: set[int] = set()
+    kok = skill_dizini.resolve()
+    for sira, eval_veri in enumerate(evalar, start=1):
+        onek = f"{etiket}: eval[{sira}]"
+        if not isinstance(eval_veri, dict):
+            hatalar.append(f"{onek} nesne olmali")
+            continue
+        eval_id = eval_veri.get("id")
+        if not isinstance(eval_id, int) or isinstance(eval_id, bool):
+            hatalar.append(f"{onek}.id benzersiz tamsayi olmali")
+        elif eval_id in gorulen_id:
+            hatalar.append(f"{onek}.id tekrarli: {eval_id}")
+        else:
+            gorulen_id.add(eval_id)
+
+        for alan in ["prompt", "expected_output"]:
+            if not isinstance(eval_veri.get(alan), str) or not eval_veri[alan].strip():
+                hatalar.append(f"{onek}.{alan} dolu metin olmali")
+
+        beklentiler = eval_veri.get("expectations")
+        if not isinstance(beklentiler, list) or not beklentiler or not all(
+            isinstance(b, str) and b.strip() for b in beklentiler
+        ):
+            hatalar.append(f"{onek}.expectations en az bir dolu metin icermeli")
+
+        dosyalar = eval_veri.get("files", [])
+        if not isinstance(dosyalar, list) or not all(isinstance(d, str) for d in dosyalar):
+            hatalar.append(f"{onek}.files metin yollarindan olusan dizi olmali")
+            continue
+        for dosya in dosyalar:
+            hedef = (skill_dizini / dosya).resolve()
+            if not hedef.is_relative_to(kok):
+                hatalar.append(f"{onek}.files skill disina cikiyor: {dosya}")
+            elif not hedef.is_file():
+                hatalar.append(f"{onek}.files bulunamadi: {dosya}")
 
 
-# 6) Vitrin tutarliligi: belgeler urunle esit olmak zorunda (eskime = hata)
-gercek_sayi = len(list(KOK.glob("plugins/*/skills/*/SKILL.md")))
-katalog = (KOK / "docs" / "Vezir-Katalogu.md")
-if katalog.exists():
-    katalog_sayi = katalog.read_text(encoding="utf-8", errors="ignore").count("| **")
-    if katalog_sayi != gercek_sayi:
-        hatalar.append(f"VITRIN ESKI: katalog {katalog_sayi} vezir diyor, gercek {gercek_sayi} — docs/Vezir-Katalogu.md yeniden uret")
-readme = (KOK / "README.md").read_text(encoding="utf-8", errors="ignore")
-if f"{gercek_sayi} vezir" not in readme and f"{gercek_sayi} skill" not in readme:
-    hatalar.append(f"VITRIN ESKI: README guncel vezir sayisini ({gercek_sayi}) anmiyor")
-for pl in mp.get("plugins", []):
-    if pl["name"] not in readme:
-        hatalar.append(f"VITRIN ESKI: README '{pl['name']}' paketini anmiyor")
-for komut in KOK.glob("plugins/*/commands/*.md"):
-    if f"/{komut.stem}" not in readme:
-        hatalar.append(f"VITRIN ESKI: README /{komut.stem} komutunu anmiyor")
+def surum_kayitlarini_denetle(
+    kok: pathlib.Path, marketplace: dict, hatalar: list[str]
+) -> None:
+    """Tek sürüm kaynağını vitrin, plan ve yayın kayıtlarıyla karşılaştır."""
+    version_yolu = kok / "VERSION"
+    if not version_yolu.is_file():
+        hatalar.append("VERSION eksik")
+        return
 
-for u in uyarilar: print(f"UYARI: {u}")
-if hatalar:
-    print("\nTEFTIS BASARISIZ:")
-    for h in hatalar: print(f"  X {h}")
-    sys.exit(1)
-print(f"\nTEFTIS TEMIZ - {len(mp.get('plugins', []))} paket, {len(skiller)} skill; ad cakismasi yok, klasor=name esles­mesi tam")
+    surum = version_yolu.read_text(encoding="utf-8").strip()
+    if not SEMVER_DESENI.fullmatch(surum):
+        hatalar.append(f"VERSION SemVer degil: '{surum}'")
+        return
+
+    if marketplace.get("version") != surum:
+        hatalar.append(
+            f"SURUM ESKI: marketplace ({marketplace.get('version')}) != VERSION ({surum})"
+        )
+    metadata_surumu = (marketplace.get("metadata") or {}).get("version")
+    if metadata_surumu != surum:
+        hatalar.append(
+            f"SURUM ESKI: marketplace metadata ({metadata_surumu}) != VERSION ({surum})"
+        )
+
+    kayitlar = {
+        "README": (kok / "README.md", f"v{surum}"),
+        "README.en": (kok / "README.en.md", f"v{surum}"),
+        "CHANGELOG": (kok / "CHANGELOG.md", f"## [{surum}]"),
+        "BLUEPRINT": (kok / "BLUEPRINT.md", f"**v{surum} ✓**"),
+        "Kurulum": (kok / "docs" / "Kurulum.md", "DIVAN_REF=main"),
+    }
+    for ad, (yol, beklenen) in kayitlar.items():
+        if not yol.is_file():
+            hatalar.append(f"{yol.relative_to(kok)} eksik")
+            continue
+        if beklenen not in yol.read_text(encoding="utf-8"):
+            hatalar.append(f"SURUM ESKI: {ad} '{beklenen}' kaydini icermiyor")
+
+    ilerleme = kok / ".divan" / "progress.md"
+    if not ilerleme.is_file():
+        hatalar.append(".divan/progress.md eksik")
+    elif "## Sıradaki kesin adım" not in ilerleme.read_text(encoding="utf-8"):
+        hatalar.append("HAFIZA ESKI: progress.md siradaki kesin adimi icermiyor")
+
+
+def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
+    hatalar: list[str] = []
+    uyarilar: list[str] = []
+
+    # 1) Marketplace + plugin manifestleri + surum tutarliligi
+    mp_yol = kok / ".claude-plugin" / "marketplace.json"
+    mp = oku_json(mp_yol, hatalar, "marketplace.json")
+    if not mp.get("name"):
+        hatalar.append("marketplace.json: 'name' zorunlu")
+    if not (mp.get("owner") or {}).get("name"):
+        hatalar.append("marketplace.json: owner.name zorunlu")
+
+    eklentiler = mp.get("plugins", [])
+    if not isinstance(eklentiler, list):
+        hatalar.append("marketplace.json: plugins dizi olmali")
+        eklentiler = []
+    gorulen_eklentiler: set[str] = set()
+    for eklenti in eklentiler:
+        if not isinstance(eklenti, dict) or not eklenti.get("name") or not eklenti.get("source"):
+            hatalar.append(f"marketplace girdisi eksik (name/source): {eklenti}")
+            continue
+        ad = eklenti["name"]
+        if ad in gorulen_eklentiler:
+            hatalar.append(f"marketplace eklenti adi tekrarli: {ad}")
+        gorulen_eklentiler.add(ad)
+        pj_yol = kok / eklenti["source"] / ".claude-plugin" / "plugin.json"
+        if not pj_yol.exists():
+            hatalar.append(f"{ad}: plugin.json eksik")
+            continue
+        pj = oku_json(pj_yol, hatalar, f"{ad}/plugin.json")
+        if pj.get("name") != ad:
+            hatalar.append(f"{ad}: plugin.json name uyusmuyor ({pj.get('name')})")
+        if eklenti.get("version") and pj.get("version") and eklenti["version"] != pj["version"]:
+            hatalar.append(
+                f"{ad}: marketplace surumu ({eklenti['version']}) != plugin.json ({pj['version']})"
+            )
+
+    # 2) SKILL.md — Agent Skills temel kurallari
+    gorulen_adlar: dict[str, pathlib.Path] = {}
+    skiller = sorted(kok.glob("plugins/*/skills/*/SKILL.md"))
+    for skill in skiller:
+        goreli = skill.relative_to(kok)
+        metin = skill.read_text(encoding="utf-8", errors="strict")
+        ayrilan = frontmatter(metin)
+        if not ayrilan:
+            hatalar.append(f"{goreli}: YAML frontmatter yok")
+            continue
+        fmt, govde_baslangici = ayrilan
+        anahtarlar = set(re.findall(r"^([A-Za-z_-]+):", fmt, re.M))
+        fazla = anahtarlar - IZINLI_ALANLAR
+        if fazla:
+            uyarilar.append(f"{goreli}: standart disi frontmatter alanlari: {sorted(fazla)}")
+
+        ad = frontmatter_alani(fmt, "name")
+        tarif = frontmatter_alani(fmt, "description")
+        if not ad:
+            hatalar.append(f"{goreli}: 'name' yok")
+            continue
+        if len(ad) > 64:
+            hatalar.append(f"{goreli}: name > 64 karakter")
+        if not AD_DESENI.fullmatch(ad):
+            hatalar.append(
+                f"{goreli}: name deseni gecersiz (kucuk harf/rakam/tire): '{ad}'"
+            )
+        if ad != skill.parent.name:
+            hatalar.append(
+                f"{goreli}: name ('{ad}') klasor adiyla ('{skill.parent.name}') ayni degil"
+            )
+        if ad in gorulen_adlar:
+            hatalar.append(f"CAKISMA: '{ad}' hem {gorulen_adlar[ad]} hem {goreli} icinde")
+        gorulen_adlar[ad] = goreli
+        if not tarif:
+            hatalar.append(f"{goreli}: 'description' yok veya bos")
+        elif len(tarif) > 1024:
+            hatalar.append(f"{goreli}: description {len(tarif)} karakter (>1024)")
+
+        lisans = frontmatter_alani(fmt, "license") or ""
+        if lisans.lower().startswith("proprietary"):
+            hatalar.append(f"{goreli}: PROPRIETARY icerik")
+
+        eval_sozlesmesini_denetle(skill.parent, ad, hatalar)
+
+        govde_satir = metin[govde_baslangici:].count("\n")
+        if govde_satir > 500:
+            uyarilar.append(
+                f"{goreli}: govde {govde_satir} satir (>500 onerisi; references/ altina bol)"
+            )
+
+    # 3) Yer tutucular ve zorunlu belgeler
+    for dosya in list(kok.glob("**/*.json")) + list(kok.glob("*.md")) + [kok / "LICENSE"]:
+        if dosya.is_file() and "DEGISTIR" in dosya.read_text(errors="ignore"):
+            hatalar.append(f"{dosya.relative_to(kok)}: 'DEGISTIR' kalmis")
+    for gerekli in [
+        "THIRD_PARTY_LICENSES.md",
+        "LICENSE",
+        "README.md",
+        "README.en.md",
+        "CHANGELOG.md",
+        "VERSION",
+        "BLUEPRINT.md",
+        "UPSTREAM.md",
+        "CONTRIBUTING.md",
+    ]:
+        if not (kok / gerekli).exists():
+            hatalar.append(f"{gerekli} eksik")
+
+    # 4) Subagent ve hook denetimi
+    for ajan in kok.glob("plugins/*/agents/*.md"):
+        metin = ajan.read_text(encoding="utf-8", errors="strict")
+        ayrilan = frontmatter(metin)
+        if not ayrilan:
+            hatalar.append(f"{ajan.relative_to(kok)}: subagent frontmatter eksik")
+            continue
+        fmt, _ = ayrilan
+        if not frontmatter_alani(fmt, "name") or not frontmatter_alani(fmt, "description"):
+            hatalar.append(f"{ajan.relative_to(kok)}: subagent name/description eksik")
+    for hook in kok.glob("plugins/*/hooks/hooks.json"):
+        oku_json(hook, hatalar, str(hook.relative_to(kok)))
+
+    # 5) Vitrin ve belge tutarliligi
+    gercek_sayi = len(skiller)
+    katalog = kok / "docs" / "Vezir-Katalogu.md"
+    if katalog.exists():
+        katalog_sayi = katalog.read_text(encoding="utf-8").count("| **")
+        if katalog_sayi != gercek_sayi:
+            hatalar.append(
+                f"VITRIN ESKI: katalog {katalog_sayi} vezir diyor, gercek {gercek_sayi}"
+            )
+
+    belgeler = {
+        "README": (kok / "README.md").read_text(encoding="utf-8"),
+        "Kurulum": (kok / "docs" / "Kurulum.md").read_text(encoding="utf-8"),
+        "Kaldirma": (kok / "docs" / "Kaldirma.md").read_text(encoding="utf-8"),
+        "Standartlar": (kok / "docs" / "Standartlar-ve-Limitler.md").read_text(
+            encoding="utf-8"
+        ),
+    }
+    for belge_adi in ["README", "Kurulum", "Standartlar"]:
+        icerik = belgeler[belge_adi]
+        if f"{gercek_sayi} vezir" not in icerik and f"{gercek_sayi} skill" not in icerik:
+            hatalar.append(f"VITRIN ESKI: {belge_adi} guncel skill sayisini ({gercek_sayi}) anmiyor")
+    for eklenti in eklentiler:
+        ad = eklenti.get("name") if isinstance(eklenti, dict) else None
+        if not ad:
+            continue
+        for belge_adi in ["README", "Kurulum", "Kaldirma"]:
+            if ad not in belgeler[belge_adi]:
+                hatalar.append(f"VITRIN ESKI: {belge_adi} '{ad}' paketini anmiyor")
+    for komut in kok.glob("plugins/*/commands/*.md"):
+        if f"/{komut.stem}" not in belgeler["README"]:
+            hatalar.append(f"VITRIN ESKI: README /{komut.stem} komutunu anmiyor")
+
+    surum_kayitlarini_denetle(kok, mp, hatalar)
+
+    return hatalar, uyarilar, len(eklentiler), len(skiller)
+
+
+def main() -> int:
+    hatalar, uyarilar, paket_sayisi, skill_sayisi = denetle()
+    for uyari in uyarilar:
+        print(f"UYARI: {uyari}")
+    if hatalar:
+        print("\nTEFTIS BASARISIZ:")
+        for hata in hatalar:
+            print(f"  X {hata}")
+        return 1
+    print(
+        f"\nTEFTIS TEMIZ - {paket_sayisi} paket, {skill_sayisi} skill; "
+        "ad cakismasi yok, surumler ve vitrin tutarli"
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

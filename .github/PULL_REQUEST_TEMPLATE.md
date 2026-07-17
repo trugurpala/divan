@@ -6,3 +6,14 @@
 - [ ] Üçüncü taraf içerik varsa lisans izinli + UPSTREAM.md ve
       THIRD_PARTY_LICENSES.md güncellendi
 - [ ] Proprietary içerik yok
+
+## Yayın çeklisti
+
+- [ ] `VERSION`, marketplace ve paket sürümleri SemVer'e uygun
+- [ ] Değişiklik kullanıcıya görünüyorsa README/TR, README/EN, CHANGELOG,
+      BLUEPRINT ve site birlikte güncellendi
+- [ ] `.divan/progress.md` yapılanı, açığı ve sıradaki kesin adımı kaydediyor
+- [ ] PR taslak değil; zorunlu CI kontrolleri yeşil
+- [ ] Yetki ve kapsam varsa `main`e birleşme ile varsayılan dal/canlı yüzey
+      doğrulaması teslimin parçası
+- [ ] GitHub tag/release yoksa “yayında” veya “etiketli sürüm” denmiyor

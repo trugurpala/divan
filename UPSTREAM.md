@@ -1,51 +1,58 @@
 # Kaynak Politikası (Neden Fork Değil?)
 
-Claude Code marketplace'i **tek repo** olmak zorundadır: `/plugin marketplace add`
-tek bir depoyu okur. Dört ayrı fork, tek kurulum komutu oluşturamaz. Bu yüzden
-Divan **vendoring** yapar: seçili skill'ler, lisans ve telif bilgileri korunarak
-bu çatı altına kopyalanır. Bu, MIT/Apache-2.0 lisanslarının açıkça izin verdiği
-bir yöntemdir (bkz. THIRD_PARTY_LICENSES.md).
+Claude Code marketplace'i tek repo okur. Divan bu nedenle seçili skill'leri,
+lisans ve telif bilgilerini koruyarak bu çatı altında vendoring yöntemiyle
+dağıtır. MIT, Apache-2.0 ve CC0 koşulları `THIRD_PARTY_LICENSES.md` içinde
+izlenir; lisansı belirsiz içerik alınmaz.
 
 ## Kaynak tablosu
 
 | Paket | Üst kaynak | Lisans | Alınma |
 |---|---|---|---|
 | core-pack | github.com/obra/superpowers | MIT | 2026-07 |
-| ui-pack (frontend-design, webapp-testing) | github.com/anthropics/skills | Apache 2.0 | 2026-07 |
+| core-pack/kural-hazinesi | github.com/PatrickJS/awesome-cursorrules | CC0-1.0 | 2026-07 |
+| core-pack/baglam-muhafizi | github.com/muratcankoylan/Agent-Skills-for-Context-Engineering | MIT | 2026-07 |
+| core-pack/arama-ustasi | özgün; ripgrep ve ast-grep resmî belgeleri | MIT | — |
+| ui-pack (frontend-design, webapp-testing) | github.com/anthropics/skills | Apache-2.0 | 2026-07 |
 | ui-pack (ui-ux-pro-max) | github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT | 2026-07 |
 | react-pack | github.com/vercel-labs/agent-skills | MIT | 2026-07 |
-| sadrazam | özgün (bu repo) | MIT | — |
+| zanaat-pack | github.com/anthropics/skills | Apache-2.0 | 2026-07 |
+| sadrazam, defterdar, müşavir, ordu-nizamı, vezir-yetiştirme, temkin, kaynak-küratörü | özgün (bu repo) | MIT | — |
 
-## Güncelleme politikası
-- Üst kaynaklar dönemsel olarak elle gözden geçirilir; anlamlı iyileştirmeler
-  seçilerek taşınır (körlemesine sync yok — Divan küratörlüdür).
-- Her güncelleme `scripts/validate.py` teftişinden geçmek zorundadır.
-- Anthropic'in proprietary lisanslı skill'leri (docx/pdf/pptx/xlsx) hiçbir
-  koşulda alınmaz.
+## Güncelleme ve nöbet politikası
 
-## Bilinçli yamalar (upstream'den kasıtlı farklar)
+- Üst kaynaklar körlemesine eşitlenmez; anlamlı iyileştirmeler lisans ve ürün
+  değeri açısından incelenerek taşınır.
+- `scripts/upstream-denetim.py` her vendored klasörü SHA-256 ile iki yönlü
+  karşılaştırır: upstream'e eklenen/silinen ve Divan'a eklenen/silinen dosyalar
+  birlikte görünür.
+- Bilinçli yamaların upstream taban imzası sabitlenir. Upstream aynı dosyayı
+  değiştirirse izin listesi farkı gizlemez.
+- Kural Hazinesi birebir bir skill kopyası değildir; dokuz CC0 kuralın
+  kürasyonudur. Bu nedenle kaynak deponun commit'i ayrıca izlenir ve ilerlediğinde
+  yeniden kürasyon için raporlanır.
+- Bağlam Muhafızı, MIT kaynak koleksiyonundaki context-optimization fikirlerinin
+  Divan'ın defterdar/ordu düzenine uyarlanmış özgün Türkçe iş akışıdır; kaynak
+  commit'i kör eşitleme yerine yeniden kürasyon için izlenir.
+- Anthropic'in proprietary lisanslı docx/pdf/pptx/xlsx skill'leri alınmaz.
+
+## Bilinçli yamalar
+
 | Dosya | Fark | Gerekçe |
 |---|---|---|
-| react-pack/skills/web-design-guidelines/SKILL.md | frontmatter `argument-hint` değerindeki açılı ayraçlar kaldırıldı | Agent Skills spec'i frontmatter'da açılı ayracı yasaklar (prompt injection önlemi); teftiş v2+ bunu hata sayar |
+| `zanaat-pack/skills/claude-api/SKILL.md` | `description` kısaltıldı | Upstream açıklaması 1024 karakter sınırını aşıyor; gövde ve referanslar korunuyor |
+| `react-pack/skills/vercel-react-best-practices/AGENTS.md` | Üç göreli bağlantıya `rules/` eklendi | Upstream derleme belgesindeki üç bağlantı gerçek dosya konumuna gitmiyordu |
 
-Denetim usulü: `/tmp`'ye taze upstream klonu çek, vendored dizinle md5
-kıyasla; fark = ya upstream güncellemesi (kürasyonla al) ya bilinçli yama
-(bu tabloda belgeli olmalı). Tabloda olmayan fark teftiş konusudur.
+Vercel'in `<ViewTransition>` ve `<file-or-pattern>` değerleri upstream ile aynı
+tutulur. Agent Skills standardı açılı ayraçları genel olarak yasaklamaz.
 
-## Seferberlik genişlemesi (2026-07-17)
-| Paket | Yeni vezirler | Kaynak | Lisans |
-|---|---|---|---|
-| core-pack (+7) | dispatching-parallel-agents, finishing-a-development-branch, receiving/requesting-code-review, subagent-driven-development, using-git-worktrees, writing-skills | obra/superpowers | MIT |
-| zanaat-pack (yeni, 7) | algorithmic-art, canvas-design, claude-api, mcp-builder, slack-gif-creator, theme-factory, web-artifacts-builder | anthropics/skills | Apache 2.0 (LICENSE.txt doğrulandı; docx/pdf/pptx/xlsx proprietary — ALINMADI) |
-| react-pack (+5) | deploy-to-vercel, vercel-react-native-skills, vercel-react-view-transitions, vercel-optimize, writing-guidelines | vercel-labs/agent-skills | MIT |
+## Kürasyon kararları (2026-07-17)
 
-Ek bilinçli yamalar: writing-guidelines ve vercel-react-view-transitions
-frontmatter'ından açılı ayraçlar kaldırıldı (spec); react-view-transitions ve
-react-native-skills klasörleri name alanıyla eşitlendi (spec: klasör=name).
-
-## Kural Hazinesi seferi (2026-07-17)
 | Karar | Kaynak | Lisans | Not |
 |---|---|---|---|
-| ALINDI (kürasyonla ~8 kural) | PatrickJS/awesome-cursorrules | CC0 1.0 (kamu malı, LICENSE okundu) | kural-hazinesi/references altında; metinler olduğu gibi |
-| REDDEDİLDİ | multica-ai/andrej-karpathy-skills | LİSANS YOK | 144K yıldız olsa da lisanssız = tüm hakları saklı; yerine özgün "temkin" yazıldı (fikir serbest, metin bize ait) |
-| KAYNAK OLARAK NOT | VoltAgent/awesome-agent-skills | MIT | İçerik değil dizin; keşif kaynağı, tek tek lisans bakılarak kullanılır |
+| ALINDI | PatrickJS/awesome-cursorrules | CC0-1.0 | Dokuz kural `kural-hazinesi/references/` altında |
+| UYARLANDI | muratcankoylan/Agent-Skills-for-Context-Engineering | MIT | Context bütçesi ve maskeleme ilkeleri özgün `baglam-muhafizi` akışına uyarlandı |
+| KOPYALANMADI | massgen/MassGen file-search | Repo Apache-2.0; skill metadata MIT | Lisans metadata farkı nedeniyle metin taşınmadı; `arama-ustasi` resmî araç belgelerinden özgün yazıldı |
+| REDDEDİLDİ | multica-ai/andrej-karpathy-skills | Lisans yok | Popülerlik yeniden dağıtım hakkı vermez; yerine özgün `temkin` yazıldı |
+| KEŞİF KAYNAĞI | VoltAgent/awesome-agent-skills | MIT | Dizin niteliğinde; alınacak her hedefin lisansı ayrıca incelenir |
+| UYARLANDI | “100 Claude Repos” sosyal listesi (40 sağlanan bağlantı) | İçerik kopyalanmadı | Bağlantılar kimlik, durum ve tür açısından denetlendi; özgün `kaynak-kuratori` iş akışı yazıldı |

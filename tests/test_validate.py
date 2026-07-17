@@ -1,0 +1,118 @@
+from __future__ import annotations
+
+import importlib.util
+import os
+import pathlib
+import subprocess
+import tempfile
+import unittest
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("divan_validate", ROOT / "scripts" / "validate.py")
+assert SPEC and SPEC.loader
+VALIDATE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(VALIDATE)
+
+
+class FrontmatterTests(unittest.TestCase):
+    def test_inline_scalar(self) -> None:
+        self.assertEqual(VALIDATE.frontmatter_alani("name: sadrazam", "name"), "sadrazam")
+
+    def test_literal_block_scalar(self) -> None:
+        value = VALIDATE.frontmatter_alani("description: |-\n  ilk satir\n  ikinci satir", "description")
+        self.assertEqual(value, "ilk satir\nikinci satir")
+
+    def test_folded_block_scalar(self) -> None:
+        value = VALIDATE.frontmatter_alani("description: >\n  ilk satir\n  ikinci satir", "description")
+        self.assertEqual(value, "ilk satir ikinci satir")
+
+    def test_indented_plain_scalar(self) -> None:
+        value = VALIDATE.frontmatter_alani("description:\n  ilk satir\n  ikinci satir\nlicense: MIT", "description")
+        self.assertEqual(value, "ilk satir ikinci satir")
+
+
+class RepositoryTests(unittest.TestCase):
+    def test_repository_passes_local_audit(self) -> None:
+        errors, _warnings, packages, skills = VALIDATE.denetle(ROOT)
+        self.assertEqual(errors, [])
+        self.assertEqual((packages, skills), (5, 41))
+
+    def test_eval_contract_rejects_empty_and_escaping_inputs(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-test-") as temporary:
+            skill_dir = pathlib.Path(temporary) / "ornek"
+            eval_dir = skill_dir / "evals"
+            eval_dir.mkdir(parents=True)
+            (eval_dir / "evals.json").write_text(
+                """{
+                  "skill_name": "yanlis",
+                  "evals": [
+                    {"id": 1, "prompt": "", "expected_output": "sonuc", "expectations": [], "files": ["../../sir.txt"]},
+                    {"id": 2, "prompt": "ikinci", "expected_output": "sonuc", "expectations": ["olcut"], "files": []}
+                  ]
+                }""",
+                encoding="utf-8",
+            )
+            errors: list[str] = []
+            VALIDATE.eval_sozlesmesini_denetle(skill_dir, "ornek", errors)
+            joined = "\n".join(errors)
+            self.assertIn("skill_name", joined)
+            self.assertIn("prompt", joined)
+            self.assertIn("expectations", joined)
+            self.assertIn("skill disina cikiyor", joined)
+
+    def test_release_records_reject_stale_public_surface(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-release-test-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "docs").mkdir()
+            (root / ".divan").mkdir()
+            records = {
+                "VERSION": "0.9.0\n",
+                "README.md": "Sürüm: v0.9.0\n",
+                "README.en.md": "Current release: v0.9.0\n",
+                "CHANGELOG.md": "## [0.9.0] - 2026-07-18\n",
+                "BLUEPRINT.md": "- **v0.9.0 ✓** published\n",
+                "docs/Kurulum.md": "DIVAN_REF=main\n",
+                ".divan/progress.md": "## Sıradaki kesin adım\nEval runner\n",
+            }
+            for relative, content in records.items():
+                (root / relative).write_text(content, encoding="utf-8")
+
+            marketplace = {"version": "0.9.0", "metadata": {"version": "0.9.0"}}
+            errors: list[str] = []
+            VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
+            self.assertEqual(errors, [])
+
+            (root / "README.md").write_text("Sürüm: v0.7.0\n", encoding="utf-8")
+            errors = []
+            VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
+            self.assertIn("README 'v0.9.0'", "\n".join(errors))
+
+    def test_shell_installer_backs_up_collisions(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
+            base = pathlib.Path(temporary)
+            skills_dir = base / "skills"
+            state_dir = base / "state"
+            env = os.environ.copy()
+            env.update(
+                {
+                    "DIVAN_SOURCE_DIR": str(ROOT),
+                    "CODEX_SKILLS_DIR": str(skills_dir),
+                    "DIVAN_STATE_DIR": str(state_dir),
+                }
+            )
+            command = ["bash", str(ROOT / "scripts" / "kur-codex.sh")]
+            subprocess.run(command, check=True, env=env, capture_output=True, text=True)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
+
+            marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
+            marker.write_text("koru", encoding="utf-8")
+            subprocess.run(command, check=True, env=env, capture_output=True, text=True)
+            self.assertFalse(marker.exists())
+            backups = list(state_dir.glob("divan-backups/*/sadrazam/kullanici-dosyasi.txt"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual(backups[0].read_text(encoding="utf-8"), "koru")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -24,8 +24,8 @@ with sync_playwright() as p:
         hatalar.append("'Padişah sensin' gorunmuyor")
     if not sayfa.get_by_text("trugurpala/divan").first.is_visible():
         hatalar.append("Kurulum komutu gorunmuyor")
-    if sayfa.locator("article.vezir").count() != 4:
-        hatalar.append(f"Vezir karti sayisi {sayfa.locator('article.vezir').count()} != 4")
+    if sayfa.locator("article.vezir").count() != 5:
+        hatalar.append(f"Paket karti sayisi {sayfa.locator('article.vezir').count()} != 5")
     if sayfa.locator("ol.protokol li").count() != 6:
         hatalar.append("Protokol 6 faz degil")
     # mobil gorunum
@@ -41,4 +41,4 @@ if hatalar:
     print("SITE TESTI BASARISIZ:")
     for h in hatalar: print("  X", h)
     sys.exit(1)
-print("SITE TESTI TEMIZ ✓ — HTTP 200, baslik, padisah, 4 vezir, 6 faz, mobil, konsol=0 hata; ekran goruntusu alindi")
+print("SITE TESTI TEMIZ ✓ — HTTP 200, baslik, padisah, 5 paket, 6 faz, mobil, konsol=0 hata; ekran goruntusu alindi")

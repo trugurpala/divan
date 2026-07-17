@@ -5,8 +5,11 @@ Divan, Agent Skills açık standardında derlenmiş, küratörlü bir skill
 marketplace'idir — vibe coder'ın eli ayağı.
 
 ## Sayfalar
+- [English README](../README.en.md) — global product overview
+- [CHANGELOG](../CHANGELOG.md) — sürüm kapsamı ve yayın geçmişi
 - [[Kurulum]] — Claude Code, Cursor ve Codex'te kurma
-- [[Vezir Katalogu]] — 14 skill'in tam listesi ve tetikleyicileri
+- [[Vezir Katalogu]] — 41 skill'in tam listesi ve tetikleyicileri
+- [[Orkestrasyon Kararı]] — yerel üç kademeli ajan düzeni ve aday karnesi
 - [[Standartlar ve Limitler]] — spec kuralları, neyi neden denetliyoruz
 - [[SSS]]
 - [[Vibe Coder Icin Deger]] — kurunca ne değişir, önce/sonra

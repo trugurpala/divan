@@ -4,23 +4,25 @@
     "name": "trugurpala",
     "email": "trugurpala@users.noreply.github.com"
   },
+  "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam, planlama, TDD, debugging, UI/UX, React ve zanaat paketleri.",
+  "version": "0.9.0",
   "metadata": {
     "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam (uctan-uca orkestrator) + planlama, TDD, debugging, UI/UX ve React paketleri.",
-    "version": "0.1.0"
+    "version": "0.9.0"
   },
   "plugins": [
     {
       "name": "sadrazam",
       "source": "./plugins/sadrazam",
       "description": "Bas vezir: her istegi Divan Protokolu ile bastan sona bitmis, dogrulanmis teslimata cevirir",
-      "version": "0.5.0",
+      "version": "0.7.0",
       "strict": true
     },
     {
       "name": "core-pack",
       "source": "./plugins/core-pack",
       "description": "Cekirdek gelistirme disiplini: beyin firtinasi, plan yazma/yurutme, sistematik debugging, TDD, tamamlama-oncesi dogrulama",
-      "version": "0.3.0",
+      "version": "0.5.0",
       "strict": true
     },
     {
@@ -34,14 +36,14 @@
       "name": "react-pack",
       "source": "./plugins/react-pack",
       "description": "React paketi: best practices, composition patterns ve web tasarim kurallari",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "strict": true
     },
     {
       "name": "zanaat-pack",
       "source": "./plugins/zanaat-pack",
       "description": "Ehl-i Hiref: sanat/zanaat vezirleri (Anthropic Apache 2.0)",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "strict": true
     }
   ]

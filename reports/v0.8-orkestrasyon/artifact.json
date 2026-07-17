@@ -1,0 +1,189 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Divan v0.8 Orkestrasyon Kararı",
+    "description": "Vibe coder için native-first orkestrasyon kararı ve aday puan kartı.",
+    "generatedAt": "2026-07-17T21:00:00+03:00",
+    "sources": [
+      {
+        "id": "scorecard",
+        "label": "Divan orkestrasyon aday karnesi",
+        "path": "docs/data/orkestrasyon-adaylari.csv",
+        "href": "https://github.com/trugurpala/divan/blob/codex/v0.8-native-orchestration/docs/data/orkestrasyon-adaylari.csv",
+        "query": {
+          "description": "GitHub depo metadatası, resmî ürün belgeleri ve Divan hedef kitlesine göre ağırlıklı karar modeli.",
+          "engine": "manual-review",
+          "language": "sql",
+          "sql": "SELECT aday, tur, yildiz, fork, acik_issue, lisans, son_push, native_uyum_5, guvenlik_5, sadelik_5, bakim_5, kabiliyet_5, tasinabilirlik_5, agirlikli_puan_100, divan_karari FROM read_csv_auto('docs/data/orkestrasyon-adaylari.csv') ORDER BY agirlikli_puan_100 DESC;",
+          "executed_at": "2026-07-17T21:00:00+03:00",
+          "filters": [
+            "Adaylar kullanıcı önerisindeki başlıca yerel ve harici orkestrasyon yollarıyla sınırlıdır",
+            "GitHub sayıları 17 Temmuz 2026 anlık görüntüsüdür"
+          ],
+          "metric_definitions": [
+            "Ağırlıklı puan = yerel uyum %25 + güvenlik/köken %20 + sadelik %20 + bakım %15 + kabiliyet %10 + taşınabilirlik %10; her bileşen 1-5 arası puanlanıp 100'e ölçeklenir",
+            "Yıldız, fork ve açık issue sayıları karar puanına doğrudan girmez; bakım ve ilgi bağlamı olarak kullanılır"
+          ],
+          "tables_used": ["docs/data/orkestrasyon-adaylari.csv"]
+        }
+      },
+      {
+        "id": "primary-docs",
+        "label": "Resmî Claude Code ve aday proje belgeleri",
+        "href": "https://code.claude.com/docs/en/agents",
+        "query": {
+          "description": "Claude Code agents ve Agent Teams belgeleri; adayların kendi README, LICENSE ve güvenlik ADR'leri.",
+          "engine": "document-review",
+          "language": "markdown",
+          "executed_at": "2026-07-17T21:00:00+03:00",
+          "filters": ["Birincil ve proje-sahibi kaynaklar"]
+        }
+      }
+    ],
+    "charts": [
+      {
+        "id": "candidate-score-chart",
+        "title": "Orkestrasyon aday puanları",
+        "subtitle": "100 üzerinden; Divan'ın vibe-coder hedefi ve native-first ilkesi için ağırlıklandırılmıştır.",
+        "showDescription": true,
+        "intent": "comparison",
+        "question": "Hangi orkestrasyon yolu Divan'ın hedef kitlesine en uygun?",
+        "rationale": "Yedi adayı tek bir ortak karar ölçüsünde karşılaştırmak için sıralı bar grafiği.",
+        "type": "bar",
+        "dataset": "candidates",
+        "sourceId": "scorecard",
+        "encodings": {
+          "x": {
+            "field": "aday",
+            "type": "nominal",
+            "label": "Aday"
+          },
+          "y": {
+            "field": "puan",
+            "type": "quantitative",
+            "label": "Ağırlıklı puan",
+            "format": "number",
+            "unit": "/100"
+          },
+          "tooltip": [
+            {"field": "karar", "type": "text", "label": "Divan kararı"},
+            {"field": "lisans", "type": "text", "label": "Lisans"},
+            {"field": "yildiz", "type": "quantitative", "label": "GitHub yıldızı", "format": "compact"}
+          ]
+        },
+        "valueFormat": "number",
+        "unit": "/100",
+        "layout": "full",
+        "maxRows": 7,
+        "surface": {
+          "orientation": "horizontal",
+          "valueLabels": true,
+          "legend": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "candidate-table",
+        "title": "Aday karnesi",
+        "subtitle": "GitHub sayıları 17 Temmuz 2026 anlık görüntüsüdür; tam alt-puanlar kaynak CSV'dedir.",
+        "showDescription": true,
+        "dataset": "candidates",
+        "sourceId": "scorecard",
+        "defaultSort": {"field": "puan", "direction": "desc"},
+        "density": "dense",
+        "layout": "full",
+        "columns": [
+          {"field": "aday", "label": "Aday", "type": "text"},
+          {"field": "puan", "label": "Puan /100", "format": "number", "type": "number"},
+          {"field": "yildiz", "label": "Yıldız", "format": "compact", "type": "number"},
+          {"field": "lisans", "label": "Lisans", "type": "text"},
+          {"field": "karar", "label": "Divan kararı", "type": "text"}
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# Divan v0.8 Orkestrasyon Kararı\n\nNative-first, düşük riskli ve vibe-coder dostu ajan düzeni."
+      },
+      {
+        "id": "executive-summary",
+        "type": "markdown",
+        "sourceId": "scorecard",
+        "body": "## Executive Summary\n\n- **Varsayılan yol Claude Code ve Codex'in yerel orkestrasyonudur.** En yüksek uyum puanı 94/100; harici bir çalışma zamanı bağımlılığı gerekmez.\n- **wshobson/agents güçlü bir upstream ve uyumluluk referansıdır.** 90/100 ile ikinci sıradadır; Divan toplu kopyalama yerine lisanslı ve ihtiyaç odaklı seçici kürasyon yapacaktır.\n- **Ruflo ve Gastown varsayılan olmayacaktır.** Kabiliyetleri yüksek olsa da kurulum, güvenlik yüzeyi ve bilişsel yük Divan'ın solo vibe-coder hedefiyle uyuşmuyor.\n- **v0.8 kararı ürüne işlendi.** Ocak, Sefer ve Ordu kademeleri tek oturumdan izole worktree'lere çıkar; deneysel Agent Teams açık kullanıcı tercihi olarak kalır."
+      },
+      {
+        "id": "score-heading",
+        "type": "markdown",
+        "body": "## Yerel yollar açık ara önde\n\nPuan farkını popülerlik değil, ürün uyumu yaratıyor. Yerel yollar daha küçük güven yüzeyi ve daha az kurulum yüküyle Divan'ın hedef kitlesine hizmet ediyor."
+      },
+      {
+        "id": "score-chart-block",
+        "type": "chart",
+        "chartId": "candidate-score-chart"
+      },
+      {
+        "id": "score-table-block",
+        "type": "table",
+        "tableId": "candidate-table"
+      },
+      {
+        "id": "recommendations",
+        "type": "markdown",
+        "sourceId": "primary-docs",
+        "body": "## Önerilen uygulama\n\n1. **Ocak:** Ortak bağlamlı ve sıralı işleri tek ajanla bitir.\n2. **Sefer:** Bağımsız keşif, test ve incelemeyi sınırları belirli subagent'lara ver.\n3. **Ordu:** Eşzamanlı yazımı ayrı worktree ve tekil dosya sahipliğiyle izole et. Agent Teams'i yalnızca kullanıcı açıkça seçerse etkinleştir.\n4. **Harici harness:** Ancak güncel güvenlik, lisans, kimlik doğrulama ve maliyet incelemesinden sonra ayrı bir ürün kararı olarak değerlendir."
+      },
+      {
+        "id": "questions",
+        "type": "markdown",
+        "body": "## Yeniden değerlendirme eşikleri\n\n- Agent Teams deneysel etiketten çıkıp genel kullanıma açıldı mı?\n- Claude Agent SDK veya abonelik politikası yeniden değişti mi?\n- Divan'ın gerçek kullanımı düzenli olarak üçten fazla bağımsız yazma hattı gerektiriyor mu?\n- wshobson/agents veya gstack içinde Divan'da karşılığı olmayan, lisansı açık ve ölçülebilir değer sağlayan yeni bir boşluk oluştu mu?"
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "sourceId": "scorecard",
+        "body": "## Caveats and assumptions\n\nPuanlama Divan'ın solo ve küçük ekip vibe-coder hedefi için hazırlanmış bir karar modelidir; evrensel benchmark değildir. GitHub yıldızları hızla değişir ve kaliteyi tek başına ölçmez. Claude abonelik/SDK politikası 2026 içinde değiştiği için karar geçici fiyat avantajına değil, mimari sadeliğe dayanır. Adayların satıcı performans iddiaları bağımsız ölçüm yoksa puana kanıt olarak alınmamıştır."
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-17T21:00:00+03:00",
+    "status": "ready",
+    "datasets": {
+      "candidates": [
+        {"aday": "Claude Code yerel", "tur": "Resmî yerel yol", "puan": 94, "yildiz": null, "fork": null, "acik_issue": null, "lisans": "Tescilli", "son_push": "2026-07-17", "native_uyum": 5, "guvenlik": 5, "sadelik": 5, "bakim": 5, "kabiliyet": 4, "tasinabilirlik": 3, "karar": "Varsayılan temel"},
+        {"aday": "wshobson/agents", "tur": "Yerel eklenti pazarı", "puan": 90, "yildiz": 37986, "fork": 4081, "acik_issue": 8, "lisans": "MIT", "son_push": "2026-07-16", "native_uyum": 5, "guvenlik": 4, "sadelik": 4, "bakim": 5, "kabiliyet": 5, "tasinabilirlik": 4, "karar": "Seçici upstream ve uyumluluk referansı"},
+        {"aday": "gstack", "tur": "Yerel opinionated iş akışı", "puan": 82, "yildiz": 122444, "fork": 18305, "acik_issue": 750, "lisans": "MIT", "son_push": "2026-07-15", "native_uyum": 5, "guvenlik": 4, "sadelik": 3, "bakim": 5, "kabiliyet": 4, "tasinabilirlik": 3, "karar": "İlham kaynağı; varsayılan bağımlılık değil"},
+        {"aday": "ccpm", "tur": "Spec ve issue yönetimi", "puan": 73, "yildiz": 8265, "fork": 830, "acik_issue": 4, "lisans": "MIT", "son_push": "2026-03-18", "native_uyum": 4, "guvenlik": 4, "sadelik": 3, "bakim": 3, "kabiliyet": 3, "tasinabilirlik": 5, "karar": "Opsiyonel spec deseni"},
+        {"aday": "Claude Squad", "tur": "Terminal çoklayıcı", "puan": 62, "yildiz": 8130, "fork": 587, "acik_issue": 53, "lisans": "AGPL-3.0", "son_push": "2026-06-17", "native_uyum": 3, "guvenlik": 3, "sadelik": 2, "bakim": 3, "kabiliyet": 4, "tasinabilirlik": 5, "karar": "İleri kullanıcıya bırak"},
+        {"aday": "Gastown", "tur": "Endüstriyel çok ajan", "puan": 57, "yildiz": 17077, "fork": 1572, "acik_issue": 267, "lisans": "MIT", "son_push": "2026-07-17", "native_uyum": 2, "guvenlik": 3, "sadelik": 1, "bakim": 5, "kabiliyet": 5, "tasinabilirlik": 3, "karar": "Divan kapsamı dışı"},
+        {"aday": "Ruflo", "tur": "Harici meta-harness", "puan": 55, "yildiz": 64842, "fork": 7699, "acik_issue": 795, "lisans": "MIT", "son_push": "2026-07-17", "native_uyum": 2, "guvenlik": 2, "sadelik": 1, "bakim": 5, "kabiliyet": 5, "tasinabilirlik": 4, "karar": "Varsayılan yapma"}
+      ]
+    }
+  },
+  "sources": [
+    {
+      "id": "scorecard",
+      "label": "Divan orkestrasyon aday karnesi",
+      "path": "docs/data/orkestrasyon-adaylari.csv",
+      "href": "https://github.com/trugurpala/divan/blob/codex/v0.8-native-orchestration/docs/data/orkestrasyon-adaylari.csv",
+      "query": {
+        "description": "Küratör puan kartını azalan ağırlıklı puanla okur.",
+        "engine": "duckdb",
+        "language": "sql",
+        "sql": "SELECT aday, tur, yildiz, fork, acik_issue, lisans, son_push, native_uyum_5, guvenlik_5, sadelik_5, bakim_5, kabiliyet_5, tasinabilirlik_5, agirlikli_puan_100, divan_karari FROM read_csv_auto('docs/data/orkestrasyon-adaylari.csv') ORDER BY agirlikli_puan_100 DESC;",
+        "executed_at": "2026-07-17T21:00:00+03:00"
+      }
+    },
+    {
+      "id": "primary-docs",
+      "label": "Claude Code agents belgeleri",
+      "href": "https://code.claude.com/docs/en/agents"
+    }
+  ]
+}

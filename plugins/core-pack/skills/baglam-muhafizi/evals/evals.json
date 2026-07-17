@@ -1,0 +1,38 @@
+{
+  "skill_name": "baglam-muhafizi",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Uzun bir debugging oturumundayız. Son hata stack trace'i hâlâ aktif ama önceki üç build logu tekrar ediyor. Bağlamı küçült ve güvenli bir devir özeti hazırla.",
+      "expected_output": "Aktif hatayı koruyan, eski tekrarları dışarı alan ve sonraki adımı belirleyen devir özeti.",
+      "expectations": [
+        "Aktif hata ve son tanı kanıtı korunur",
+        "Tekrarlanan eski loglar özetlenir veya referansa alınır",
+        "Hedef, kısıtlar ve sonraki adım açık kalır"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Bu runtime token sayısını veya KV-cache hit oranını göstermiyor. Context'i optimize et ve ne kadar tasarruf ettiğini raporla.",
+      "expected_output": "Ölçülemeyen yüzdeleri reddeden, belirtilere dayalı bağlam azaltma planı.",
+      "expectations": [
+        "Token veya cache oranı uydurulmaz",
+        "Daraltma, tekilleştirme ve dışarı alma sırası izlenir",
+        "Yalnızca gözlemlenebilen sonuçlar raporlanır"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Sekiz bağımlı kod görevini context tasarrufu için sekiz ajana böl.",
+      "expected_output": "Bağımlı işleri körlemesine paralelleştirmeyen ve koordinasyon maliyetini açıklayan daha küçük düzen.",
+      "expectations": [
+        "Bağımlı işler bağımsızmış gibi bölünmez",
+        "Ordu-nizami ile en küçük güvenli kademe seçilir",
+        "Context tasarrufu ile koordinasyon maliyeti birlikte değerlendirilir"
+      ],
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+aday,tur,yildiz,fork,acik_issue,lisans,son_push,native_uyum_5,guvenlik_5,sadelik_5,bakim_5,kabiliyet_5,tasinabilirlik_5,agirlikli_puan_100,divan_karari
+Claude Code yerel,Resmi yerel yol,,,,Tescilli,2026-07-17,5,5,5,5,4,3,94,Varsayilan temel
+wshobson/agents,Yerel eklenti pazari,37986,4081,8,MIT,2026-07-16,5,4,4,5,5,4,90,Secici upstream ve uyumluluk referansi
+gstack,Yerel opinionated is akisi,122444,18305,750,MIT,2026-07-15,5,4,3,5,4,3,82,Ilham kaynagi; varsayilan bagimlilik degil
+ccpm,Spec ve issue yonetimi,8265,830,4,MIT,2026-03-18,4,4,3,3,3,5,73,Opsiyonel spec deseni
+Claude Squad,Terminal coklayici,8130,587,53,AGPL-3.0,2026-06-17,3,3,2,3,4,5,62,Ileri kullaniciya birak
+Gastown,Endustriyel cok ajan,17077,1572,267,MIT,2026-07-17,2,3,1,5,5,3,57,Divan kapsami disi
+Ruflo,Harici meta-harness,64842,7699,795,MIT,2026-07-17,2,2,1,5,5,4,55,Varsayilan yapma

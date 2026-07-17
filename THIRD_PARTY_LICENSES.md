@@ -1,32 +1,38 @@
 # Üçüncü Taraf Lisansları / Third-Party Licenses
 
-Bu ürün aşağıdaki açık kaynak projelerden türetilmiş skill'ler içerir.
-Her bileşenin orijinal lisans metni ilgili klasörde korunmaktadır.
-Derleme tarihi: 2026-07-16
+Bu derleme aşağıdaki açık kaynak projelerden seçilmiş skill'ler içerir. Lisans
+metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
+2026-07-17.
 
-## core-pack
-| Skill | Kaynak | Telif | Lisans |
-|---|---|---|---|
-| brainstorming, writing-plans, executing-plans, systematic-debugging, test-driven-development, verification-before-completion | https://github.com/obra/superpowers | (c) 2025 Jesse Vincent | MIT — bkz. plugins/core-pack/LICENSE-superpowers-MIT.txt |
+| Paket / içerik | Skill sayısı | Kaynak | Lisans ve yerel metin |
+|---|---:|---|---|
+| core-pack / Superpowers | 13 | https://github.com/obra/superpowers | MIT — `plugins/core-pack/LICENSE-superpowers-MIT.txt` |
+| core-pack / Kural Hazinesi | 1 (9 referans) | https://github.com/PatrickJS/awesome-cursorrules | CC0-1.0 — upstream `LICENSE` |
+| core-pack / Bağlam Muhafızı kaynak fikirleri | 1 | https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering | MIT — `plugins/core-pack/skills/baglam-muhafizi/LICENSE.txt` |
+| ui-pack / frontend-design, webapp-testing | 2 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
+| ui-pack / ui-ux-pro-max | 1 | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT — `plugins/ui-pack/LICENSE-uiuxpromax-MIT.txt` |
+| react-pack | 8 | https://github.com/vercel-labs/agent-skills | MIT — upstream README lisans beyanı (upstream ayrı LICENSE dosyası sunmuyor) |
+| zanaat-pack | 7 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
 
-## ui-pack
-| Skill | Kaynak | Telif | Lisans |
-|---|---|---|---|
-| frontend-design | https://github.com/anthropics/skills | (c) Anthropic PBC | Apache 2.0 — bkz. skill klasöründeki LICENSE.txt |
-| webapp-testing | https://github.com/anthropics/skills | (c) Anthropic PBC | Apache 2.0 — bkz. skill klasöründeki LICENSE.txt |
-| ui-ux-pro-max | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | (c) 2024 Next Level Builder | MIT — bkz. plugins/ui-pack/LICENSE-uiuxpromax-MIT.txt |
+Özgün `sadrazam`, `defterdar`, `musavir`, `ordu-nizami`, `vezir-yetistirme`,
+`arama-ustasi` ve `temkin` içerikleri depo kökündeki MIT lisansı kapsamındadır.
 
-## react-pack
-| Skill | Kaynak | Telif | Lisans |
-|---|---|---|---|
-| react-best-practices, composition-patterns, web-design-guidelines | https://github.com/vercel-labs/agent-skills | (c) Vercel Labs | MIT (repo README'sinde beyan edilmiştir) |
+## Bu derlemedeki değişiklikler
 
-## Değişiklikler (Apache 2.0 gerekliliği)
-- 2026-07-16: Skill'ler orijinal repolarından bu derlemeye kopyalandı; içerik değiştirilmedi. İçerik değiştirilirse burada belirtilmelidir.
+- `claude-api/SKILL.md` açıklaması Agent Skills 1024 karakter sınırına uyacak
+  biçimde kısaltıldı; lisanslı gövde ve referans içeriği korundu.
+- `vercel-react-best-practices/AGENTS.md` içindeki üç kırık göreli bağlantı
+  gerçek `rules/` konumuna yönlendirildi.
+- Kaynak ve bilinçli fark kayıtları `UPSTREAM.md` içinde tutulur.
 
-## Bilinçli olarak HARİÇ tutulanlar
-- anthropics/skills içindeki docx, pdf, pptx, xlsx skill'leri **proprietary/source-available** lisanslıdır; yeniden dağıtımı yasaktır ve bu ürüne dahil EDİLMEMİŞTİR.
+## Bilinçli olarak hariç tutulanlar
+
+Anthropic deposundaki docx, pdf, pptx ve xlsx skill'leri proprietary veya
+source-available koşullardadır; bu ürüne dahil edilmemiştir. Lisans dosyası
+bulunmayan Karpathy-skills içeriği de yeniden dağıtılmamıştır.
 
 ## Marka notu
-Bu ürün Anthropic, Claude, Vercel veya Superpowers ile ortaklık/onay ilişkisi taşımaz.
-"Claude Code ile uyumludur" ifadesi yalnızca tanımlayıcı kullanımdır.
+
+Bu ürün Anthropic, Claude, OpenAI, Vercel veya Superpowers tarafından
+onaylanmış ya da bu kuruluşlarla bağlantılı değildir. Uyumluluk ifadeleri
+yalnızca tanımlayıcıdır.
