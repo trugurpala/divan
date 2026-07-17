@@ -84,7 +84,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   GitHub'ın ilk sayfa şartı birincil dokümandan bulundu. Katalogda `claude-api`
   açıklamasını `/-…` gösteren çok satırlı YAML hatası ve gerçekte var olmayan
   “otomatik üretilir” iddiası düzeltildi. 41 kaydı deterministik üreten ve farkı
-  CI'da kıran katalog kapısı eklendi; Actions major sürümleri güncellendi.
+  CI'da kıran katalog kapısı eklendi; Actions major sürümleri güncellendi. PR #8
+  dört yeşil kapı sonrası `6706952c` ile `main`e birleşti. Ana dalda `teftis` #53,
+  `site-testi` #26, `meclis` #4 ve Pages #19 geçti; `wiki-sync` #6 eksik ilk
+  sayfayı yeni açıklayıcı hata mesajıyla doğru biçimde durdurdu.
 - 2026-07-18g: `punkpeye/awesome-mcp-servers` karşılaştırması Divan'ın asıl
   eksiğini gösterdi: güçlü kürasyon vardı fakat kamusal ve sürekli aday üretim
   çarkı yoktu. 3.012 GitHub girdili indeksin katkı/otomasyon fikri REFERENCE
