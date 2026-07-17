@@ -1,7 +1,7 @@
 # Vezir Katalogu
 Bu sayfa frontmatter'lardan otomatik üretilir.
 
-## core-pack (17 vezir)
+## core-pack (18 vezir)
 
 | Vezir | Ne yapar / ne zaman |
 |---|---|
@@ -11,6 +11,7 @@ Bu sayfa frontmatter'lardan otomatik üretilir.
 | **dispatching-parallel-agents** | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies… |
 | **executing-plans** | Use when you have a written implementation plan to execute in a separate session with review checkpoints… |
 | **finishing-a-development-branch** | Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup… |
+| **kaynak-kuratori** | Evidence-first curator for repository lists, agent skills, plugins and templates. Resolves real targets, separates skills from products and indexes, checks exact licensing and maintenance signals, measures overlap, and recommends adopt, adapt, reference or reject without executing unreviewed code… |
 | **kural-hazinesi** | Curated framework and craft rule library (CC0, from the awesome-cursorrules treasury). Provides battle-tested coding rules for clean code, anti-overengineering, code quality, databases, Docker, Next.js plus Tailwind plus… |
 | **receiving-code-review** | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind … |
 | **requesting-code-review** | Use when completing tasks, implementing major features, or before merging to verify work meets requirements… |

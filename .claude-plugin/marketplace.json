@@ -5,10 +5,10 @@
     "email": "trugurpala@users.noreply.github.com"
   },
   "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam, planlama, TDD, debugging, UI/UX, React ve zanaat paketleri.",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "metadata": {
     "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam (uctan-uca orkestrator) + planlama, TDD, debugging, UI/UX ve React paketleri.",
-    "version": "0.8.1"
+    "version": "0.8.2"
   },
   "plugins": [
     {
@@ -22,7 +22,7 @@
       "name": "core-pack",
       "source": "./plugins/core-pack",
       "description": "Cekirdek gelistirme disiplini: beyin firtinasi, plan yazma/yurutme, sistematik debugging, TDD, tamamlama-oncesi dogrulama",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "strict": true
     },
     {

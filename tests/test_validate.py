@@ -36,7 +36,7 @@ class RepositoryTests(unittest.TestCase):
     def test_repository_passes_local_audit(self) -> None:
         errors, _warnings, packages, skills = VALIDATE.denetle(ROOT)
         self.assertEqual(errors, [])
-        self.assertEqual((packages, skills), (5, 40))
+        self.assertEqual((packages, skills), (5, 41))
 
     def test_eval_contract_rejects_empty_and_escaping_inputs(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-eval-test-") as temporary:
@@ -76,7 +76,7 @@ class RepositoryTests(unittest.TestCase):
             )
             command = ["bash", str(ROOT / "scripts" / "kur-codex.sh")]
             subprocess.run(command, check=True, env=env, capture_output=True, text=True)
-            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 40)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
 
             marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
             marker.write_text("koru", encoding="utf-8")

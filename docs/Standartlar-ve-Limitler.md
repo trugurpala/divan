@@ -31,7 +31,7 @@ tamamlanmadan hız veya kalite artışı iddia edilmez.
 
 ## Bağlam bütçesi
 Skill'ler aşamalı yüklenir: başlangıçta ad ve açıklama görünür, gövde ancak
-tetiklenince okunur. Divan 40 skill içerir; kesin başlangıç bağlamı ve seçme
+tetiklenince okunur. Divan 41 skill içerir; kesin başlangıç bağlamı ve seçme
 davranışı istemciye göre değişir. Büyük gövdeler mümkün olduğunda `references/`
 altına bölünür ve yalnızca gereken kaynak okunur.
 

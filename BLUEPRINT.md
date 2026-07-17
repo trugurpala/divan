@@ -46,12 +46,18 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - **v0.8.1 (aday)** 38. skill `ordu-nizami`, `/sefer`, Claude+Codex repo
   rehberleri, veriye dayalı harness kararı ve görsel mimari; 39–40. skill'ler
   `arama-ustasi` ve `baglam-muhafizi`; ölçülebilir eval sözleşmesi
+- **v0.8.2 (aday)** 41. skill `kaynak-kuratori`; kısa bağlantı çözümü,
+  repo türü, lisans/köken/yürütme yüzeyi ve çakışma kapıları; 40 repoluk
+  güncel kürasyon raporu
 - **v0.2** Özgün Türkçe skill'ler, kalıcı domain, README demo GIF, logo
 - **v0.5** awesome-claude-skills listelerine PR, topluluk geri bildirimi
 - **v1.0** Kararlı sürüm + dokümantasyon
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-18: v0.8.2 — “100 Claude Repos” paylaşımındaki sağlanan 40 bağlantı
+  çözüldü; 6 bulunamayan, 2 arşivli ve 1 yinelenen kanonik hedef belgelendi.
+  Toplu kurulum reddedildi; özgün `kaynak-kuratori` ve üç eval eklendi. 41 vezir.
 - 2026-07-17p: v0.8.1 — kanıtlı repo araması, bağlam bütçesi/maskeleme ve
   skill'li-baseline eval protokolü eklendi. 40 vezir.
 - 2026-07-17o: v0.8 yerel orkestrasyon — Claude Code, Codex ve yedi aday

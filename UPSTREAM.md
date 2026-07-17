@@ -17,7 +17,7 @@ izlenir; lisansı belirsiz içerik alınmaz.
 | ui-pack (ui-ux-pro-max) | github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT | 2026-07 |
 | react-pack | github.com/vercel-labs/agent-skills | MIT | 2026-07 |
 | zanaat-pack | github.com/anthropics/skills | Apache-2.0 | 2026-07 |
-| sadrazam, defterdar, müşavir, ordu-nizamı, vezir-yetiştirme, temkin | özgün (bu repo) | MIT | — |
+| sadrazam, defterdar, müşavir, ordu-nizamı, vezir-yetiştirme, temkin, kaynak-küratörü | özgün (bu repo) | MIT | — |
 
 ## Güncelleme ve nöbet politikası
 
@@ -55,3 +55,4 @@ tutulur. Agent Skills standardı açılı ayraçları genel olarak yasaklamaz.
 | KOPYALANMADI | massgen/MassGen file-search | Repo Apache-2.0; skill metadata MIT | Lisans metadata farkı nedeniyle metin taşınmadı; `arama-ustasi` resmî araç belgelerinden özgün yazıldı |
 | REDDEDİLDİ | multica-ai/andrej-karpathy-skills | Lisans yok | Popülerlik yeniden dağıtım hakkı vermez; yerine özgün `temkin` yazıldı |
 | KEŞİF KAYNAĞI | VoltAgent/awesome-agent-skills | MIT | Dizin niteliğinde; alınacak her hedefin lisansı ayrıca incelenir |
+| UYARLANDI | “100 Claude Repos” sosyal listesi (40 sağlanan bağlantı) | İçerik kopyalanmadı | Bağlantılar kimlik, durum ve tür açısından denetlendi; özgün `kaynak-kuratori` iş akışı yazıldı |
