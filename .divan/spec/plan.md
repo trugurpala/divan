@@ -32,3 +32,10 @@ Divan'ın v0.9.0 değişikliklerini yalnız bir özellik dalında bırakmadan, d
 - Ölçülmemiş hız, gelir veya kalite yüzdesi iddia etmek.
 - Bu turda v1.0 etiketi koymak.
 - Kullanıcı kanıtı olmadan “endüstri standardı” veya “dünyanın en iyisi” demek.
+
+## Sonuç
+
+Tamamlandı. PR #1, iki zorunlu GitHub Actions kontrolü geçtikten sonra `main`e
+birleşti. Varsayılan dal ve GitHub Pages v0.9.0 olarak yeniden okundu. Etiketli
+GitHub release oluşturulmadığı açıkça kaydedildi; sıradaki iş v0.10.0 davranış
+eval koşucusudur.

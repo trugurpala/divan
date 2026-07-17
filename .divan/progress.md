@@ -4,8 +4,8 @@ Son güncelleme: 2026-07-18
 
 ## Güncel hedef
 
-v0.9.0'ı taslak PR'dan çıkarıp eksiksiz ürün anlatısı ve doğrulanmış `main`
-yayını olarak teslim etmek.
+v0.10.0 için otomatik skill-vs-baseline davranış eval koşucusunu tasarlamak;
+ölçülmemiş başarı iddialarını yayın kapısında reddetmek.
 
 ## Yapıldı
 
@@ -20,19 +20,24 @@ yayını olarak teslim etmek.
 - Sadrazam Yayın Kanunu hem Divan paketine hem Work skill'ine işlendi.
 - CI; sürüm, iki README, CHANGELOG, BLUEPRINT, kurulum ve progress kaydını
   birlikte denetleyecek şekilde güçlendirildi; yeni regresyon testi geçti.
+- PR #1 taslaktan çıkarıldı; `teftis` #29 ve `site-testi` #8 başarıyla geçti.
+- PR #1 squash ile `main`e birleşti (`6893e8043518f55f014a61765fc17b7c657ae295`).
+- Varsayılan dalda README/TR, README/EN, VERSION, CHANGELOG ve BLUEPRINT
+  yeniden okundu; GitHub Pages üzerinde v0.9.0, 41 vezir ve Yayın Kanunu görüldü.
 
 ## Devam ediyor
 
-- PR güncellemesi, GitHub Actions, `main` birleşmesi ve canlı kontrol.
+- v0.10.0 davranış eval koşucusu için sözleşme ve başarı ölçütleri.
 
 ## Bilinen açıklar
 
 - Davranış eval dosyaları var; otomatik skill-vs-baseline eval koşucusu henüz yok.
-- v0.9.0 henüz `main` üzerinde değil; GitHub tag/release oluşturma yetkisi bu
-  bağlantıda yok. Merge sonrası durum “main'de” olacak, “etiketli release” değil.
+- v0.9.0 `main` ve GitHub Pages üzerinde; GitHub tag/release oluşturulmadı.
+  Bu nedenle “etiketli release” iddiası yapılmıyor.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
+- Desteklenen hostlar için temiz-ortam kurulum/uyumluluk matrisi henüz otomatik değil.
 
 ## Sıradaki kesin adım
 
-Doğrulanmış v0.9.0 commit'ini PR #1'e gönder, taslaktan çıkar, GitHub Actions
-sonucunu kanıt kaydına işle ve `main`/canlı yüzey yayın zincirini tamamla.
+v0.10.0 eval sözleşmesini yaz; aynı görevleri skill açık/kapalı koşup ölçülebilir
+çıktıları karşılaştıran koşucuyu CI'a bağla.
