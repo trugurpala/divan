@@ -38,3 +38,10 @@ dediğin her istek altı fazdan geçer: **Ferman** (hedef netleşir) → **Divan
 
 Derleme ve özgün skill'ler: MIT. Üçüncü taraf skill'ler kendi lisanslarını
 korur — bkz. [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+## Katkı
+
+Divan kendini toplulukla geliştirir: [CONTRIBUTING.md](CONTRIBUTING.md) yolu,
+[UPSTREAM.md](UPSTREAM.md) kaynak politikasını (neden fork değil, vendoring)
+anlatır. Sadrazam kuruluysa "Divan'a yeni vezir yaz" demen yeterli —
+`vezir-yetistirme` skill'i seni yürütür.

@@ -37,5 +37,6 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 ## Durum Günlüğü
 - 2026-07-16: v0.1 derlendi (vibeforge → Divan rebrand, Sadrazam yazıldı,
   landing yayında). GitHub push token bekliyor.
+- 2026-07-17b: Topluluk dosyaları (CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, şablonlar), UPSTREAM.md ve vezir-yetistirme meta-skill eklendi.
 - 2026-07-17: Teftiş script'i + CI + BLUEPRINT eklendi. SEO güncellemesi
   site/index.html'de hazır; push sonrası canlıya alınacak.
