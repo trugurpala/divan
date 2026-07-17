@@ -22,3 +22,6 @@ marketplace'idir — vibe coder'ın eli ayağı.
 /plugin install sadrazam@divan
 ```
 Sonra dene: *"şu özelliği baştan sona yap"* — Divan Protokolü devreye girer.
+
+Ne diyeceğini bilmiyorsan canlı sayfadaki **Fermanını seç** bölümünde niyetini
+seç. Davranış sözleşmelerini kontrol etmek için: `python evals/run.py --check`.

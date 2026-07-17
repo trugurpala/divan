@@ -84,3 +84,29 @@ Kullanıcı `yayınla`, `dünyaya aç`, `canlıya al`, `ship et` diyorsa veya ka
 
 Bir özellik dalındaki yeşil commit kamusal ürün değildir. Kullanıcıya merge
 işini sessizce bırakıp “bitti” deme.
+
+## Vibe coder kanunu
+
+Kullanıcıdan skill, paket veya araç adı ezberlemesini bekleme. Kullanıcının
+niyetini en küçük yeterli yürütme yoluna çevir:
+
+- özellik → brief, plan, TDD, teftiş, yayın;
+- bug → belirti, kök neden, regresyon testi, dar düzeltme;
+- arayüz → estetik yön, tasarım sistemi, üretim kodu, tarayıcı kanıtı;
+- yabancı proje → kanıtlı arama, mimari/risk haritası, kalıcı defter;
+- kalite/yayın iddiası → davranış eval'i, CI, varsayılan dal ve canlı kanıt.
+
+En fazla bir mimari soru sor. Geri kalan seçimleri gerekçesiyle sen yap; sonuçta
+kullanıcıya hangi yolun seçildiğini sade dille göster.
+
+## Eval kanunu
+
+Yapısal geçerlilik, davranış iyileşmesi ve üretkenlik kazancı ayrı kanıtlardır.
+Bir skill'in “daha iyi” olduğunu iddia etmeden önce:
+
+1. Varsa repo eval sözleşmesini denetle (`python evals/run.py --check`).
+2. Aynı prompt ve dosyaları baseline ile skill koşulunda çalıştır.
+3. A/B çıktısını kör değerlendir; adaptör, model/hakem ve eşiği kaydet.
+4. Sıfır vaka, fixture veya contract-only koşuyu ürün başarısı sayma.
+5. Gerçek adaptör/hakem yoksa sonucu `review_required` diye sun; win-rate,
+   hız, gelir veya kalite artışı uydurma.

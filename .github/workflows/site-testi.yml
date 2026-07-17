@@ -25,4 +25,21 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install playwright==1.61.0 && playwright install chromium --with-deps
-      - run: python tests/site_testi.py
+      - name: PR/push içeriğini yerel sunucuda test et
+        run: |
+          python -m http.server 8000 --directory docs >/tmp/divan-site.log 2>&1 &
+          python - <<'PY'
+          import time, urllib.request
+          for _ in range(20):
+              try:
+                  urllib.request.urlopen("http://127.0.0.1:8000/", timeout=1)
+                  break
+              except OSError:
+                  time.sleep(0.25)
+          else:
+              raise SystemExit("yerel site baslamadi")
+          PY
+          DIVAN_SITE_URL=http://127.0.0.1:8000/ python tests/site_testi.py
+      - name: Zamanlanmış canlı nöbet
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py

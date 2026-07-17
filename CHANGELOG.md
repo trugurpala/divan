@@ -8,9 +8,39 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ### Planned
 
-- Automated skill-vs-baseline behavioral eval runner.
 - Repeatable compatibility and installation matrix across supported hosts.
 - Independent adoption evidence and reproducible quality measurements.
+- First published comparison using a declared real-agent adapter and judge.
+
+## [0.10.0] - 2026-07-18
+
+### Added
+
+- Provider-neutral skill-vs-baseline eval runner with 12 cases across four
+  original skills.
+- JSON stdin/stdout adapter protocol for real agents and optional blind judges.
+- A/B blinding, separate reveal keys, timeouts, zero-case failure, and optional
+  minimum skill win-rate gates.
+- Interactive five-intent decree selector for vibe coders.
+- Persistent v0.10 product plan grounded in the official OpenAI agent-evals
+  progression from traces to repeatable datasets and eval runs.
+
+### Changed
+
+- Pull-request site CI now tests the proposed `docs/` build locally instead of
+  testing the old production page; scheduled runs still inspect GitHub Pages.
+- Product pages now lead from user intent to the smallest pack, a copyable
+  decree, and an observable delivery path.
+- Marketplace advanced to 0.10.0 and Sadrazam to 0.8.0 with persistent
+  intent-first routing and honest eval-evidence rules.
+
+### Verified
+
+- Eval contract discovery reports four skills and 12 non-empty cases.
+- Unit tests cover discovery, zero-case failure, A/B blinding, judge mapping,
+  threshold behavior, and review-required results.
+- Static site JavaScript passes syntax validation; GitHub Actions browser proof
+  is recorded with the publication evidence.
 
 ## [0.9.0] - 2026-07-18
 
@@ -50,5 +80,6 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.10.0]: https://github.com/trugurpala/divan/tree/main
 [0.9.0]: https://github.com/trugurpala/divan/tree/main
 [0.7.0]: https://github.com/trugurpala/divan/releases/tag/v0.7.0

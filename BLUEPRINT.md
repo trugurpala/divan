@@ -48,11 +48,13 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   kayıtları, topluluk ve güvenlik dosyaları
 - **v0.9.0 ✓** 41 skill; yerel orkestrasyon, kanıtlı arama, bağlam disiplini,
   kaynak kürasyonu, İngilizce vitrin, CHANGELOG ve Yayın Kanunu
+- **v0.10.0 ✓** niyetten pakete/fermana giden etkileşimli vibe coder yüzeyi;
+  4 skill/12 vaka için sağlayıcı-bağımsız, kör A/B davranış eval koşucusu
 
-### Sıradaki sürüm — v0.10.0
+### Sıradaki sürüm — v0.11.0
 
-1. Skill-vs-baseline davranış eval koşucusu ve makine-okunur sonuç raporu.
-2. Claude Code + Codex kurulum/uyumluluk matrisini temiz ortamda tekrarlayan CI.
+1. Claude Code + Codex kurulum/uyumluluk matrisini temiz ortamda tekrarlayan CI.
+2. Beyan edilmiş gerçek ajan + hakem adaptörüyle ilk yayımlanabilir A/B kanıtı.
 3. Her yayımdan önce CHANGELOG, VERSION, marketplace ve tag eşliği.
 4. İlk dış kullanıcı geri bildirimi için ölçülebilir kabul formu ve issue akışı.
 
@@ -69,6 +71,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18d: v0.10.0 vibe coder yüzeyi ve eval koşucusu — beş yaygın
+  niyetten en küçük paket, kopyalanabilir ferman ve teslim akışına giden seçici
+  eklendi. Dört özgün skill'deki 12 vaka; aynı promptlu baseline/skill koşusu,
+  A/B körleme, opsiyonel hakem/eşik ve makine-okunur kanıt üreten sağlayıcı-
+  bağımsız koşucuya bağlandı. PR site testi artık eski canlı yerine dalın
+  `docs/` önizlemesini gerçek Chromium'da denetliyor.
 - 2026-07-18c: v0.9.0 yayın zinciri tamamlandı — PR #1 taslaktan çıkarıldı;
   `teftis` #29 ve `site-testi` #8 geçti; squash commit `6893e804` ile `main`e
   birleşti. Varsayılan dal ve GitHub Pages yeniden okunarak v0.9.0/41 vezir
@@ -107,5 +115,5 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Sıradaki Kesin Adım
 
-v0.10.0 için otomatik skill-vs-baseline davranış eval koşucusunu tasarla;
-ölçülmemiş hız/kalite iddialarını yayın kapısında reddet.
+v0.11.0 için Claude Code + Codex temiz-ortam uyumluluk matrisini CI'a bağla;
+sonra beyan edilmiş gerçek ajan adaptörüyle ilk A/B kanıtını üret.

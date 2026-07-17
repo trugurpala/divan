@@ -18,6 +18,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_*.py'
           python scripts/validate.py
+          python evals/run.py --check
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1
