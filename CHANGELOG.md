@@ -12,6 +12,33 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Independent adoption evidence and reproducible quality measurements.
 - First published comparison using a declared real-agent adapter and judge.
 
+## [0.10.3] - 2026-07-18
+
+### Added
+
+- Deterministic Vezir Catalog generator and exact drift tests over all 41 skill
+  frontmatter records.
+- Explicit Wiki initialization preflight with the one required `Save Page`
+  recovery action instead of an opaque clone failure.
+
+### Changed
+
+- GitHub Actions moved to the current major releases observed from their
+  official repositories: checkout v7, setup-python v6, setup-node v7, and
+  github-script v9.
+- Repository guidance and contribution checks now require catalog validation.
+
+### Fixed
+
+- Multi-line YAML descriptions are rendered correctly; `claude-api` no longer
+  appears as the broken `/-…` text in the public catalog and Wiki source.
+
+### Verified
+
+- GitHub repository and workflow state, the live Wiki HTTP 404, failed publish
+  job steps, Context7's GitHub Docs result, current Codex manual, and active
+  Mühürdar pet were inspected independently.
+
 ## [0.10.2] - 2026-07-18
 
 ### Added
@@ -137,6 +164,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.10.3]: https://github.com/trugurpala/divan/tree/main
 [0.10.2]: https://github.com/trugurpala/divan/tree/main
 [0.10.1]: https://github.com/trugurpala/divan/tree/main
 [0.10.0]: https://github.com/trugurpala/divan/tree/main

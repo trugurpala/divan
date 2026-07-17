@@ -12,6 +12,7 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Upstream kökenleri ve yamalar: `UPSTREAM.md`
 - Lisans envanteri: `THIRD_PARTY_LICENSES.md`
 - Yerel teftiş: `scripts/validate.py`
+- Katalog teftişi: `scripts/katalog.py --check`
 
 ## Çalışma kuralları
 
@@ -45,6 +46,7 @@ Teslimden önce en az şunları çalıştır:
 
 ```bash
 python scripts/validate.py
+python scripts/katalog.py --check
 python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check

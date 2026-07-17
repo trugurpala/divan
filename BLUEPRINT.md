@@ -56,6 +56,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - **v0.10.2 ✓** yapılandırılmış kaynak-adayı formu, makine-okunur Aday Meclisi,
   haftalık salt-okunur GitHub keşfi ve otomatik kurulum yapmayan
   PENDING→ADOPT/ADAPT/REFERENCE/REJECT yaşam döngüsü
+- **v0.10.3 ✓** 41 skill frontmatter'ından deterministik Vezir Kataloğu,
+  Wiki ilk-sayfa preflight'ı ve Node 24 tabanlı güncel GitHub Actions zinciri
 
 ### Sıradaki sürüm — v0.11.0
 
@@ -77,6 +79,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18h: GitHub, Wiki, Context7, güncel Codex kılavuzu ve Mühürdar birlikte
+  teftiş edildi. Canlı Wiki 404 ve `divan.wiki.git` yokluğu yeniden doğrulandı;
+  GitHub'ın ilk sayfa şartı birincil dokümandan bulundu. Katalogda `claude-api`
+  açıklamasını `/-…` gösteren çok satırlı YAML hatası ve gerçekte var olmayan
+  “otomatik üretilir” iddiası düzeltildi. 41 kaydı deterministik üreten ve farkı
+  CI'da kıran katalog kapısı eklendi; Actions major sürümleri güncellendi.
 - 2026-07-18g: `punkpeye/awesome-mcp-servers` karşılaştırması Divan'ın asıl
   eksiğini gösterdi: güçlü kürasyon vardı fakat kamusal ve sürekli aday üretim
   çarkı yoktu. 3.012 GitHub girdili indeksin katkı/otomasyon fikri REFERENCE

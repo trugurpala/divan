@@ -14,6 +14,7 @@ Before completion, run:
 
 ```bash
 python scripts/validate.py
+python scripts/katalog.py --check
 python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check

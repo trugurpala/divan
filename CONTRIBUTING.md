@@ -10,7 +10,8 @@ Divan kendini toplulukla geliştirir. Yeni bir vezir (skill) kazandırmak için:
    İpucu: Claude Code'da `sadrazam` kuruluysa "Divan'a yeni vezir yaz" de —
    `vezir-yetistirme` skill'i seni adım adım yürütür.
 3. **Teftiş:** `python scripts/validate.py` yerelde temiz çıkmalı. Aday defteri
-   değiştiyse `python scripts/meclis.py --check` de geçmeli.
+   değiştiyse `python scripts/meclis.py --check` de geçmeli. Skill değiştiyse
+   `python scripts/katalog.py --render` çalıştırılmalı ve `--check` geçmeli.
 4. **PR aç:** Şablondaki çeklisti doldur.
 
 ## Skill standartları (Agent Skills — agentskills.io)
