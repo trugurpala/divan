@@ -10,7 +10,21 @@
 ```
 Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall <paket>@divan`
 
-## Cursor / Codex / diğer Agent Skills uyumlu ajanlar
+## Codex — tek komut kurulum
+
+Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
+```
+macOS/Linux:
+```bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | bash
+```
+Sonra Codex'i yeniden başlat. Skill'ler tetikleyici cümlelerle çalışır
+("baştan sona yap", "defter kur"); /komutlar, hook ve subagent'lar Claude
+Code'a özgüdür — Codex'te hafıza AGENTS.md üzerinden yürür.
+
+## Cursor / diğer Agent Skills uyumlu ajanlar
 Skill'ler açık standarttır; repo'daki `plugins/*/skills/*` klasörlerini
 ajanının skill dizinine kopyalaman yeterlidir (ör. Cursor'da proje köküne
 `.cursor/skills/` ya da ajanın belgelerinde belirtilen dizin).
