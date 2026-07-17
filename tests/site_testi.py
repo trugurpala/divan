@@ -28,7 +28,7 @@ with sync_playwright() as p:
         hatalar.append("v0.10.0 vitrinde gorunmuyor")
     if sayfa.locator("article.vezir").count() != 5:
         hatalar.append(f"Paket karti sayisi {sayfa.locator('article.vezir').count()} != 5")
-    if sayfa.locator("ol.protokol li").count() != 6:
+    if sayfa.locator("#protokol ol.protokol li").count() != 6:
         hatalar.append("Protokol 6 faz degil")
     if sayfa.locator("[data-niyet]").count() != 5:
         hatalar.append("Ferman secici 5 niyet sunmuyor")
