@@ -28,7 +28,8 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Changed
 
 - Pull-request site CI now tests the proposed `docs/` build locally instead of
-  testing the old production page; scheduled runs still inspect GitHub Pages.
+  testing the old production page. Every `main` push now waits for the matching
+  Pages version and repeats the browser test live; scheduled runs keep watch.
 - Product pages now lead from user intent to the smallest pack, a copyable
   decree, and an observable delivery path.
 - Marketplace advanced to 0.10.0 and Sadrazam to 0.8.0 with persistent

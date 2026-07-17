@@ -28,7 +28,8 @@ Senin makinende çalışan değil, **taze klonda çalışan** bakidir.
 niyetini, seçim sonrası paket/prompt/akış değişimini, ürün yüzeyini ve mobil
 görünümü denetler. PR sırasında yalnız mevcut canlıyı test etmek yeni değişikliği
 kanıtlamaz; CI bu nedenle `docs/` içeriğini yerel HTTP sunucusunda açar. Haftalık
-nöbet ayrıca gerçek GitHub Pages adresini denetler. Localde:
+nöbet ve her `main` push'ı ayrıca GitHub Pages'in beklenen `VERSION`a gelmesini
+bekler, sonra aynı etkileşimi canlı adreste tıklar. Localde:
 ```
 pip install playwright==1.61.0 && playwright install chromium
 python tests/site_testi.py

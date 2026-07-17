@@ -4,8 +4,8 @@ Son güncelleme: 2026-07-18
 
 ## Güncel hedef
 
-v0.10.0 ile vibe coder'ın ilk dakikada doğru paket/fermanı seçmesini sağlamak;
-skill-vs-baseline davranış koşusunu tekrarlanabilir kanıta dönüştürmek.
+v0.11.0 için Claude Code + Codex temiz-ortam uyumluluk matrisini CI'a bağlamak;
+ardından gerçek ajan/hakem adaptörüyle ilk yayımlanabilir A/B kanıtını üretmek.
 
 ## Yapıldı
 
@@ -33,21 +33,28 @@ skill-vs-baseline davranış koşusunu tekrarlanabilir kanıta dönüştürmek.
   şekilde düzeltildi; haftalık canlı nöbet korundu.
 - Sadrazam 0.8.0'a niyetten en küçük yola geçiş ve gerçek adaptör olmadan kalite
   iddiasını reddeden Eval Kanunu eklendi; Work skill'i aynı metinle eşitlendi.
+- PR #3'te `teftis` #37 ve dalın yerel önizlemesini Chromium'da tıklayan
+  `site-testi` #13 başarıyla geçti.
+- PR #3 squash ile `main`e birleşti (`361a6d672b9db2519a3e21d5c71ec95db7663b1e`).
+- Varsayılan dalda VERSION, iki README, eval koşucusu, site kaynağı, Sadrazam ve
+  BLUEPRINT yeniden okundu; v0.10.0 kayıtları eşleşti.
+- Site workflow'u her `main` push'ında Pages'in repo `VERSION`ına gelmesini
+  bekleyip canlı etkileşimi Chromium'da yeniden tıklayacak şekilde güçlendirildi.
 
 ## Devam ediyor
 
-- v0.10.0 uzak CI, PR, `main` birleşmesi ve canlı etkileşim doğrulaması.
+- v0.11.0 temiz-ortam matrisi ve gerçek adaptörlü A/B kanıt sözleşmesi.
 
 ## Bilinen açıklar
 
 - Eval koşucusu ve fixture testleri var; beyan edilmiş güvenilir gerçek ajan
   adaptörü/hakemiyle yayımlanmış A/B sonucu henüz yok.
-- v0.9.0 `main` ve GitHub Pages üzerinde; GitHub tag/release oluşturulmadı.
+- v0.10.0 `main` üzerinde; GitHub tag/release oluşturulmadı.
   Bu nedenle “etiketli release” iddiası yapılmıyor.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
 - Desteklenen hostlar için temiz-ortam kurulum/uyumluluk matrisi henüz otomatik değil.
 
 ## Sıradaki kesin adım
 
-Resmî doğrulayıcıları çalıştır; v0.10.0 commit'ini PR'a gönder; uzak CI sonrası
-`main`e birleştir ve canlı ferman seçiciyi gerçek tarayıcıyla doğrula.
+Claude Code ve Codex kurulumlarını temiz geçici dizinlerde tekrarlayan matrisi
+tasarla; host başına kurulum, keşif ve kaldırma kanıtını CI çıktısına bağla.

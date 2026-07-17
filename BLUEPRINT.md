@@ -71,6 +71,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18e: v0.10.0 yayın zinciri — PR #3'te `teftis` #37 ve dalın `docs/`
+  önizlemesini gerçek Chromium'da tıklayan `site-testi` #13 geçti; squash commit
+  `361a6d67` ile `main`e birleşti. İlk site koşusunun yakaladığı geniş protokol
+  seçicisi aynı PR'da daraltıldı. Site CI her `main` push'ında Pages sürümünü
+  bekleyip canlı etkileşimi yeniden tıklayacak şekilde kalıcılaştırıldı.
+  Etiketli GitHub release oluşturulmadı.
 - 2026-07-18d: v0.10.0 vibe coder yüzeyi ve eval koşucusu — beş yaygın
   niyetten en küçük paket, kopyalanabilir ferman ve teslim akışına giden seçici
   eklendi. Dört özgün skill'deki 12 vaka; aynı promptlu baseline/skill koşusu,

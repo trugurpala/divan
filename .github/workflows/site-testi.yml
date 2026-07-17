@@ -40,6 +40,22 @@ jobs:
               raise SystemExit("yerel site baslamadi")
           PY
           DIVAN_SITE_URL=http://127.0.0.1:8000/ python tests/site_testi.py
-      - name: Zamanlanmış canlı nöbet
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        run: DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py
+      - name: Main ve zamanlanmış canlı nöbet
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          python - <<'PY'
+          import pathlib, time, urllib.request
+          version = pathlib.Path("VERSION").read_text().strip()
+          url = "https://trugurpala.github.io/divan/"
+          for _ in range(24):
+              try:
+                  html = urllib.request.urlopen(url, timeout=10).read().decode("utf-8")
+                  if f"v{version}" in html and "Fermanını seç" in html:
+                      break
+              except OSError:
+                  pass
+              time.sleep(10)
+          else:
+              raise SystemExit(f"GitHub Pages v{version} zamaninda guncellenmedi")
+          PY
+          DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py
