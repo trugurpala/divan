@@ -23,13 +23,15 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
   proje dosyalarının üzerine sessizce yazma.
 - Paralel ajanları yalnızca bağımsız ve sınırları belirli işler için kullan.
   Aynı dosyayı eşzamanlı yazdırma; paralel yazım gerekiyorsa ayrı worktree kullan.
-- Ürünü değiştiren işte README, katalog, kurulum belgesi ve site sayılarını aynı
-  değişiklikte eşitle.
+- Ürünü değiştiren işte README, katalog, kurulum belgesi, Wiki kaynağı ve site
+  sayılarını aynı değişiklikte eşitle. Wiki etkinse `scripts/wiki.py --check`
+  ve `wiki-sync` yayın kanıtını da zorunlu yüzey say.
 - Kamusal teslimde taslak PR'ı son durum sayma. Yetki kapsamındaysa CI sonrası
   varsayılan dala birleştir; README/kurulum/canlı sayfayı varsayılan daldan
   yeniden oku. Tag yoksa “release yayımlandı” deme.
-- Her sürümde `VERSION`, marketplace, `CHANGELOG.md`, README'ler, BLUEPRINT ve
-  kurulum referansını eşitle. `.divan/progress.md` sıradaki kesin adımı taşımalı.
+- Her sürümde `VERSION`, marketplace, `CHANGELOG.md`, README'ler, BLUEPRINT,
+  Wiki kaynağı ve kurulum referansını eşitle. `.divan/progress.md` sıradaki
+  kesin adımı taşımalı.
 - Bir skill'in davranışı iyileştirdiğini iddia etmeden önce `evals/README.md`
   protokolünü kullan. Gerçek ajan adaptörü/hakem koşmadıysa yalnız sözleşme veya
   mekanik doğrulama raporla; win-rate, hız ya da kalite artışı uydurma.

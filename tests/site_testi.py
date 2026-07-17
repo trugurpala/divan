@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Divan canli sayfa testi — gercek tarayicida (Chromium/Playwright).
 Kullanim: pip install playwright && playwright install chromium && python tests/site_testi.py"""
-import os, sys
+import os, pathlib, sys
 from playwright.sync_api import sync_playwright
 
 URL = os.environ.get("DIVAN_SITE_URL", "https://trugurpala.github.io/divan/")
+SURUM = (pathlib.Path(__file__).resolve().parents[1] / "VERSION").read_text().strip()
 hatalar = []
 
 with sync_playwright() as p:
@@ -24,8 +25,8 @@ with sync_playwright() as p:
         hatalar.append("'Padişah sensin' gorunmuyor")
     if not sayfa.get_by_text("trugurpala/divan").first.is_visible():
         hatalar.append("Kurulum komutu gorunmuyor")
-    if not sayfa.get_by_text("v0.10.0").first.is_visible():
-        hatalar.append("v0.10.0 vitrinde gorunmuyor")
+    if not sayfa.get_by_text(f"v{SURUM}").first.is_visible():
+        hatalar.append(f"v{SURUM} vitrinde gorunmuyor")
     if sayfa.locator("article.vezir").count() != 5:
         hatalar.append(f"Paket karti sayisi {sayfa.locator('article.vezir').count()} != 5")
     if sayfa.locator("#protokol ol.protokol li").count() != 6:
@@ -52,4 +53,4 @@ if hatalar:
     print("SITE TESTI BASARISIZ:")
     for h in hatalar: print("  X", h)
     sys.exit(1)
-print("SITE TESTI TEMIZ ✓ — HTTP 200, v0.10, 5 niyet, etkilesim, 5 paket, 6 faz, mobil, konsol=0 hata")
+print(f"SITE TESTI TEMIZ ✓ — HTTP 200, v{SURUM}, 5 niyet, etkilesim, 5 paket, 6 faz, mobil, konsol=0 hata")

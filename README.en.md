@@ -1,10 +1,10 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
-[Türkçe](README.md) · **English** · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
+[Türkçe](README.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
 
 <img src="docs/assets/muhurdar-idle.png" alt="Mühürdar, Divan's verification mascot" width="128" align="right">
 
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs natively in Claude Code and its Agent Skills remain portable to Codex,
 Cursor, and other compatible hosts.
 
-**Current release:** v0.10.0 · **Website:** https://trugurpala.github.io/divan/ · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
+**Current release:** v0.10.1 · **Website:** https://trugurpala.github.io/divan/ · **Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
 
 ## Why Divan?
 
@@ -32,7 +32,7 @@ surface that stays in sync with the implementation.
 | “It works” has no evidence | Tests, official validators, and an independent inspector |
 | Huge skill dumps consume context and trust | Curation, license/provenance gates, and progressive disclosure |
 | External swarm harnesses add cost and complexity | One native session first; bounded subagents/worktrees only when justified |
-| A PR is ready but the public product is still stale | Publication Law: docs + changelog + merge + live verification |
+| A PR is ready but the public product is still stale | Publication Law: docs + wiki + changelog + merge + live verification |
 
 Divan is not a model and not another agent runtime. It is an auditable Agent
 Skills distribution that adds **delivery discipline, specialist procedures,
@@ -76,7 +76,7 @@ the delivery path.
 
 ## Behavioral evals
 
-Structural validity is not evidence that a skill improves behavior. v0.10.0
+Structural validity is not evidence that a skill improves behavior. The v0.10 series
 ships a provider-neutral runner that executes the same case with and without a
 skill, blinds the outputs as A/B, and optionally applies a judge and release
 threshold:
@@ -100,7 +100,7 @@ Divan does not equate improvement with installing more repositories:
 3. Measure the actual gap and overlap with the existing council.
 4. Create the smallest useful adaptation and add behavioral eval cases.
 5. Pass local tests plus the official Agent Skills and Claude Code validators.
-6. Update README, catalog, changelog, and roadmap in the same change.
+6. Update README, catalog, Wiki source, changelog, and roadmap in the same change.
 7. When publication is requested, treat a PR as an intermediate state; do not
    claim delivery until the default branch and live surface are verified.
 

@@ -1,0 +1,87 @@
+name: wiki-sync
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'docs/*.md'
+      - 'wiki-pages.json'
+      - 'scripts/wiki.py'
+      - 'tests/test_wiki.py'
+      - 'VERSION'
+      - '.github/workflows/wiki-sync.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/*.md'
+      - 'wiki-pages.json'
+      - 'scripts/wiki.py'
+      - 'tests/test_wiki.py'
+      - 'VERSION'
+      - '.github/workflows/wiki-sync.yml'
+
+concurrency:
+  group: divan-wiki
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/wiki.py --check
+
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Wiki paketini derle
+        run: python scripts/wiki.py --build "$RUNNER_TEMP/divan-wiki-build"
+      - name: GitHub Wiki deposuna eşitle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          wiki_url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+          git clone "$wiki_url" "$RUNNER_TEMP/divan-wiki"
+          cp "$RUNNER_TEMP/divan-wiki-build"/*.md "$RUNNER_TEMP/divan-wiki/"
+          cd "$RUNNER_TEMP/divan-wiki"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '*.md'
+          if git diff --cached --quiet; then
+            echo "Wiki zaten güncel."
+            exit 0
+          fi
+          git commit -m "docs: sync Divan Wiki from ${GITHUB_SHA::7}"
+          git push origin HEAD:master
+      - name: Canlı Wiki sürümünü doğrula
+        run: |
+          set -euo pipefail
+          surum="$(cat VERSION)"
+          adres="https://raw.githubusercontent.com/wiki/${GITHUB_REPOSITORY}/Home.md"
+          for _ in $(seq 1 18); do
+            if icerik="$(curl -fsSL --max-time 15 "$adres")" && \
+               grep -Fq "v${surum}" <<<"$icerik" && \
+               grep -Fq "Fermanını seç" <<<"$icerik"; then
+              echo "Wiki v${surum} canlı ve güncel."
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Wiki v${surum} zamanında doğrulanamadı." >&2
+          exit 1
