@@ -4,7 +4,7 @@ Degisim varsa rapor basar (CI bunu issue'ya cevirir)."""
 import re, hashlib, pathlib, subprocess, tempfile, sys
 
 REPOLAR = ["obra/superpowers", "anthropics/skills", "vercel-labs/agent-skills", "nextlevelbuilder/ui-ux-pro-max-skill"]
-OZGUN = {"sadrazam", "vezir-yetistirme", "defterdar", "musavir"}
+OZGUN = {"sadrazam", "vezir-yetistirme", "defterdar", "musavir", "temkin", "kural-hazinesi"}
 KOK = pathlib.Path(__file__).resolve().parent.parent
 
 def harita(kok):

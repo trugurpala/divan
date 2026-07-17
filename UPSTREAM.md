@@ -42,3 +42,10 @@ kıyasla; fark = ya upstream güncellemesi (kürasyonla al) ya bilinçli yama
 Ek bilinçli yamalar: writing-guidelines ve vercel-react-view-transitions
 frontmatter'ından açılı ayraçlar kaldırıldı (spec); react-view-transitions ve
 react-native-skills klasörleri name alanıyla eşitlendi (spec: klasör=name).
+
+## Kural Hazinesi seferi (2026-07-17)
+| Karar | Kaynak | Lisans | Not |
+|---|---|---|---|
+| ALINDI (kürasyonla ~8 kural) | PatrickJS/awesome-cursorrules | CC0 1.0 (kamu malı, LICENSE okundu) | kural-hazinesi/references altında; metinler olduğu gibi |
+| REDDEDİLDİ | multica-ai/andrej-karpathy-skills | LİSANS YOK | 144K yıldız olsa da lisanssız = tüm hakları saklı; yerine özgün "temkin" yazıldı (fikir serbest, metin bize ait) |
+| KAYNAK OLARAK NOT | VoltAgent/awesome-agent-skills | MIT | İçerik değil dizin; keşif kaynağı, tek tek lisans bakılarak kullanılır |

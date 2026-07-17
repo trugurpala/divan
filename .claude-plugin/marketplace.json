@@ -20,7 +20,7 @@
       "name": "core-pack",
       "source": "./plugins/core-pack",
       "description": "Cekirdek gelistirme disiplini: beyin firtinasi, plan yazma/yurutme, sistematik debugging, TDD, tamamlama-oncesi dogrulama",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "strict": true
     },
     {
