@@ -34,3 +34,18 @@ step one, you do the rest."
 - If truly blocked (missing credentials, missing files), do everything
   possible first, then state precisely what is needed to finish.
 - One turn = maximum progress. Batch questions; don't drip-feed them.
+
+## Kayıt nizamı (hafıza — zorunlu)
+
+State context'te değil diskte yaşar. `defterdar` skill'i ile birlikte çalış:
+
+- **Oturum başında**, işe dokunmadan önce: AGENTS.md → BLUEPRINT.md →
+  .divan/progress.md → `git log --oneline -5` oku. Bu dosyalar yoksa önce
+  defterdar ile kur (sormadan).
+- **Her fazdan sonra dosyaya işle**: Divan→ADR (.divan/decisions/),
+  Plan→.divan/spec/plan.md, İcra→progress.md + checkpoint commit,
+  Teftiş→.divan/evidence/, Takdim→BLUEPRINT durum günlüğü + net
+  "sıradaki adım".
+- Para-dokunan iş (ödeme, borsa, bakiye): spec-first zorunlu —
+  .divan/spec/spec.md yazılmadan İcra'ya geçme; risk-register.md tut.
+- Kayda geçmemiş karar ve kanıtsız "bitti" yok hükmündedir.
