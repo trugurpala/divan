@@ -50,6 +50,25 @@ h1 .nokta{color:var(--mercan)}
 .ferman code{display:block;font-family:'IBM Plex Mono',monospace;font-size:15px;color:var(--fildisi);line-height:1.9;overflow-x:auto;white-space:pre}
 .ferman code .p{color:var(--firuze)}
 
+/* Vibe coder ilk dakika seçicisi */
+.niyetler{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.niyet{appearance:none;border:1px solid rgba(243,237,221,.2);border-radius:999px;padding:9px 14px;
+  background:transparent;color:var(--fildisi);font:500 15px 'Alegreya Sans',sans-serif;cursor:pointer}
+.niyet:hover{border-color:var(--firuze)}
+.niyet[aria-pressed="true"]{background:var(--firuze);border-color:var(--firuze);color:var(--gece)}
+.secici{border:1px solid rgba(201,162,39,.4);border-radius:8px;padding:24px;background:rgba(201,162,39,.06)}
+.secici-ust{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}
+.secici-etiket{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--altin)}
+.secici-paket{font-family:'Fraunces',serif;font-size:23px;color:var(--fildisi)}
+.secici-neden{font-size:15.5px;color:var(--fildisi-soluk);text-align:right;max-width:380px}
+.secici-ferman{display:flex;gap:12px;align-items:center;padding:16px;background:rgba(11,22,51,.65);border-radius:5px}
+.secici-ferman code{font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1.6;flex:1;color:var(--fildisi)}
+.kopyala{appearance:none;border:1px solid var(--firuze);border-radius:4px;padding:9px 12px;background:transparent;
+  color:var(--firuze);font:500 13px 'Alegreya Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.kopyala:hover{background:var(--firuze);color:var(--gece)}
+.secici-akis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;list-style:none;margin-top:18px}
+.secici-akis li{font-size:13px;text-align:center;padding:8px 5px;border-top:2px solid var(--kobalt);color:var(--fildisi-soluk)}
+
 .bab{padding:72px 0;border-top:1px solid rgba(243,237,221,.12)}
 .bab-etiket{font-family:'Fraunces',serif;font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--mercan);margin-bottom:10px}
 h2{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(30px,5vw,42px);margin-bottom:36px}
@@ -83,7 +102,7 @@ footer p+p{margin-top:10px}
   .hero .tez{animation-delay:.12s}.hero .ferman{animation-delay:.24s}
   @keyframes yukari{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 }
-@media (max-width:600px){.hero{padding:64px 0 52px}.bab{padding:52px 0}.muhurdar{align-items:flex-start;gap:16px;padding:18px}.muhurdar img{width:88px;height:108px}}
+@media (max-width:600px){.hero{padding:64px 0 52px}.bab{padding:52px 0}.muhurdar{align-items:flex-start;gap:16px;padding:18px}.muhurdar img{width:88px;height:108px}.secici-ust{display:block}.secici-neden{text-align:left;margin-top:8px}.secici-ferman{align-items:flex-start;flex-direction:column}.secici-akis{grid-template-columns:1fr}.secici-akis li{text-align:left}}
 </style>
 </head>
 <body>
@@ -92,7 +111,7 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Vibe coder'ın vezirler kurulu</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Padişah sensin.</b> Fermanı verirsin; Divan işi <b>baştan sona</b> bitirir — planlar, inşa eder, test eder, kayda geçirir ve varsayılan dalda doğrular. v0.9.0 · 41 vezir · 5 paket · yerel orkestrasyon.</p>
+    <p class="tez"><b>Padişah sensin.</b> Fermanı verirsin; Divan işi <b>baştan sona</b> bitirir — planlar, inşa eder, test eder, kayda geçirir ve varsayılan dalda doğrular. v0.10.0 · 41 vezir · 5 paket · davranış eval'leri.</p>
     <div class="ferman">
       <p class="ferman-etiket">Ferman · Claude Code</p>
       <code><span class="p">/plugin</span> marketplace add trugurpala/divan
@@ -101,9 +120,36 @@ footer p+p{margin-top:10px}
   </div>
 </header>
 
-<section class="bab">
+<section class="bab" id="basla">
   <div class="wrap">
     <p class="bab-etiket">Bab I</p>
+    <h2>Fermanını seç</h2>
+    <div class="niyetler" role="group" aria-label="Ne yapmak istiyorsun?">
+      <button type="button" class="niyet" data-niyet="ship" aria-pressed="true">Özellik çıkar</button>
+      <button type="button" class="niyet" data-niyet="fix" aria-pressed="false">Bug düzelt</button>
+      <button type="button" class="niyet" data-niyet="design" aria-pressed="false">Arayüz tasarla</button>
+      <button type="button" class="niyet" data-niyet="learn" aria-pressed="false">Projeyi tanı</button>
+      <button type="button" class="niyet" data-niyet="prove" aria-pressed="false">Kanıtla ve yayınla</button>
+    </div>
+    <div class="secici" aria-live="polite">
+      <div class="secici-ust">
+        <div><p class="secici-etiket">Gerekli paket</p><p class="secici-paket" id="secici-paket">sadrazam + core-pack</p></div>
+        <p class="secici-neden" id="secici-neden">Plan, TDD, teftiş ve yayın zinciri</p>
+      </div>
+      <div class="secici-ferman">
+        <code id="secici-komut">Bu özelliği baştan sona planla, testle ve main'de doğrula.</code>
+        <button type="button" class="kopyala" id="ferman-kopyala">Fermanı kopyala</button>
+      </div>
+      <ol class="secici-akis" id="secici-akis" aria-label="Teslim akışı">
+        <li>Brief</li><li>Plan</li><li>TDD</li><li>Teftiş</li><li>Yayın</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="bab">
+  <div class="wrap">
+    <p class="bab-etiket">Bab II</p>
     <h2>Vezirler</h2>
     <div class="vezirler">
       <article class="vezir bas">
@@ -137,7 +183,7 @@ footer p+p{margin-top:10px}
 
 <section class="bab">
   <div class="wrap">
-    <p class="bab-etiket">Bab II</p>
+    <p class="bab-etiket">Bab III</p>
     <h2>Neden Divan?</h2>
     <ol class="protokol">
       <li><b>Hafıza</b><span>Kararlar sohbette kaybolmaz; AGENTS.md, BLUEPRINT ve .divan kayıtlarında yaşar.</span></li>
@@ -148,9 +194,9 @@ footer p+p{margin-top:10px}
   </div>
 </section>
 
-<section class="bab">
+<section class="bab" id="protokol">
   <div class="wrap">
-    <p class="bab-etiket">Bab III</p>
+    <p class="bab-etiket">Bab IV</p>
     <h2>Divan Protokolü</h2>
     <ol class="protokol">
       <li><b>Ferman</b><span>Hedef tek cümlede netleşir; en fazla bir soru sorulur.</span></li>
@@ -180,6 +226,32 @@ footer p+p{margin-top:10px}
     <p>Bu proje Anthropic, Claude veya Vercel ile bağlı ya da onlarca onaylanmış değildir. Claude Code, Cursor ve Codex ile uyumluluk ifadeleri yalnızca tanımlayıcıdır.</p>
   </div>
 </footer>
+
+<script>
+const seciciVeri={
+  ship:{paket:'sadrazam + core-pack',neden:'Plan, TDD, teftiş ve yayın zinciri',komut:"Bu özelliği baştan sona planla, testle ve main'de doğrula.",akis:['Brief','Plan','TDD','Teftiş','Yayın']},
+  fix:{paket:'core-pack',neden:'Kök neden, regresyon testi ve dar düzeltme',komut:"Bu bug'ın kök nedenini bul, önce regresyon testini yaz, sonra en küçük düzeltmeyi yap.",akis:['Belirti','Kök neden','Test','Düzeltme','Doğrula']},
+  design:{paket:'ui-pack + react-pack',neden:'Estetik yön, üretim kodu ve tarayıcı testi',komut:'Bu arayüz için ayırt edici bir estetik seç, üretim kodunu yaz ve tarayıcıda doğrula.',akis:['Niyet','Estetik','Sistem','İnşa','Tarayıcı']},
+  learn:{paket:'sadrazam + core-pack',neden:'Kanıtlı arama ve kalıcı proje hafızası',komut:'Bu projeyi değiştirmeden tanı; mimariyi, riskleri ve sıradaki kesin adımı kanıtlarıyla deftere yaz.',akis:['Kapsam','Ara','Harita','Risk','Defter']},
+  prove:{paket:'sadrazam + core-pack',neden:'A/B eval, CI, varsayılan dal ve canlı kanıt',komut:'Bu değişikliği baseline ile karşılaştır, ölçülemeyeni iddia etme, CI ve canlı yüzey kanıtıyla yayınla.',akis:['Vaka','A/B koşu','Kör hakem','CI','Canlı']}
+};
+let seciliNiyet='ship';
+function seciciyiGoster(ad){
+  seciliNiyet=ad;
+  const veri=seciciVeri[ad];
+  document.querySelectorAll('[data-niyet]').forEach(dugme=>dugme.setAttribute('aria-pressed',String(dugme.dataset.niyet===ad)));
+  document.getElementById('secici-paket').textContent=veri.paket;
+  document.getElementById('secici-neden').textContent=veri.neden;
+  document.getElementById('secici-komut').textContent=veri.komut;
+  document.getElementById('secici-akis').replaceChildren(...veri.akis.map(adim=>{const li=document.createElement('li');li.textContent=adim;return li;}));
+}
+document.querySelectorAll('[data-niyet]').forEach(dugme=>dugme.addEventListener('click',()=>seciciyiGoster(dugme.dataset.niyet)));
+document.getElementById('ferman-kopyala').addEventListener('click',async event=>{
+  await navigator.clipboard.writeText(seciciVeri[seciliNiyet].komut);
+  event.currentTarget.textContent='Kopyalandı';
+  window.setTimeout(()=>{event.currentTarget.textContent='Fermanı kopyala';},1600);
+});
+</script>
 
 </body>
 </html>

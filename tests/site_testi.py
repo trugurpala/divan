@@ -4,7 +4,7 @@ Kullanim: pip install playwright && playwright install chromium && python tests/
 import os, sys
 from playwright.sync_api import sync_playwright
 
-URL = "https://trugurpala.github.io/divan/"
+URL = os.environ.get("DIVAN_SITE_URL", "https://trugurpala.github.io/divan/")
 hatalar = []
 
 with sync_playwright() as p:
@@ -24,10 +24,21 @@ with sync_playwright() as p:
         hatalar.append("'Padişah sensin' gorunmuyor")
     if not sayfa.get_by_text("trugurpala/divan").first.is_visible():
         hatalar.append("Kurulum komutu gorunmuyor")
+    if not sayfa.get_by_text("v0.10.0").first.is_visible():
+        hatalar.append("v0.10.0 vitrinde gorunmuyor")
     if sayfa.locator("article.vezir").count() != 5:
         hatalar.append(f"Paket karti sayisi {sayfa.locator('article.vezir').count()} != 5")
-    if sayfa.locator("ol.protokol li").count() != 6:
+    if sayfa.locator("#protokol ol.protokol li").count() != 6:
         hatalar.append("Protokol 6 faz degil")
+    if sayfa.locator("[data-niyet]").count() != 5:
+        hatalar.append("Ferman secici 5 niyet sunmuyor")
+    sayfa.get_by_role("button", name="Bug düzelt").click()
+    if sayfa.locator("#secici-paket").inner_text() != "core-pack":
+        hatalar.append("Bug niyeti core-pack secmiyor")
+    if "kök nedenini bul" not in sayfa.locator("#secici-komut").inner_text():
+        hatalar.append("Bug fermani guncellenmiyor")
+    if sayfa.locator("#secici-akis li").count() != 5:
+        hatalar.append("Secili teslim akisi 5 adim degil")
     # mobil gorunum
     sayfa.set_viewport_size({"width": 390, "height": 844})
     if not sayfa.locator("h1").is_visible():
@@ -41,4 +52,4 @@ if hatalar:
     print("SITE TESTI BASARISIZ:")
     for h in hatalar: print("  X", h)
     sys.exit(1)
-print("SITE TESTI TEMIZ ✓ — HTTP 200, baslik, padisah, 5 paket, 6 faz, mobil, konsol=0 hata; ekran goruntusu alindi")
+print("SITE TESTI TEMIZ ✓ — HTTP 200, v0.10, 5 niyet, etkilesim, 5 paket, 6 faz, mobil, konsol=0 hata")

@@ -15,6 +15,8 @@ kıdemli mühendis disipliniyle uygular.** Kurulum öncesi ve sonrası fark:
 | Oturum uzadı | Eski loglar hedefi boğar | bağlam-muhafızı: hedefi/hataları korur, tekrarları dışarı alır, ölçemediği kazancı uydurmaz |
 | Kaynak listesi geldi | Popüler olan her şeyi kurar | kaynak-küratörü: kimlik, lisans, köken, risk ve çakışma kapıları |
 | PR açıldı | “Bitti” deyip merge'i sana bırakır | Yayın Kanunu: CHANGELOG + hazır PR + main + canlı doğrulama |
+| Nereden başlayacağını bilmiyorsun | Skill kataloğunda kaybolursun | Beş niyetli seçici: en küçük paket + kopyalanabilir ferman + teslim akışı |
+| “Bu skill daha iyi” dendi | Söze veya demo çıktısına güvenirsin | Aynı promptlu baseline/skill koşusu + A/B körleme + opsiyonel hakem/eşik |
 
 Somut bir gün: sabah `/ferman kullanıcı girişi ekle` dersin — ajan planı
 yazar, testleri önce yazar, kodu geçirir, tarayıcıda dener (webapp-testing =
@@ -26,7 +28,9 @@ birleşik sonucu yeniden test eder.
 
 Yeni vezirler de yalnızca “iyi prompt” oldukları için kabul edilmez. Eval
 sözleşmesi gerçek kullanım örneklerini, beklenen çıktıyı ve nesnel beklentileri
-tanımlar; mümkünse aynı girdide skill'li/baseline karşılaştırması yapılır.
+tanımlar. `python evals/run.py --check` mevcut 4 özgün skill'deki 12 vakayı
+denetler; gerçek adaptör verildiğinde aynı girdiyi baseline ve skill koşullarında
+çalıştırıp kör A/B kanıtı üretir. Gerçek koşu yoksa başarı yüzdesi de yoktur.
 
 **Bağlam neden yönetilebilir kalır?** Agent Skills aşamalı yüklenir: boşta
 yalnızca ad+açıklama; gövde ancak tetiklenince, ayrıntılı kaynaklar gerektiğinde

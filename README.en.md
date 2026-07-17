@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.9.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.md) · **English** · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs natively in Claude Code and its Agent Skills remain portable to Codex,
 Cursor, and other compatible hosts.
 
-**Current release:** v0.9.0 · **Website:** https://trugurpala.github.io/divan/ · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
+**Current release:** v0.10.0 · **Website:** https://trugurpala.github.io/divan/ · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
 
 ## Why Divan?
 
@@ -59,6 +59,38 @@ irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps
 
 See [installation options](docs/Kurulum.md) for macOS/Linux and removal.
 
+## Start from intent
+
+You do not need to memorize skill names. Use the
+[live decree selector](https://trugurpala.github.io/divan/#basla) to choose what
+you want to accomplish; it returns the smallest pack, a copyable request, and
+the delivery path.
+
+| Intent | Pack | First path |
+|---|---|---|
+| Ship a feature | `sadrazam` + `core-pack` | Brief → plan → TDD → inspection → publication |
+| Fix a bug | `core-pack` | Symptom → root cause → regression test |
+| Design a UI | `ui-pack` + `react-pack` | Aesthetic direction → system → browser verification |
+| Learn a codebase | `sadrazam` + `core-pack` | Evidence search → architecture/risk map → durable record |
+| Prove and publish | `sadrazam` + `core-pack` | A/B eval → blind judge → CI → live verification |
+
+## Behavioral evals
+
+Structural validity is not evidence that a skill improves behavior. v0.10.0
+ships a provider-neutral runner that executes the same case with and without a
+skill, blinds the outputs as A/B, and optionally applies a judge and release
+threshold:
+
+```bash
+python evals/run.py --check
+python evals/run.py --run --skill kaynak-kuratori \
+  --adapter "python /trusted/path/agent_adapter.py" \
+  --judge "python /trusted/path/judge_adapter.py"
+```
+
+Without a real adapter or judge it records `review_required` instead of
+inventing a win rate. See the [adapter protocol](evals/README.md).
+
 ## How it improves itself
 
 Divan does not equate improvement with installing more repositories:
@@ -88,11 +120,11 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 Divan follows the open Agent Skills specification and ships the standard GitHub
 community and security files, but it is not v1.0 yet. All 41 skills receive
-structural validation and selected original skills include eval contracts.
-An automated skill-vs-baseline behavior runner, independent adoption evidence,
-and reproducible productivity benchmarks remain v1.0 gates. Until those exist,
-the project does not claim a speed multiplier, revenue increase, or “best in
-the world” status.
+structural validation; four original skills provide 12 behavioral cases and a
+provider-neutral A/B runner. No trusted real-agent comparison has been
+published yet, and independent adoption evidence plus reproducible productivity
+benchmarks remain v1.0 gates. Until those exist, the project does not claim a
+speed multiplier, revenue increase, or “best in the world” status.
 
 ## Contributing and security
 

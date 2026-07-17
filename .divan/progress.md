@@ -4,8 +4,8 @@ Son güncelleme: 2026-07-18
 
 ## Güncel hedef
 
-v0.10.0 için otomatik skill-vs-baseline davranış eval koşucusunu tasarlamak;
-ölçülmemiş başarı iddialarını yayın kapısında reddetmek.
+v0.10.0 ile vibe coder'ın ilk dakikada doğru paket/fermanı seçmesini sağlamak;
+skill-vs-baseline davranış koşusunu tekrarlanabilir kanıta dönüştürmek.
 
 ## Yapıldı
 
@@ -24,14 +24,24 @@ v0.10.0 için otomatik skill-vs-baseline davranış eval koşucusunu tasarlamak;
 - PR #1 squash ile `main`e birleşti (`6893e8043518f55f014a61765fc17b7c657ae295`).
 - Varsayılan dalda README/TR, README/EN, VERSION, CHANGELOG ve BLUEPRINT
   yeniden okundu; GitHub Pages üzerinde v0.9.0, 41 vezir ve Yayın Kanunu görüldü.
+- v0.10.0 vibe coder planı yazıldı; beş niyetli ferman seçici ürün yüzeyine
+  eklendi.
+- Dört özgün skill'deki 12 vakayı keşfeden; baseline/skill koşusu, A/B körleme,
+  opsiyonel hakem/eşik ve JSON kanıt üreten sağlayıcı-bağımsız eval koşucusu
+  eklendi.
+- PR site testi eski canlı sayfa yerine dalın `docs/` önizlemesini test edecek
+  şekilde düzeltildi; haftalık canlı nöbet korundu.
+- Sadrazam 0.8.0'a niyetten en küçük yola geçiş ve gerçek adaptör olmadan kalite
+  iddiasını reddeden Eval Kanunu eklendi; Work skill'i aynı metinle eşitlendi.
 
 ## Devam ediyor
 
-- v0.10.0 davranış eval koşucusu için sözleşme ve başarı ölçütleri.
+- v0.10.0 uzak CI, PR, `main` birleşmesi ve canlı etkileşim doğrulaması.
 
 ## Bilinen açıklar
 
-- Davranış eval dosyaları var; otomatik skill-vs-baseline eval koşucusu henüz yok.
+- Eval koşucusu ve fixture testleri var; beyan edilmiş güvenilir gerçek ajan
+  adaptörü/hakemiyle yayımlanmış A/B sonucu henüz yok.
 - v0.9.0 `main` ve GitHub Pages üzerinde; GitHub tag/release oluşturulmadı.
   Bu nedenle “etiketli release” iddiası yapılmıyor.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
@@ -39,5 +49,5 @@ v0.10.0 için otomatik skill-vs-baseline davranış eval koşucusunu tasarlamak;
 
 ## Sıradaki kesin adım
 
-v0.10.0 eval sözleşmesini yaz; aynı görevleri skill açık/kapalı koşup ölçülebilir
-çıktıları karşılaştıran koşucuyu CI'a bağla.
+Resmî doğrulayıcıları çalıştır; v0.10.0 commit'ini PR'a gönder; uzak CI sonrası
+`main`e birleştir ve canlı ferman seçiciyi gerçek tarayıcıyla doğrula.

@@ -12,6 +12,7 @@ Before completion, run:
 
 ```bash
 python scripts/validate.py
+python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check
 ```
@@ -21,3 +22,5 @@ installation docs, version file, and site in the same change. A draft PR is an
 intermediate state, not a public delivery. When publication is authorized,
 verify the default branch and live surface after merge. Do not initialize,
 commit, push, release, or overwrite user project files unless the user asks.
+Do not claim a skill win rate without a real adapter run; contract-only and
+fixture-only evals prove the harness, not product quality.

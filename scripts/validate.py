@@ -176,6 +176,9 @@ def surum_kayitlarini_denetle(
         "CHANGELOG": (kok / "CHANGELOG.md", f"## [{surum}]"),
         "BLUEPRINT": (kok / "BLUEPRINT.md", f"**v{surum} ✓**"),
         "Kurulum": (kok / "docs" / "Kurulum.md", "DIVAN_REF=main"),
+        "GitHub Pages": (kok / "docs" / "index.html", f"v{surum}"),
+        "Site": (kok / "site" / "index.html", f"v{surum}"),
+        "Eval rehberi": (kok / "evals" / "README.md", "python evals/run.py --check"),
     }
     for ad, (yol, beklenen) in kayitlar.items():
         if not yol.is_file():

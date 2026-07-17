@@ -30,6 +30,9 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
   yeniden oku. Tag yoksa “release yayımlandı” deme.
 - Her sürümde `VERSION`, marketplace, `CHANGELOG.md`, README'ler, BLUEPRINT ve
   kurulum referansını eşitle. `.divan/progress.md` sıradaki kesin adımı taşımalı.
+- Bir skill'in davranışı iyileştirdiğini iddia etmeden önce `evals/README.md`
+  protokolünü kullan. Gerçek ajan adaptörü/hakem koşmadıysa yalnız sözleşme veya
+  mekanik doğrulama raporla; win-rate, hız ya da kalite artışı uydurma.
 
 ## Doğrulama
 
@@ -37,6 +40,7 @@ Teslimden önce en az şunları çalıştır:
 
 ```bash
 python scripts/validate.py
+python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check
 ```

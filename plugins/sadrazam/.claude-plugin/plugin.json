@@ -1,7 +1,7 @@
 {
   "name": "sadrazam",
   "description": "Grand Vizier: end-to-end delivery orchestrator. Turns any request into a complete, verified deliverable using the Divan Protocol.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "author": { "name": "trugurpala" },
   "license": "MIT",
   "keywords": ["orchestrator", "end-to-end", "workflow", "agency"]

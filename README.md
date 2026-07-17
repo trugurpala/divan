@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.9.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.9.0 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
+**Sürüm:** v0.10.0 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
 
 ## Neden Divan?
 
@@ -68,6 +68,36 @@ irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps
 ```
 macOS/Linux ve ayrıntılar: [docs/Kurulum.md](docs/Kurulum.md)
 
+## Bir dakikada başla
+
+Skill adı ezberlemek zorunda değilsin. [Canlı ferman seçicide](https://trugurpala.github.io/divan/#basla)
+niyetini seç; Divan gerekli paketi, kopyalanabilir fermanı ve teslim akışını
+göstersin.
+
+| Niyet | Paket | Divan'ın ilk hareketi |
+|---|---|---|
+| Özellik çıkar | `sadrazam` + `core-pack` | Brief → plan → TDD → teftiş → yayın |
+| Bug düzelt | `core-pack` | Belirti → kök neden → regresyon testi |
+| Arayüz tasarla | `ui-pack` + `react-pack` | Estetik yön → sistem → tarayıcı doğrulaması |
+| Projeyi tanı | `sadrazam` + `core-pack` | Kanıtlı arama → mimari/risk haritası → defter |
+| Kanıtla ve yayınla | `sadrazam` + `core-pack` | A/B eval → kör hakem → CI → canlı doğrulama |
+
+## Davranış eval'i
+
+Yapısal doğrulama “skill daha iyi çalışıyor” demek değildir. v0.10.0 aynı
+vakayı baseline ve skill koşullarında gerçek ajan adaptörüyle çalıştıran,
+çıktıları A/B körleştiren ve isteğe bağlı hakem/eşik uygulayan koşucu ekler:
+
+```bash
+python evals/run.py --check
+python evals/run.py --run --skill kaynak-kuratori \
+  --adapter "python /guvenilir/yol/agent_adapter.py" \
+  --judge "python /guvenilir/yol/judge_adapter.py"
+```
+
+Hakem veya gerçek adaptör yoksa koşucu başarı oranı uydurmaz; sonucu
+`review_required` olarak kaydeder. Protokol: [evals/README.md](evals/README.md).
+
 ## Komutlar (Claude Code)
 
 | Komut | Ne yapar |
@@ -115,11 +145,11 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 ## Dürüst durum
 
 Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
-ancak henüz v1.0 değildir. 41 skill yapısal olarak doğrulanır ve seçili özgün
-skill'ler eval sözleşmesi taşır. Otomatik skill-vs-baseline davranış koşucusu,
-bağımsız kullanıcı/adopsiyon kanıtı ve ölçülmüş verim benchmark'ı v1.0 öncesi
-açık işlerdir. Bu kanıtlar gelmeden hız, gelir veya “dünyanın en iyisi” iddiası
-yapılmaz.
+ancak henüz v1.0 değildir. 41 skill yapısal olarak doğrulanır; 4 özgün skill için
+12 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Henüz güvenilir bir
+gerçek ajan adaptörüyle yayımlanmış karşılaştırma sonucu, bağımsız kullanıcı
+kanıtı veya ölçülmüş verim benchmark'ı yoktur. Bunlar gelmeden hız, gelir veya
+“dünyanın en iyisi” iddiası yapılmaz.
 
 ## Kaldırma
 

@@ -23,13 +23,18 @@ python scripts/validate.py
 ```
 Senin makinende çalışan değil, **taze klonda çalışan** bakidir.
 
-## 3. Tarayıcı testi — Playwright (canlı kanıt)
-`tests/site_testi.py` gerçek Chromium açar, canlı sayfayı yükler, başlığı ve
-"Padişah sensin" metnini doğrular, konsol hatalarını sayar, ekran görüntüsü
-alır. Localde:
+## 3. Tarayıcı testi — Playwright (önizleme + canlı kanıt)
+`tests/site_testi.py` gerçek Chromium açar; sürümü, ferman seçicinin beş
+niyetini, seçim sonrası paket/prompt/akış değişimini, ürün yüzeyini ve mobil
+görünümü denetler. PR sırasında yalnız mevcut canlıyı test etmek yeni değişikliği
+kanıtlamaz; CI bu nedenle `docs/` içeriğini yerel HTTP sunucusunda açar. Haftalık
+nöbet ayrıca gerçek GitHub Pages adresini denetler. Localde:
 ```
 pip install playwright==1.61.0 && playwright install chromium
 python tests/site_testi.py
+
+# Belirli bir yerel/preview adresi
+DIVAN_SITE_URL=http://127.0.0.1:8000/ python tests/site_testi.py
 ```
 Ürün kodun için aynı disiplin: ui-pack'teki **webapp-testing** skill'i,
 ajanına "yaptım" yerine "tarayıcıda tıkladım, işte ekran görüntüsü"

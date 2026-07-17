@@ -5,17 +5,17 @@
     "email": "trugurpala@users.noreply.github.com"
   },
   "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam, planlama, TDD, debugging, UI/UX, React ve zanaat paketleri.",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "metadata": {
     "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam (uctan-uca orkestrator) + planlama, TDD, debugging, UI/UX ve React paketleri.",
-    "version": "0.9.0"
+    "version": "0.10.0"
   },
   "plugins": [
     {
       "name": "sadrazam",
       "source": "./plugins/sadrazam",
       "description": "Bas vezir: her istegi Divan Protokolu ile bastan sona bitmis, dogrulanmis teslimata cevirir",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "strict": true
     },
     {

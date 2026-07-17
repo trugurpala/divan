@@ -1,0 +1,125 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import pathlib
+import sys
+import tempfile
+import textwrap
+import unittest
+
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("divan_evals", ROOT / "evals" / "run.py")
+assert SPEC and SPEC.loader
+EVALS = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(EVALS)
+
+
+class EvalRunnerTests(unittest.TestCase):
+    def test_discovers_current_contracts(self) -> None:
+        cases = EVALS.discover_cases(ROOT)
+        self.assertEqual(len(cases), 12)
+        self.assertEqual(
+            {case["skill_name"] for case in cases},
+            {"arama-ustasi", "baglam-muhafizi", "kaynak-kuratori", "vezir-yetistirme"},
+        )
+
+    def test_zero_cases_is_not_success(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-empty-evals-") as temporary:
+            with self.assertRaisesRegex(EVALS.EvalError, "sıfır eval"):
+                EVALS.discover_cases(pathlib.Path(temporary))
+
+    def test_blind_pair_judge_and_threshold(self) -> None:
+        case = EVALS.discover_cases(ROOT, {"kaynak-kuratori"})[:1]
+        with tempfile.TemporaryDirectory(prefix="divan-eval-adapter-") as temporary:
+            temp = pathlib.Path(temporary)
+            adapter = temp / "adapter.py"
+            judge = temp / "judge.py"
+            adapter.write_text(
+                textwrap.dedent(
+                    """
+                    import json, sys
+                    request = json.load(sys.stdin)
+                    marker = "skill-kanitli" if request["condition"] == "skill" else "baseline"
+                    print(json.dumps({"output": marker, "events": [], "changed_files": []}))
+                    """
+                ),
+                encoding="utf-8",
+            )
+            judge.write_text(
+                textwrap.dedent(
+                    """
+                    import json, sys
+                    request = json.load(sys.stdin)
+                    winner = next(label for label, value in request["candidates"].items() if "skill-kanitli" in value["output"])
+                    print(json.dumps({"winner": winner, "reasons": ["rubrik"], "expectation_scores": {"rubrik": True}}))
+                    """
+                ),
+                encoding="utf-8",
+            )
+            result, key = EVALS.run_evaluations(
+                case,
+                f"{sys.executable} {adapter}",
+                f"{sys.executable} {judge}",
+                min_skill_win_rate=1.0,
+            )
+
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(result["summary"]["skill_wins"], 1)
+        self.assertTrue(result["summary"]["gate_passed"])
+        self.assertNotIn("mapping", result["cases"][0])
+        self.assertIn("mapping", key["cases"][0])
+
+    def test_without_judge_requires_review(self) -> None:
+        case = EVALS.discover_cases(ROOT, {"arama-ustasi"})[:1]
+        with tempfile.TemporaryDirectory(prefix="divan-eval-adapter-") as temporary:
+            adapter = pathlib.Path(temporary) / "adapter.py"
+            adapter.write_text(
+                "import json, sys; json.load(sys.stdin); print(json.dumps({'output':'yanit','events':[],'changed_files':[]}))\n",
+                encoding="utf-8",
+            )
+            result, _key = EVALS.run_evaluations(case, f"{sys.executable} {adapter}")
+        self.assertEqual(result["status"], "review_required")
+        self.assertIsNone(result["summary"]["skill_win_rate"])
+        self.assertIsNone(result["summary"]["gate_passed"])
+
+    def test_threshold_can_fail(self) -> None:
+        case = EVALS.discover_cases(ROOT, {"baglam-muhafizi"})[:1]
+        with tempfile.TemporaryDirectory(prefix="divan-eval-threshold-") as temporary:
+            temp = pathlib.Path(temporary)
+            adapter = temp / "adapter.py"
+            judge = temp / "judge.py"
+            adapter.write_text(
+                textwrap.dedent(
+                    """
+                    import json, sys
+                    request = json.load(sys.stdin)
+                    print(json.dumps({"output": request["condition"], "events": [], "changed_files": []}))
+                    """
+                ),
+                encoding="utf-8",
+            )
+            judge.write_text(
+                textwrap.dedent(
+                    """
+                    import json, sys
+                    request = json.load(sys.stdin)
+                    winner = next(label for label, value in request["candidates"].items() if value["output"] == "baseline")
+                    print(json.dumps({"winner": winner, "reasons": ["fixture"], "expectation_scores": {}}))
+                    """
+                ),
+                encoding="utf-8",
+            )
+            result, _key = EVALS.run_evaluations(
+                case,
+                f"{sys.executable} {adapter}",
+                f"{sys.executable} {judge}",
+                min_skill_win_rate=0.5,
+            )
+        self.assertEqual(result["summary"]["baseline_wins"], 1)
+        self.assertFalse(result["summary"]["gate_passed"])
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -65,20 +65,25 @@ class RepositoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="divan-release-test-") as temporary:
             root = pathlib.Path(temporary)
             (root / "docs").mkdir()
+            (root / "site").mkdir()
+            (root / "evals").mkdir()
             (root / ".divan").mkdir()
             records = {
-                "VERSION": "0.9.0\n",
-                "README.md": "Sürüm: v0.9.0\n",
-                "README.en.md": "Current release: v0.9.0\n",
-                "CHANGELOG.md": "## [0.9.0] - 2026-07-18\n",
-                "BLUEPRINT.md": "- **v0.9.0 ✓** published\n",
+                "VERSION": "0.10.0\n",
+                "README.md": "Sürüm: v0.10.0\n",
+                "README.en.md": "Current release: v0.10.0\n",
+                "CHANGELOG.md": "## [0.10.0] - 2026-07-18\n",
+                "BLUEPRINT.md": "- **v0.10.0 ✓** published\n",
                 "docs/Kurulum.md": "DIVAN_REF=main\n",
+                "docs/index.html": "v0.10.0\n",
+                "site/index.html": "v0.10.0\n",
+                "evals/README.md": "python evals/run.py --check\n",
                 ".divan/progress.md": "## Sıradaki kesin adım\nEval runner\n",
             }
             for relative, content in records.items():
                 (root / relative).write_text(content, encoding="utf-8")
 
-            marketplace = {"version": "0.9.0", "metadata": {"version": "0.9.0"}}
+            marketplace = {"version": "0.10.0", "metadata": {"version": "0.10.0"}}
             errors: list[str] = []
             VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
             self.assertEqual(errors, [])
@@ -86,7 +91,7 @@ class RepositoryTests(unittest.TestCase):
             (root / "README.md").write_text("Sürüm: v0.7.0\n", encoding="utf-8")
             errors = []
             VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
-            self.assertIn("README 'v0.9.0'", "\n".join(errors))
+            self.assertIn("README 'v0.10.0'", "\n".join(errors))
 
     def test_shell_installer_backs_up_collisions(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:

@@ -6,6 +6,8 @@
 - [ ] Üçüncü taraf içerik varsa lisans izinli + UPSTREAM.md ve
       THIRD_PARTY_LICENSES.md güncellendi
 - [ ] Proprietary içerik yok
+- [ ] Skill davranışı değiştiyse `python evals/run.py --check` geçti; kalite
+      iddiası varsa gerçek adaptör/hakem ve sonuç kanıtı eklendi
 
 ## Yayın çeklisti
 
