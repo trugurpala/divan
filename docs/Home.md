@@ -8,7 +8,10 @@ marketplace'idir — vibe coder'ın eli ayağı.
 - [[Kurulum]] — Claude Code, Cursor ve Codex'te kurma
 - [[Vezir Katalogu]] — 14 skill'in tam listesi ve tetikleyicileri
 - [[Standartlar ve Limitler]] — spec kuralları, neyi neden denetliyoruz
-- [[SSS]] — neden fork değil, neden MCP değil, taşınabilirlik
+- [[SSS]]
+- [[Vibe Coder Icin Deger]] — kurunca ne değişir, önce/sonra
+- [[GitHub Kullanimi]] — nimetler tablosu, altın kurallar
+- [[Test ve Teftis]] — üç katmanlı test aklı, Playwright — neden fork değil, neden MCP değil, taşınabilirlik
 
 ## Hızlı başlangıç
 ```
