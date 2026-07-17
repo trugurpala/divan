@@ -44,6 +44,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17m: PADİŞAH DÜZELTMESİ — vitrin (README/katalog/landing) v0.3te kalmıştı, v0.7 gerçeğine eşitlendi. Bir daha olamaz: teftiş v4 vitrin tutarlılığını denetliyor (katalog sayısı, paket adları, komutlar READMEde yoksa CI KIRILIR); sadrazama Vitrin Kanunu eklendi.
 - 2026-07-17l: Kural Hazinesi seferi — awesome-cursorrules (CC0, lisans bizzat okundu) hazinesinden kürasyonla kural-hazinesi veziri; Karpathy-skills LİSANSSIZ çıktığı için REDDEDİLDİ, yerine özgün temkin veziri (4 ihtiyat ilkesi) yazıldı. 37 vezir.
 - 2026-07-17k: Keşif raporu işlendi — MÜŞAVİR veziri (stack danışmanı: proje türüne göre 2026 varsayılanları + tazelik protokolü) ve AYLIK NÖBET (upstream değişim bekçisi: cron + otomatik issue) eklendi. v0.6 vendoring hedef listesi BLUEPRINTe girdi. 35 vezir.
 - 2026-07-17j: SEFERBERLİK — ordu 15ten 34 vezire çıktı: core-pack +7 (superpowers MIT), yeni zanaat-pack 7 (Anthropic Apache, Ehl-i Hiref), react-pack +5 (Vercel MIT). Teftiş 2 upstream spec ihlali daha yakalayıp onardı; 4 yama UPSTREAM.mdde belgeli. 5 paket.

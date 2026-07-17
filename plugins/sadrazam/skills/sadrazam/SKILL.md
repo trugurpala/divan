@@ -49,3 +49,9 @@ State context'te değil diskte yaşar. `defterdar` skill'i ile birlikte çalış
 - Para-dokunan iş (ödeme, borsa, bakiye): spec-first zorunlu —
   .divan/spec/spec.md yazılmadan İcra'ya geçme; risk-register.md tut.
 - Kayda geçmemiş karar ve kanıtsız "bitti" yok hükmündedir.
+
+## Vitrin kanunu
+
+Takdim'e vitrin dahildir: ürünü değiştiren her iş, kullanıcıya görünen
+yüzeyleri de AYNI turda günceller — README, katalog, landing, sürüm
+notu. "Önce bitir sonra yazarım" yasaktır; yazılmamış iş yarımdır.

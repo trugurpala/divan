@@ -93,6 +93,24 @@ for hk in KOK.glob("plugins/*/hooks/hooks.json"):
     try: json.loads(hk.read_text(encoding="utf-8"))
     except Exception as e: hatalar.append(f"{hk.relative_to(KOK)}: hooks.json bozuk: {e}")
 
+
+# 6) Vitrin tutarliligi: belgeler urunle esit olmak zorunda (eskime = hata)
+gercek_sayi = len(list(KOK.glob("plugins/*/skills/*/SKILL.md")))
+katalog = (KOK / "docs" / "Vezir-Katalogu.md")
+if katalog.exists():
+    katalog_sayi = katalog.read_text(encoding="utf-8", errors="ignore").count("| **")
+    if katalog_sayi != gercek_sayi:
+        hatalar.append(f"VITRIN ESKI: katalog {katalog_sayi} vezir diyor, gercek {gercek_sayi} — docs/Vezir-Katalogu.md yeniden uret")
+readme = (KOK / "README.md").read_text(encoding="utf-8", errors="ignore")
+if f"{gercek_sayi} vezir" not in readme and f"{gercek_sayi} skill" not in readme:
+    hatalar.append(f"VITRIN ESKI: README guncel vezir sayisini ({gercek_sayi}) anmiyor")
+for pl in mp.get("plugins", []):
+    if pl["name"] not in readme:
+        hatalar.append(f"VITRIN ESKI: README '{pl['name']}' paketini anmiyor")
+for komut in KOK.glob("plugins/*/commands/*.md"):
+    if f"/{komut.stem}" not in readme:
+        hatalar.append(f"VITRIN ESKI: README /{komut.stem} komutunu anmiyor")
+
 for u in uyarilar: print(f"UYARI: {u}")
 if hatalar:
     print("\nTEFTIS BASARISIZ:")
