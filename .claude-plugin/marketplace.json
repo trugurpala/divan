@@ -13,7 +13,7 @@
       "name": "sadrazam",
       "source": "./plugins/sadrazam",
       "description": "Bas vezir: her istegi Divan Protokolu ile bastan sona bitmis, dogrulanmis teslimata cevirir",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "strict": true
     },
     {

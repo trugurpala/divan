@@ -35,6 +35,7 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17d: İlk vizyondaki komutlar tamamlandı (/ferman, /vezir, /teftis); GitHub Pages, Discussions, issue etiketleri açıldı. Upstream tamlık doğrulandı (birebir).
 - 2026-07-16: v0.1 derlendi (vibeforge → Divan rebrand, Sadrazam yazıldı,
   landing yayında). GitHub push token bekliyor.
 - 2026-07-17c: Teftiş v2 (spec tam denetim) 3 gerçek kusur yakaladı: 2 Vercel skill klasör-ad uyuşmazlığı (yüklenmiyordu, düzeltildi), 1 frontmatter <> ihlali (düzeltildi). Wiki içeriği docs/ altında; GitHub wiki ilk sayfa açılınca aynalanacak.

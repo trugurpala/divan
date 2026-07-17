@@ -20,6 +20,13 @@ standardını destekleyen tüm ajanlarla uyumludur.
 /plugin install react-pack@divan
 ```
 
+## Komutlar
+
+Sadrazam kuruluyken: `/ferman <iş>` işi baştan sona teslim eder,
+`/vezir <fikir>` Divan'a yeni skill yetiştirir, `/teftis` repoyu denetler.
+
+**Canlı sayfa:** https://trugurpala.github.io/divan/
+
 ## Vezirler (paketler)
 
 | Paket | Ne yapar | Kaynak / Lisans |
