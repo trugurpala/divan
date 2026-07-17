@@ -16,6 +16,8 @@ python -m unittest discover -s tests -v
 git diff --check
 ```
 
-If the product changes, update the README, catalog, installation docs, and site
-in the same change. Do not initialize, commit, push, release, or overwrite user
-project files unless the user explicitly asks.
+If the product changes, update both READMEs, catalog, changelog, blueprint,
+installation docs, version file, and site in the same change. A draft PR is an
+intermediate state, not a public delivery. When publication is authorized,
+verify the default branch and live surface after merge. Do not initialize,
+commit, push, release, or overwrite user project files unless the user asks.

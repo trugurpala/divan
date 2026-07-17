@@ -44,7 +44,7 @@ Bu sayfa frontmatter'lardan otomatik üretilir.
 | **defterdar** | Persistent project memory keeper for the USER's project (Ottoman treasurer-scribe). Creates and maintains AGENTS.md, BLUEPRINT.md (vision, ADR decision records, roadmap, status log), a .divan/ progress journal, decision … |
 | **musavir** | Technology stack advisor (counselor vizier). Recommends the current world-standard stack by project type - landing page, SaaS, e-commerce, mobile, AI app, fintech/borsa - covering framework, database, ORM, auth, payments… |
 | **ordu-nizami** | Native-first agent orchestration for Claude Code and Codex. Chooses the smallest safe lane: one session, bounded subagents, or isolated worktrees and explicitly enabled experimental Agent Teams.… |
-| **sadrazam** | End-to-end delivery orchestrator (the "Grand Vizier"). Use whenever the user asks to build, create, produce, or ship anything substantial — a feature, an app, a document, a campaign — especially with phrases like "baştan… |
+| **sadrazam** | Uçtan uca teslim orkestratörü. Plan, uygulama ve teftişten sonra PR, `main`, canlı yüzey ve kalıcı kayıtları ayrı ayrı doğrular; yeşil bir özellik dalını yayın saymaz. |
 | **vezir-yetistirme** | Skill-creation coach for the Divan marketplace ("training a new vizier"). Use when the user wants to add a new skill to Divan, write a SKILL.md, contribute to the marketplace, or says things like "yeni skill yaz", "Divan… |
 
 ## ui-pack (3 vezir)

@@ -30,6 +30,7 @@ OZGUN = {
     "ordu-nizami",
     "temkin",
     "kural-hazinesi",
+    "kaynak-kuratori",
 }
 KURASYON_KAYNAKLARI = {
     "PatrickJS/awesome-cursorrules": "b044f956f021b6e8877f16781bcfc466a6a120e9",

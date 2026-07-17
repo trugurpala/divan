@@ -16,6 +16,7 @@ import sys
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 AD_DESENI = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+SEMVER_DESENI = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 IZINLI_ALANLAR = {
     "name",
     "description",
@@ -145,6 +146,51 @@ def eval_sozlesmesini_denetle(
                 hatalar.append(f"{onek}.files bulunamadi: {dosya}")
 
 
+def surum_kayitlarini_denetle(
+    kok: pathlib.Path, marketplace: dict, hatalar: list[str]
+) -> None:
+    """Tek sürüm kaynağını vitrin, plan ve yayın kayıtlarıyla karşılaştır."""
+    version_yolu = kok / "VERSION"
+    if not version_yolu.is_file():
+        hatalar.append("VERSION eksik")
+        return
+
+    surum = version_yolu.read_text(encoding="utf-8").strip()
+    if not SEMVER_DESENI.fullmatch(surum):
+        hatalar.append(f"VERSION SemVer degil: '{surum}'")
+        return
+
+    if marketplace.get("version") != surum:
+        hatalar.append(
+            f"SURUM ESKI: marketplace ({marketplace.get('version')}) != VERSION ({surum})"
+        )
+    metadata_surumu = (marketplace.get("metadata") or {}).get("version")
+    if metadata_surumu != surum:
+        hatalar.append(
+            f"SURUM ESKI: marketplace metadata ({metadata_surumu}) != VERSION ({surum})"
+        )
+
+    kayitlar = {
+        "README": (kok / "README.md", f"v{surum}"),
+        "README.en": (kok / "README.en.md", f"v{surum}"),
+        "CHANGELOG": (kok / "CHANGELOG.md", f"## [{surum}]"),
+        "BLUEPRINT": (kok / "BLUEPRINT.md", f"**v{surum} ✓**"),
+        "Kurulum": (kok / "docs" / "Kurulum.md", "DIVAN_REF=main"),
+    }
+    for ad, (yol, beklenen) in kayitlar.items():
+        if not yol.is_file():
+            hatalar.append(f"{yol.relative_to(kok)} eksik")
+            continue
+        if beklenen not in yol.read_text(encoding="utf-8"):
+            hatalar.append(f"SURUM ESKI: {ad} '{beklenen}' kaydini icermiyor")
+
+    ilerleme = kok / ".divan" / "progress.md"
+    if not ilerleme.is_file():
+        hatalar.append(".divan/progress.md eksik")
+    elif "## Sıradaki kesin adım" not in ilerleme.read_text(encoding="utf-8"):
+        hatalar.append("HAFIZA ESKI: progress.md siradaki kesin adimi icermiyor")
+
+
 def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     hatalar: list[str] = []
     uyarilar: list[str] = []
@@ -241,6 +287,9 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         "THIRD_PARTY_LICENSES.md",
         "LICENSE",
         "README.md",
+        "README.en.md",
+        "CHANGELOG.md",
+        "VERSION",
         "BLUEPRINT.md",
         "UPSTREAM.md",
         "CONTRIBUTING.md",
@@ -293,6 +342,8 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     for komut in kok.glob("plugins/*/commands/*.md"):
         if f"/{komut.stem}" not in belgeler["README"]:
             hatalar.append(f"VITRIN ESKI: README /{komut.stem} komutunu anmiyor")
+
+    surum_kayitlarini_denetle(kok, mp, hatalar)
 
     return hatalar, uyarilar, len(eklentiler), len(skiller)
 

@@ -15,15 +15,16 @@ Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall
 
 Windows (PowerShell):
 ```powershell
-$env:DIVAN_REF = "v0.8.2"
+$env:DIVAN_REF = "main"
 irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
 ```
 macOS/Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.8.2 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=main bash
 ```
 En güvenli kullanımda betiği önce indirip inceleyin. `DIVAN_REF` bir sürüm
-etiketi veya commit ile kaynak içeriğini sabitler. Kurucu, aynı adlı mevcut
+etiketi veya commit ile kaynak içeriğini sabitler; v0.9.0 etiketi yayımlanana
+kadar çalışan varsayılan `main`dir. Kurucu, aynı adlı mevcut
 skill klasörlerini birleştirmez: tarihli yedeğe taşır ve kurulum kaydı üretir.
 Sonra Codex'i yeniden başlat. Skill'ler tetikleyici cümlelerle çalışır
 ("baştan sona yap", "defter kur"); /komutlar, hook ve subagent'lar Claude

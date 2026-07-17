@@ -5,8 +5,10 @@ Vibe coding'in tek gerçek sigortası budur: ajanın "çalışıyor" demesi değ
 
 ## 1. Statik ve resmî teftiş (her push)
 `python scripts/validate.py` — JSON, temel frontmatter, name=klasör,
-≤64/≤1024, eval sözleşmesi, yol güvenliği, ad çakışması, sürüm ve vitrin
-tutarlılığı. CI bunun ardından
+≤64/≤1024, eval sözleşmesi, yol güvenliği, ad çakışması ve vitrin tutarlılığı.
+`VERSION`, marketplace, iki README, CHANGELOG, BLUEPRINT ve kurulum belgesi
+aynı sürümü söylemezse teftiş kırılır; `.divan/progress.md` sıradaki kesin
+adımı taşımak zorundadır. CI bunun ardından
 `skills-ref==0.1.1` ile 41 skill'i ve Claude Code 2.1.212 ile marketplace ile
 beş paketi doğrular. Yerelde önce bağımlılıksız teftişi çalıştır:
 ```
@@ -32,3 +34,10 @@ python tests/site_testi.py
 Ürün kodun için aynı disiplin: ui-pack'teki **webapp-testing** skill'i,
 ajanına "yaptım" yerine "tarayıcıda tıkladım, işte ekran görüntüsü"
 dedirtir. Kural basit: **kanıtsız "bitti" yok sayılır.**
+
+## 4. Yayın testi — varsayılan dal gerçektir
+
+Özellik dalındaki veya taslak PR'daki yeşil test yalnızca “hazır” kanıtıdır.
+Kamusal teslimde ayrıca PR hazır duruma getirilir, yetki kapsamındaysa `main`e
+birleştirilir ve GitHub'daki README ile kurulum yolu varsayılan daldan yeniden
+okunur. Tag/release yoksa durum “main'de”dir; “release yayımlandı” değildir.

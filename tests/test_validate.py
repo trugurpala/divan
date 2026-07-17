@@ -61,6 +61,33 @@ class RepositoryTests(unittest.TestCase):
             self.assertIn("expectations", joined)
             self.assertIn("skill disina cikiyor", joined)
 
+    def test_release_records_reject_stale_public_surface(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-release-test-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "docs").mkdir()
+            (root / ".divan").mkdir()
+            records = {
+                "VERSION": "0.9.0\n",
+                "README.md": "Sürüm: v0.9.0\n",
+                "README.en.md": "Current release: v0.9.0\n",
+                "CHANGELOG.md": "## [0.9.0] - 2026-07-18\n",
+                "BLUEPRINT.md": "- **v0.9.0 ✓** published\n",
+                "docs/Kurulum.md": "DIVAN_REF=main\n",
+                ".divan/progress.md": "## Sıradaki kesin adım\nEval runner\n",
+            }
+            for relative, content in records.items():
+                (root / relative).write_text(content, encoding="utf-8")
+
+            marketplace = {"version": "0.9.0", "metadata": {"version": "0.9.0"}}
+            errors: list[str] = []
+            VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
+            self.assertEqual(errors, [])
+
+            (root / "README.md").write_text("Sürüm: v0.7.0\n", encoding="utf-8")
+            errors = []
+            VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
+            self.assertIn("README 'v0.9.0'", "\n".join(errors))
+
     def test_shell_installer_backs_up_collisions(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
             base = pathlib.Path(temporary)

@@ -63,3 +63,24 @@ State context'te değil diskte yaşar. `defterdar` skill'i ile birlikte çalış
 Takdim'e vitrin dahildir: ürünü değiştiren her iş, kullanıcıya görünen
 yüzeyleri de AYNI turda günceller — README, katalog, landing, sürüm
 notu. "Önce bitir sonra yazarım" yasaktır; yazılmamış iş yarımdır.
+
+## Yayın kanunu
+
+`hazır`, `PR açıldı`, `main'e birleşti`, `release yayımlandı` ve `canlıda
+doğrulandı` ayrı durumlardır. Birini ötekinin yerine söyleme.
+
+Kullanıcı `yayınla`, `dünyaya aç`, `canlıya al`, `ship et` diyorsa veya kamusal
+ürün teslimi açıkça amaçlanıyorsa Takdim ölçütleri şunları da içerir:
+
+1. README/katalog/landing ile CHANGELOG ve BLUEPRINT aynı sürümü anlatır.
+2. Yerel ve uzak CI kanıtı yeşildir.
+3. Taslak PR hazır inceleme durumuna getirilir.
+4. Kullanıcının verdiği yetki kapsamındaysa varsayılan dala birleştirilir;
+   yetki yoksa bu açık blocker'dır ve iş “yayımlandı” sayılmaz.
+5. Varsayılan daldaki README, kurulum yolu ve canlı sayfa yeniden okunur.
+6. Tag/release istenmişse veya teslim sözleşmesinin parçasıysa ayrıca oluşturulur;
+   yalnız `main` birleştiyse “main'de”, tag yoksa “release yayımlandı” denmez.
+7. BLUEPRINT durum günlüğü ve `.divan/progress.md` gerçek yayın durumuyla kapanır.
+
+Bir özellik dalındaki yeşil commit kamusal ürün değildir. Kullanıcıya merge
+işini sessizce bırakıp “bitti” deme.

@@ -25,6 +25,11 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
   Aynı dosyayı eşzamanlı yazdırma; paralel yazım gerekiyorsa ayrı worktree kullan.
 - Ürünü değiştiren işte README, katalog, kurulum belgesi ve site sayılarını aynı
   değişiklikte eşitle.
+- Kamusal teslimde taslak PR'ı son durum sayma. Yetki kapsamındaysa CI sonrası
+  varsayılan dala birleştir; README/kurulum/canlı sayfayı varsayılan daldan
+  yeniden oku. Tag yoksa “release yayımlandı” deme.
+- Her sürümde `VERSION`, marketplace, `CHANGELOG.md`, README'ler, BLUEPRINT ve
+  kurulum referansını eşitle. `.divan/progress.md` sıradaki kesin adımı taşımalı.
 
 ## Doğrulama
 

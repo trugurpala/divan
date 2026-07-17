@@ -41,20 +41,38 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + etik dışı, popülerliği fark etmez.
 
 ## Yol Haritası
-- **v0.1 ✓** 4 paket, 13 skill, landing page, CI, teftiş
-- **v0.7.1 (hazır)** Güvenli davranış, resmî doğrulayıcılar, geri alınabilir kurulum, doğru upstream nöbeti ve belge eşitlemesi
-- **v0.8.1 (aday)** 38. skill `ordu-nizami`, `/sefer`, Claude+Codex repo
-  rehberleri, veriye dayalı harness kararı ve görsel mimari; 39–40. skill'ler
-  `arama-ustasi` ve `baglam-muhafizi`; ölçülebilir eval sözleşmesi
-- **v0.8.2 (aday)** 41. skill `kaynak-kuratori`; kısa bağlantı çözümü,
-  repo türü, lisans/köken/yürütme yüzeyi ve çakışma kapıları; 40 repoluk
-  güncel kürasyon raporu
-- **v0.2** Özgün Türkçe skill'ler, kalıcı domain, README demo GIF, logo
-- **v0.5** awesome-claude-skills listelerine PR, topluluk geri bildirimi
-- **v1.0** Kararlı sürüm + dokümantasyon
-- **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
+
+### Yayımlanan temel
+
+- **v0.1–v0.7 ✓** 5 paket, 37 skill, landing, CI, hafıza, lisans/köken
+  kayıtları, topluluk ve güvenlik dosyaları
+- **v0.9.0 ✓** 41 skill; yerel orkestrasyon, kanıtlı arama, bağlam disiplini,
+  kaynak kürasyonu, İngilizce vitrin, CHANGELOG ve Yayın Kanunu
+
+### Sıradaki sürüm — v0.10.0
+
+1. Skill-vs-baseline davranış eval koşucusu ve makine-okunur sonuç raporu.
+2. Claude Code + Codex kurulum/uyumluluk matrisini temiz ortamda tekrarlayan CI.
+3. Her yayımdan önce CHANGELOG, VERSION, marketplace ve tag eşliği.
+4. İlk dış kullanıcı geri bildirimi için ölçülebilir kabul formu ve issue akışı.
+
+### v1.0 kabul kapıları
+
+- Kararlı ve belgelenmiş public skill/command sözleşmesi.
+- Otomatik davranış eval'leri; başarısız eval'de yayın engeli.
+- En az bir bağımsız kullanıcıdan tekrar üretilebilir kurulum ve görev kanıtı.
+- Sürüm etiketi, release notes, kurulum ve geri alma tatbikatı.
+
+### Uzun vade
+
+- **v2.0:** Talep ve güvenlik gerekçesi oluşursa isteğe bağlı hosted ürün/MCP;
+  çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18b: v0.9.0 yayın disiplini — canlı `main`in v0.7'de kaldığı ve
+  v0.8.2 işinin taslak PR'da beklediği doğrulandı. PR'ı teslim sayan varsayım
+  kaldırıldı; Türkçe+İngilizce vitrin, CHANGELOG, VERSION, kalıcı plan/ADR ve
+  Yayın Kanunu eklendi. Yeni özellik nedeniyle SemVer minor sürüme geçildi.
 - 2026-07-18: v0.8.2 — “100 Claude Repos” paylaşımındaki sağlanan 40 bağlantı
   çözüldü; 6 bulunamayan, 2 arşivli ve 1 yinelenen kanonik hedef belgelendi.
   Toplu kurulum reddedildi; özgün `kaynak-kuratori` ve üç eval eklendi. 41 vezir.
@@ -82,3 +100,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - 2026-07-17b: Topluluk dosyaları (CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, şablonlar), UPSTREAM.md ve vezir-yetistirme meta-skill eklendi.
 - 2026-07-17: Teftiş script'i + CI + BLUEPRINT eklendi. SEO güncellemesi
   site/index.html'de hazır; push sonrası canlıya alınacak.
+
+## Sıradaki Kesin Adım
+
+v0.10.0 için otomatik skill-vs-baseline davranış eval koşucusunu tasarla;
+ölçülmemiş hız/kalite iddialarını yayın kapısında reddet.

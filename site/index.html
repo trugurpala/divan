@@ -92,7 +92,7 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Vibe coder'ın vezirler kurulu</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Padişah sensin.</b> Fermanı verirsin; Divan işi <b>baştan sona</b> bitirir — planlar, inşa eder, test eder, kanıtıyla teslim eder — ve kaldığın yeri unutmaz. 41 vezir · 5 paket · yerel orkestrasyon · bağımsız denetçi.</p>
+    <p class="tez"><b>Padişah sensin.</b> Fermanı verirsin; Divan işi <b>baştan sona</b> bitirir — planlar, inşa eder, test eder, kayda geçirir ve varsayılan dalda doğrular. v0.9.0 · 41 vezir · 5 paket · yerel orkestrasyon.</p>
     <div class="ferman">
       <p class="ferman-etiket">Ferman · Claude Code</p>
       <code><span class="p">/plugin</span> marketplace add trugurpala/divan
@@ -113,7 +113,7 @@ footer p+p{margin-top:10px}
       </article>
       <article class="vezir">
         <h3>Core</h3>
-        <p>Planlama, TDD ve debugging yanında kanıtlı repo araması, bağlam bütçesi ve tamamlama öncesi doğrulama.</p>
+        <p>Planlama, TDD ve debugging yanında kaynak kürasyonu, kanıtlı repo araması, bağlam bütçesi ve tamamlama öncesi doğrulama.</p>
         <span class="lisans">superpowers · MIT</span>
       </article>
       <article class="vezir">
@@ -138,6 +138,19 @@ footer p+p{margin-top:10px}
 <section class="bab">
   <div class="wrap">
     <p class="bab-etiket">Bab II</p>
+    <h2>Neden Divan?</h2>
+    <ol class="protokol">
+      <li><b>Hafıza</b><span>Kararlar sohbette kaybolmaz; AGENTS.md, BLUEPRINT ve .divan kayıtlarında yaşar.</span></li>
+      <li><b>Kürasyon</b><span>Popüler repo körlemesine kurulmaz; lisans, köken, risk ve gerçek boşluk denetlenir.</span></li>
+      <li><b>Kanıt</b><span>“Çalışıyor” sözü yetmez; test, resmî doğrulayıcı ve bağımsız teftiş gerekir.</span></li>
+      <li><b>Yayın</b><span>Taslak PR teslim değildir; vitrin, CHANGELOG, main ve canlı yüz aynı gerçeği söyler.</span></li>
+    </ol>
+  </div>
+</section>
+
+<section class="bab">
+  <div class="wrap">
+    <p class="bab-etiket">Bab III</p>
     <h2>Divan Protokolü</h2>
     <ol class="protokol">
       <li><b>Ferman</b><span>Hedef tek cümlede netleşir; en fazla bir soru sorulur.</span></li>
@@ -145,7 +158,7 @@ footer p+p{margin-top:10px}
       <li><b>Plan</b><span>Kısa, numaralı bir plan yazılır — inşadan önce, her zaman.</span></li>
       <li><b>İcra</b><span>Tamamı inşa edilir; kod varsa TDD ile, küçük doğrulanmış adımlarla.</span></li>
       <li><b>Teftiş</b><span>Bitti demeden önce kanıt: test çıktısı, çalışan komut, ekran görüntüsü.</span></li>
-      <li><b>Takdim</b><span>Bitmiş iş + üç satır özet + sonraki adımlar.</span></li>
+      <li><b>Takdim</b><span>Bitmiş iş + güncel vitrin/plan + kanıt + gerekiyorsa main ve canlı doğrulama.</span></li>
     </ol>
   </div>
 </section>
