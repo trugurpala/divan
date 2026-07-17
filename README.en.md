@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.2-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.3-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs natively in Claude Code and its Agent Skills remain portable to Codex,
 Cursor, and other compatible hosts.
 
-**Current release:** v0.10.2 · **Website:** https://trugurpala.github.io/divan/ · **Wiki source:** [docs/Home.md](docs/Home.md) · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Candidate council:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
+**Current release:** v0.10.3 · **Website:** https://trugurpala.github.io/divan/ · **Wiki source:** [docs/Home.md](docs/Home.md) · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Candidate council:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
 
 ## Why Divan?
 

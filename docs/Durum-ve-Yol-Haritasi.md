@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v0.10.2
+# Durum ve Yol Haritası · v0.10.3
 
 Son doğrulama tarihi: 2026-07-18.
 
@@ -18,7 +18,7 @@ Son doğrulama tarihi: 2026-07-18.
 - Beyan edilmiş gerçek ajan ve hakem adapter'ıyla yayımlanmış A/B sonucu yok.
 - Claude Code ve Codex temiz-makine kurulum matrisi henüz otomatik değil.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
-- v0.10.2 için etiketli GitHub release, ayrıca oluşturulana kadar yoktur.
+- v0.10.3 için etiketli GitHub release, ayrıca oluşturulana kadar yoktur.
 - GitHub Wiki Git deposu ilk sayfa arayüzde bir kez kaydedilene kadar canlı Wiki
   yayını 404 verir; kaynak/CI hazır olsa da “Wiki canlı güncel” değildir.
 

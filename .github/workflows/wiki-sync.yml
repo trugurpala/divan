@@ -31,8 +31,8 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - run: python scripts/wiki.py --check
@@ -45,8 +45,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Wiki paketini derle
@@ -57,6 +57,11 @@ jobs:
         run: |
           set -euo pipefail
           wiki_url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git"
+          if ! git ls-remote "$wiki_url" >/dev/null 2>&1; then
+            echo "::error title=Wiki ilk sayfası eksik::GitHub Wiki Git deposu henüz oluşmamış. Repo Wiki sekmesinde ilk Home sayfasını bir kez Save Page ile kaydet, sonra bu workflow'u yeniden çalıştır."
+            echo "Aç: https://github.com/${GITHUB_REPOSITORY}/wiki"
+            exit 1
+          fi
           git clone "$wiki_url" "$RUNNER_TEMP/divan-wiki"
           cp "$RUNNER_TEMP/divan-wiki-build"/*.md "$RUNNER_TEMP/divan-wiki/"
           cd "$RUNNER_TEMP/divan-wiki"

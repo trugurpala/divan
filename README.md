@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.2-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.3-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.10.2 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Wiki kaynağı:** [docs/Home.md](docs/Home.md) · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Aday Meclisi:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
+**Sürüm:** v0.10.3 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Wiki kaynağı:** [docs/Home.md](docs/Home.md) · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Aday Meclisi:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
 
 ## Neden Divan?
 
