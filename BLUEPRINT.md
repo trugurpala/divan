@@ -27,6 +27,15 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 - Tarayıcı testi kullanıcı tarafında: ui-pack'teki `webapp-testing` skill'i
   (Playwright) ile.
 
+## v0.6 Vendoring Hedef Listesi (keşif raporu, 2026-07-17)
+Öncelik sırasıyla; her biri alınmadan önce LICENSE dosyası bizzat okunacak:
+1. Karpathy-skills (100K+ yıldız fenomen, tek CLAUDE.md, 4 ilke) — lisans DOĞRULANACAK
+2. VoltAgent/awesome-agent-skills'ten seçme (20K yıldız, 1000+ skill; tek tek lisans bak)
+3. Remotion best-practices (video üretimi — vibe coder talebi yüksek)
+4. Caveman (çıktı-token kısıcı; fatura dostları için)
+5. android/skills + Expo skill (mobil ordu)
+YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + etik dışı, popülerliği fark etmez.
+
 ## Yol Haritası
 - **v0.1 ✓** 4 paket, 13 skill, landing page, CI, teftiş
 - **v0.2** Özgün Türkçe skill'ler, kalıcı domain, README demo GIF, logo
@@ -35,6 +44,7 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 - **v2.0** Hosted premium: web app + MCP + ödeme (Stripe)
 
 ## Durum Günlüğü
+- 2026-07-17k: Keşif raporu işlendi — MÜŞAVİR veziri (stack danışmanı: proje türüne göre 2026 varsayılanları + tazelik protokolü) ve AYLIK NÖBET (upstream değişim bekçisi: cron + otomatik issue) eklendi. v0.6 vendoring hedef listesi BLUEPRINTe girdi. 35 vezir.
 - 2026-07-17j: SEFERBERLİK — ordu 15ten 34 vezire çıktı: core-pack +7 (superpowers MIT), yeni zanaat-pack 7 (Anthropic Apache, Ehl-i Hiref), react-pack +5 (Vercel MIT). Teftiş 2 upstream spec ihlali daha yakalayıp onardı; 4 yama UPSTREAM.mdde belgeli. 5 paket.
 - 2026-07-17i: Codex tek-komut kurulum scriptleri (kur-codex.ps1 Windows / kur-codex.sh unix) eklendi; git gerektirmez (zip indirir). Kurulum belgesi güncellendi.
 - 2026-07-17h: Canlı upstream denetimi — 12 taşınan vezirin 12si bugünkü kaynaklarla birebir (tek fark bilinçli spec yaması, UPSTREAM.md tablosunda belgeli). Komut/subagent çakışması yok. docs/Kaldirma.md (komple kaldırma rehberi) eklendi.
