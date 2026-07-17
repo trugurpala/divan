@@ -12,6 +12,35 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Independent adoption evidence and reproducible quality measurements.
 - First published comparison using a declared real-agent adapter and judge.
 
+## [0.10.1] - 2026-07-18
+
+### Added
+
+- Versioned GitHub Wiki manifest, deterministic builder, link/version checks,
+  and a generated navigation sidebar.
+- Fourteen intent-first Wiki pages covering quick start, current status,
+  roadmap, OpenAI/Codex boundaries, and the Mühürdar verification mascot.
+- `wiki-sync` Actions workflow: validates Wiki sources on pull requests,
+  publishes them to the separate Wiki Git repository after `main`, and reads
+  the live `Home.md` back before succeeding.
+
+### Changed
+
+- Sadrazam 0.8.1 now treats enabled Wikis, docs sites, and help centers as
+  product surfaces with a canonical source, automated synchronization, and
+  explicit live-publication evidence.
+- README, English README, landing, roadmap, pull request template, and agent
+  guidance now include the Wiki in the same publication contract.
+- OpenAI/Codex documentation now distinguishes portable Agent Skills from the
+  OpenAI Agents SDK application runtime and links to current official guides.
+
+### Verified
+
+- Wiki compilation is deterministic and rejects missing sources, duplicate
+  slugs, broken internal links, and version drift.
+- Unit coverage exercises manifest integrity, generated pages/sidebar, and
+  version/link consistency.
+
 ## [0.10.0] - 2026-07-18
 
 ### Added
@@ -81,6 +110,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.10.1]: https://github.com/trugurpala/divan/tree/main
 [0.10.0]: https://github.com/trugurpala/divan/tree/main
 [0.9.0]: https://github.com/trugurpala/divan/tree/main
 [0.7.0]: https://github.com/trugurpala/divan/releases/tag/v0.7.0

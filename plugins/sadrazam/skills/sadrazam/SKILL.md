@@ -64,6 +64,21 @@ Takdim'e vitrin dahildir: ürünü değiştiren her iş, kullanıcıya görünen
 yüzeyleri de AYNI turda günceller — README, katalog, landing, sürüm
 notu. "Önce bitir sonra yazarım" yasaktır; yazılmamış iş yarımdır.
 
+## Bilgi yüzeyleri kanunu
+
+Repo Wiki, docs sitesi, API rehberi veya ayrı yardım merkezi kullanıyorsa bunlar
+ikincil not değil ürün yüzeyidir:
+
+1. Her yüzey için repoda sürümlenen tek doğru kaynağı belirle; aynı metni elle
+   iki yerde yaşatma.
+2. Ürün veya sürüm değişiminde kaynak belgeyi kodla aynı değişiklikte güncelle.
+3. Mümkünse derleme/eşitleme işini CI'a bağla ve kırık bağlantı ile eski sürümü
+   teftişte başarısız say.
+4. `main` sonrası uzak yüzeyi yeniden oku. Kaynak güncel ama Wiki/site yayını
+   başarısızsa “belge hazır” de; “canlı güncel” deme.
+5. Geçici yayın engelini BLUEPRINT/progress kaydında açık bırak; kullanıcıya
+   her oturumda yeniden hatırlatma yükü bindirme.
+
 ## Yayın kanunu
 
 `hazır`, `PR açıldı`, `main'e birleşti`, `release yayımlandı` ve `canlıda

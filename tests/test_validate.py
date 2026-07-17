@@ -78,6 +78,9 @@ class RepositoryTests(unittest.TestCase):
                 "docs/index.html": "v0.10.0\n",
                 "site/index.html": "v0.10.0\n",
                 "evals/README.md": "python evals/run.py --check\n",
+                "docs/Home.md": "Divan Wiki v0.10.0\n",
+                "docs/Durum-ve-Yol-Haritasi.md": "Durum v0.10.0\n",
+                "wiki-pages.json": '{"pages": [{"source": "docs/Home.md"}]}\n',
                 ".divan/progress.md": "## Sıradaki kesin adım\nEval runner\n",
             }
             for relative, content in records.items():

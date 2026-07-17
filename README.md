@@ -1,10 +1,10 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.10.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
-**Türkçe** · [English](README.en.md) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
+**Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
 
 <img src="docs/assets/muhurdar-idle.png" alt="Divan'ın Mühürdar maskotu" width="128" align="right">
 
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.10.0 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
+**Sürüm:** v0.10.1 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md)
 
 ## Neden Divan?
 
@@ -29,7 +29,7 @@ aynı turda yayımlanmasını ister.
 | “Çalışıyor” deniyor, kanıt yok | Test, resmî doğrulayıcı ve bağımsız müfettiş kapısı |
 | Binlerce skill bağlamı ve güveni bozuyor | Kürasyon, lisans/köken denetimi ve aşamalı yükleme |
 | Harici swarm/harness karmaşık ve pahalı | Önce yerel tek oturum; gerekirse sınırlı subagent/worktree |
-| PR hazır ama ürün hâlâ eski | Yayın Kanunu: vitrin + CHANGELOG + merge + canlı doğrulama |
+| PR hazır ama ürün hâlâ eski | Yayın Kanunu: vitrin + Wiki + CHANGELOG + merge + canlı doğrulama |
 
 Divan yeni bir model veya ayrı bir ajan runtime'ı değildir. Mevcut kodlama
 ajanına **çalışma disiplini, uzmanlık ve teslim hafızası** ekleyen, denetlenebilir
@@ -44,7 +44,7 @@ Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
 3. Mevcut 41 vezirle çakışmayı ve gerçek ürün boşluğunu ölçer.
 4. Gerekirse en küçük özgün skill'i yazar ve davranış eval'ini ekler.
 5. Yerel test + Agent Skills + Claude Code doğrulamasını geçirir.
-6. README, katalog, CHANGELOG ve BLUEPRINT'i aynı değişiklikte günceller.
+6. README, katalog, Wiki kaynağı, CHANGELOG ve BLUEPRINT'i aynı değişiklikte günceller.
 7. Yayın istenmişse PR'ı ara sonuç sayar; `main` ve canlı yüz doğrulanmadan
    “yayımlandı” demez.
 
@@ -84,7 +84,7 @@ göstersin.
 
 ## Davranış eval'i
 
-Yapısal doğrulama “skill daha iyi çalışıyor” demek değildir. v0.10.0 aynı
+Yapısal doğrulama “skill daha iyi çalışıyor” demek değildir. v0.10 serisi aynı
 vakayı baseline ve skill koşullarında gerçek ajan adaptörüyle çalıştıran,
 çıktıları A/B körleştiren ve isteğe bağlı hakem/eşik uygulayan koşucu ekler:
 

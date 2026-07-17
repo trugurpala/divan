@@ -1,0 +1,18 @@
+{
+  "pages": [
+    {"source": "docs/Home.md", "slug": "Home", "title": "Ana Sayfa"},
+    {"source": "docs/Hizli-Baslangic.md", "slug": "Hizli-Baslangic", "title": "Hızlı Başlangıç"},
+    {"source": "docs/Kurulum.md", "slug": "Kurulum", "title": "Kurulum"},
+    {"source": "docs/Vibe-Coder-Icin-Deger.md", "slug": "Vibe-Coder-Icin-Deger", "title": "Vibe Coder İçin Değer"},
+    {"source": "docs/Vezir-Katalogu.md", "slug": "Vezir-Katalogu", "title": "Vezir Kataloğu"},
+    {"source": "docs/Orkestrasyon-Karari.md", "slug": "Orkestrasyon-Karari", "title": "Orkestrasyon Kararı"},
+    {"source": "docs/Test-ve-Teftis.md", "slug": "Test-ve-Teftis", "title": "Test ve Teftiş"},
+    {"source": "docs/Standartlar-ve-Limitler.md", "slug": "Standartlar-ve-Limitler", "title": "Standartlar ve Limitler"},
+    {"source": "docs/OpenAI-ve-Codex-Uyumlulugu.md", "slug": "OpenAI-ve-Codex-Uyumlulugu", "title": "OpenAI ve Codex Uyumluluğu"},
+    {"source": "docs/GitHub-Kullanimi.md", "slug": "GitHub-Kullanimi", "title": "GitHub Kullanımı"},
+    {"source": "docs/Muhurdar.md", "slug": "Muhurdar", "title": "Mühürdar"},
+    {"source": "docs/Durum-ve-Yol-Haritasi.md", "slug": "Durum-ve-Yol-Haritasi", "title": "Durum ve Yol Haritası"},
+    {"source": "docs/SSS.md", "slug": "SSS", "title": "SSS"},
+    {"source": "docs/Kaldirma.md", "slug": "Kaldirma", "title": "Kaldırma"}
+  ]
+}

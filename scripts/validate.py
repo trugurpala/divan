@@ -179,6 +179,9 @@ def surum_kayitlarini_denetle(
         "GitHub Pages": (kok / "docs" / "index.html", f"v{surum}"),
         "Site": (kok / "site" / "index.html", f"v{surum}"),
         "Eval rehberi": (kok / "evals" / "README.md", "python evals/run.py --check"),
+        "Wiki ana sayfa": (kok / "docs" / "Home.md", f"v{surum}"),
+        "Wiki durum": (kok / "docs" / "Durum-ve-Yol-Haritasi.md", f"v{surum}"),
+        "Wiki manifest": (kok / "wiki-pages.json", "docs/Home.md"),
     }
     for ad, (yol, beklenen) in kayitlar.items():
         if not yol.is_file():

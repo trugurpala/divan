@@ -13,9 +13,12 @@
 
 - [ ] `VERSION`, marketplace ve paket sürümleri SemVer'e uygun
 - [ ] Değişiklik kullanıcıya görünüyorsa README/TR, README/EN, CHANGELOG,
-      BLUEPRINT ve site birlikte güncellendi
+      BLUEPRINT, Wiki kaynağı ve site birlikte güncellendi
+- [ ] `python scripts/wiki.py --check` geçti; Wiki etkileniyorsa `wiki-sync`
+      kontrolü yeşil
 - [ ] `.divan/progress.md` yapılanı, açığı ve sıradaki kesin adımı kaydediyor
 - [ ] PR taslak değil; zorunlu CI kontrolleri yeşil
 - [ ] Yetki ve kapsam varsa `main`e birleşme ile varsayılan dal/canlı yüzey
       doğrulaması teslimin parçası
+- [ ] Wiki etkinse `main` sonrası Wiki deposu ve canlı `Home.md` doğrulandı
 - [ ] GitHub tag/release yoksa “yayında” veya “etiketli sürüm” denmiyor

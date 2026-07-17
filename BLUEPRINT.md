@@ -50,6 +50,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   kaynak kürasyonu, İngilizce vitrin, CHANGELOG ve Yayın Kanunu
 - **v0.10.0 ✓** niyetten pakete/fermana giden etkileşimli vibe coder yüzeyi;
   4 skill/12 vaka için sağlayıcı-bağımsız, kör A/B davranış eval koşucusu
+- **v0.10.1 ✓** 14 sayfalık sürümlü GitHub Wiki kaynağı, deterministik
+  derleyici/bağlantı teftişi ve `main` sonrası ayrı Wiki Git deposuna yayın +
+  canlı `Home.md` doğrulama kapısı; Sadrazam Bilgi Yüzeyleri Kanunu
 
 ### Sıradaki sürüm — v0.11.0
 
@@ -71,6 +74,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18f: Varsayılan “Welcome to the divan wiki!” yüzeyi teslim açığı
+  sayıldı. `docs/*.md` tek doğru kaynağından 14 sayfa + kenar çubuğu üreten
+  manifest/derleyici, PR teftişi ve `main` sonrası Wiki Git deposuna yazıp canlı
+  sürümü yeniden okuyan `wiki-sync` kuruldu. OpenAI/Codex runtime-skill sınırı
+  güncel resmi kaynaklarla belgelendi; Mühürdar Wiki'nin kanıt bekçisi olarak
+  tanımlandı. Sadrazam aynı hatayı önleyen Bilgi Yüzeyleri Kanunu'nu aldı.
 - 2026-07-18e: v0.10.0 yayın zinciri — PR #3'te `teftis` #37 ve dalın `docs/`
   önizlemesini gerçek Chromium'da tıklayan `site-testi` #13 geçti; squash commit
   `361a6d67` ile `main`e birleşti. İlk site koşusunun yakaladığı geniş protokol

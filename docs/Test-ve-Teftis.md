@@ -47,3 +47,18 @@ dedirtir. Kural basit: **kanıtsız "bitti" yok sayılır.**
 Kamusal teslimde ayrıca PR hazır duruma getirilir, yetki kapsamındaysa `main`e
 birleştirilir ve GitHub'daki README ile kurulum yolu varsayılan daldan yeniden
 okunur. Tag/release yoksa durum “main'de”dir; “release yayımlandı” değildir.
+
+## 5. Wiki testi — kaynak ile canlı yüzey aynı değildir
+
+GitHub Wiki ayrı bir Git deposudur. Kaynak sayfalar `docs/*.md` altında yaşar;
+`wiki-pages.json` hangilerinin yayımlanacağını belirler. Yerelde:
+
+```bash
+python scripts/wiki.py --check
+python scripts/wiki.py --build /tmp/divan-wiki
+```
+
+PR'da `wiki-sync` yalnız derleme, bağlantı ve sürüm tutarlılığını denetler.
+`main` sonrası aynı iş akışı Wiki deposuna yazar ve
+`raw.githubusercontent.com/wiki/.../Home.md` üzerinden beklenen sürümü yeniden
+okur. Bu son adım geçmeden “Wiki canlı güncel” denmez.
