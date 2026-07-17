@@ -82,7 +82,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   çarkı yoktu. 3.012 GitHub girdili indeksin katkı/otomasyon fikri REFERENCE
   kararıyla alındı; downstream içerik alınmadı. Aday Meclisi defteri, formu,
   doğrulayıcısı ve haftalık salt-okunur keşif nöbeti kuruldu. Kaynak Küratörü
-  hiçbir adayı otomatik kurmayan kalıcı yaşam döngüsünü aldı.
+  hiçbir adayı otomatik kurmayan kalıcı yaşam döngüsünü aldı. PR #6'nın dört
+  kapısı yeşil geçti; squash commit `70cde896` ile `main`e birleşti. Ana dalda
+  `meclis` #2, `teftis` #47, `site-testi` #23 ve Pages #17 başarılı oldu.
+  `wiki-sync` #4 ise önceden kayıtlı ilk-Wiki-sayfası engelini yeniden yakaladı.
 - 2026-07-18f: Varsayılan “Welcome to the divan wiki!” yüzeyi teslim açığı
   sayıldı. `docs/*.md` tek doğru kaynağından 14 sayfa + kenar çubuğu üreten
   manifest/derleyici, PR teftişi ve `main` sonrası Wiki Git deposuna yazıp canlı
