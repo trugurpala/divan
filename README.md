@@ -1,5 +1,7 @@
 # Divan
 
+![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
+
 **Vibe coder'ın vezirler kurulu.** Sen fermanı verirsin; Divan işi baştan sona,
 doğrulanmış şekilde bitirir. Claude Code, Cursor, Codex ve Agent Skills
 standardını destekleyen tüm ajanlarla uyumludur.
