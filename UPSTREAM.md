@@ -22,3 +22,12 @@ bir yöntemdir (bkz. THIRD_PARTY_LICENSES.md).
 - Her güncelleme `scripts/validate.py` teftişinden geçmek zorundadır.
 - Anthropic'in proprietary lisanslı skill'leri (docx/pdf/pptx/xlsx) hiçbir
   koşulda alınmaz.
+
+## Bilinçli yamalar (upstream'den kasıtlı farklar)
+| Dosya | Fark | Gerekçe |
+|---|---|---|
+| react-pack/skills/web-design-guidelines/SKILL.md | frontmatter `argument-hint` değerindeki açılı ayraçlar kaldırıldı | Agent Skills spec'i frontmatter'da açılı ayracı yasaklar (prompt injection önlemi); teftiş v2+ bunu hata sayar |
+
+Denetim usulü: `/tmp`'ye taze upstream klonu çek, vendored dizinle md5
+kıyasla; fark = ya upstream güncellemesi (kürasyonla al) ya bilinçli yama
+(bu tabloda belgeli olmalı). Tabloda olmayan fark teftiş konusudur.

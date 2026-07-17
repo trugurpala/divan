@@ -48,6 +48,10 @@ dediğin her istek altı fazdan geçer: **Ferman** (hedef netleşir) → **Divan
 Derleme ve özgün skill'ler: MIT. Üçüncü taraf skill'ler kendi lisanslarını
 korur — bkz. [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
 
+## Kaldırma
+
+Divan iz bırakmadan gider: [docs/Kaldirma.md](docs/Kaldirma.md).
+
 ## Katkı
 
 Divan kendini toplulukla geliştirir: [CONTRIBUTING.md](CONTRIBUTING.md) yolu,
