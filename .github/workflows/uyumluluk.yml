@@ -8,6 +8,8 @@ on:
       - 'plugins/**'
       - 'scripts/kur-codex.*'
       - 'scripts/kaldir-codex.*'
+      - 'scripts/kur.*'
+      - 'scripts/kaldir.*'
       - '.claude-plugin/**'
       - '.github/workflows/uyumluluk.yml'
   pull_request:
@@ -15,6 +17,8 @@ on:
       - 'plugins/**'
       - 'scripts/kur-codex.*'
       - 'scripts/kaldir-codex.*'
+      - 'scripts/kur.*'
+      - 'scripts/kaldir.*'
       - '.claude-plugin/**'
       - '.github/workflows/uyumluluk.yml'
 
@@ -73,5 +77,93 @@ jobs:
           $count = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
           if ($count -ne 41) { throw "Beklenen 41 skill, bulunan $count" }
           & ./scripts/kaldir-codex.ps1
+          $remaining = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
+          if ($remaining -ne 0) { throw "Kaldirma sonrasi $remaining skill kaldi" }
+
+  kurucu:
+    name: Divan Kurucusu / ${{ matrix.os }} birleşik kur-kaldır
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Unix birleşik kurucu tatbikatı (mock claude CLI)
+        if: runner.os != 'Windows'
+        env:
+          DIVAN_SOURCE_DIR: ${{ github.workspace }}
+          CODEX_SKILLS_DIR: ${{ runner.temp }}/codex-skills
+          DIVAN_STATE_DIR: ${{ runner.temp }}/codex-state
+          CLAUDE_LOG: ${{ runner.temp }}/claude.log
+          CLAUDE_STATE: ${{ runner.temp }}/claude.state
+        run: |
+          mkdir -p "$RUNNER_TEMP/mockbin"
+          cat > "$RUNNER_TEMP/mockbin/claude" <<'SH'
+          #!/usr/bin/env bash
+          printf '%s\n' "$*" >> "$CLAUDE_LOG"
+          case "$*" in
+            "plugin marketplace add"*)
+              if [ -e "$CLAUDE_STATE" ]; then exit 1; fi
+              : > "$CLAUDE_STATE" ;;
+          esac
+          exit 0
+          SH
+          chmod +x "$RUNNER_TEMP/mockbin/claude"
+          export PATH="$RUNNER_TEMP/mockbin:$PATH"
+          bash scripts/kur.sh
+          test "$(grep -c '^plugin marketplace add trugurpala/divan' "$CLAUDE_LOG")" -eq 1
+          test "$(grep -c -- '--scope user' "$CLAUDE_LOG")" -eq 5
+          test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 41
+          bash scripts/kur.sh
+          grep -q '^plugin marketplace update divan' "$CLAUDE_LOG"
+          bash scripts/kaldir.sh
+          bash scripts/kaldir.sh
+          test "$(grep -c '^plugin uninstall ' "$CLAUDE_LOG")" -eq 10
+          grep -q '^plugin marketplace remove divan' "$CLAUDE_LOG"
+          test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 0
+          if env -i HOME="$(mktemp -d)" PATH=/usr/bin:/bin bash scripts/kur.sh; then
+            echo "beklenen: ajan yokken kurucu hata donmeli" >&2
+            exit 1
+          fi
+      - name: Windows birleşik kurucu tatbikatı (mock claude CLI)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          DIVAN_SOURCE_DIR: ${{ github.workspace }}
+          CODEX_SKILLS_DIR: ${{ runner.temp }}\codex-skills
+          DIVAN_STATE_DIR: ${{ runner.temp }}\codex-state
+          CLAUDE_LOG: ${{ runner.temp }}\claude.log
+          CLAUDE_STATE: ${{ runner.temp }}\claude.state
+        run: |
+          $mockbin = Join-Path $env:RUNNER_TEMP "mockbin"
+          New-Item -ItemType Directory -Force -Path $mockbin | Out-Null
+          $shim = @(
+            '@echo off',
+            'echo %*>> "%CLAUDE_LOG%"',
+            'echo %* | findstr /C:"plugin marketplace add" >nul',
+            'if not errorlevel 1 (',
+            '  if exist "%CLAUDE_STATE%" exit /b 1',
+            '  type nul > "%CLAUDE_STATE%"',
+            ')',
+            'exit /b 0'
+          )
+          Set-Content -Path (Join-Path $mockbin "claude.cmd") -Value $shim -Encoding ascii
+          $env:Path = "$mockbin;" + $env:Path
+          & ./scripts/kur.ps1
+          $log = @(Get-Content $env:CLAUDE_LOG)
+          if (@($log | Where-Object { $_ -match '^plugin marketplace add trugurpala/divan' }).Count -ne 1) { throw "pazar add sayisi 1 degil" }
+          if (@($log | Where-Object { $_ -match '--scope user' }).Count -ne 5) { throw "paket install sayisi 5 degil" }
+          $count = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
+          if ($count -ne 41) { throw "Beklenen 41 skill, bulunan $count" }
+          & ./scripts/kur.ps1
+          $log = @(Get-Content $env:CLAUDE_LOG)
+          if (-not ($log -match '^plugin marketplace update divan')) { throw "idempotens: pazar update yok" }
+          & ./scripts/kaldir.ps1
+          & ./scripts/kaldir.ps1
+          $log = @(Get-Content $env:CLAUDE_LOG)
+          if (@($log | Where-Object { $_ -match '^plugin uninstall ' }).Count -ne 10) { throw "paket uninstall sayisi 10 degil" }
+          if (-not ($log -match '^plugin marketplace remove divan')) { throw "pazar remove yok" }
           $remaining = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
           if ($remaining -ne 0) { throw "Kaldirma sonrasi $remaining skill kaldi" }
