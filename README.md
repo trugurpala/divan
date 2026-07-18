@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.10.3 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Wiki kaynağı:** [docs/Home.md](docs/Home.md) · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Aday Meclisi:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
+**Sürüm:** v0.10.3 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Aday Meclisi:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
 
 ## Neden Divan?
 

@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs natively in Claude Code and its Agent Skills remain portable to Codex,
 Cursor, and other compatible hosts.
 
-**Current release:** v0.10.3 · **Website:** https://trugurpala.github.io/divan/ · **Wiki source:** [docs/Home.md](docs/Home.md) · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Candidate council:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
+**Current release:** v0.10.3 · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Candidate council:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
 
 ## Why Divan?
 

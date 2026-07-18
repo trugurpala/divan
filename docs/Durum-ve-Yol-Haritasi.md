@@ -19,8 +19,8 @@ Son doğrulama tarihi: 2026-07-18.
 - Claude Code ve Codex temiz-makine kurulum matrisi henüz otomatik değil.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
 - v0.10.3 için etiketli GitHub release, ayrıca oluşturulana kadar yoktur.
-- GitHub Wiki Git deposu ilk sayfa arayüzde bir kez kaydedilene kadar canlı Wiki
-  yayını 404 verir; kaynak/CI hazır olsa da “Wiki canlı güncel” değildir.
+- GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 16
+  çıktıyı yayımlar ve canlı `Home.md` sürümünü yeniden okur.
 
 ## v0.11.0 sırası
 
