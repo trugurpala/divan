@@ -13,7 +13,7 @@ $stateDir = if ($env:DIVAN_STATE_DIR) {
 } else {
   Join-Path $env:USERPROFILE ".codex"
 }
-$stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
+$stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ") + "-" + [Guid]::NewGuid().ToString("N").Substring(0, 8)
 $work = Join-Path ([IO.Path]::GetTempPath()) ("divan-kur-" + [Guid]::NewGuid())
 
 try {
@@ -65,6 +65,7 @@ try {
     Write-Host "  vezir: $name"
   }
 
+  $manifest | Set-Content -Encoding utf8 (Join-Path $stateDir "divan-install-latest")
   Write-Host ""
   Write-Host "Divan kuruldu -> $dst"
   Write-Host "Kurulum kaydi -> $manifest"

@@ -58,13 +58,17 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   PENDING→ADOPT/ADAPT/REFERENCE/REJECT yaşam döngüsü
 - **v0.10.3 ✓** 41 skill frontmatter'ından deterministik Vezir Kataloğu,
   Wiki ilk-sayfa preflight'ı ve Node 24 tabanlı güncel GitHub Actions zinciri
+- **v0.11.0 ✓** tek komutlu yayın yüzeyi hazırlığı ve sapma kapısı; Pages +
+  Wiki canlı eşliğinden sonra CHANGELOG kaynaklı otomatik tag/GitHub Release;
+  Linux/macOS/Windows Codex kur-kaldır matrisi, Claude Code resmî doğrulaması,
+  makine-okunur v1 karnesi ve bağımsız kabul kanıtı akışı
 
-### Sıradaki sürüm — v0.11.0
+### Sıradaki ürün kanıtı — v0.12.0 adayı
 
-1. Claude Code + Codex kurulum/uyumluluk matrisini temiz ortamda tekrarlayan CI.
-2. Beyan edilmiş gerçek ajan + hakem adaptörüyle ilk yayımlanabilir A/B kanıtı.
-3. Her yayımdan önce CHANGELOG, VERSION, marketplace ve tag eşliği.
-4. İlk dış kullanıcı geri bildirimi için ölçülebilir kabul formu ve issue akışı.
+1. Beyan edilmiş gerçek ajan + hakem adaptörüyle ilk yayımlanabilir A/B kanıtı.
+2. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
+3. Bu iki kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
+   v1 sözleşmesine sabitleme.
 
 ### v1.0 kabul kapıları
 
@@ -73,12 +77,25 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - En az bir bağımsız kullanıcıdan tekrar üretilebilir kurulum ve görev kanıtı.
 - Sürüm etiketi, release notes, kurulum ve geri alma tatbikatı.
 
+Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
+`docs/V1-Hazirlik.md` dosyasındadır. Bütün kapılar `passed` olmadan v1 denmez.
+
 ### Uzun vade
 
 - **v2.0:** Talep ve güvenlik gerekçesi oluşursa isteğe bağlı hosted ürün/MCP;
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18j: Kullanıcının “kitap/Release dahil her yeri her seferinde ben mi
+  hatırlatacağım?” itirazı kalıcı ürün gereksinimine çevrildi. GitHub Docs
+  üzerinden `GITHUB_TOKEN` en az yetki ve recursion davranışı doğrulandı.
+  `release-manifest.json` + `scripts/yayin.py` tek komutlu sürüm hazırlığı,
+  yüzey sapma kapısı ve CHANGELOG kaynaklı release notu kurdu. `release`
+  workflow'u `main` sonrası Pages/Wiki sürümünü bekleyip tag/Release oluşturur;
+  etiketi asla taşımaz. Claude Code doğrulaması ile Linux/macOS/Windows Codex
+  kur-keşfet-kaldır tatbikatı ayrı uyumluluk matrisine bağlandı. Sekiz kapılı
+  v1 defteri ve Wiki karnesi, bağımsız kabul formu ve `/yayin` eklendi. Gerçek
+  ajan/hakem ile dış kullanıcı kanıtı dürüstçe açık bırakıldı.
 - 2026-07-18i: Repo sahibi ilk Wiki Home sayfasını kaydetti; canlı raw adres
   HTTP 200 ve varsayılan “Welcome to the divan wiki!” içeriğiyle okundu. Böylece
   `divan.wiki.git` başlangıç kapısı açıldı. README canlı Wiki bağlantısına geçti;
@@ -163,5 +180,5 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Sıradaki Kesin Adım
 
-v0.11.0 için Claude Code + Codex temiz-ortam uyumluluk matrisini CI'a bağla;
-sonra beyan edilmiş gerçek ajan adaptörüyle ilk A/B kanıtını üret.
+v0.11.0'ı PR/CI, `main`, Pages, Wiki ve GitHub Release üzerinde doğrula; sonra
+gerçek ajan/hakem ve bağımsız kullanıcı kanıtı isteyen iki dış kapıya geç.

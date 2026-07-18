@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v0.10.3
+# Durum ve Yol Haritası · v0.11.0
 
 Son doğrulama tarihi: 2026-07-18.
 
@@ -12,22 +12,23 @@ Son doğrulama tarihi: 2026-07-18.
 - Repodaki `docs/*.md` kaynaklarından otomatik GitHub Wiki derleme/yayın kapısı.
 - Yapılandırılmış aday formu, makine-okunur Aday Meclisi ve haftalık salt-okunur
   GitHub keşif nöbeti; otomatik kurulum yok.
+- Tek komutlu sürüm yüzeyi hazırlığı ve sapma teftişi; `main` sonrası Pages +
+  Wiki eşliğinden CHANGELOG kaynaklı tag/GitHub Release'a giden yayın kapısı.
+- Claude Code resmî doğrulaması ve Linux/macOS/Windows Codex kur-keşfet-kaldır matrisi.
 
 ## Dürüst açıklar
 
 - Beyan edilmiş gerçek ajan ve hakem adapter'ıyla yayımlanmış A/B sonucu yok.
-- Claude Code ve Codex temiz-makine kurulum matrisi henüz otomatik değil.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
-- v0.10.3 için etiketli GitHub release, ayrıca oluşturulana kadar yoktur.
-- GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 16
+- v0.11.0 tag/Release, yayın workflow'u `main` ve canlı yüzey kapılarını geçene
+  kadar yalnız hazırdır; workflow geçince Releases sayfası tek doğru kanıttır.
+- GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 17
   çıktıyı yayımlar ve canlı `Home.md` sürümünü yeniden okur.
 
-## v0.11.0 sırası
+## Sıradaki ürün kanıtı
 
-1. Claude Code + Codex temiz-ortam kurulum, keşif ve kaldırma matrisi.
-2. Gerçek ajan/hakem adapter'ıyla ilk yayımlanabilir kör A/B kanıtı.
-3. Her yayın öncesi VERSION, marketplace, tag ve release notes eşliği.
-4. Ölçülebilir dış kullanıcı kabul formu ve issue akışı.
+1. Gerçek ajan/hakem adapter'ıyla ilk yayımlanabilir kör A/B kanıtı.
+2. Sabitlenmiş v0.11.0 release'ini deneyen bağımsız kullanıcı kabul kanıtı.
 
 ## v1.0 kapıları
 
@@ -38,3 +39,5 @@ Son doğrulama tarihi: 2026-07-18.
 
 Kararların ayrıntılı kaynağı:
 https://github.com/trugurpala/divan/blob/main/BLUEPRINT.md
+
+Kapıların canlı karnesi: [[v1 Hazırlık Karnesi|V1-Hazirlik]].

@@ -75,7 +75,7 @@ class RepositoryTests(unittest.TestCase):
                 "README.en.md": "Current release: v0.10.0\n",
                 "CHANGELOG.md": "## [0.10.0] - 2026-07-18\n",
                 "BLUEPRINT.md": "- **v0.10.0 ✓** published\n",
-                "docs/Kurulum.md": "DIVAN_REF=main\n",
+                "docs/Kurulum.md": "DIVAN_REF=v0.10.0\n",
                 "docs/index.html": "v0.10.0\n",
                 "site/index.html": "v0.10.0\n",
                 "evals/README.md": "python evals/run.py --check\n",
@@ -123,6 +123,16 @@ class RepositoryTests(unittest.TestCase):
             backups = list(state_dir.glob("divan-backups/*/sadrazam/kullanici-dosyasi.txt"))
             self.assertEqual(len(backups), 1)
             self.assertEqual(backups[0].read_text(encoding="utf-8"), "koru")
+
+            subprocess.run(
+                ["bash", str(ROOT / "scripts" / "kaldir-codex.sh")],
+                check=True,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+            self.assertTrue(marker.exists())
+            self.assertEqual(marker.read_text(encoding="utf-8"), "koru")
 
 
 if __name__ == "__main__":

@@ -31,6 +31,20 @@ kurucusunun oluşturduğu `~/.codex/divan-install-*.tsv` kaydı hedefleri ve var
 önceki sürüm yedeklerini gösterir; yedekleri geri yüklemeden önce içeriklerini
 incele.
 
+v0.11.0 ile kurucu kullanıldıysa kayıtlı kaldırma/geri alma yolu:
+
+```bash
+bash scripts/kaldir-codex.sh
+```
+
+```powershell
+./scripts/kaldir-codex.ps1
+```
+
+Betikler yalnız kurulum kaydındaki ve `CODEX_SKILLS_DIR` altındaki hedefleri
+kaldırır; çakışma sırasında alınan yedeği yerine koyar, kayıt dosyasını kanıt
+olarak korur. Şüphede manifest yolunu açık argüman ver ve önce içeriğini oku.
+
 ## 5. Önbellek kalıntısı (nadiren gerekir)
 Claude Code marketplace klonlarını `~/.claude/` altında tutar; adım 2
 bunu yönetir. Şüphen varsa `~/.claude/plugins/` içinde "divan" ara, sil.

@@ -15,17 +15,17 @@ Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall
 
 Windows (PowerShell):
 ```powershell
-$env:DIVAN_REF = "main"
+$env:DIVAN_REF = "v0.11.0"
 irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
 ```
 macOS/Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=main bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.11.0 bash
 ```
 En güvenli kullanımda betiği önce indirip inceleyin. `DIVAN_REF` bir sürüm
-etiketi veya commit ile kaynak içeriğini sabitler; v0.10.3 etiketi yayımlanana
-kadar çalışan varsayılan `main`dir. Kurucu, aynı adlı mevcut
-skill klasörlerini birleştirmez: tarihli yedeğe taşır ve kurulum kaydı üretir.
+etiketi veya commit ile kaynak içeriğini sabitler; geliştirme dalını izlemek
+isteyenler bilinçli olarak `main` kullanabilir. Kurucu, aynı adlı mevcut skill
+klasörlerini birleştirmez: tarihli yedeğe taşır ve kurulum kaydı üretir.
 Sonra Codex'i yeniden başlat. Skill'ler tetikleyici cümlelerle çalışır
 ("baştan sona yap", "defter kur"); /komutlar, hook ve subagent'lar Claude
 Code'a özgüdür — Codex'te hafıza AGENTS.md üzerinden yürür.
@@ -52,3 +52,7 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 
 Özet: skill'ler ve hafıza dosyaları her yerde taşınır; komut/subagent/hook
 katmanları Claude Code'da tam güçtedir.
+
+`uyumluluk` CI matrisi Claude Code marketplace/paket şemasını temiz CLI ile;
+Codex kurulumunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41
+skill keşfi ve kayıtlı kaldırma tatbikatıyla sınar.

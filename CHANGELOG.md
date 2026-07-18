@@ -8,9 +8,40 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ### Planned
 
-- Repeatable compatibility and installation matrix across supported hosts.
 - Independent adoption evidence and reproducible quality measurements.
 - First published comparison using a declared real-agent adapter and judge.
+
+## [0.11.0] - 2026-07-18
+
+### Added
+
+- Publication control plane with a machine-readable surface manifest,
+  deterministic version preparation, drift checks, and changelog-derived
+  GitHub Release notes.
+- Idempotent `main` workflow that waits for matching Pages and Wiki versions,
+  then creates the immutable tag/Release or updates notes without moving a tag.
+- Clean-host compatibility matrix: official Claude Code marketplace validation
+  plus Codex install/discovery/removal on Ubuntu, macOS, and Windows.
+- Manifest-driven Codex removal/rollback scripts, independent adoption evidence
+  issue form, and a generated machine-readable v1 readiness scorecard.
+- `/yayin` command and Sadrazam publication-surface law so future agents do not
+  rely on the user to remind them about README, Wiki, site, or Release pages.
+
+### Changed
+
+- Sadrazam advanced to 0.9.0 and the public publication contract now treats
+  README, marketplace, Pages, Wiki, changelog, tag, and GitHub Release as one
+  ordered but separately verified delivery chain.
+- v1 claims are gated by eight explicit evidence records; real-agent comparison
+  and independent adoption remain pending instead of being inferred.
+
+### Verified
+
+- Unit coverage rejects stale public surfaces, validates release-note sourcing,
+  checks the generated v1 scorecard, and rehearses installer rollback.
+- GitHub's official documentation was used for least-privilege
+  `contents: write`, non-recursive `GITHUB_TOKEN` behavior, and workflow
+  concurrency design.
 
 ## [0.10.3] - 2026-07-18
 
@@ -166,6 +197,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.11.0]: https://github.com/trugurpala/divan/releases/tag/v0.11.0
 [0.10.3]: https://github.com/trugurpala/divan/tree/main
 [0.10.2]: https://github.com/trugurpala/divan/tree/main
 [0.10.1]: https://github.com/trugurpala/divan/tree/main

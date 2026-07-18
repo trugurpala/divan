@@ -13,6 +13,8 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Lisans envanteri: `THIRD_PARTY_LICENSES.md`
 - Yerel teftiş: `scripts/validate.py`
 - Katalog teftişi: `scripts/katalog.py --check`
+- Yayın yüzeyleri: `release-manifest.json` ve `scripts/yayin.py --check`
+- v1 kabul defteri: `registry/v1-gates.json` ve `scripts/v1.py --check`
 
 ## Çalışma kuralları
 
@@ -33,9 +35,10 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Kamusal teslimde taslak PR'ı son durum sayma. Yetki kapsamındaysa CI sonrası
   varsayılan dala birleştir; README/kurulum/canlı sayfayı varsayılan daldan
   yeniden oku. Tag yoksa “release yayımlandı” deme.
-- Her sürümde `VERSION`, marketplace, `CHANGELOG.md`, README'ler, BLUEPRINT,
-  Wiki kaynağı ve kurulum referansını eşitle. `.divan/progress.md` sıradaki
-  kesin adımı taşımalı.
+- Her sürümde `/yayin`/`scripts/yayin.py` yolunu kullan; `VERSION`, marketplace,
+  `CHANGELOG.md`, README'ler, BLUEPRINT, Wiki, site ve kurulum referansını
+  eşitle. `.divan/progress.md` sıradaki kesin adımı taşımalı. `main` sonrası
+  Pages/Wiki/tag/Release kanıtını ayrı ayrı doğrula.
 - Bir skill'in davranışı iyileştirdiğini iddia etmeden önce `evals/README.md`
   protokolünü kullan. Gerçek ajan adaptörü/hakem koşmadıysa yalnız sözleşme veya
   mekanik doğrulama raporla; win-rate, hız ya da kalite artışı uydurma.
@@ -47,6 +50,8 @@ Teslimden önce en az şunları çalıştır:
 ```bash
 python scripts/validate.py
 python scripts/katalog.py --check
+python scripts/v1.py --check
+python scripts/yayin.py --check
 python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check

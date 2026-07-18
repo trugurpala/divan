@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.3-1f6feb)
+![version](https://img.shields.io/badge/version-0.11.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.10.3 · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Aday Meclisi:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
+**Sürüm:** v0.11.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -48,9 +48,10 @@ Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
    REJECT kararını [aday defterine](docs/Aday-Meclisi.md) işler.
 6. Gerekirse en küçük özgün skill'i yazar ve davranış eval'ini ekler.
 7. Yerel test + Agent Skills + Claude Code doğrulamasını geçirir.
-8. README, katalog, Wiki kaynağı, CHANGELOG ve BLUEPRINT'i aynı değişiklikte günceller.
-9. Yayın istenmişse PR'ı ara sonuç sayar; `main` ve canlı yüz doğrulanmadan
-   “yayımlandı” demez.
+8. `/yayin` ve `release-manifest.json` ile README, Wiki, site, CHANGELOG,
+   marketplace ve sürüm kaydındaki sapmayı CI'da durdurur.
+9. Yayın istenmişse PR'ı ara sonuç sayar; `main`, Pages ve Wiki aynı sürüme
+   gelince changelog'dan tag ile GitHub Release üretir.
 
 Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-claude-repo-kurasyonu.md).
 
@@ -111,6 +112,7 @@ Hakem veya gerçek adaptör yoksa koşucu başarı oranı uydurmaz; sonucu
 | `/defter kur\|yaz\|oku\|karar` | Proje hafızası: kur, işle, kaldığın yeri özetle, ADR kaydet |
 | `/vezir <fikir>` | Divan'a standartlara uygun yeni skill yetiştirir |
 | `/teftis` | Repoyu ve hafıza sağlığını denetler |
+| `/yayin <semver>` | Bütün sürüm yüzeylerini hazırlar; CI → canlı yüzey → tag/Release zincirini tamamlar |
 
 ## Paketler (41 vezir)
 
@@ -150,10 +152,11 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 
 Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
 ancak henüz v1.0 değildir. 41 skill yapısal olarak doğrulanır; 4 özgün skill için
-13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Henüz güvenilir bir
-gerçek ajan adaptörüyle yayımlanmış karşılaştırma sonucu, bağımsız kullanıcı
-kanıtı veya ölçülmüş verim benchmark'ı yoktur. Bunlar gelmeden hız, gelir veya
-“dünyanın en iyisi” iddiası yapılmaz.
+13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
+yüzeylerini ve temiz-host matrisini otomatikleştirir. Güvenilir gerçek ajan/hakem
+karşılaştırması ile bağımsız kullanıcı kanıtı hâlâ dış kapıdır. Güncel, makine-
+okunur durum [v1 hazırlık karnesinde](docs/V1-Hazirlik.md) bulunur; bunlar
+gelmeden hız, gelir veya “dünyanın en iyisi” iddiası yapılmaz.
 
 ## Kaldırma
 

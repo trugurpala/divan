@@ -175,7 +175,7 @@ def surum_kayitlarini_denetle(
         "README.en": (kok / "README.en.md", f"v{surum}"),
         "CHANGELOG": (kok / "CHANGELOG.md", f"## [{surum}]"),
         "BLUEPRINT": (kok / "BLUEPRINT.md", f"**v{surum} ✓**"),
-        "Kurulum": (kok / "docs" / "Kurulum.md", "DIVAN_REF=main"),
+        "Kurulum": (kok / "docs" / "Kurulum.md", f"DIVAN_REF=v{surum}"),
         "GitHub Pages": (kok / "docs" / "index.html", f"v{surum}"),
         "Site": (kok / "site" / "index.html", f"v{surum}"),
         "Eval rehberi": (kok / "evals" / "README.md", "python evals/run.py --check"),
