@@ -24,20 +24,20 @@
     {
       "id": "clean-host-matrix",
       "title": "Claude Code ve Codex Linux/macOS/Windows temiz-host uyumluluk matrisi",
-      "status": "ready",
-      "evidence": [".github/workflows/uyumluluk.yml", "docs/Kurulum.md"]
+      "status": "passed",
+      "evidence": [".github/workflows/uyumluluk.yml", "https://github.com/trugurpala/divan/actions/runs/29633649126"]
     },
     {
       "id": "rollback-rehearsal",
       "title": "Kayıtlı kaldırma ve önceki kurulumu geri yükleme tatbikatı",
-      "status": "ready",
-      "evidence": ["scripts/kaldir-codex.sh", "scripts/kaldir-codex.ps1", ".github/workflows/uyumluluk.yml"]
+      "status": "passed",
+      "evidence": ["scripts/kaldir-codex.sh", "scripts/kaldir-codex.ps1", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
     },
     {
       "id": "tagged-release",
       "title": "Etiketli GitHub Release, sürüm notu ve sabitlenebilir kurulum",
-      "status": "ready",
-      "evidence": [".github/workflows/release.yml", "release-manifest.json", "CHANGELOG.md"]
+      "status": "passed",
+      "evidence": ["release-manifest.json", "https://github.com/trugurpala/divan/releases/tag/v0.11.0", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
     },
     {
       "id": "real-agent-comparison",

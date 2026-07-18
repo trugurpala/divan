@@ -16,7 +16,7 @@ class V1GateTests(unittest.TestCase):
     def test_generated_scorecard_is_current(self) -> None:
         V1.denetle(ROOT)
         text = (ROOT / "docs/V1-Hazirlik.md").read_text(encoding="utf-8")
-        self.assertIn("3/8 kapı", text)
+        self.assertIn("6/8 kapı", text)
         self.assertIn("Bütün kapılar geçmeden", text)
 
     def test_external_evidence_gates_remain_pending(self) -> None:
