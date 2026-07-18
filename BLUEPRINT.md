@@ -82,8 +82,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - 2026-07-18i: Repo sahibi ilk Wiki Home sayfasını kaydetti; canlı raw adres
   HTTP 200 ve varsayılan “Welcome to the divan wiki!” içeriğiyle okundu. Böylece
   `divan.wiki.git` başlangıç kapısı açıldı. README canlı Wiki bağlantısına geçti;
-  16 sayfalık kaynak paketini yayımlayıp canlı sürümü okuyacak `wiki-sync`
-  tetikleme değişikliği başlatıldı.
+  PR #10 üç yeşil kapı sonrası `b19e6cca` ile `main`e birleşti. `wiki-sync` #8,
+  Wiki commit `ebbbf66` ile 16 dosya/652 satır yayımladı; canlı readback v0.10.3
+  ve “Fermanını seç” metnini doğruladı. `teftis` #59, `site-testi` #29 ve Pages
+  #21 de geçti; Wiki artık canlıdır.
 - 2026-07-18h: GitHub, Wiki, Context7, güncel Codex kılavuzu ve Mühürdar birlikte
   teftiş edildi. Canlı Wiki 404 ve `divan.wiki.git` yokluğu yeniden doğrulandı;
   GitHub'ın ilk sayfa şartı birincil dokümandan bulundu. Katalogda `claude-api`
