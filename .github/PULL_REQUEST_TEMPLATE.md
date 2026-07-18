@@ -16,6 +16,7 @@
       BLUEPRINT, Wiki kaynağı ve site birlikte güncellendi
 - [ ] `python scripts/wiki.py --check` geçti; Wiki etkileniyorsa `wiki-sync`
       kontrolü yeşil
+- [ ] `python scripts/yayin.py --check` ve `python scripts/v1.py --check` geçti
 - [ ] Dış kaynak/aday değiştiyse `python scripts/meclis.py --check` geçti;
       aday olmanın kurulum olmadığı ve lisans kapsamı açık
 - [ ] `.divan/progress.md` yapılanı, açığı ve sıradaki kesin adımı kaydediyor
@@ -23,4 +24,4 @@
 - [ ] Yetki ve kapsam varsa `main`e birleşme ile varsayılan dal/canlı yüzey
       doğrulaması teslimin parçası
 - [ ] Wiki etkinse `main` sonrası Wiki deposu ve canlı `Home.md` doğrulandı
-- [ ] GitHub tag/release yoksa “yayında” veya “etiketli sürüm” denmiyor
+- [ ] `main` sonrası Pages/Wiki aynı sürümde; tag/Release yoksa “release yayımlandı” denmiyor

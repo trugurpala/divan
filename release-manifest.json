@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "repository": "trugurpala/divan",
+  "version_source": "VERSION",
+  "changelog": "CHANGELOG.md",
+  "public_surfaces": [
+    {"id": "readme-tr", "path": "README.md", "marker": "v{version}", "replace_version": true},
+    {"id": "readme-en", "path": "README.en.md", "marker": "v{version}", "replace_version": true},
+    {"id": "blueprint", "path": "BLUEPRINT.md", "marker": "**v{version} ✓**", "replace_version": false},
+    {"id": "progress", "path": ".divan/progress.md", "marker": "v{version}", "replace_version": false},
+    {"id": "wiki-home", "path": "docs/Home.md", "marker": "v{version}", "replace_version": true},
+    {"id": "wiki-status", "path": "docs/Durum-ve-Yol-Haritasi.md", "marker": "v{version}", "replace_version": true},
+    {"id": "wiki-install", "path": "docs/Kurulum.md", "marker": "v{version}", "replace_version": true},
+    {"id": "wiki-github", "path": "docs/GitHub-Kullanimi.md", "marker": "v{version}", "replace_version": true},
+    {"id": "pages", "path": "docs/index.html", "marker": "v{version}", "replace_version": true},
+    {"id": "site-source", "path": "site/index.html", "marker": "v{version}", "replace_version": true},
+    {"id": "v1-readiness", "path": "docs/V1-Hazirlik.md", "marker": "Hedef sürüm: v1.0.0", "replace_version": false}
+  ],
+  "live_surfaces": {
+    "pages": "https://trugurpala.github.io/divan/",
+    "wiki_home": "https://raw.githubusercontent.com/wiki/trugurpala/divan/Home.md",
+    "releases": "https://github.com/trugurpala/divan/releases"
+  }
+}

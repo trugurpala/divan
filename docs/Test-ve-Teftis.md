@@ -13,6 +13,8 @@ adımı taşımak zorundadır. CI bunun ardından
 beş paketi doğrular. Yerelde önce bağımlılıksız teftişi çalıştır:
 ```
 python scripts/validate.py
+python scripts/yayin.py --check
+python scripts/v1.py --check
 python -m unittest discover -s tests -p 'test_*.py'
 ```
 
@@ -62,3 +64,12 @@ PR'da `wiki-sync` yalnız derleme, bağlantı ve sürüm tutarlılığını dene
 `main` sonrası aynı iş akışı Wiki deposuna yazar ve
 `raw.githubusercontent.com/wiki/.../Home.md` üzerinden beklenen sürümü yeniden
 okur. Bu son adım geçmeden “Wiki canlı güncel” denmez.
+
+## 6. Release ve temiz-host testi
+
+`uyumluluk` matrisi Claude Code'un resmî plugin doğrulayıcısını temiz runner'da
+çalıştırır; Codex kurucusunu Linux, macOS ve Windows'ta boş geçici dizine kurar, 41
+skill'i sayar ve manifestli kaldırma/geri alma yolunu uygular. `release` akışı
+ise bütün teftişlerden sonra Pages ile Wiki'nin aynı `VERSION`ı göstermesini
+bekler. Ardından CHANGELOG'dan not üretir; tag yoksa oluşturur, varsa etiketi
+taşımadan yalnız Release sayfasını eşitler.

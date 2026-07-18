@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "target": "1.0.0",
+  "updated": "2026-07-18",
+  "gates": [
+    {
+      "id": "public-contract",
+      "title": "Kararlı public skill ve komut sözleşmesi",
+      "status": "passed",
+      "evidence": ["AGENTS.md", "docs/Standartlar-ve-Limitler.md", "docs/Vezir-Katalogu.md"]
+    },
+    {
+      "id": "structural-and-eval-ci",
+      "title": "Yapısal doğrulama ve davranış eval sözleşmesi yayın kapısı",
+      "status": "passed",
+      "evidence": [".github/workflows/teftis.yml", "evals/run.py", "tests/test_eval_runner.py"]
+    },
+    {
+      "id": "live-documentation",
+      "title": "README, Pages ve Wiki canlı yüzey doğrulaması",
+      "status": "passed",
+      "evidence": [".github/workflows/site-testi.yml", ".github/workflows/wiki-sync.yml", ".divan/evidence/teftis-20260718-v0103.md"]
+    },
+    {
+      "id": "clean-host-matrix",
+      "title": "Claude Code ve Codex Linux/macOS/Windows temiz-host uyumluluk matrisi",
+      "status": "ready",
+      "evidence": [".github/workflows/uyumluluk.yml", "docs/Kurulum.md"]
+    },
+    {
+      "id": "rollback-rehearsal",
+      "title": "Kayıtlı kaldırma ve önceki kurulumu geri yükleme tatbikatı",
+      "status": "ready",
+      "evidence": ["scripts/kaldir-codex.sh", "scripts/kaldir-codex.ps1", ".github/workflows/uyumluluk.yml"]
+    },
+    {
+      "id": "tagged-release",
+      "title": "Etiketli GitHub Release, sürüm notu ve sabitlenebilir kurulum",
+      "status": "ready",
+      "evidence": [".github/workflows/release.yml", "release-manifest.json", "CHANGELOG.md"]
+    },
+    {
+      "id": "real-agent-comparison",
+      "title": "Beyan edilmiş gerçek ajan ve hakemle yayımlanmış kör A/B kanıtı",
+      "status": "pending",
+      "evidence": ["evals/README.md"]
+    },
+    {
+      "id": "independent-adoption",
+      "title": "Bağımsız kullanıcıdan tekrar üretilebilir kurulum ve görev kanıtı",
+      "status": "pending",
+      "evidence": [".github/ISSUE_TEMPLATE/kabul-kaniti.yml"]
+    }
+  ]
+}

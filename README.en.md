@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.10.3-1f6feb)
+![version](https://img.shields.io/badge/version-0.11.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs natively in Claude Code and its Agent Skills remain portable to Codex,
 Cursor, and other compatible hosts.
 
-**Current release:** v0.10.3 · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **Candidate council:** [docs/Aday-Meclisi.md](docs/Aday-Meclisi.md)
+**Current release:** v0.11.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Why Divan?
 
@@ -104,9 +104,10 @@ Divan does not equate improvement with installing more repositories:
    [candidate council](docs/Aday-Meclisi.md).
 6. Create the smallest useful adaptation and add behavioral eval cases.
 7. Pass local tests plus the official Agent Skills and Claude Code validators.
-8. Update README, catalog, Wiki source, changelog, and roadmap in the same change.
-9. When publication is requested, treat a PR as an intermediate state; do not
-   claim delivery until the default branch and live surface are verified.
+8. Use the publication manifest and `/yayin` path to fail CI when README, Wiki,
+   site, changelog, marketplace, and version records drift.
+9. Treat a PR as intermediate; after `main`, wait for Pages and Wiki to expose
+   the same version, then generate the tag and GitHub Release from the changelog.
 
 The latest example is the [40-repository source curation audit](reports/2026-07-18-claude-repo-kurasyonu.md).
 
@@ -125,10 +126,11 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 Divan follows the open Agent Skills specification and ships the standard GitHub
 community and security files, but it is not v1.0 yet. All 41 skills receive
 structural validation; four original skills provide 13 behavioral cases and a
-provider-neutral A/B runner. No trusted real-agent comparison has been
-published yet, and independent adoption evidence plus reproducible productivity
-benchmarks remain v1.0 gates. Until those exist, the project does not claim a
-speed multiplier, revenue increase, or “best in the world” status.
+provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
+compatibility checks. A declared real-agent/judge comparison and independent
+user evidence remain external gates; see the [machine-backed v1 scorecard](docs/V1-Hazirlik.md).
+Until those exist, the project does not claim a speed multiplier, revenue
+increase, or “best in the world” status.
 
 ## Contributing and security
 

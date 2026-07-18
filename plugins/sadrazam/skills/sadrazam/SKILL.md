@@ -100,6 +100,20 @@ Kullanıcı `yayınla`, `dünyaya aç`, `canlıya al`, `ship et` diyorsa veya ka
 Bir özellik dalındaki yeşil commit kamusal ürün değildir. Kullanıcıya merge
 işini sessizce bırakıp “bitti” deme.
 
+## Yayın yüzeyleri nizamı
+
+Projede `release-manifest.json` ve `scripts/yayin.py` varsa sürüm değişikliğini
+elle dosya avına çevirme:
+
+1. Yeni SemVer'i `python scripts/yayin.py --prepare <semver>` ile hazırla.
+2. Deterministik yüzeylerin yanında CHANGELOG ve BLUEPRINT'in anlamlı sürüm
+   anlatısını aynı turda yaz; otomasyon anlatı uydurmaz.
+3. `python scripts/yayin.py --check` geçmeden PR'ı yayın adayı sayma.
+4. `main` sonrası Pages ve Wiki aynı sürümü göstermeden tag üretme.
+5. GitHub Release notunu CHANGELOG'dan üret; mevcut etiketi yeni commit'e taşıma.
+6. v1 adı yalnız makine-okunur kabul defterindeki bütün kapılar gerçek kanıtla
+   geçtiğinde kullanılabilir. Dış kullanıcı veya gerçek ajan kanıtını uydurma.
+
 ## Vibe coder kanunu
 
 Kullanıcıdan skill, paket veya araç adı ezberlemesini bekleme. Kullanıcının

@@ -1,0 +1,68 @@
+name: Bağımsız kabul kanıtı
+description: Sabitlenmiş bir Divan release'iyle kurulum ve gerçek görev kanıtı gönderin
+title: "[Kabul kanıtı]: "
+labels: ["adoption-evidence"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bu form yıldız veya görüş değil, tekrar üretilebilir dış kullanıcı kanıtı toplar. Gizli bilgi, API anahtarı veya müşteri verisi eklemeyin.
+  - type: input
+    id: release
+    attributes:
+      label: Divan release/tag
+      placeholder: v0.11.0
+    validations:
+      required: true
+  - type: dropdown
+    id: host
+    attributes:
+      label: Host
+      options: [Claude Code, Codex, Cursor, Diğer Agent Skills hostu]
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: İşletim sistemi ve host sürümü
+      placeholder: Windows 11, Codex x.y.z
+    validations:
+      required: true
+  - type: textarea
+    id: install
+    attributes:
+      label: Çalıştırdığınız kurulum komutları
+      description: Kişisel yolları ve sırları temizleyin; sabit tag/commit kullanın.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: task
+    attributes:
+      label: Gerçek görev ve beklenen sonuç
+      description: Başka birinin tekrar deneyebileceği kadar açık yazın.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Gözlenen sonuç ve kanıt
+      description: Çıktı, test özeti, halka açık örnek repo/commit veya redakte edilmiş ekran görüntüsü ekleyin.
+    validations:
+      required: true
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Kaldırma/geri alma sonucu
+      description: Denediyseniz komut ve sonucu; denemediyseniz nedenini yazın.
+    validations:
+      required: true
+  - type: checkboxes
+    id: declaration
+    attributes:
+      label: Beyan
+      options:
+        - label: Proje sahibi/developer dışında bağımsız bir kullanıcıyım ve bu adımları kendim çalıştırdım.
+          required: true
+        - label: Paylaşımım gizli bilgi, kişisel veri veya API anahtarı içermiyor.
+          required: true

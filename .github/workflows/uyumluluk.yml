@@ -1,0 +1,77 @@
+name: uyumluluk
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'plugins/**'
+      - 'scripts/kur-codex.*'
+      - 'scripts/kaldir-codex.*'
+      - '.claude-plugin/**'
+      - '.github/workflows/uyumluluk.yml'
+  pull_request:
+    paths:
+      - 'plugins/**'
+      - 'scripts/kur-codex.*'
+      - 'scripts/kaldir-codex.*'
+      - '.claude-plugin/**'
+      - '.github/workflows/uyumluluk.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  claude-code:
+    name: Claude Code / temiz doğrulayıcı
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Marketplace ve beş paketi resmî CLI ile doğrula
+        run: |
+          npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate . --strict
+          for plugin in plugins/*; do npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate "$plugin" --strict; done
+
+  codex:
+    name: Codex / ${{ matrix.os }} temiz kur-kaldır
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Unix temiz kurulum, keşif ve kaldırma
+        if: runner.os != 'Windows'
+        env:
+          DIVAN_SOURCE_DIR: ${{ github.workspace }}
+          CODEX_SKILLS_DIR: ${{ runner.temp }}/codex-skills
+          DIVAN_STATE_DIR: ${{ runner.temp }}/codex-state
+        run: |
+          bash scripts/kur-codex.sh
+          test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 41
+          bash scripts/kaldir-codex.sh
+          test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 0
+      - name: Windows temiz kurulum, keşif ve kaldırma
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          DIVAN_SOURCE_DIR: ${{ github.workspace }}
+          CODEX_SKILLS_DIR: ${{ runner.temp }}\codex-skills
+          DIVAN_STATE_DIR: ${{ runner.temp }}\codex-state
+        run: |
+          & ./scripts/kur-codex.ps1
+          $count = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
+          if ($count -ne 41) { throw "Beklenen 41 skill, bulunan $count" }
+          & ./scripts/kaldir-codex.ps1
+          $remaining = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
+          if ($remaining -ne 0) { throw "Kaldirma sonrasi $remaining skill kaldi" }

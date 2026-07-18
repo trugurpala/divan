@@ -39,3 +39,12 @@ CI üç katmanlıdır: bağımlılıksız `scripts/validate.py`, resmî `skills-
 doğrulayıcısı ve Claude Code'un resmî plugin doğrulayıcısı. Açılı ayraçlar Agent
 Skills standardında genel olarak yasak değildir; YAML'ın geçerliliği resmî
 doğrulayıcıya bırakılır.
+
+## Yayın ve v1 kabul sözleşmesi
+
+`VERSION` tek sürüm kaynağıdır; `release-manifest.json` kamusal yüzeyleri,
+`scripts/yayin.py --check` sürüm/not eşliğini denetler. GitHub Release yalnız
+CI ve canlı Pages+Wiki eşliğinden sonra oluşur. v1 kapıları
+`registry/v1-gates.json` içinde `passed`, `ready` veya `pending` olarak tutulur;
+Wiki karnesi deterministik üretilir. Otomasyonu yazılmış ama uzak koşusu geçmemiş
+kapı `ready`, dış kullanıcı/gerçek ajan kanıtı olmayan kapı `pending` kalır.

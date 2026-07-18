@@ -6,7 +6,7 @@ set -Eeuo pipefail
 REF="${DIVAN_REF:-main}"
 DST="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/divan-kur.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
@@ -36,15 +36,15 @@ if ((${#skills[@]} == 0)); then
   exit 1
 fi
 
-declare -A seen=()
+seen_names=$'\n'
 for skill in "${skills[@]}"; do
   [[ -d "$skill" && -f "$skill/SKILL.md" ]] || continue
   name="$(basename "$skill")"
-  if [[ -n "${seen[$name]:-}" ]]; then
+  if [[ "$seen_names" == *$'\n'"$name"$'\n'* ]]; then
     echo "HATA: Tekrarlanan skill adi: $name" >&2
     exit 1
   fi
-  seen[$name]=1
+  seen_names+="$name"$'\n'
 
   target="$DST/$name"
   backup=""
@@ -64,6 +64,7 @@ for skill in "${skills[@]}"; do
 done
 
 echo
+printf '%s\n' "$MANIFEST" > "$STATE_DIR/divan-install-latest"
 echo "Divan kuruldu -> $DST"
 echo "Kurulum kaydi -> $MANIFEST"
 echo "Codex'i yeniden baslat, sonra dene: 'bastan sona yap: kucuk bir todo uygulamasi'"

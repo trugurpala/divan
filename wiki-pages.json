@@ -13,6 +13,7 @@
     {"source": "docs/GitHub-Kullanimi.md", "slug": "GitHub-Kullanimi", "title": "GitHub Kullanımı"},
     {"source": "docs/Muhurdar.md", "slug": "Muhurdar", "title": "Mühürdar"},
     {"source": "docs/Durum-ve-Yol-Haritasi.md", "slug": "Durum-ve-Yol-Haritasi", "title": "Durum ve Yol Haritası"},
+    {"source": "docs/V1-Hazirlik.md", "slug": "V1-Hazirlik", "title": "v1 Hazırlık Karnesi"},
     {"source": "docs/SSS.md", "slug": "SSS", "title": "SSS"},
     {"source": "docs/Kaldirma.md", "slug": "Kaldirma", "title": "Kaldırma"}
   ]

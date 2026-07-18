@@ -22,6 +22,8 @@ jobs:
           python scripts/wiki.py --check
           python scripts/meclis.py --check
           python scripts/katalog.py --check
+          python scripts/v1.py --check
+          python scripts/yayin.py --check
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1
