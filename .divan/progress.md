@@ -4,10 +4,30 @@ Son güncelleme: 2026-07-18
 
 ## Güncel hedef
 
-Gerçek ajan/hakem A/B sonucu ve proje sahibi dışındaki bağımsız kullanıcı kanıtı
-ile kalan iki v1 kapısını dürüstçe kapatmak.
+v0.12.0 Divan Kurucusu'nu PR + CI + canlı yüzey doğrulamasıyla yayımlamak;
+ardından gerçek ajan/hakem A/B sonucu ve bağımsız kullanıcı kanıtıyla kalan
+iki v1 kapısını dürüstçe kapatmak.
 
 ## Yapıldı
+
+- v0.12.0: Divan Kurucusu eklendi. `scripts/kur.sh/.ps1` Claude Code'u
+  (CLI + masaüstü, ortak `~/.claude`) ve Codex'i tespit edip 5 paketi
+  `--scope user` ile global kurar; Codex tarafını indirilen arşivin kendi
+  `kur-codex` kopyasına `DIVAN_SOURCE_DIR` ile devreder (çift indirme yok);
+  yalnız-masaüstü kullanıcısına `/plugin` yapıştırma bloğu, hiç ajan yoksa
+  resmî kurulum komutları gösterilir. `scripts/kaldir.sh/.ps1` beş paket +
+  pazar kaydını ve kayıtlı Codex kurulumunu tek komutla geri alır.
+- PowerShell kurucularında `iex` altında `exit` yasak (konsolu kapatır);
+  hatalar `throw` ile. `Invoke-ClaudeCli` çıktıyı `Out-Host`'a basar ki
+  dönüş değeri boolean kalsın.
+- `uyumluluk` yeni `kurucu` matris job'u ve `release` kapısı: durum tutan
+  sahte `claude` CLI ile 3 işletim sisteminde 1×add + 5×install + 41 skill,
+  tekrarlı koşuda add→update, kayıtlı kaldırmada 0 skill ve hermetik
+  ajan-yok negatif yolu doğrulanıyor. `tests/test_kurucu.py` Unix'te aynı
+  tatbikatı ve tekrarlı kurulumda yedek-geri-yükleme semantiğini sınıyor.
+- README'ler, Kurulum, Kaldırma, Hızlı Başlangıç ve iki site kaynağı tek
+  komut önde olacak şekilde yeniden yazıldı; elle `/plugin`, yalnız-Codex
+  (DIVAN_REF sabitleme) ve Cursor yolları ikincil olarak korundu.
 
 - v0.11.1 için kök `CLAUDE.md` devralma sözleşmesi eklendi; Claude Code sohbet
   geçmişi olmadan AGENTS, BLUEPRINT, progress ve yayın/v1 kayıtlarına gider.
@@ -127,16 +147,25 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
 
 ## Devam ediyor
 
+- v0.12.0 Divan Kurucusu yayını: PR, CI kapıları, canlı Pages/Wiki/tag.
 - Yalnız dış kanıt isteyen gerçek ajan/hakem ve bağımsız kullanıcı kapıları.
 
 ## Bilinen açıklar
 
+- Kurucunun Claude tarafı CI'da sahte CLI ile tatbik ediliyor; gerçek
+  `claude` CLI'nin "pazar zaten ekli" ve "paket zaten kurulu" çıkış-kodu
+  sözleşmesi henüz elle doğrulanmadı. Betik try→update ve paket-başı
+  tolerans ile bu belirsizliğe dayanıklı yazıldı; tag öncesi temiz ve
+  tekrarlı koşu gerçek CLI'da bir kez tatbik edilmeli.
 - Eval koşucusu ve fixture testleri var; beyan edilmiş güvenilir gerçek ajan
   adaptörü/hakemiyle yayımlanmış A/B sonucu henüz yok.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
 
 ## Sıradaki kesin adım
 
-Beyan edilmiş gerçek ajan + bağımsız hakem adaptörünü güvenilir yürütme ortamında
-koş; sonucu yayımla. Paralelde v0.11.0 sabit release'i için ilk bağımsız kabul
-kanıtını `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` akışından topla.
+v0.12.0 dalını PR'a çıkar; `teftis`, `uyumluluk` (yeni `kurucu` matrisi),
+`site-testi`, `wiki-sync` ve `meclis` kapılarından sonra `main`e birleştir.
+Gerçek `claude` CLI ile kurucunun temiz + tekrarlı koşusunu elle tatbik edip
+sonucu buraya işle; canlı Pages/Wiki/tag/Release'i ayrı ayrı doğrula.
+Paralelde sabitlenmiş release için ilk bağımsız kabul kanıtını
+`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` akışından topla.

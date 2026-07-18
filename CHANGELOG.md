@@ -11,6 +11,31 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Independent adoption evidence and reproducible quality measurements.
 - First published comparison using a declared real-agent adapter and judge.
 
+## [0.12.0] - 2026-07-18
+
+### Added
+
+- Divan Kurucusu (`scripts/kur.sh`, `scripts/kur.ps1`): a single friendly
+  command that detects Claude Code (desktop + CLI) and Codex, installs all
+  five packs globally at user scope, delegates Codex installs to the pinned
+  `kur-codex` scripts, guides desktop-only users with a `/plugin` paste
+  block, and points to official installers when no agent is present.
+- Unified removal (`scripts/kaldir.sh`, `scripts/kaldir.ps1`): uninstalls the
+  Claude Code packs and marketplace record and replays the recorded Codex
+  uninstall, restoring backups taken during installation.
+- `kurucu` CI matrix job and a matching release gate: a stateful mock
+  `claude` CLI verifies one marketplace add, five user-scope installs, the
+  add→update fallback on rerun, 41 skills on disk, registered uninstall back
+  to zero, and a hermetic no-agent failure path on Linux, macOS, and Windows.
+- Unix unit coverage in `tests/test_kurucu.py`, including the
+  backup-restore semantics of repeated installs.
+
+### Changed
+
+- READMEs, Kurulum, Kaldirma, Hızlı Başlangıç, and both site sources now
+  lead with the one-command installer; manual `/plugin`, Codex-only pinned
+  install, and Cursor copy paths remain documented as secondary routes.
+
 ## [0.11.1] - 2026-07-18
 
 ### Added

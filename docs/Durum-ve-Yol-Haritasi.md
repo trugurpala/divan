@@ -1,10 +1,12 @@
-# Durum ve Yol Haritası · v0.11.1
+# Durum ve Yol Haritası · v0.12.0
 
 Son doğrulama tarihi: 2026-07-18.
 
 ## Şu anda yayımlanan
 
 - 5 paket ve 41 skill.
+- Divan Kurucusu: Claude Code'u (masaüstü + CLI) ve Codex'i bulup Divan'ı tek
+  komutla global kuran/kaldıran betikler; üç işletim sisteminde CI tatbikatlı.
 - Vibe coder için beş niyetli ferman seçici.
 - 4 özgün skill / 13 vaka için sağlayıcı-bağımsız kör A/B eval koşucusu.
 - Yerel teftiş, Agent Skills doğrulaması, Claude Code plugin doğrulaması.
@@ -20,16 +22,18 @@ Son doğrulama tarihi: 2026-07-18.
 
 - Beyan edilmiş gerçek ajan ve hakem adapter'ıyla yayımlanmış A/B sonucu yok.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
-- v0.11.1 tag/Release yayımlandı; etiket `731db9d7` commit'ine bağlıdır ve
-  [Releases sayfası](https://github.com/trugurpala/divan/releases/tag/v0.11.1)
-  sabit kurulumun tek doğru kanıtıdır.
+- v0.12.0 etiketi `release` workflow'unun `main` sonrası koşusunda üretilir;
+  [Releases sayfası](https://github.com/trugurpala/divan/releases) sabit
+  kurulumun tek doğru kanıtıdır — canlı tag'i oradan doğrula.
+- Divan Kurucusu'nun Claude tarafı CI'da sahte CLI ile tatbik edilir; gerçek
+  `claude` CLI'nin "zaten kurulu" çıkış kodları tag öncesi elle doğrulanacak.
 - GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 17
   çıktıyı yayımlar ve canlı `Home.md` sürümünü yeniden okur.
 
 ## Sıradaki ürün kanıtı
 
 1. Gerçek ajan/hakem adapter'ıyla ilk yayımlanabilir kör A/B kanıtı.
-2. Sabitlenmiş v0.11.1 release'ini deneyen bağımsız kullanıcı kabul kanıtı.
+2. Sabitlenmiş v0.12.0 release'ini deneyen bağımsız kullanıcı kabul kanıtı.
 
 ## v1.0 kapıları
 

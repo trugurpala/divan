@@ -64,8 +64,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   makine-okunur v1 karnesi ve bağımsız kabul kanıtı akışı
 - **v0.11.1 ✓** Claude Code kök devralma sözleşmesi, makinece denetlenen
   sohbetten bağımsız devam zinciri, CODEOWNERS ve Actions Dependabot kapısı
+- **v0.12.0 ✓** Divan Kurucusu: Claude Code (masaüstü + CLI) ve Codex'i tespit
+  edip tek komutla global kurulum/kaldırma; sahte-CLI kayıtlarıyla üç işletim
+  sistemli `kurucu` CI tatbikatı ve release kapısı; bütün kurulum yüzeyleri
+  tek komut önde olacak şekilde yeniden yazıldı
 
-### Sıradaki ürün kanıtı — v0.12.0 adayı
+### Sıradaki ürün kanıtı — v0.13.0 adayı
 
 1. Beyan edilmiş gerçek ajan + hakem adaptörüyle ilk yayımlanabilir A/B kanıtı.
 2. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
@@ -88,6 +92,15 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18n: v0.12.0 Divan Kurucusu eklendi. `kur.sh/.ps1` Claude Code'u
+  (CLI + masaüstü, ortak `~/.claude`) ve Codex'i tespit edip beş paketi user
+  scope ile global kuruyor; Codex tarafını arşivin kendi `kur-codex`
+  kopyasına devrediyor; `kaldir.sh/.ps1` kayıtlı geri almayı tek komuta
+  bağlıyor. PowerShell tarafında `iex` güvenliği için `exit` yok, yalnız
+  `throw`. `uyumluluk` ve `release` sahte `claude` CLI kayıtlarıyla üç
+  işletim sisteminde kur-tekrar-kaldır tatbikatı yapıyor. Gerçek `claude`
+  CLI'nin "zaten kurulu" çıkış kodu sözleşmesi tag öncesi elle
+  doğrulanacak; sahte CLI yalnız betiğin dallanmasını kanıtlar.
 - 2026-07-18m: v0.11.1 PR #14 dört kapıdan geçti ve `731db9d7` ile `main`e
   birleşti. Pages ile Wiki canlıda v0.11.1 döndürdü; değişmez tag aynı commit'e
   bağlı ve GitHub Release HTTP 200 verdi. Yayın sonrası teftiş, sürüm hazırlama
@@ -202,5 +215,8 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Gerçek ajan/hakem karşılaştırmasını yayımla ve v0.11.0 üzerinden bağımsız kabul
-kanıtı topla; bu iki dış kapı geçmeden v1.0 etiketi koyma.
+v0.12.0'ı PR + CI kapıları + canlı Pages/Wiki/tag doğrulamasıyla yayımla ve
+gerçek `claude` CLI üzerinde kurucunun "zaten kurulu" yeniden koşusunu elle
+tatbik et. Ardından gerçek ajan/hakem karşılaştırmasını yayımla ve sabitlenmiş
+release üzerinden bağımsız kabul kanıtı topla; bu iki dış kapı geçmeden v1.0
+etiketi koyma.

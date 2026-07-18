@@ -28,7 +28,7 @@ Kurucu varsayılan olarak `main` içeriğini kurar. Codex'e kopyalanan skill
 içeriğini belirli bir sürüme sabitlemek için:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.sh | DIVAN_REF=v0.11.1 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.sh | DIVAN_REF=v0.12.0 bash
 ```
 
 Claude Code paketleri marketplace üzerinden depo varsayılan dalını izler;
@@ -51,12 +51,12 @@ Divan Kurucusu Codex'i zaten kapsar; yalnız Codex'e kurmak istersen:
 
 Windows (PowerShell):
 ```powershell
-$env:DIVAN_REF = "v0.11.1"
+$env:DIVAN_REF = "v0.12.0"
 irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
 ```
 macOS/Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.11.1 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.12.0 bash
 ```
 `DIVAN_REF` bir sürüm etiketi veya commit ile kaynak içeriğini sabitler;
 geliştirme dalını izlemek isteyenler bilinçli olarak `main` kullanabilir.
