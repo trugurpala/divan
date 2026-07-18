@@ -40,7 +40,23 @@ and project memory** to the coding agent you already use.
 
 ## Install
 
-Claude Code:
+**Everything with one command — the Divan installer.** It detects Claude Code
+(desktop + CLI) and Codex on your machine, installs Divan globally, and
+explains what it is about to do before doing it.
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.ps1 | iex
+```
+
+macOS/Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.sh | bash
+```
+
+Manually, inside Claude Code:
 
 ```text
 /plugin marketplace add trugurpala/divan
@@ -51,13 +67,8 @@ Claude Code:
 /plugin install zanaat-pack@divan
 ```
 
-Codex on Windows:
-
-```powershell
-irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
-```
-
-See [installation options](docs/Kurulum.md) for macOS/Linux and removal.
+See [installation options](docs/Kurulum.md) for Codex-only installs, version
+pinning, and removal.
 
 ## Start from intent
 

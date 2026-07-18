@@ -57,7 +57,21 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 
 ## Kurulum
 
-**Claude Code:**
+**Tek komutla her şey — Divan Kurucusu.** Claude Code'u (masaüstü + CLI) ve
+Codex'i kendisi bulur, Divan'ı bilgisayara global kurar; ne yapacağını önce
+Türkçe söyler, soru sormaz.
+
+Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.ps1 | iex
+```
+macOS/Linux:
+```bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.sh | bash
+```
+Geri alma da tek komut: [docs/Kaldirma.md](docs/Kaldirma.md)
+
+**Elle, Claude Code içinden:**
 ```
 /plugin marketplace add trugurpala/divan
 /plugin install sadrazam@divan     # orkestratör + hafıza + müşavir (çekirdek)
@@ -67,11 +81,7 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 /plugin install zanaat-pack@divan
 ```
 
-**Codex (Windows, tek komut):**
-```powershell
-irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
-```
-macOS/Linux ve ayrıntılar: [docs/Kurulum.md](docs/Kurulum.md)
+Yalnız Codex, sürüm sabitleme ve diğer ajanlar: [docs/Kurulum.md](docs/Kurulum.md)
 
 ## Bir dakikada başla
 

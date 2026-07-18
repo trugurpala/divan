@@ -5,7 +5,20 @@ söyle, sonra Divan'ın kanıt zincirini izle.
 
 ## 1. Çekirdeği kur
 
-Claude Code:
+Tek komut yeter — Divan Kurucusu, Claude Code'u (masaüstü + CLI) ve Codex'i
+bulur, hepsine global kurar:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.sh | bash
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur.ps1 | iex
+```
+
+Claude Code içinden elle (yalnız çekirdek):
 
 ```text
 /plugin marketplace add trugurpala/divan
@@ -13,7 +26,8 @@ Claude Code:
 /plugin install core-pack@divan
 ```
 
-Codex, Cursor ve diğer hostlar için [[Kurulum]] sayfasına git.
+Sürüm sabitleme, yalnız Codex, Cursor ve diğer hostlar için [[Kurulum]]
+sayfasına git.
 
 ## 2. Niyetini ferman olarak yaz
 

@@ -1,6 +1,23 @@
 # Divan'ı Komple Kaldırma
 
-Misafirlik bitti mi? Divan iz bırakmadan gider. Sıra önemli:
+Misafirlik bitti mi? Divan iz bırakmadan gider.
+
+## Tek komutla kaldır — Divan Kaldırıcı (önerilen)
+
+Claude Code paketlerini + pazar kaydını ve Codex kurulum kaydındaki
+skill'leri tek komutla kaldırır; Codex tarafında kurulum sırasında alınan
+yedekleri geri yükler.
+
+Windows (PowerShell):
+```powershell
+irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kaldir.ps1 | iex
+```
+macOS/Linux:
+```bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kaldir.sh | bash
+```
+
+Elle kaldırmak istersen sıra önemli:
 
 ## 1. Claude Code'dan paketleri kaldır
 ```
@@ -31,7 +48,8 @@ kurucusunun oluşturduğu `~/.codex/divan-install-*.tsv` kaydı hedefleri ve var
 önceki sürüm yedeklerini gösterir; yedekleri geri yüklemeden önce içeriklerini
 incele.
 
-v0.11.0 ile kurucu kullanıldıysa kayıtlı kaldırma/geri alma yolu:
+Codex kurucusuyla (Divan Kurucusu dahil) kurulduysa kayıtlı kaldırma/geri
+alma yolu:
 
 ```bash
 bash scripts/kaldir-codex.sh
