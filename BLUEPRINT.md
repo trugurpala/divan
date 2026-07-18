@@ -88,6 +88,11 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18m: v0.11.1 PR #14 dört kapıdan geçti ve `731db9d7` ile `main`e
+  birleşti. Pages ile Wiki canlıda v0.11.1 döndürdü; değişmez tag aynı commit'e
+  bağlı ve GitHub Release HTTP 200 verdi. Yayın sonrası teftiş, sürüm hazırlama
+  sırasında durum sayfasında kalan eski v0.11.0 SHA'sını yakaladı; gerçek
+  v0.11.1 SHA'sıyla düzeltildi ve kanıt `.divan/evidence/` altına işlendi.
 - 2026-07-18l: Claude Code devralma açığı kapatıldı. Kök `CLAUDE.md`, ajanı
   AGENTS→BLUEPRINT→progress→yayın/v1 kayıtlarına bağladı; `scripts/devral.py`
   ve regresyon testleri eksik zinciri reddeder. SessionStart aynı sözleşmeyi

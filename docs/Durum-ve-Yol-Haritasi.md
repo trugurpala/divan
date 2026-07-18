@@ -20,7 +20,7 @@ Son doğrulama tarihi: 2026-07-18.
 
 - Beyan edilmiş gerçek ajan ve hakem adapter'ıyla yayımlanmış A/B sonucu yok.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
-- v0.11.1 tag/Release yayımlandı; etiket `5680337a` commit'ine bağlıdır ve
+- v0.11.1 tag/Release yayımlandı; etiket `731db9d7` commit'ine bağlıdır ve
   [Releases sayfası](https://github.com/trugurpala/divan/releases/tag/v0.11.1)
   sabit kurulumun tek doğru kanıtıdır.
 - GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 17
