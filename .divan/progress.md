@@ -4,8 +4,8 @@ Son güncelleme: 2026-07-18
 
 ## Güncel hedef
 
-v0.11.0 yayın kontrol düzlemini PR, CI, `main`, Pages, Wiki ve GitHub Release
-üzerinde kanıtlamak; ardından yalnız dış kanıt isteyen iki v1 kapısına geçmek.
+Gerçek ajan/hakem A/B sonucu ve proje sahibi dışındaki bağımsız kullanıcı kanıtı
+ile kalan iki v1 kapısını dürüstçe kapatmak.
 
 ## Yapıldı
 
@@ -103,22 +103,28 @@ v0.11.0 yayın kontrol düzlemini PR, CI, `main`, Pages, Wiki ve GitHub Release
   kayıtlı kaldırma/geri yükleme tatbikatı `uyumluluk` matrisine bağlandı.
 - Sekiz kapılı `registry/v1-gates.json`, deterministik Wiki karnesi, bağımsız
   kabul issue formu ve Sadrazam `/yayin` emri eklendi.
+- PR #12'nin `teftis` #64, `site-testi` #31, `wiki-sync` #9, `meclis` #5 ve
+  yeni `uyumluluk` #1 kapıları geçti; squash commit `5680337a` ile `main`e birleşti.
+- Ana dalda `teftis` #65, `uyumluluk` #2, `wiki-sync` #10, `site-testi` #32,
+  `meclis` #6, Pages #23 ve `release` #1 başarıyla tamamlandı.
+- `release` akışı Linux/macOS/Windows kur-kaldır, bütün yerel/resmî teftiş,
+  canlı Pages/Wiki readback ve Chromium tıklamasından sonra v0.11.0 etiketini
+  değişmez biçimde `5680337a` commit'ine bağladı ve GitHub Release'i yayımladı.
+- Canlı Pages ile Wiki `v0.11.0` + “Fermanını seç” döndürdü; Wiki v1 karnesi
+  kayıt sonrası 6/8 geçen kapıyı gösterecek şekilde yeniden üretildi.
 
 ## Devam ediyor
 
-- v0.11.0 yerel teftiş → PR/CI → `main` → canlı yüzey → tag/Release kanıtı.
+- Yalnız dış kanıt isteyen gerçek ajan/hakem ve bağımsız kullanıcı kapıları.
 
 ## Bilinen açıklar
 
 - Eval koşucusu ve fixture testleri var; beyan edilmiş güvenilir gerçek ajan
   adaptörü/hakemiyle yayımlanmış A/B sonucu henüz yok.
-- v0.11.0 tag/release kapısı kodlandı; `main` workflow'u başarıyla çalışana
-  kadar durumu yalnız “hazır”dır.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
-- Temiz-host matrisi kodlandı; uzak Linux, macOS ve Windows koşuları geçene kadar
-  “canlı kanıtlandı” sayılmaz.
 
 ## Sıradaki kesin adım
 
-v0.11.0 değişikliklerini yerelde bütünüyle doğrula; PR'ı yeşil kapılardan
-geçirip `main`e birleştir; Release, Pages ve Wiki'yi canlıdan yeniden oku.
+Beyan edilmiş gerçek ajan + bağımsız hakem adaptörünü güvenilir yürütme ortamında
+koş; sonucu yayımla. Paralelde v0.11.0 sabit release'i için ilk bağımsız kabul
+kanıtını `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` akışından topla.

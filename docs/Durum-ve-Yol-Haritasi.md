@@ -20,8 +20,9 @@ Son doğrulama tarihi: 2026-07-18.
 
 - Beyan edilmiş gerçek ajan ve hakem adapter'ıyla yayımlanmış A/B sonucu yok.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
-- v0.11.0 tag/Release, yayın workflow'u `main` ve canlı yüzey kapılarını geçene
-  kadar yalnız hazırdır; workflow geçince Releases sayfası tek doğru kanıttır.
+- v0.11.0 tag/Release yayımlandı; etiket `5680337a` commit'ine bağlıdır ve
+  [Releases sayfası](https://github.com/trugurpala/divan/releases/tag/v0.11.0)
+  sabit kurulumun tek doğru kanıtıdır.
 - GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 17
   çıktıyı yayımlar ve canlı `Home.md` sürümünü yeniden okur.
 

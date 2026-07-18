@@ -86,6 +86,15 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18k: v0.11.0 yayın kontrol düzlemi uçtan uca kendini kanıtladı. PR #12
+  üzerinde beş workflow; yeni `uyumluluk` matrisinde Claude Code + Ubuntu,
+  macOS ve Windows Codex kur-keşfet-kaldır işleri geçti. PR `5680337a` ile
+  `main`e birleşti. Ana dalda yedi iş akışı yeşil oldu; `release` #1 bütün
+  doğrulayıcılar, canlı Pages/Wiki readback ve Chromium tıklamasından sonra
+  v0.11.0 tag/GitHub Release'i aynı commit'te yayımladı. Public API etiketi,
+  release'in draft/prerelease olmadığını ve canlı yüzeylerin v0.11.0 olduğunu
+  yeniden doğruladı. v1 karnesi 6/8'e çıktı; yalnız gerçek ajan/hakem ile
+  bağımsız kullanıcı kanıtı kaldı.
 - 2026-07-18j: Kullanıcının “kitap/Release dahil her yeri her seferinde ben mi
   hatırlatacağım?” itirazı kalıcı ürün gereksinimine çevrildi. GitHub Docs
   üzerinden `GITHUB_TOKEN` en az yetki ve recursion davranışı doğrulandı.
@@ -180,5 +189,5 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-v0.11.0'ı PR/CI, `main`, Pages, Wiki ve GitHub Release üzerinde doğrula; sonra
-gerçek ajan/hakem ve bağımsız kullanıcı kanıtı isteyen iki dış kapıya geç.
+Gerçek ajan/hakem karşılaştırmasını yayımla ve v0.11.0 üzerinden bağımsız kabul
+kanıtı topla; bu iki dış kapı geçmeden v1.0 etiketi koyma.

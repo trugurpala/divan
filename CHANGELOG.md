@@ -42,6 +42,10 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - GitHub's official documentation was used for least-privilege
   `contents: write`, non-recursive `GITHUB_TOKEN` behavior, and workflow
   concurrency design.
+- PR #12 and all seven post-merge workflows passed. The release workflow
+  verified Linux/macOS/Windows rollback, live Pages and Wiki markers, and the
+  interactive site in Chromium before publishing tag/Release v0.11.0 at
+  commit `5680337a`.
 
 ## [0.10.3] - 2026-07-18
 
