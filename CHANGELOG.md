@@ -38,6 +38,8 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - GitHub repository and workflow state, the live Wiki HTTP 404, failed publish
   job steps, Context7's GitHub Docs result, current Codex manual, and active
   Mühürdar pet were inspected independently.
+- The first Wiki page was initialized by the repository owner; raw `Home.md`
+  returned HTTP 200 before the full 16-page source sync was triggered.
 
 ## [0.10.2] - 2026-07-18
 
