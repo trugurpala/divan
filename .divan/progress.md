@@ -15,6 +15,11 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
   Sadrazam SessionStart hook'u sözleşmeyi ve defteri gösterir.
 - GitHub Actions Dependabot ve CODEOWNERS eklendi. Ruleset/branch protection,
   secret scanning, push protection ve CodeQL platform doğrulaması bekler.
+- PR #14 `teftis`, `uyumluluk`, `wiki-sync` ve `site-testi` kapılarından geçti;
+  `731db9d7` ile `main`e birleşti. Canlı Pages/Wiki v0.11.1, tag aynı commit ve
+  GitHub Release HTTP 200 olarak yeniden okundu.
+- Yayın sonrasında durum sayfasında kalan eski v0.11.0 commit SHA'sı yakalandı;
+  v0.11.1 gerçek SHA'sı `731db9d7` ile düzeltildi ve kanıt kaydı eklendi.
 
 - Canlı `main` README'sinin 37 skill/v0.7 döneminde kaldığı doğrulandı.
 - PR #1'in önce v0.8.2/41 skill içerdiği, yeşil fakat taslak olduğu doğrulandı;
