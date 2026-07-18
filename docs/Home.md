@@ -1,4 +1,4 @@
-# Divan Wiki · v0.11.0
+# Divan Wiki · v0.11.1
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -6,7 +6,7 @@
 kalıcı bir teslim akışına çeviren Agent Skills pazarıdır. 41 vezir, 5 paket,
 proje hafızası, davranış eval'i ve yayın teftişi tek çatıdadır.
 
-> **Güncel durum:** v0.11.0 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel durum:** v0.11.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

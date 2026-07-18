@@ -299,11 +299,19 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         "CHANGELOG.md",
         "VERSION",
         "BLUEPRINT.md",
+        "CLAUDE.md",
         "UPSTREAM.md",
         "CONTRIBUTING.md",
     ]:
         if not (kok / gerekli).exists():
             hatalar.append(f"{gerekli} eksik")
+
+    claude_yolu = kok / "CLAUDE.md"
+    if claude_yolu.is_file():
+        claude = claude_yolu.read_text(encoding="utf-8")
+        for devralma in ["AGENTS.md", "BLUEPRINT.md", ".divan/progress.md", "scripts/devral.py --check"]:
+            if devralma not in claude:
+                hatalar.append(f"CLAUDE DEVRALMA ESKI: CLAUDE.md '{devralma}' kaydini icermiyor")
 
     # 4) Subagent ve hook denetimi
     for ajan in kok.glob("plugins/*/agents/*.md"):

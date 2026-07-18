@@ -16,15 +16,17 @@ SPEC.loader.exec_module(YAYIN)
 
 class PublicationTests(unittest.TestCase):
     def test_repository_publication_surfaces_match(self) -> None:
+        current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         result = YAYIN.denetle(ROOT)
-        self.assertEqual(result["version"], "0.11.0")
+        self.assertEqual(result["version"], current)
         self.assertGreaterEqual(result["surface_count"], 10)
 
     def test_release_notes_come_from_current_changelog(self) -> None:
+        current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         notes = YAYIN.release_notu(ROOT)
-        self.assertTrue(notes.startswith("# Divan v0.11.0"))
+        self.assertTrue(notes.startswith(f"# Divan v{current}"))
         self.assertIn("## Sabitlenmiş kurulum", notes)
-        self.assertIn("DIVAN_REF=v0.11.0", notes)
+        self.assertIn(f"DIVAN_REF=v{current}", notes)
 
     def test_stale_surface_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-yayin-test-") as temporary:

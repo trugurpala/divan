@@ -62,6 +62,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   Wiki canlı eşliğinden sonra CHANGELOG kaynaklı otomatik tag/GitHub Release;
   Linux/macOS/Windows Codex kur-kaldır matrisi, Claude Code resmî doğrulaması,
   makine-okunur v1 karnesi ve bağımsız kabul kanıtı akışı
+- **v0.11.1 ✓** Claude Code kök devralma sözleşmesi, makinece denetlenen
+  sohbetten bağımsız devam zinciri, CODEOWNERS ve Actions Dependabot kapısı
 
 ### Sıradaki ürün kanıtı — v0.12.0 adayı
 
@@ -86,6 +88,12 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-18l: Claude Code devralma açığı kapatıldı. Kök `CLAUDE.md`, ajanı
+  AGENTS→BLUEPRINT→progress→yayın/v1 kayıtlarına bağladı; `scripts/devral.py`
+  ve regresyon testleri eksik zinciri reddeder. SessionStart aynı sözleşmeyi
+  gösterir. CODEOWNERS ile Actions Dependabot eklendi; ruleset, secret scanning,
+  push protection ve CodeQL'nin GitHub ayarı olduğu dürüstçe açık bırakıldı.
+  v0.11.1 sağlamlaştırması dış kanıt isteyen iki v1 kapısını değiştirmez.
 - 2026-07-18k: v0.11.0 yayın kontrol düzlemi uçtan uca kendini kanıtladı. PR #12
   üzerinde beş workflow; yeni `uyumluluk` matrisinde Claude Code + Ubuntu,
   macOS ve Windows Codex kur-keşfet-kaldır işleri geçti. PR `5680337a` ile

@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f .divan/progress.md ]; then echo '--- DEFTER: kaldigin yer ---'; head -30 .divan/progress.md; elif [ -f BLUEPRINT.md ]; then echo '--- BLUEPRINT ozeti ---'; head -20 BLUEPRINT.md; fi; true"
+            "command": "if [ -f CLAUDE.md ]; then echo '--- DIVAN DEVRALMA SOZLESMESI ---'; head -40 CLAUDE.md; fi; if [ -f .divan/progress.md ]; then echo '--- DEFTER: kaldigin yer ---'; head -40 .divan/progress.md; elif [ -f BLUEPRINT.md ]; then echo '--- BLUEPRINT ozeti ---'; head -30 BLUEPRINT.md; fi; true"
           }
         ]
       }
