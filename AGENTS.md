@@ -15,6 +15,7 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Katalog teftişi: `scripts/katalog.py --check`
 - Yayın yüzeyleri: `release-manifest.json` ve `scripts/yayin.py --check`
 - v1 kabul defteri: `registry/v1-gates.json` ve `scripts/v1.py --check`
+- Claude Code devralması: `CLAUDE.md` ve `scripts/devral.py --check`
 
 ## Çalışma kuralları
 
@@ -49,6 +50,7 @@ Teslimden önce en az şunları çalıştır:
 
 ```bash
 python scripts/validate.py
+python scripts/devral.py --check
 python scripts/katalog.py --check
 python scripts/v1.py --check
 python scripts/yayin.py --check

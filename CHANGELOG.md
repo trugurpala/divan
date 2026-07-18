@@ -11,6 +11,30 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Independent adoption evidence and reproducible quality measurements.
 - First published comparison using a declared real-agent adapter and judge.
 
+## [0.11.1] - 2026-07-18
+
+### Added
+
+- Repository-root `CLAUDE.md`, giving Claude Code a native durable handoff
+  contract instead of relying on prior chat context.
+- `scripts/devral.py --check` and regression tests that reject a missing
+  handoff chain or a progress journal without an exact next action.
+- GitHub Actions Dependabot configuration and CODEOWNERS coverage for policy,
+  automation, release, registry, and project-memory surfaces.
+
+### Changed
+
+- Sadrazam advanced to 0.9.1; SessionStart now surfaces the Claude handoff
+  contract before the current progress journal.
+- Publication and local audit gates now cover Claude handoff and dependency
+  maintenance as release-controlled surfaces.
+
+### Security
+
+- Guidance distinguishes controls stored in Git from GitHub settings requiring
+  platform verification: rulesets, required reviews, secret scanning, push
+  protection, Dependabot alerts, and CodeQL.
+
 ## [0.11.0] - 2026-07-18
 
 ### Added

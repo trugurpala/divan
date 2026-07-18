@@ -8,6 +8,8 @@
     {"id": "readme-en", "path": "README.en.md", "marker": "v{version}", "replace_version": true},
     {"id": "blueprint", "path": "BLUEPRINT.md", "marker": "**v{version} ✓**", "replace_version": false},
     {"id": "progress", "path": ".divan/progress.md", "marker": "v{version}", "replace_version": false},
+    {"id": "claude-handoff", "path": "CLAUDE.md", "marker": "scripts/devral.py --check", "replace_version": false},
+    {"id": "dependabot", "path": ".github/dependabot.yml", "marker": "package-ecosystem: github-actions", "replace_version": false},
     {"id": "wiki-home", "path": "docs/Home.md", "marker": "v{version}", "replace_version": true},
     {"id": "wiki-status", "path": "docs/Durum-ve-Yol-Haritasi.md", "marker": "v{version}", "replace_version": true},
     {"id": "wiki-install", "path": "docs/Kurulum.md", "marker": "v{version}", "replace_version": true},

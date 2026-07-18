@@ -1,30 +1,23 @@
-# Divan repository guidance
+# Divan — Claude Code devralma sözleşmesi
 
-Read `AGENTS.md`, `BLUEPRINT.md`, `UPSTREAM.md`, and
-`THIRD_PARTY_LICENSES.md` before changing this repository.
+Bu depo sohbet geçmişinden bağımsız yürütülür. Bir göreve başlamadan önce:
 
-Keep Divan native-first and dependency-light. Do not make an external agent
-harness a default dependency. Never vendor content without a verified license,
-and record every imported source and intentional patch. Record discovery in
-`registry/candidates.json` when Meclis is enabled; a candidate or ADOPT decision
-is not installation without a separate pin, attribution, eval, and audit. Use parallel agents
-only for independent, bounded work; isolate concurrent writes with worktrees.
+1. `AGENTS.md` — bağlayıcı çalışma, teftiş ve yayın kuralları.
+2. `BLUEPRINT.md` — ürün yönü, mimari kararlar ve sürüm geçmişi.
+3. `.divan/progress.md` — gerçek mevcut durum ve sıradaki kesin adım.
+4. Yayında `release-manifest.json` ve `registry/v1-gates.json`.
 
-Before completion, run:
+## Değişmez emirler
 
-```bash
-python scripts/validate.py
-python scripts/katalog.py --check
-python evals/run.py --check
-python -m unittest discover -s tests -v
-git diff --check
-```
+- Kullanıcının eski konuşmaları hatırlatmasını bekleme; karar ve ilerlemeyi aynı
+  turda kalıcı kayıtlara işle.
+- README, katalog, Wiki kaynağı, Pages/site, CHANGELOG ve Release ürün
+  yüzeyleridir. Ürünü değiştiren işte `AGENTS.md` kurallarını uygula.
+- Lisansı doğrulanmamış içeriği kopyalama; popülerlik güven kanıtı değildir.
+- Kanıt görmeden “bitti”, “main'de”, “canlı” veya “release yayımlandı” deme.
+- v1 için gereken dış kanıtı üretme veya varsayma.
 
-If the product changes, update both READMEs, catalog, changelog, blueprint,
-Wiki source, installation docs, version file, and site in the same change. Run
-`python scripts/wiki.py --check` when Wiki pages are enabled. A draft PR is an
-intermediate state, not a public delivery. When publication is authorized,
-verify the default branch and live surface after merge. Do not initialize,
-commit, push, release, or overwrite user project files unless the user asks.
-Do not claim a skill win rate without a real adapter run; contract-only and
-fixture-only evals prove the harness, not product quality.
+Önce `python scripts/devral.py --check` çalıştır. Teslimden önce `AGENTS.md`
+içindeki bütün doğrulama komutlarını çalıştır. Yayında `/yayin` veya
+`python scripts/yayin.py` akışını kullan; PR, `main`, Wiki/Pages, tag ve GitHub
+Release durumlarını ayrı ayrı doğrula.

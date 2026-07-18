@@ -1,0 +1,10 @@
+# Repository policy, automation, and durable project memory.
+/.github/ @trugurpala
+/AGENTS.md @trugurpala
+/CLAUDE.md @trugurpala
+/BLUEPRINT.md @trugurpala
+/.divan/ @trugurpala
+/release-manifest.json @trugurpala
+/registry/ @trugurpala
+/scripts/ @trugurpala
+

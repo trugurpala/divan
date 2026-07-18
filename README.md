@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.11.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.11.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
 Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.11.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Sürüm:** v0.11.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -25,7 +25,7 @@ aynı turda yayımlanmasını ister.
 | Sorun | Divan'ın cevabı |
 |---|---|
 | Ajan plansız kodluyor | Sadrazam: brief → plan → icra → teftiş → takdim |
-| Her oturumda proje unutuluyor | Defterdar: AGENTS.md, BLUEPRINT ve `.divan/` kayıtları |
+| Her oturumda proje unutuluyor | Claude Code'un doğrudan okuduğu `CLAUDE.md` + AGENTS, BLUEPRINT ve `.divan/` kayıtları |
 | “Çalışıyor” deniyor, kanıt yok | Test, resmî doğrulayıcı ve bağımsız müfettiş kapısı |
 | Binlerce skill bağlamı ve güveni bozuyor | Kürasyon, lisans/köken denetimi ve aşamalı yükleme |
 | Harici swarm/harness karmaşık ve pahalı | Önce yerel tek oturum; gerekirse sınırlı subagent/worktree |

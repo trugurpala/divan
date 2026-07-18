@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.11.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.11.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs natively in Claude Code and its Agent Skills remain portable to Codex,
 Cursor, and other compatible hosts.
 
-**Current release:** v0.11.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current release:** v0.11.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Why Divan?
 
@@ -28,7 +28,7 @@ surface that stays in sync with the implementation.
 | Failure mode | Divan's answer |
 |---|---|
 | The agent starts coding without a plan | Sadrazam: brief → counsel → plan → execution → inspection → delivery |
-| Every new session forgets the project | Defterdar: AGENTS.md, BLUEPRINT, and `.divan/` records |
+| Every new session forgets the project | Claude Code-native `CLAUDE.md` plus AGENTS, BLUEPRINT, and `.divan/` records |
 | “It works” has no evidence | Tests, official validators, and an independent inspector |
 | Huge skill dumps consume context and trust | Curation, license/provenance gates, and progressive disclosure |
 | External swarm harnesses add cost and complexity | One native session first; bounded subagents/worktrees only when justified |

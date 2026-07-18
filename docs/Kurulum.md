@@ -15,12 +15,12 @@ Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall
 
 Windows (PowerShell):
 ```powershell
-$env:DIVAN_REF = "v0.11.0"
+$env:DIVAN_REF = "v0.11.1"
 irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
 ```
 macOS/Linux:
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.11.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.11.1 bash
 ```
 En güvenli kullanımda betiği önce indirip inceleyin. `DIVAN_REF` bir sürüm
 etiketi veya commit ile kaynak içeriğini sabitler; geliştirme dalını izlemek

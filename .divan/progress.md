@@ -9,6 +9,13 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
 
 ## Yapıldı
 
+- v0.11.1 için kök `CLAUDE.md` devralma sözleşmesi eklendi; Claude Code sohbet
+  geçmişi olmadan AGENTS, BLUEPRINT, progress ve yayın/v1 kayıtlarına gider.
+- `scripts/devral.py --check` ve regresyon testleri hafıza zincirini denetler;
+  Sadrazam SessionStart hook'u sözleşmeyi ve defteri gösterir.
+- GitHub Actions Dependabot ve CODEOWNERS eklendi. Ruleset/branch protection,
+  secret scanning, push protection ve CodeQL platform doğrulaması bekler.
+
 - Canlı `main` README'sinin 37 skill/v0.7 döneminde kaldığı doğrulandı.
 - PR #1'in önce v0.8.2/41 skill içerdiği, yeşil fakat taslak olduğu doğrulandı;
   yayın düzeltmelerinin SemVer karşılığı yeni işlev nedeniyle v0.9.0 oldu.
