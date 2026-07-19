@@ -49,7 +49,8 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Eval subprocesses are bounded, do not use dangerous bypass flags, redact
   secrets/PII/home paths, keep per-case A/B outcomes private, and bind publishable
   provenance to a clean Git HEAD plus provider-derived versions. Windows
-  provider `.cmd` wrappers are resolved without invoking a shell for other commands.
+  provider `.cmd` wrappers are resolved without invoking a shell for other
+  commands, and adapter JSON I/O is explicitly UTF-8 across platforms.
 
 ### Verified
 

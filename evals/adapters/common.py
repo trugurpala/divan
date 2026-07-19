@@ -93,6 +93,7 @@ def run_command(
             input=stdin,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=False,
             timeout=timeout or timeout_seconds(),
         )

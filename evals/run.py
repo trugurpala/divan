@@ -158,7 +158,12 @@ def _version_for_command(variable: str, default: str) -> str:
         invocation = ["cmd.exe", "/d", "/s", "/c", resolved, *args[1:], "--version"]
     try:
         completed = subprocess.run(
-            invocation, capture_output=True, text=True, check=False, timeout=30
+            invocation,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+            timeout=30,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise EvalError(f"provider version cannot be derived: {variable}") from exc
@@ -286,6 +291,8 @@ def _run_adapter(command: str, payload: dict[str, Any], timeout: float) -> dict[
             input=json.dumps(payload, ensure_ascii=False),
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
             timeout=timeout,
             check=False,
         )

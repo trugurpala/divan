@@ -19,6 +19,23 @@ SPEC.loader.exec_module(EVALS)
 
 
 class EvalRunnerTests(unittest.TestCase):
+    def test_adapter_protocol_uses_utf8_for_non_ascii_payloads(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-utf8-fixture-") as temporary:
+            adapter = pathlib.Path(temporary) / "adapter.py"
+            adapter.write_text(
+                "import json, sys; value=json.loads(sys.stdin.buffer.read().decode('utf-8')); "
+                "print(json.dumps({'prompt': value['prompt']}, ensure_ascii=False))\n",
+                encoding="utf-8",
+            )
+
+            result = EVALS._run_adapter(
+                f'"{sys.executable}" "{adapter}"',
+                {"prompt": "Türkçe bağlam"},
+                10,
+            )
+
+        self.assertEqual(result["prompt"], "Türkçe bağlam")
+
     @unittest.skipUnless(os.name == "nt", "Windows command wrapper regression")
     def test_provider_version_supports_windows_cmd_wrappers(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-version-fixture-") as temporary:
