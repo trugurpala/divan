@@ -18,7 +18,7 @@
 <style>
 :root{
   --gece:#0B1633; --kobalt:#1E4FA8; --firuze:#3BB8A8;
-  --mercan:#D8503C; --fildisi:#F3EDDD; --altin:#C9A227;
+  --mercan:#E06450; --fildisi:#F3EDDD; --altin:#C9A227;
   --fildisi-soluk:rgba(243,237,221,.68);
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -26,6 +26,8 @@ html{scroll-behavior:smooth}
 body{background:var(--gece);color:var(--fildisi);font-family:'Alegreya Sans',sans-serif;font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:var(--firuze)}
 :focus-visible{outline:2px solid var(--altin);outline-offset:3px;border-radius:2px}
+.skip-link{position:fixed;top:12px;left:12px;z-index:10;padding:10px 14px;background:var(--fildisi);color:var(--gece);border-radius:4px;transform:translateY(-200%)}
+.skip-link:focus{transform:translateY(0)}
 .wrap{max-width:960px;margin:0 auto;padding:0 24px}
 
 /* İznik sekiz köşeli yıldız deseni — imza doku */
@@ -106,16 +108,18 @@ footer p+p{margin-top:10px}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+<main id="main-content" tabindex="-1">
 
 <header class="hero">
   <div class="wrap">
     <p class="tugra">Vibe coder'ın vezirler kurulu</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Padişah sensin.</b> Fermanı verirsin; Divan işi <b>baştan sona</b> bitirir — planlar, inşa eder, test eder, kayda geçirir ve varsayılan dalda doğrular. v0.11.1 · 41 vezir · 5 paket · davranış eval'leri · Aday Meclisi.</p>
+    <p class="tez"><b>Padişah sensin.</b> Fermanı verirsin; Divan işi <b>baştan sona</b> bitirir — planlar, inşa eder, test eder, kayda geçirir ve varsayılan dalda doğrular. v0.12.0 · 41 vezir · 5 paket · davranış eval'leri · Aday Meclisi.</p>
     <div class="ferman">
-      <p class="ferman-etiket">Ferman · Claude Code</p>
-      <code><span class="p">/plugin</span> marketplace add trugurpala/divan
-<span class="p">/plugin</span> install sadrazam@divan</code>
+      <p class="ferman-etiket">Ferman · Claude + Codex</p>
+      <code><span class="p">python</span> scripts/kur-hostlar.py --source https://github.com/trugurpala/divan.git
+  --host both --ref v0.12.0 --execute</code>
     </div>
   </div>
 </header>
@@ -220,6 +224,7 @@ footer p+p{margin-top:10px}
   </div>
 </section>
 
+</main>
 <footer>
   <div class="wrap">
     <p>Açık kaynak — <a href="https://github.com/trugurpala/divan">repo</a> · <a href="https://github.com/trugurpala/divan/wiki">Wiki</a>. Derleme ve özgün skill'ler MIT lisanslıdır; üçüncü taraf skill'ler kendi lisanslarını korur.</p>

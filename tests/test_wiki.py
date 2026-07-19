@@ -3,7 +3,6 @@ import pathlib
 import tempfile
 import unittest
 
-
 KOK = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_wiki", KOK / "scripts" / "wiki.py")
 WIKI = importlib.util.module_from_spec(SPEC)

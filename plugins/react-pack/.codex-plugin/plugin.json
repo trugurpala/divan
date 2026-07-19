@@ -1,0 +1,8 @@
+{
+  "name": "react-pack",
+  "version": "0.2.1",
+  "description": "React, Next.js, composition, and web design best-practice skills.",
+  "author": { "name": "trugurpala" },
+  "skills": "./skills/",
+  "interface": { "displayName": "Divan React Pack" }
+}

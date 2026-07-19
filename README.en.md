@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.11.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.12.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -14,10 +14,10 @@ verification.**
 
 You issue the decree. Divan clarifies it, plans the work, builds with tests,
 verifies the result, records the decisions, and presents a finished delivery.
-It runs natively in Claude Code and its Agent Skills remain portable to Codex,
-Cursor, and other compatible hosts.
+It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
+Skills remain portable to Cursor and other compatible hosts.
 
-**Current release:** v0.11.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current release:** v0.12.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Why Divan?
 
@@ -40,24 +40,21 @@ and project memory** to the coding agent you already use.
 
 ## Install
 
-Claude Code:
-
-```text
-/plugin marketplace add trugurpala/divan
-/plugin install sadrazam@divan
-/plugin install core-pack@divan
-/plugin install ui-pack@divan
-/plugin install react-pack@divan
-/plugin install zanaat-pack@divan
-```
-
-Codex on Windows:
+Preview the no-write plan, then install the same pinned release into both hosts:
 
 ```powershell
-irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
+python scripts/kur-hostlar.py --host both --ref v0.12.0
+python scripts/kur-hostlar.py --host both --ref v0.12.0 --execute
 ```
 
-See [installation options](docs/Kurulum.md) for macOS/Linux and removal.
+For safety, the installer never overwrites an existing `divan` marketplace or
+`@divan` plugin whose source/ref cannot be proven; it leaves the entry untouched
+and fails with an actionable error.
+
+The installer delegates to the official Claude and Codex plugin CLIs, records
+pre-state, and never removes unrelated plugins. See
+[installation options](docs/Kurulum.md) for single-host, manual, legacy
+migration, and removal paths.
 
 ## Start from intent
 
@@ -91,8 +88,12 @@ python evals/run.py --run --skill kaynak-kuratori \
 
 Without a real adapter or judge it records `review_required` instead of
 inventing a win rate. Provenance identifies the agent, judge, and execution
-environment of a real run; it is not a quality claim and cannot close a pending
-v1 gate by itself. See the [adapter protocol](evals/README.md).
+environment of a real run; it is not a quality claim by itself. The first
+v0.12.0 Claude→Codex blinded run recorded zero skill wins, one baseline win,
+and two ties. No threshold was predeclared and the skill condition did not win,
+so this is auditable execution evidence, not a quality-improvement claim. See the
+[public result](evals/results/claude-codex-baglam-muhafizi-v012.json) and the
+[adapter protocol](evals/README.md).
 
 ## How it improves itself
 
@@ -130,9 +131,10 @@ Divan follows the open Agent Skills specification and ships the standard GitHub
 community and security files, but it is not v1.0 yet. All 41 skills receive
 structural validation; four original skills provide 13 behavioral cases and a
 provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
-compatibility checks. A declared real-agent/judge comparison and independent
-user evidence remain external gates; see the [machine-backed v1 scorecard](docs/V1-Hazirlik.md).
-Until those exist, the project does not claim a speed multiplier, revenue
+compatibility checks. The first declared real-agent/judge comparison is now
+published; independent user evidence remains the external gate. See the
+[machine-backed v1 scorecard](docs/V1-Hazirlik.md). Until that evidence exists,
+the project does not claim a speed multiplier, revenue
 increase, or “best in the world” status.
 
 ## Contributing and security

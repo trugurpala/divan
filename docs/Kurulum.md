@@ -1,7 +1,62 @@
 # Kurulum
 
-## Claude Code (birincil yol)
+## Claude Code/Desktop Code + Codex (önerilen yerel yol)
+
+Kurucu varsayılan olarak yalnız planı gösterir; host durumunu değiştirmez:
+
+```powershell
+python scripts/kur-hostlar.py --host both --ref <release-tag>
 ```
+
+Çıktıyı inceledikten sonra aynı sabit referansı uygula:
+
+```powershell
+python scripts/kur-hostlar.py --host both --ref <release-tag> --execute
+```
+
+Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
+veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel
+kaynak olarak verin: `--source <repo-yolu> --ref <40-karakter-SHA>`.
+
+Kurucu, aynı isimde mevcut bir `divan` pazarı veya pazarsız kalmış `@divan`
+eklentisi görürse onun kaynak ve ref bilgisini güvenilir biçimde kanıtlayamadığı
+için durur; mevcut pazarı veya eklentileri değiştirmez. Önce host'un kendi
+listeleme komutlarıyla kayıtları inceleyin ve yalnız size ait olduklarından
+eminseniz elle kaldırıp işlemi yeniden çalıştırın.
+
+Her dış CLI değişikliğinden önce işlem günlüğü atomik yazılır. Kesinti sonrası
+`in-progress`, `recovering` veya `rollback-incomplete` kaydını yalnız o işlemin oluşturduğu
+girdilerle geri almak için:
+
+```bash
+python scripts/kur-hostlar.py --rollback-transaction <islem.json>
+```
+
+Eski gevşek-skill göçü de tüm hedeflerin kurulum özetini önce doğrular; değişmiş
+dosyaya dokunmaz, hedefleri silmek yerine `.codex/divan-quarantine/` altında
+saklar ve ara hata olursa bütün taşıma işlemlerini tersine çevirir.
+Göç ve fallback kopyalama adımları da ayrı, atomik bir legacy günlüğü tutar;
+ana işlem günlüğü kesinti sonrası önce bu alt işlemi, sonra host kayıtlarını
+idempotent biçimde geri kazanır.
+
+`--host claude` veya `--host codex` tek host seçer. Kurucu iki ürünün resmî
+plugin CLI'larını kullanır, mevcut durumun tam listesini işlem kaydına yazar,
+yalnız kendi eklediği `divan` kayıtlarını geri alır ve alakasız eklentilere
+dokunmaz. Kayıtlar `~/.divan/transactions/` altındadır. Claude Desktop'ın Code
+yüzeyi kullanıcı kapsamındaki Claude Code eklentilerini ortak kullanır.
+
+Önceden `kur-codex` ile kopyalanmış Divan skill'leri varsa onları ancak beş
+paketin yerel kurulumu doğrulandıktan sonra taşı:
+
+```powershell
+python scripts/kur-hostlar.py --host both --ref <release-tag> --execute --migrate-legacy
+```
+
+## Elle yerel eklenti kurulumu
+
+Claude Code:
+
+```text
 /plugin marketplace add trugurpala/divan
 /plugin install sadrazam@divan
 /plugin install core-pack@divan
@@ -9,26 +64,27 @@
 /plugin install react-pack@divan
 /plugin install zanaat-pack@divan
 ```
-Güncelleme: `/plugin marketplace update divan` · Kaldırma: `/plugin uninstall <paket>@divan`
 
-## Codex — tek komut kurulum
+Codex:
 
-Windows (PowerShell):
 ```powershell
-$env:DIVAN_REF = "v0.11.1"
-irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
+codex plugin marketplace add trugurpala/divan --ref <tag-veya-commit>
+codex plugin add sadrazam@divan
+codex plugin add core-pack@divan
+codex plugin add ui-pack@divan
+codex plugin add react-pack@divan
+codex plugin add zanaat-pack@divan
 ```
-macOS/Linux:
+
+Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
+uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
+
+v0.12.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.sh | DIVAN_REF=v0.11.1 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.12.0/scripts/kur-codex.sh | DIVAN_REF=v0.12.0 bash
 ```
-En güvenli kullanımda betiği önce indirip inceleyin. `DIVAN_REF` bir sürüm
-etiketi veya commit ile kaynak içeriğini sabitler; geliştirme dalını izlemek
-isteyenler bilinçli olarak `main` kullanabilir. Kurucu, aynı adlı mevcut skill
-klasörlerini birleştirmez: tarihli yedeğe taşır ve kurulum kaydı üretir.
-Sonra Codex'i yeniden başlat. Skill'ler tetikleyici cümlelerle çalışır
-("baştan sona yap", "defter kur"); /komutlar, hook ve subagent'lar Claude
-Code'a özgüdür — Codex'te hafıza AGENTS.md üzerinden yürür.
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
 Skill'ler açık standarttır; repo'daki `plugins/*/skills/*` klasörlerini
@@ -43,16 +99,16 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 
 | Katman | Claude Code | Codex / Cursor / diğer |
 |---|---|---|
-| Skills (41 vezir) | ✓ /plugin ile | ✓ Agent Skills standardı — klasör kopyala |
+| Skills (41 vezir) | ✓ yerel plugin ile | ✓ Codex yerel plugin; diğer hostlarda Agent Skills klasörü |
 | Memory (defterdar dosyaları: AGENTS.md, BLUEPRINT, .divan/) | ✓ | ✓ düz dosya + AGENTS.md'yi Codex/Cursor doğal okur |
 | Komutlar (/ferman /sefer /defter /teftis) | ✓ | ✗ Claude Code'a özgü (skill tetikleyicileri yine çalışır) |
 | Subagents (kâşif, müfettiş) | ✓ | ✗ Claude Code'a özgü |
 | Hooks (oturum başında defteri otomatik oku) | ✓ | ✗ Claude Code'a özgü |
-| Marketplace tek komut kurulum | ✓ | ✗ elle kopyalama |
+| Marketplace tek komut kurulum | ✓ | ✓ |
 
 Özet: skill'ler ve hafıza dosyaları her yerde taşınır; komut/subagent/hook
 katmanları Claude Code'da tam güçtedir.
 
-`uyumluluk` CI matrisi Claude Code marketplace/paket şemasını temiz CLI ile;
-Codex kurulumunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41
-skill keşfi ve kayıtlı kaldırma tatbikatıyla sınar.
+`uyumluluk` CI matrisi Claude Code ve Codex pazar/paket şemalarını; fallback
+yolunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41 skill
+keşfi ve kayıtlı kaldırma tatbikatıyla sınar.

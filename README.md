@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.11.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.12.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -11,10 +11,10 @@
 **Padişah sensin. Divan, vibe coder'ın vezirler kuruludur — 41 skill, 5 paket,
 kalıcı proje hafızası ve bağımsız denetim.**
 Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim eder
-ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
-Agent Skills uyumlu ajanlarda taşınabilir.
+ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
+plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.11.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Sürüm:** v0.12.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -57,21 +57,20 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 
 ## Kurulum
 
-**Claude Code:**
-```
-/plugin marketplace add trugurpala/divan
-/plugin install sadrazam@divan     # orkestratör + hafıza + müşavir (çekirdek)
-/plugin install core-pack@divan    # metodoloji + kural hazinesi
-/plugin install ui-pack@divan
-/plugin install react-pack@divan
-/plugin install zanaat-pack@divan
+Önce değişiklik yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
+
+```powershell
+python scripts/kur-hostlar.py --host both --ref v0.12.0
+python scripts/kur-hostlar.py --host both --ref v0.12.0 --execute
 ```
 
-**Codex (Windows, tek komut):**
-```powershell
-irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
-```
-macOS/Linux ve ayrıntılar: [docs/Kurulum.md](docs/Kurulum.md)
+Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
+veya `@divan` eklentisinin üzerine yazmaz; kaydı olduğu gibi bırakıp açık bir
+hata verir.
+
+Kurucu Claude Code/Desktop Code ile Codex'in resmî plugin CLI'larını kullanır,
+mevcut eklentileri işlem kaydına alır ve alakasız eklentilere dokunmaz. Tek-host,
+elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md).
 
 ## Bir dakikada başla
 
@@ -103,7 +102,11 @@ python evals/run.py --run --skill kaynak-kuratori \
 
 Hakem veya gerçek adaptör yoksa koşucu başarı oranı uydurmaz; sonucu
 `review_required` olarak kaydeder. Provenance kaydı koşunun ajan/hakem/ortam
-kimliğini açıklar; tek başına kalite kanıtı değildir ve v1 kapısını kapatmaz.
+kimliğini açıklar; tek başına kalite kanıtı değildir. v0.12.0'ın ilk gerçek
+Claude→Codex kör A/B koşusu üç vakada skill 0, baseline 1, beraberlik 2 sonucu
+verdi; önceden belirlenmiş eşik olmadığı ve skill galibiyeti bulunmadığı için
+kalite artışı iddiası değildir. Kamu sonucu:
+[evals/results/claude-codex-baglam-muhafizi-v012.json](evals/results/claude-codex-baglam-muhafizi-v012.json).
 Protokol: [evals/README.md](evals/README.md).
 
 ## Komutlar (Claude Code)
@@ -156,10 +159,11 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
 ancak henüz v1.0 değildir. 41 skill yapısal olarak doğrulanır; 4 özgün skill için
 13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
-yüzeylerini ve temiz-host matrisini otomatikleştirir. Güvenilir gerçek ajan/hakem
-karşılaştırması ile bağımsız kullanıcı kanıtı hâlâ dış kapıdır. Güncel, makine-
-okunur durum [v1 hazırlık karnesinde](docs/V1-Hazirlik.md) bulunur; bunlar
-gelmeden hız, gelir veya “dünyanın en iyisi” iddiası yapılmaz.
+yüzeylerini ve temiz-host matrisini otomatikleştirir. İlk güvenilir gerçek
+ajan/hakem karşılaştırması yayımlanmıştır; bağımsız kullanıcı kanıtı hâlâ dış
+kapıdır. Güncel, makine-okunur durum [v1 hazırlık karnesinde](docs/V1-Hazirlik.md)
+bulunur; bağımsız kanıt gelmeden hız, gelir veya “dünyanın en iyisi” iddiası
+yapılmaz.
 
 ## Kaldırma
 

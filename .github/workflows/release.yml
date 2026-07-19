@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: Unix kur-keşfet-kaldır
         if: runner.os != 'Windows'
         env:
@@ -59,13 +59,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
       - name: Bütün yerel yayın kapıları
@@ -124,14 +124,39 @@ jobs:
           version="$(cat VERSION)"
           tag="v${version}"
           notes="$RUNNER_TEMP/divan-release-notes.md"
+          archive="$RUNNER_TEMP/divan-${tag}.zip"
+          checksum="$RUNNER_TEMP/divan-${tag}.sha256"
           python scripts/yayin.py --notes "$notes"
+          source_commit="$GITHUB_SHA"
+          if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
+            tagged_commit="$(git rev-parse "$tag^{commit}")"
+            test "$source_commit" = "$GITHUB_SHA"
+            test "$tagged_commit" = "$GITHUB_SHA" || {
+              echo "HATA: $tag etiketi $tagged_commit commit'inde; $GITHUB_SHA uzerine tasinmayacak." >&2
+              exit 1
+            }
+          fi
+          git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
+          archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
+          printf '%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$source_commit" "$tag" > "$checksum"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             if gh release view "$tag" >/dev/null 2>&1; then
-              gh release edit "$tag" --title "Divan $tag" --notes-file "$notes"
-              echo "$tag Release sayfası kaynak notlarla eşitlendi; etiket taşınmadı."
+              existing="$RUNNER_TEMP/existing-$tag"
+              mkdir -p "$existing"
+              gh release download "$tag" --pattern "$(basename "$archive")" --dir "$existing"
+              gh release download "$tag" --pattern "$(basename "$checksum")" --dir "$existing"
+              cmp --silent "$archive" "$existing/$(basename "$archive")" || {
+                echo "HATA: mevcut immutable archive yeni byte'larla uyusmuyor." >&2
+                exit 1
+              }
+              cmp --silent "$checksum" "$existing/$(basename "$checksum")" || {
+                echo "HATA: mevcut immutable checksum yeni kayitla uyusmuyor." >&2
+                exit 1
+              }
+              echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
             else
-              gh release create "$tag" --verify-tag --title "Divan $tag" --notes-file "$notes"
+              gh release create "$tag" "$archive" "$checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
             fi
           else
-            gh release create "$tag" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
+            gh release create "$tag" "$archive" "$checksum" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
           fi

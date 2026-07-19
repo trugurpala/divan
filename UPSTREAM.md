@@ -28,6 +28,9 @@ izlenir; lisansı belirsiz içerik alınmaz.
   birlikte görünür.
 - Bilinçli yamaların upstream taban imzası sabitlenir. Upstream aynı dosyayı
   değiştirirse izin listesi farkı gizlemez.
+- İncelenmiş drift kararları `registry/upstream-baselines.json` içinde kaynak
+  commit'i, yerel ağaç SHA-256'sı, değişen dosyalar ve gerekçeyle tutulur. Kaynak
+  HEAD veya yerel ağaç değişirse karar otomatik olarak yeniden açılır.
 - Kural Hazinesi birebir bir skill kopyası değildir; dokuz CC0 kuralın
   kürasyonudur. Bu nedenle kaynak deponun commit'i ayrıca izlenir ve ilerlediğinde
   yeniden kürasyon için raporlanır.
@@ -56,3 +59,23 @@ tutulur. Agent Skills standardı açılı ayraçları genel olarak yasaklamaz.
 | REDDEDİLDİ | multica-ai/andrej-karpathy-skills | Lisans yok | Popülerlik yeniden dağıtım hakkı vermez; yerine özgün `temkin` yazıldı |
 | KEŞİF KAYNAĞI | VoltAgent/awesome-agent-skills | MIT | Dizin niteliğinde; alınacak her hedefin lisansı ayrıca incelenir |
 | UYARLANDI | “100 Claude Repos” sosyal listesi (40 sağlanan bağlantı) | İçerik kopyalanmadı | Bağlantılar kimlik, durum ve tür açısından denetlendi; özgün `kaynak-kuratori` iş akışı yazıldı |
+
+## Upstream drift incelemesi (2026-07-19)
+
+Güncel kaynak HEAD'lerinde 15 vendored skill farkı yeniden üretildi ve her biri
+ayrı kayda bağlandı. Bu sürümde hiçbir upstream dosya otomatik kopyalanmadı;
+tamamının kararı `KEEP` (mevcut doğrulanmış Divan sürümünü koru) oldu.
+
+| Kaynak | İncelenen commit | Skill sayısı | Karar | Ana gerekçe |
+|---|---|---:|---|---|
+| obra/superpowers | `d884ae04edebef577e82ff7c4e143debd0bbec99` | 13 | KEEP | Yeni prompt, harness ve referanslar davranış eval'i olmadan alınmadı |
+| vercel-labs/agent-skills | `f8a72b9603728bb92a217a879b7e62e43ad76c81` | 1 | KEEP | Yerel bağlantı yaması bütün kurallarda yeniden doğrulanmayı bekliyor |
+| anthropics/skills | `fa0fa64bdc967915dc8399e803be67759e1e62b8` | 1 | KEEP | Claude API açıklamasının Agent Skills şema yaması korunuyor |
+
+Superpowers kayıtları: `brainstorming`, `dispatching-parallel-agents`,
+`executing-plans`, `finishing-a-development-branch`, `receiving-code-review`,
+`requesting-code-review`, `subagent-driven-development`,
+`systematic-debugging`, `test-driven-development`, `using-git-worktrees`,
+`verification-before-completion`, `writing-plans` ve `writing-skills`.
+Dosya bazlı gerekçe, değişim listesi ve yerel SHA-256 kanıtı
+`registry/upstream-baselines.json` içindedir.

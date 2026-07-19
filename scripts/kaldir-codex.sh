@@ -29,22 +29,11 @@ if [[ ! -f "$MANIFEST" ]]; then
   exit 1
 fi
 
-DST="$(cd "$DST" && pwd -P)"
-while IFS=$'\t' read -r name target backup; do
-  [[ "$name" == "skill" || -z "$name" ]] && continue
-  case "$target" in
-    "$DST"/*) ;;
-    *) echo "HATA: Kayitli hedef skill dizini disinda: $target" >&2; exit 1 ;;
-  esac
-  if [[ -e "$target" ]]; then
-    rm -rf -- "$target"
-  fi
-  if [[ -n "$backup" && -e "$backup" ]]; then
-    mv -- "$backup" "$target"
-    echo "  geri yuklendi: $name"
-  else
-    echo "  kaldirildi: $name"
-  fi
-done < "$MANIFEST"
-
-echo "Divan kaldirildi; kullanilan kayit korundu -> $MANIFEST"
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo "HATA: Python 3 bulunamadi; guvenli kaldirma calistirilamiyor." >&2
+  exit 1
+fi
+"$PYTHON_BIN" "$(dirname "$0")/legacy_state.py" migrate \
+  --manifest "$MANIFEST" --skills-dir "$DST" --state-dir "$STATE_DIR"
+echo "Divan karantinaya alindi; kullanilan kayit korundu -> $MANIFEST"

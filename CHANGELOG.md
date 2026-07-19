@@ -9,7 +9,65 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Planned
 
 - Independent adoption evidence and reproducible quality measurements.
-- First published comparison using a declared real-agent adapter and judge.
+
+## [0.12.0] - 2026-07-19
+
+### Added
+
+- Native Codex marketplace manifests for the same five packages and 41 skills
+  already published through Claude Code, with a cross-host drift validator.
+- Dry-run-first transactional installer for Claude Code/Desktop Code and Codex;
+  it records pre-state, preserves unrelated plugins, verifies all packages, and
+  rolls back only entries created by the failed transaction.
+- First-party real-provider evaluation adapters: Claude Code as the bounded
+  agent and an ephemeral read-only Codex process as the blinded JSON judge.
+- CodeQL, Ruff, mypy, Coverage, actionlint, and immutable GitHub Action pins.
+
+### Changed
+
+- The legacy loose-skill installer is now a compatibility fallback. Release
+  archives are SHA-256 verified before extraction and manifests record version,
+  ref, source commit, archive hash, per-skill installed hash, install time,
+  target, and backup. Migration preflights every row, quarantines owned content,
+  preserves changed targets, and reverses every move on failure.
+- Site navigation now has a keyboard-visible skip link, one main landmark,
+  WCAG AA coral contrast, reduced-motion verification, and mobile/landscape
+  overflow checks in real Chromium.
+- Root licensing is canonical MIT with separate notices; 15 current upstream
+  differences were reviewed and pinned without automatically copying content.
+
+### Security
+
+- Release workflows publish a versioned fallback archive and checksum with its
+  source commit; mutable `main` downloads, mutable Action tags, moved release
+  tags, and release-asset overwrite attempts are rejected.
+- Host mutations are atomically journaled before execution and interrupted
+  transactions have an ownership-checked, resumable recovery command. Legacy
+  migration and fallback copying use their own durable, reversible journals;
+  parent rollback restores even a completed legacy migration before removing
+  native packages and fails closed if the recorded legacy journal is missing.
+- Eval subprocesses are bounded, do not use dangerous bypass flags, redact
+  secrets/PII/home paths, keep per-case A/B outcomes private, and bind publishable
+  provenance to a clean Git HEAD plus provider-derived versions. Windows
+  provider `.cmd` wrappers are resolved without invoking a shell for other
+  commands, adapter JSON I/O is explicitly UTF-8 across platforms, and the
+  Codex judge disables plugins while using a strict static score-array schema.
+
+### Verified
+
+- Fixture and repository tests prove host preservation/rollback, checksum
+  fail-closed behavior, transactional legacy quarantine, marketplace parity,
+  blind judging, and accessibility.
+- A publishable first-party comparison ran three `baglam-muhafizi` cases with
+  Claude Code 2.1.209 / `claude-sonnet-5` as the bounded agent and Codex CLI
+  0.144.4 / `gpt-5.6-terra` as the blinded judge. The skill condition won zero
+  cases, baseline won one, and two tied; no release threshold was predeclared,
+  so this is auditable run evidence rather than a quality-improvement claim. Independent
+  adoption remains pending for v1.
+- Public eval evidence uses a commit-reveal boundary with a runner-generated
+  256-bit OS-random seed: the raw blinding seed, condition mapping, per-case
+  winner, and judge reasons remain in the private
+  key while the public provenance records only the seed's SHA-256 commitment.
 
 ## [0.11.1] - 2026-07-18
 

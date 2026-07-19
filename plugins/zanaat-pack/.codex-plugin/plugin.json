@@ -1,0 +1,8 @@
+{
+  "name": "zanaat-pack",
+  "version": "0.1.1",
+  "description": "Creative craft skills for art, themes, MCPs, web artifacts, and media.",
+  "author": { "name": "trugurpala" },
+  "skills": "./skills/",
+  "interface": { "displayName": "Divan Zanaat Pack" }
+}

@@ -10,7 +10,6 @@ import re
 import shutil
 import tempfile
 
-
 KOK = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = KOK / "wiki-pages.json"
 SLUG = re.compile(r"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")

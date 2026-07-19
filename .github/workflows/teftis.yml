@@ -7,15 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
       - name: Yerel testler
         run: |
+          pip install -r requirements-dev.txt
           python -m unittest discover -s tests -p 'test_*.py'
           python scripts/validate.py
           python evals/run.py --check
@@ -24,6 +25,12 @@ jobs:
           python scripts/katalog.py --check
           python scripts/v1.py --check
           python scripts/yayin.py --check
+          ruff check .
+          mypy scripts
+          coverage run -m unittest discover -s tests
+          coverage report
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
+          "$(go env GOPATH)/bin/actionlint"
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1

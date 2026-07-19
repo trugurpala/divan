@@ -4,12 +4,16 @@ on:
   push:
     paths:
       - 'docs/**'
+      - 'site/**'
       - 'tests/site_testi.py'
+      - 'tests/test_site_markup.py'
       - '.github/workflows/site-testi.yml'
   pull_request:
     paths:
       - 'docs/**'
+      - 'site/**'
       - 'tests/site_testi.py'
+      - 'tests/test_site_markup.py'
       - '.github/workflows/site-testi.yml'
   schedule:
     - cron: '0 6 * * 1'  # her pazartesi 06:00 UTC
@@ -20,8 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.12'
       - run: pip install playwright==1.61.0 && playwright install chromium --with-deps

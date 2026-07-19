@@ -6,7 +6,6 @@ import pathlib
 import tempfile
 import unittest
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_yayin", ROOT / "scripts" / "yayin.py")
 assert SPEC and SPEC.loader
@@ -26,7 +25,37 @@ class PublicationTests(unittest.TestCase):
         notes = YAYIN.release_notu(ROOT)
         self.assertTrue(notes.startswith(f"# Divan v{current}"))
         self.assertIn("## Sabitlenmiş kurulum", notes)
-        self.assertIn(f"DIVAN_REF=v{current}", notes)
+        self.assertIn(f"--ref v{current}", notes)
+        self.assertIn("scripts/kur-hostlar.py --host both", notes)
+        self.assertIn(f"divan-v{current}.sha256", notes)
+
+    def test_both_native_marketplaces_match_release_version(self) -> None:
+        current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        claude = json.loads(
+            (ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8")
+        )
+        codex = json.loads(
+            (ROOT / ".agents" / "plugins" / "marketplace.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(claude["version"], current)
+        self.assertEqual(codex["version"], current)
+
+    def test_release_manifest_covers_new_public_contracts(self) -> None:
+        manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+        paths = {surface["path"] for surface in manifest["public_surfaces"]}
+        self.assertTrue(
+            {
+                ".agents/plugins/marketplace.json",
+                "scripts/kur-hostlar.py",
+                "scripts/legacy_state.py",
+                "evals/run.py",
+                "evals/adapters/claude_agent.py",
+                "evals/adapters/codex_judge.py",
+                "NOTICE.md",
+                "registry/upstream-baselines.json",
+                ".github/workflows/uyumluluk.yml",
+            }.issubset(paths)
+        )
 
     def test_stale_surface_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-yayin-test-") as temporary:

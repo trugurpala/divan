@@ -2,7 +2,7 @@
 
 Misafirlik bitti mi? Divan iz bırakmadan gider. Sıra önemli:
 
-## 1. Claude Code'dan paketleri kaldır
+## 1. Claude Code/Desktop Code'dan paketleri kaldır
 ```
 /plugin uninstall sadrazam@divan
 /plugin uninstall core-pack@divan
@@ -18,20 +18,44 @@ Misafirlik bitti mi? Divan iz bırakmadan gider. Sıra önemli:
 Bu ikisi komutları, skill'leri, subagent'ları (kâşif, müfettiş) ve
 SessionStart hook'unu tamamen devre dışı bırakır.
 
-## 3. (İsteğe bağlı) Proje hafızası dosyaları
+## 3. Codex'ten yerel paketleri kaldır
+
+```powershell
+codex plugin remove sadrazam@divan
+codex plugin remove core-pack@divan
+codex plugin remove ui-pack@divan
+codex plugin remove react-pack@divan
+codex plugin remove zanaat-pack@divan
+codex plugin marketplace remove divan
+```
+
+`~/.divan/transactions/install-*.json` dosyası kurulum öncesi host listelerini
+ve o işlemde oluşturulan kayıtları gösterir. Geri alırken yalnız `created`
+alanındaki Divan girdilerini hedefle; başka marketplace veya eklentileri silme.
+Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
+
+```bash
+python scripts/kur-hostlar.py --rollback-transaction <install-....json>
+```
+
+Aynı işlemde `--migrate-legacy` tamamlandıysa rollback önce karantinadaki
+doğrulanmış loose skill'leri ve çakışma yedeklerini işlem öncesi konumlarına
+geri getirir; ardından native paketleri ve pazarı kaldırır.
+
+## 4. (İsteğe bağlı) Proje hafızası dosyaları
 Defterdar'ın SENİN projende ürettiği dosyalar sana aittir. `.divan/`,
 `AGENTS.md` ve `BLUEPRINT.md` başka araçlar veya ekip üyeleri tarafından da
 kullanılıyor olabilir; otomatik bir silme komutu çalıştırma. Önce yedek al,
 `git status` ile sahipliği ve değişiklikleri denetle, sonra yalnızca Divan'a ait
 olduğundan emin olduğun dosyaları tek tek kaldır.
 
-## 4. Cursor/Codex'e elle kopyaladıysan
+## 5. Cursor/Codex'e elle kopyaladıysan
 Kopyaladığın skill klasörlerini ilgili skill dizininden tek tek kaldır. Codex
 kurucusunun oluşturduğu `~/.codex/divan-install-*.tsv` kaydı hedefleri ve varsa
 önceki sürüm yedeklerini gösterir; yedekleri geri yüklemeden önce içeriklerini
 incele.
 
-v0.11.0 ile kurucu kullanıldıysa kayıtlı kaldırma/geri alma yolu:
+v0.12.0 fallback kurucusu kullanıldıysa kayıtlı kaldırma/geri alma yolu:
 
 ```bash
 bash scripts/kaldir-codex.sh
@@ -41,11 +65,17 @@ bash scripts/kaldir-codex.sh
 ./scripts/kaldir-codex.ps1
 ```
 
-Betikler yalnız kurulum kaydındaki ve `CODEX_SKILLS_DIR` altındaki hedefleri
-kaldırır; çakışma sırasında alınan yedeği yerine koyar, kayıt dosyasını kanıt
-olarak korur. Şüphede manifest yolunu açık argüman ver ve önce içeriğini oku.
+Betikler bütün manifesti önce doğrular; her hedefin `installed_sha256` özeti
+kurulum kaydıyla eşleşmedikçe hiçbir dosyayı taşımaz. Doğrulanan Divan kopyaları
+silinmez, `~/.codex/divan-quarantine/` altına taşınır; çakışma sırasında alınan
+yedekler yerine konur ve ara hata bütün taşıma işlemlerini geri alır. Eski,
+özet alanı bulunmayan manifest fail-closed reddedilir. Şüphede manifest yolunu
+açık argüman ver ve önce içeriğini oku.
+Yarım kalan fallback/göç işlemleri `divan-transactions/legacy-*.json` günlüğüyle
+`python scripts/legacy_state.py recover --journal <günlük.json>` üzerinden
+yeniden ve güvenli biçimde toparlanabilir.
 
-## 5. Önbellek kalıntısı (nadiren gerekir)
+## 6. Önbellek kalıntısı (nadiren gerekir)
 Claude Code marketplace klonlarını `~/.claude/` altında tutar; adım 2
 bunu yönetir. Şüphen varsa `~/.claude/plugins/` içinde "divan" ara, sil.
 

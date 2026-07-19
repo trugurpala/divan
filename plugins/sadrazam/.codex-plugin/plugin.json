@@ -1,0 +1,8 @@
+{
+  "name": "sadrazam",
+  "version": "0.9.1",
+  "description": "Grand Vizier: end-to-end delivery orchestrator for verified outcomes.",
+  "author": { "name": "trugurpala" },
+  "skills": "./skills/",
+  "interface": { "displayName": "Sadrazam" }
+}

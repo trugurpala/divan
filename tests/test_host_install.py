@@ -1,0 +1,590 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import pathlib
+import subprocess
+import tempfile
+import unittest
+from unittest import mock
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("divan_host_install", ROOT / "scripts" / "kur-hostlar.py")
+assert SPEC and SPEC.loader
+HOST_INSTALL = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(HOST_INSTALL)
+PACKAGE_VERSIONS = {
+    "sadrazam": "0.9.1",
+    "core-pack": "0.5.1",
+    "ui-pack": "0.1.0",
+    "react-pack": "0.2.1",
+    "zanaat-pack": "0.1.1",
+}
+
+
+class FakeRunner:
+    def __init__(self, fail_on: tuple[str, ...] | None = None) -> None:
+        self.commands: list[tuple[str, ...]] = []
+        self.fail_on = fail_on
+        self.marketplaces = {
+            "claude": {"claude-plugins-official"},
+            "codex": {"personal"},
+        }
+        self.plugins = {
+            "claude": {"unrelated@claude-plugins-official"},
+            "codex": {"vibe-coder-standard@personal"},
+        }
+        self.plugin_overrides: dict[str, dict[str, object]] = {}
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        argv = tuple(command)
+        self.commands.append(argv)
+        if self.fail_on and self.fail_on == argv:
+            return subprocess.CompletedProcess(command, 7, "", "fixture failure")
+
+        host = command[0]
+        if host == "git":
+            if "get-url" in command:
+                return subprocess.CompletedProcess(
+                    command, 0, "https://github.com/trugurpala/divan.git\n", ""
+                )
+            if "describe" in command:
+                return subprocess.CompletedProcess(command, 0, "v0.12.0\n", "")
+            return subprocess.CompletedProcess(command, 0, "a" * 40 + "\n", "")
+        if command[1:4] == ["plugin", "marketplace", "list"]:
+            if host == "claude":
+                output = [
+                    {
+                        "name": name,
+                        "installLocation": "fixture-divan-root" if name == "divan" else name,
+                    }
+                    for name in sorted(self.marketplaces[host])
+                ]
+            else:
+                output = {
+                    "marketplaces": [
+                        {
+                            "name": name,
+                            "root": "fixture-divan-root" if name == "divan" else name,
+                        }
+                        for name in sorted(self.marketplaces[host])
+                    ]
+                }
+            return subprocess.CompletedProcess(command, 0, json.dumps(output), "")
+        if command[1:3] == ["plugin", "list"]:
+            if host == "claude":
+                output = [self._plugin_row(host, plugin) for plugin in sorted(self.plugins[host])]
+            else:
+                output = {
+                    "installed": [
+                        self._plugin_row(host, plugin) for plugin in sorted(self.plugins[host])
+                    ]
+                }
+            return subprocess.CompletedProcess(command, 0, json.dumps(output), "")
+        if command[1:4] == ["plugin", "marketplace", "add"]:
+            self.marketplaces[host].add("divan")
+        elif command[1:4] == ["plugin", "marketplace", "remove"]:
+            self.marketplaces[host].discard(command[4])
+        elif command[1:3] == ["plugin", "install"]:
+            self.plugins[host].add(command[3])
+        elif command[1:3] == ["plugin", "add"]:
+            self.plugins[host].add(command[3])
+        elif command[1:3] in (["plugin", "uninstall"], ["plugin", "remove"]):
+            self.plugins[host].discard(command[3])
+        return subprocess.CompletedProcess(command, 0, "{}", "")
+
+    def _plugin_row(self, host: str, plugin: str) -> dict[str, object]:
+        key = "id" if host == "claude" else "pluginId"
+        row: dict[str, object] = {key: plugin, "enabled": True}
+        if plugin.endswith("@divan"):
+            name = plugin.removesuffix("@divan")
+            version = PACKAGE_VERSIONS[name]
+            skills = sorted(
+                path.parent.name
+                for path in (ROOT / "plugins" / name / "skills").glob("*/SKILL.md")
+            )
+            row.update(
+                {
+                    "version": version,
+                    "installed": True,
+                    "marketplaceName": "divan",
+                    "installPath": f"fixture-divan-root/plugins/{name}",
+                    "source": {"path": f"fixture-divan-root/plugins/{name}"},
+                    "skills": skills,
+                }
+            )
+        row.update(self.plugin_overrides.get(plugin, {}))
+        return row
+
+
+class JournalObservingRunner(FakeRunner):
+    def __init__(self, state_dir: pathlib.Path) -> None:
+        super().__init__()
+        self.state_dir = state_dir
+        self.saw_pending_journal = False
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        if command[1:4] == ["plugin", "marketplace", "add"]:
+            journals = list(self.state_dir.glob("install-*.json"))
+            if journals:
+                record = json.loads(journals[0].read_text(encoding="utf-8"))
+                self.saw_pending_journal = record.get("pending") == {
+                    "kind": "marketplace",
+                    "host": command[0],
+                }
+        return super().__call__(command)
+
+
+class InterruptAfterMutationRunner(FakeRunner):
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super().__call__(command)
+        if command[1:3] == ["plugin", "add"] and command[3] == "sadrazam@divan":
+            raise KeyboardInterrupt
+        return result
+
+
+class InterruptOnceDuringRecoveryRunner(FakeRunner):
+    def __init__(self) -> None:
+        super().__init__()
+        self.interrupted = False
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super().__call__(command)
+        if (
+            not self.interrupted
+            and command[1:3] in (["plugin", "uninstall"], ["plugin", "remove"])
+        ):
+            self.interrupted = True
+            raise KeyboardInterrupt
+        return result
+
+
+class HostInstallTests(unittest.TestCase):
+    def options(self, state_dir: pathlib.Path, **changes: object):
+        values = {
+            "host": "both",
+            "source": "https://github.com/trugurpala/divan.git",
+            "ref": "v0.12.0",
+            "execute": True,
+            "migrate_legacy": False,
+            "state_dir": state_dir,
+        }
+        values.update(changes)
+        return HOST_INSTALL.Options(**values)
+
+    def test_dry_run_never_invokes_host_cli(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            record = HOST_INSTALL.install(
+                self.options(pathlib.Path(temporary), execute=False), runner=runner
+            )
+
+        self.assertEqual(runner.commands, [])
+        self.assertEqual(record["status"], "dry-run")
+        rendered = "\n".join(" ".join(command) for command in record["planned_commands"])
+        self.assertIn(
+            "claude plugin marketplace add https://github.com/trugurpala/divan.git#v0.12.0",
+            rendered,
+        )
+        self.assertIn(
+            "codex plugin marketplace add https://github.com/trugurpala/divan.git --ref v0.12.0",
+            rendered,
+        )
+
+    def test_installs_both_hosts_and_preserves_unrelated_plugins(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            state_dir = pathlib.Path(temporary)
+            record = HOST_INSTALL.install(self.options(state_dir), runner=runner)
+
+            self.assertEqual(record["status"], "verified")
+            self.assertEqual(set(record["verified"]), {"claude", "codex"})
+            for evidence in record["verified"].values():
+                self.assertEqual(evidence["package_count"], 5)
+                self.assertEqual(evidence["skill_count"], 41)
+                self.assertEqual(evidence["ref"], "v0.12.0")
+                self.assertEqual(
+                    evidence["source"],
+                    "https://github.com/trugurpala/divan.git",
+                )
+                self.assertTrue(evidence["all_enabled"])
+            self.assertTrue(record["transaction_path"].startswith(str(state_dir)))
+            self.assertTrue(pathlib.Path(record["transaction_path"]).is_file())
+            self.assertIn("unrelated@claude-plugins-official", runner.plugins["claude"])
+            self.assertIn("vibe-coder-standard@personal", runner.plugins["codex"])
+            for package in HOST_INSTALL.PACKAGES:
+                self.assertIn(f"{package}@divan", runner.plugins["claude"])
+                self.assertIn(f"{package}@divan", runner.plugins["codex"])
+
+    def test_journal_is_persisted_before_every_external_mutation(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = JournalObservingRunner(state_dir)
+            HOST_INSTALL.install(
+                self.options(state_dir, host="claude"),
+                runner=runner,
+            )
+
+        self.assertTrue(runner.saw_pending_journal)
+
+    def test_in_progress_journal_can_be_recovered_without_touching_unrelated_state(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-interrupted.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "in-progress",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": {
+                            "kind": "plugin",
+                            "host": "codex",
+                            "id": "core-pack@divan",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].update(
+                {"sadrazam@divan", "core-pack@divan"}
+            )
+
+            recovered = HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertEqual(recovered["status"], "recovered")
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+
+    def test_host_recovery_resumes_the_linked_legacy_journal_first(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            root = pathlib.Path(temporary)
+            legacy_journal = root / "legacy-interrupted.json"
+            legacy_journal.write_text("{}\n", encoding="utf-8")
+            transaction = root / "install-interrupted.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "in-progress",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": {
+                            "kind": "legacy-migration",
+                            "host": "codex",
+                            "journal": str(legacy_journal),
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            recovered = HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        recover_commands = [
+            command
+            for command in runner.commands
+            if "legacy_state.py" in " ".join(command) and "recover" in command
+        ]
+        self.assertEqual(len(recover_commands), 1)
+        self.assertIn(str(legacy_journal), recover_commands[0])
+        self.assertEqual(recovered["status"], "recovered")
+
+    def test_rollback_reverses_a_completed_legacy_migration_before_native_entries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            root = pathlib.Path(temporary)
+            legacy_journal = root / "legacy-completed.json"
+            legacy_journal.write_text("{}\n", encoding="utf-8")
+            transaction = root / "install-verified.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "verified",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": None,
+                        "legacy_migration": {
+                            "result": {"journal": str(legacy_journal)}
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        recovery_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if "legacy_state.py" in " ".join(command) and "recover" in command
+        )
+        plugin_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if command[1:3] == ("plugin", "remove")
+        )
+        self.assertLess(recovery_index, plugin_index)
+
+    def test_rollback_fails_closed_when_recorded_legacy_journal_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            root = pathlib.Path(temporary)
+            transaction = root / "install-verified.json"
+            missing = root / "missing-legacy.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "verified",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": None,
+                        "legacy_migration": {"result": {"journal": str(missing)}},
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "legacy journal is missing"):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertIn("sadrazam@divan", runner.plugins["codex"])
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "remove") for command in runner.commands)
+        )
+
+    def test_automatic_failure_undoes_legacy_before_removing_native_entries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = FakeRunner()
+
+            def fail_after_legacy(
+                _root: pathlib.Path,
+                _runner: HOST_INSTALL.Runner,
+                journal: pathlib.Path,
+            ) -> None:
+                journal.write_text("{}\n", encoding="utf-8")
+                raise HOST_INSTALL.InstallError("legacy migration returned invalid JSON")
+
+            with mock.patch.object(HOST_INSTALL, "_migrate_legacy", fail_after_legacy):
+                with self.assertRaisesRegex(HOST_INSTALL.InstallError, "invalid JSON"):
+                    HOST_INSTALL.install(
+                        self.options(state_dir, host="codex", migrate_legacy=True),
+                        runner=runner,
+                    )
+            transaction = next(state_dir.glob("install-*.json"))
+            record = json.loads(transaction.read_text(encoding="utf-8"))
+
+        recovery_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if "legacy_state.py" in " ".join(command) and "recover" in command
+        )
+        plugin_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if command[1:3] == ("plugin", "remove")
+        )
+        self.assertLess(recovery_index, plugin_index)
+        self.assertEqual(record["status"], "rolled-back")
+
+    def test_interrupt_after_external_success_rolls_back_pending_owned_entry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = InterruptAfterMutationRunner()
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.install(self.options(state_dir), runner=runner)
+            journal = json.loads(
+                next(state_dir.glob("install-*.json")).read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(journal["status"], "rolled-back")
+        self.assertEqual(runner.marketplaces["claude"], {"claude-plugins-official"})
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["claude"], {"unrelated@claude-plugins-official"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+
+    def test_recovery_can_resume_after_a_second_interruption(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-double-interrupt.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "in-progress",
+                        "transaction_path": str(transaction),
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": None,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runner = InterruptOnceDuringRecoveryRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            with self.assertRaises(KeyboardInterrupt):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+            interrupted = json.loads(transaction.read_text(encoding="utf-8"))
+            self.assertEqual(interrupted["status"], "recovering")
+
+            recovered = HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertEqual(recovered["status"], "recovered")
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+
+    def test_failure_rolls_back_only_entries_created_by_transaction(self) -> None:
+        failure = ("codex", "plugin", "add", "ui-pack@divan", "--json")
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner(fail_on=failure)
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.install(self.options(pathlib.Path(temporary)), runner=runner)
+
+        self.assertEqual(runner.marketplaces["claude"], {"claude-plugins-official"})
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["claude"], {"unrelated@claude-plugins-official"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+
+    def test_wrong_or_disabled_native_package_fails_verification_and_rolls_back(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            runner.plugin_overrides["ui-pack@divan"] = {
+                "version": "0.0.0",
+                "enabled": False,
+            }
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "version|enabled"):
+                HOST_INSTALL.install(
+                    self.options(pathlib.Path(temporary), host="codex"), runner=runner
+                )
+
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+
+    def test_preexisting_divan_entries_survive_rollback(self) -> None:
+        failure = ("codex", "plugin", "add", "ui-pack@divan", "--json")
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner(fail_on=failure)
+            runner.marketplaces["claude"].add("divan")
+            runner.plugins["claude"].add("sadrazam@divan")
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.install(self.options(pathlib.Path(temporary)), runner=runner)
+
+        self.assertIn("divan", runner.marketplaces["claude"])
+        self.assertIn("sadrazam@divan", runner.plugins["claude"])
+
+    def test_existing_divan_marketplace_is_not_trusted_without_provenance(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].update(
+                f"{package}@divan" for package in HOST_INSTALL.PACKAGES
+            )
+            before_plugins = set(runner.plugins["codex"])
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "source/ref"):
+                HOST_INSTALL.install(
+                    self.options(pathlib.Path(temporary), host="codex"), runner=runner
+                )
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertEqual(runner.plugins["codex"], before_plugins)
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "remove") for command in runner.commands)
+        )
+
+    def test_orphaned_divan_plugins_are_not_trusted_without_provenance(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("personal")
+            runner.plugins["codex"].update(
+                f"{package}@divan" for package in HOST_INSTALL.PACKAGES
+            )
+            before_marketplaces = set(runner.marketplaces["codex"])
+            before_plugins = set(runner.plugins["codex"])
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "plugin source/ref"):
+                HOST_INSTALL.install(
+                    self.options(pathlib.Path(temporary), host="codex"), runner=runner
+                )
+
+        self.assertEqual(runner.marketplaces["codex"], before_marketplaces)
+        self.assertEqual(runner.plugins["codex"], before_plugins)
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "add") for command in runner.commands)
+        )
+
+    def test_legacy_migration_requires_verified_codex_target(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.install(
+                    self.options(
+                        pathlib.Path(temporary),
+                        host="claude",
+                        migrate_legacy=True,
+                    ),
+                    runner=runner,
+                )
+
+        self.assertEqual(runner.commands, [])
+
+
+if __name__ == "__main__":
+    unittest.main()

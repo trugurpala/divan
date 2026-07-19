@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "generated_at": 1784492555,
+  "case_count": 3,
+  "judged_count": 3,
+  "summary": {
+    "skill_wins": 0,
+    "baseline_wins": 1,
+    "ties": 2,
+    "skill_win_rate": 0.0,
+    "minimum_skill_win_rate": null,
+    "gate_passed": null
+  },
+  "cases": [
+    {
+      "skill_name": "baglam-muhafizi",
+      "case_id": 1,
+      "prompt": "Uzun bir debugging oturumundayız. Son hata stack trace'i hâlâ aktif ama önceki üç build logu tekrar ediyor. Bağlamı küçült ve güvenli bir devir özeti hazırla.",
+      "expected_output": "Aktif hatayı koruyan, eski tekrarları dışarı alan ve sonraki adımı belirleyen devir özeti.",
+      "expectations": [
+        "Aktif hata ve son tanı kanıtı korunur",
+        "Tekrarlanan eski loglar özetlenir veya referansa alınır",
+        "Hedef, kısıtlar ve sonraki adım açık kalır"
+      ],
+      "candidates": {
+        "A": {
+          "output": "Bu konuşmada henüz herhangi bir debugging geçmişi, stack trace veya build logu yok — bu sizin ilk mesajınız. Yani elimde küçültebileceğim bir bağlam veya özetleyebileceğim bir hata/log akışı bulunmuyor.\n\nDevam edebilmem için şunlardan birini paylaşır mısınız:\n- Aktif hatanın stack trace'i\n- Tekrar eden build loglarının en son (benzersiz) hali\n- Hangi dosya/projede çalıştığımız\n\nBunları aldıktan sonra tekrarlayan/gereksiz kısımları eleyip net bir devir özeti çıkarırım.",
+          "events": [
+            "provider:claude-code"
+          ],
+          "changed_files": []
+        },
+        "B": {
+          "output": "Bu konuşmada henüz bir debugging geçmişi, stack trace ya da build logu yok — bu, oturumun ilk mesajı. Elimde özetleyebileceğim gerçek bir hata veya log bulunmadığından, olmayan bir içeriği uydurup özet çıkaramam.\n\nDevam edebilmem için şunlardan birine ihtiyacım var:\n- Son hatanın stack trace'ini (veya ilgili log dosyasının yolunu),\n- Tekrar eden üç build logunu (veya nerede bulunduklarını),\n- Ya da üzerinde çalıştığımız projenin dizinini/dosyalarını.\n\nBunları paylaşırsan, tekrar eden kısımları eleyip aktif hatayı öne çıkaran kısa ve net bir devir özeti hazırlarım.",
+          "events": [
+            "provider:claude-code"
+          ],
+          "changed_files": []
+        }
+      },
+      "judgement": {
+        "expectation_scores": {
+          "Aktif hata ve son tanı kanıtı korunur": false,
+          "Tekrarlanan eski loglar özetlenir veya referansa alınır": false,
+          "Hedef, kısıtlar ve sonraki adım açık kalır": false
+        }
+      }
+    },
+    {
+      "skill_name": "baglam-muhafizi",
+      "case_id": 2,
+      "prompt": "Bu runtime token sayısını veya KV-cache hit oranını göstermiyor. Context'i optimize et ve ne kadar tasarruf ettiğini raporla.",
+      "expected_output": "Ölçülemeyen yüzdeleri reddeden, belirtilere dayalı bağlam azaltma planı.",
+      "expectations": [
+        "Token veya cache oranı uydurulmaz",
+        "Daraltma, tekilleştirme ve dışarı alma sırası izlenir",
+        "Yalnızca gözlemlenebilen sonuçlar raporlanır"
+      ],
+      "candidates": {
+        "A": {
+          "output": "*Read C--Users-Pala-AppData-Local-Temp-divan-claude-agent-tqn4dtoa\\memory\\MEMORY.md*",
+          "events": [
+            "provider:claude-code"
+          ],
+          "changed_files": []
+        },
+        "B": {
+          "output": "Öncelikle çalışma dizinini inceleyip neyle uğraştığımızı anlamam gerekiyor.\n\nBash tool: List directory contents to understand what \"runtime\" and \"context\" refer to\n{\n  \"command\": \"ls -la 2>/dev/null || dir\",\n  \"description\": \"List directory contents\"\n}",
+          "events": [
+            "provider:claude-code"
+          ],
+          "changed_files": []
+        }
+      },
+      "judgement": {
+        "expectation_scores": {
+          "Token veya cache oranı uydurulmaz": true,
+          "Daraltma, tekilleştirme ve dışarı alma sırası izlenir": false,
+          "Yalnızca gözlemlenebilen sonuçlar raporlanır": false
+        }
+      }
+    },
+    {
+      "skill_name": "baglam-muhafizi",
+      "case_id": 3,
+      "prompt": "Sekiz bağımlı kod görevini context tasarrufu için sekiz ajana böl.",
+      "expected_output": "Bağımlı işleri körlemesine paralelleştirmeyen ve koordinasyon maliyetini açıklayan daha küçük düzen.",
+      "expectations": [
+        "Bağımlı işler bağımsızmış gibi bölünmez",
+        "Ordu-nizami ile en küçük güvenli kademe seçilir",
+        "Context tasarrufu ile koordinasyon maliyeti birlikte değerlendirilir"
+      ],
+      "candidates": {
+        "A": {
+          "output": "Bağımlı görevlerde tam izole 8 ajan kullanmak risklidir — her ajan öncekinin kararlarından habersiz kalır ve tutarsızlık çıkabilir. Daha iyi yaklaşım: görevleri sıralı çalıştırıp her ajana sadece bir önceki ajanın özet çıktısını (tam transcript değil) context olarak vermek — bu hem token tasarrufu sağlar hem bağımlılık zincirini korur.\n\nBunu uygulamamı ister misin, yoksa önce 8 görevin ne olduğunu paylaşır mısın?",
+          "events": [
+            "provider:claude-code"
+          ],
+          "changed_files": []
+        },
+        "B": {
+          "output": "\n     \n      MEMORY.md dosyasını okuyup önceki konuşmalarda \"sekiz görev\" ya da bağımlı görevlerle ilgili bir bağlam var mı bakacağım.\n     \n    ",
+          "events": [
+            "provider:claude-code"
+          ],
+          "changed_files": []
+        }
+      },
+      "judgement": {
+        "expectation_scores": {
+          "Bağımlı işler bağımsızmış gibi bölünmez": true,
+          "Ordu-nizami ile en küçük güvenli kademe seçilir": false,
+          "Context tasarrufu ile koordinasyon maliyeti birlikte değerlendirilir": true
+        }
+      }
+    }
+  ],
+  "provenance": {
+    "agent": "Claude Code",
+    "agent_version": "2.1.209 (Claude Code)",
+    "judge": "Codex CLI",
+    "judge_version": "codex-cli 0.144.4",
+    "source_commit": "4951654db4d5a705b310f36b8acceb5958683569",
+    "environment": "Windows; 11; AMD64",
+    "notes": "First-party bounded comparison",
+    "divan_version": "0.12.0",
+    "agent_model": "claude-sonnet-5",
+    "judge_model": "gpt-5.6-terra",
+    "blind_seed_sha256": "28b7ac6c2b8890d035ecd083b987805930e55ff32392c32be14ced2bf6d05583",
+    "blind_seed_entropy_bits": "256",
+    "blinding_method": "secrets.token_bytes(32)",
+    "selected_skills": "baglam-muhafizi",
+    "timeout_seconds": "180",
+    "minimum_skill_win_rate": "none",
+    "run_command": "python evals/run.py --run --provider-preset claude-codex --skill baglam-muhafizi --timeout 180"
+  }
+}

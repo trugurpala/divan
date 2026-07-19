@@ -1,12 +1,13 @@
-# Divan Wiki · v0.11.1
+# Divan Wiki · v0.12.0
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
 **Padişah sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
-kalıcı bir teslim akışına çeviren Agent Skills pazarıdır. 41 vezir, 5 paket,
-proje hafızası, davranış eval'i ve yayın teftişi tek çatıdadır.
+kalıcı bir teslim akışına çeviren Agent Skills pazarıdır. Aynı 5 paket/41 vezir
+Claude Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
+davranış eval'i ve yayın teftişi aynı çatıdadır.
 
-> **Güncel durum:** v0.11.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel durum:** v0.12.0 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

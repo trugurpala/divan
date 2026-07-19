@@ -13,6 +13,11 @@ import pathlib
 import re
 import sys
 
+try:
+    from host_marketplaces import check as host_marketplaces_check
+except ModuleNotFoundError:  # Imported as scripts.validate in unit tests.
+    from scripts.host_marketplaces import check as host_marketplaces_check
+
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 AD_DESENI = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -63,14 +68,14 @@ def frontmatter_alani(fmt: str, alan: str) -> str | None:
                     pass
             return deger
 
-        blok: list[str] = []
+        blok_satirlari: list[str] = []
         for devam in satirlar[indeks + 1 :]:
             if devam and not devam[0].isspace():
                 break
-            blok.append(devam)
-        dolu = [len(s) - len(s.lstrip()) for s in blok if s.strip()]
+            blok_satirlari.append(devam)
+        dolu = [len(s) - len(s.lstrip()) for s in blok_satirlari if s.strip()]
         girinti = min(dolu) if dolu else 0
-        parcalar = [s[girinti:] if len(s) >= girinti else "" for s in blok]
+        parcalar = [s[girinti:] if len(s) >= girinti else "" for s in blok_satirlari]
         return "\n".join(parcalar).strip() if deger.startswith("|") else " ".join(
             s.strip() for s in parcalar
         ).strip()
@@ -236,6 +241,13 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
                 f"{ad}: marketplace surumu ({eklenti['version']}) != plugin.json ({pj['version']})"
             )
 
+    host_hatalari, host_paketleri, _host_skilleri = host_marketplaces_check(kok)
+    hatalar.extend(f"HOST PAZARI: {hata}" for hata in host_hatalari)
+    if host_paketleri != len(eklentiler):
+        hatalar.append(
+            f"HOST PAZARI: ortak paket sayisi ({host_paketleri}) != Claude paket sayisi ({len(eklentiler)})"
+        )
+
     # 2) SKILL.md — Agent Skills temel kurallari
     gorulen_adlar: dict[str, pathlib.Path] = {}
     skiller = sorted(kok.glob("plugins/*/skills/*/SKILL.md"))
@@ -294,6 +306,7 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     for gerekli in [
         "THIRD_PARTY_LICENSES.md",
         "LICENSE",
+        "NOTICE.md",
         "README.md",
         "README.en.md",
         "CHANGELOG.md",
@@ -301,6 +314,7 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         "BLUEPRINT.md",
         "CLAUDE.md",
         "UPSTREAM.md",
+        "registry/upstream-baselines.json",
         "CONTRIBUTING.md",
     ]:
         if not (kok / gerekli).exists():

@@ -64,12 +64,18 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   makine-okunur v1 karnesi ve bağımsız kabul kanıtı akışı
 - **v0.11.1 ✓** Claude Code kök devralma sözleşmesi, makinece denetlenen
   sohbetten bağımsız devam zinciri, CODEOWNERS ve Actions Dependabot kapısı
+- **v0.12.0 ✓** ürün kapsamı: Claude + Codex yerel pazar eşliği, dry-run-first
+  işlemsel çift-host kurucu, checksum/provenance kontrollü fallback, gerçek
+  Claude ajanı + kör Codex hakemi adaptörleri, CodeQL ve tam-SHA Action pinleri,
+  erişilebilir site ile 15 kayıtlı upstream drift kararı. Tag/canlı yayın
+  kanıtı bu dal `main`e birleştikten sonra ayrıca kaydedilir.
 
-### Sıradaki ürün kanıtı — v0.12.0 adayı
+### Sıradaki ürün kanıtı — v1 kabulü
 
-1. Beyan edilmiş gerçek ajan + hakem adaptörüyle ilk yayımlanabilir A/B kanıtı.
-2. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
-3. Bu iki kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
+1. v0.12.0 birleştirme/tag/Release/Pages/Wiki kanıtını tamamla.
+2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
+3. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
+4. Bağımsız kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
    v1 sözleşmesine sabitleme.
 
 ### v1.0 kabul kapıları
@@ -209,5 +215,6 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Gerçek ajan/hakem karşılaştırmasını yayımla ve v0.11.0 üzerinden bağımsız kabul
-kanıtı topla; bu iki dış kapı geçmeden v1.0 etiketi koyma.
+v0.12.0'ı birleştirip tag/Release/Pages/Wiki üzerinde doğrula; ardından gerçek
+Claude ajanı + kör Codex hakemi koşusunu provenance ile yayımla. Bağımsız kabul
+kanıtı gelmeden v1.0 etiketi koyma.

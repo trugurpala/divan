@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
-
+import re
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 KAYNAK = pathlib.Path("registry/v1-gates.json")
@@ -16,6 +16,106 @@ DURUMLAR = {
     "ready": "🟡 Hazır; canlı kanıt bekliyor",
     "pending": "⬜ Bekliyor",
 }
+
+
+def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
+    """Fail closed when the published blinded run is incomplete or deanonymized."""
+    if veri.get("schema_version") != 1 or veri.get("status") != "completed":
+        raise ValueError(f"{yol}: real-agent evidence schema/status geçersiz")
+    vakalar = veri.get("cases")
+    vaka_sayisi = veri.get("case_count")
+    hukum_sayisi = veri.get("judged_count")
+    if (
+        not isinstance(vakalar, list)
+        or not isinstance(vaka_sayisi, int)
+        or isinstance(vaka_sayisi, bool)
+        or vaka_sayisi <= 0
+        or vaka_sayisi != len(vakalar)
+        or hukum_sayisi != vaka_sayisi
+    ):
+        raise ValueError(f"{yol}: case/judgement sayıları geçersiz")
+
+    yasak_anahtarlar = {"mapping", "winner", "winner_label", "winner_condition"}
+
+    def ozel_anahtar_ara(deger: object) -> None:
+        if isinstance(deger, dict):
+            sizan = yasak_anahtarlar & set(deger)
+            if sizan:
+                raise ValueError(f"{yol}: public evidence private key içeriyor: {sorted(sizan)}")
+            for alt in deger.values():
+                ozel_anahtar_ara(alt)
+        elif isinstance(deger, list):
+            for alt in deger:
+                ozel_anahtar_ara(alt)
+
+    ozel_anahtar_ara(vakalar)
+    for vaka in vakalar:
+        if not isinstance(vaka, dict):
+            raise ValueError(f"{yol}: case nesne olmalı")
+        adaylar = vaka.get("candidates")
+        hukum = vaka.get("judgement")
+        if not isinstance(adaylar, dict) or list(adaylar) != ["A", "B"]:
+            raise ValueError(f"{yol}: public candidates sabit A/B sırasını kullanmalı")
+        if not isinstance(hukum, dict) or set(hukum) != {"expectation_scores"}:
+            raise ValueError(f"{yol}: public judgement yalnız rubrik skorları içermeli")
+
+    ozet = veri.get("summary")
+    if not isinstance(ozet, dict):
+        raise ValueError(f"{yol}: summary eksik")
+    sayaclar: list[int] = []
+    for alan in ("skill_wins", "baseline_wins", "ties"):
+        deger = ozet.get(alan)
+        if not isinstance(deger, int) or isinstance(deger, bool) or deger < 0:
+            raise ValueError(f"{yol}: summary.{alan} geçersiz")
+        sayaclar.append(deger)
+    if sum(sayaclar) != hukum_sayisi:
+        raise ValueError(f"{yol}: summary toplamı judged_count ile eşleşmiyor")
+    kararli = sayaclar[0] + sayaclar[1]
+    beklenen_oran = sayaclar[0] / kararli if kararli else None
+    if ozet.get("skill_win_rate") != beklenen_oran:
+        raise ValueError(f"{yol}: skill_win_rate sayaçlarla eşleşmiyor")
+
+    provenance = veri.get("provenance")
+    zorunlu = (
+        "agent",
+        "agent_version",
+        "agent_model",
+        "judge",
+        "judge_version",
+        "judge_model",
+        "source_commit",
+        "divan_version",
+        "environment",
+        "blind_seed_sha256",
+        "blind_seed_entropy_bits",
+        "blinding_method",
+        "selected_skills",
+        "timeout_seconds",
+        "minimum_skill_win_rate",
+        "run_command",
+    )
+    if not isinstance(provenance, dict):
+        raise ValueError(f"{yol}: provenance eksik")
+    if "blind_seed" in provenance:
+        raise ValueError(f"{yol}: public evidence private key içeriyor: blind_seed")
+    for alan in zorunlu:
+        deger = provenance.get(alan)
+        if not isinstance(deger, str) or not deger.strip():
+            raise ValueError(f"{yol}: provenance.{alan} eksik veya geçersiz")
+    if not re.fullmatch(r"[0-9a-f]{40}", provenance["source_commit"]):
+        raise ValueError(f"{yol}: provenance.source_commit tam Git SHA olmalı")
+    if not re.fullmatch(r"[0-9a-f]{64}", provenance["blind_seed_sha256"]):
+        raise ValueError(f"{yol}: provenance.blind_seed_sha256 geçersiz")
+    try:
+        seed_bitleri = int(provenance["blind_seed_entropy_bits"])
+    except ValueError as hata:
+        raise ValueError(f"{yol}: provenance.blind_seed_entropy_bits geçersiz") from hata
+    if seed_bitleri < 128:
+        raise ValueError(f"{yol}: provenance.blind_seed_entropy_bits en az 128 olmalı")
+    if provenance["blinding_method"] != "secrets.token_bytes(32)":
+        raise ValueError(f"{yol}: provenance.blinding_method geçersiz")
+    if "--seed" in provenance["run_command"]:
+        raise ValueError(f"{yol}: publishable run_command dışarıdan seed alamaz")
 
 
 def oku(kok: pathlib.Path = KOK) -> dict:
@@ -48,6 +148,21 @@ def oku(kok: pathlib.Path = KOK) -> dict:
             yol = (kok / kanit).resolve()
             if not yol.is_relative_to(kok.resolve()) or not yol.exists():
                 raise ValueError(f"{kimlik}: kanıt bulunamadı: {kanit}")
+        if kimlik == "real-agent-comparison" and kapi["status"] == "passed":
+            eval_yollari = [
+                (kok / kanit).resolve()
+                for kanit in kanitlar
+                if kanit.startswith("evals/results/") and kanit.endswith(".json")
+            ]
+            if len(eval_yollari) != 1:
+                raise ValueError(f"{kimlik}: tek yayımlanmış JSON kanıtı gerekli")
+            try:
+                eval_verisi = json.loads(eval_yollari[0].read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as hata:
+                raise ValueError(f"{kimlik}: eval kanıtı okunamadı: {hata}") from hata
+            if not isinstance(eval_verisi, dict):
+                raise ValueError(f"{kimlik}: eval kanıtı nesne olmalı")
+            _validate_real_agent_evidence(eval_verisi, eval_yollari[0])
     return veri
 
 
@@ -56,6 +171,18 @@ def uret(kok: pathlib.Path = KOK) -> str:
     kapilar = veri["gates"]
     gecen = sum(k["status"] == "passed" for k in kapilar)
     hazir = sum(k["status"] == "ready" for k in kapilar)
+    kalan_metinleri = {
+        "real-agent-comparison": "Gerçek bir ajan adaptörü ve bağımsız hakemle aynı vakaları baseline/skill olarak koşup sonucu yayımlamak.",
+        "independent-adoption": "Proje sahibi dışındaki en az bir kullanıcının sabitlenmiş release üzerinden kurulum ve görev kanıtını kabul formuyla göndermesi.",
+    }
+    kalan = [
+        kalan_metinleri.get(kapi["id"], kapi["title"])
+        for kapi in kapilar
+        if kapi["status"] != "passed"
+    ]
+    kalan_satirlari = [f"{sira}. {metin}" for sira, metin in enumerate(kalan, start=1)]
+    if not kalan_satirlari:
+        kalan_satirlari = ["Bütün v1 kapıları kanıtla geçti."]
     satirlar = [
         "# v1 Hazırlık Karnesi",
         "",
@@ -82,8 +209,7 @@ def uret(kok: pathlib.Path = KOK) -> str:
             "",
             "## v1 için kalan gerçek işler",
             "",
-            "1. Gerçek bir ajan adaptörü ve bağımsız hakemle aynı vakaları baseline/skill olarak koşup sonucu yayımlamak.",
-            "2. Proje sahibi dışındaki en az bir kullanıcının sabitlenmiş release üzerinden kurulum ve görev kanıtını kabul formuyla göndermesi.",
+            *kalan_satirlari,
             "",
             "Bu sayfa elle güncellenmez. Kaynak `registry/v1-gates.json`; üretim "
             "`python scripts/v1.py --render`, sapma teftişi `python scripts/v1.py --check` komutudur.",

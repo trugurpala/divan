@@ -37,6 +37,35 @@ nesnesi döndürmelidir:
 Hakem verilmezse sonuç `review_required` olur ve performans iddiası üretmez.
 Körleme anahtarı `latest.key.json` dosyasına ayrı yazılır.
 
+## Birinci taraf Claude + Codex yolu
+
+Divan'ın gerçek sağlayıcı preset'i Claude Code'u ajan, Codex'i kör hakem olarak
+çalıştırır:
+
+```bash
+python evals/run.py --run \
+  --provider-preset claude-codex \
+  --skill baglam-muhafizi \
+  --provenance provenance.json \
+  --output evals/results/claude-codex.json
+```
+
+Bu preset yalnız araç gerektirmeyen, denetlenmiş `baglam-muhafizi` sözleşmesini
+kabul eder. Böylece geçici boş çalışma dizini ve kapalı araçlarla repo araması
+yapılmış gibi davranan sahte bir operasyonel kanıt üretilemez. Claude baseline
+koşusu geçici boş dizinde, araçlar/MCP/ayar kaynakları kapalı çalışır. Skill
+koşusu aynı sınırlarla yalnız seçilen skill'in ait olduğu paket dizinini
+`--plugin-dir` üzerinden görür. Codex hakemi kullanıcı config ve proje
+kurallarını yüklemez; ephemeral ve `read-only` sandbox içinde katı JSON şeması
+ile yalnız kör A/B adaylarını değerlendirir. Hiçbir adaptör tehlikeli bypass
+bayrağı kullanmaz.
+
+İsteğe bağlı `DIVAN_CLAUDE_MODEL`, `DIVAN_CODEX_MODEL` ve
+`DIVAN_EVAL_TIMEOUT` ortam değişkenleri model ve çağrı süresini sabitler. Bu yol
+yerel Claude/Codex oturum haklarını kullanır ve sağlayıcı kullanım kotası
+tüketebilir. Fixture testleri yalnız sözleşmeyi kanıtlar; kalite artışı iddiası
+için yukarıdaki gerçek koşu ve kayıtlı provenance gerekir.
+
 ## Gerçek koşu provenance kaydı
 
 Yayımlanabilir bir gerçek koşuda ajan, hakem ve ortam kimliğini sonuçla birlikte
@@ -49,7 +78,7 @@ müşteri verisi veya `sk-` ile başlayan herhangi bir değer eklemeyin:
   "agent_version": "1.2.3",
   "judge": "Independent judge",
   "judge_version": "4.5.6",
-  "source_commit": "0123456789abcdef",
+  "source_commit": "0123456789abcdef0123456789abcdef01234567",
   "environment": "Windows 11; redacted local environment"
 }
 ```
@@ -61,9 +90,26 @@ python evals/run.py --run --skill kaynak-kuratori \
   --provenance provenance.json
 ```
 
-Bu kayıt kamu sonucundaki `provenance` alanına yazılır; kör A/B eşlemesi yalnız
-ayrı anahtar dosyasında kalır. Provenance, koşunun kimliğini açıklar fakat tek
-başına kalite kanıtı değildir ve bekleyen v1 kapılarını değiştirmez.
+Koşucu `source_commit` değerini temiz Git çalışma ağacının tam `HEAD` değeriyle
+eşleştirir. Birinci taraf preset'inde Claude ve Codex sürümlerini doğrudan
+CLI'lardan, Divan sürümünü `VERSION` dosyasından, işletim sistemi bilgisini de
+çalışan ortamdan türetir; beyan edilen değerleri kanıt saymaz. Kamu sonucuna
+yazmadan önce secret, e-posta ve kullanıcı-home yolu örüntülerini redakte eder.
+Kör A/B adaylarının baseline/skill eşlemesi ile `winner_condition` yalnız ayrı
+anahtar dosyasında kalır; kamu dosyasında adaylar A/B etiketiyle, kör rubrik
+skorları ve toplu sayımlarla bulunur. Provenance tek başına
+kalite kanıtı değildir. v0.12.0 için yayımlanan ilk gerçek koşu
+`evals/results/claude-codex-baglam-muhafizi-v012.json` dosyasındadır: Claude Code
+2.1.209 / `claude-sonnet-5` ajanı ile Codex CLI 0.144.4 /
+`gpt-5.6-terra` kör hakemi üç vakayı değerlendirdi; skill koşulu sıfır, baseline
+bir vaka kazandı ve iki beraberlik çıktı. Eşik önceden belirlenmediği ve skill
+galibiyeti bulunmadığı için sonuç kalite artışı veya release-geçiş iddiası
+değildir; yalnız gerçek
+ajan/hakem kapısının denetlenebilir çalıştırma kanıtıdır. Ham körleme seed'i,
+eşleme, vaka gerekçeleri, kazanan etiketi ve `winner_condition` özel anahtar
+dosyasında kalmış, repoya alınmamıştır. Yayımlanabilir preset dışarıdan `--seed`
+kabul etmez; OS CSPRNG ile `secrets.token_bytes(32)` üretir. Kamu provenance'ında
+seed'in yalnız SHA-256 taahhüdü, 256 bit uzunluğu ve üretim yöntemi bulunur.
 
 ## Otomatik hakem ve kapı
 
