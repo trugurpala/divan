@@ -37,6 +37,34 @@ nesnesi döndürmelidir:
 Hakem verilmezse sonuç `review_required` olur ve performans iddiası üretmez.
 Körleme anahtarı `latest.key.json` dosyasına ayrı yazılır.
 
+## Gerçek koşu provenance kaydı
+
+Yayımlanabilir bir gerçek koşuda ajan, hakem ve ortam kimliğini sonuçla birlikte
+saklamak için redakte edilmiş bir JSON dosyası verin. API anahtarı, kişisel veri,
+müşteri verisi veya `sk-` ile başlayan herhangi bir değer eklemeyin:
+
+```json
+{
+  "agent": "Declared runner",
+  "agent_version": "1.2.3",
+  "judge": "Independent judge",
+  "judge_version": "4.5.6",
+  "source_commit": "0123456789abcdef",
+  "environment": "Windows 11; redacted local environment"
+}
+```
+
+```bash
+python evals/run.py --run --skill kaynak-kuratori \
+  --adapter "python adapter.py" \
+  --judge "python judge.py" \
+  --provenance provenance.json
+```
+
+Bu kayıt kamu sonucundaki `provenance` alanına yazılır; kör A/B eşlemesi yalnız
+ayrı anahtar dosyasında kalır. Provenance, koşunun kimliğini açıklar fakat tek
+başına kalite kanıtı değildir ve bekleyen v1 kapılarını değiştirmez.
+
 ## Otomatik hakem ve kapı
 
 ```bash

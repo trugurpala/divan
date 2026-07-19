@@ -88,6 +88,13 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-19: v0.12 kanıt zinciri adayı Windows/Codex kurulum sözleşmesini gerçek
+  PowerShell yaşam döngüsü testiyle eşitledi: 41 skill kuruldu, çakışan skill
+  yedeklendi, kayıtla kaldırıldı ve kullanıcı dosyası geri yüklendi. Gerçek eval
+  sonuçları artık redakte edilmiş ajan/hakem/sürüm/commit/ortam provenance'ını
+  kamu sonucuna yazabiliyor; kör eşleme ayrı kalıyor ve `sk-` benzeri değerler
+  reddediliyor. Bu mekanik iyileştirme dış v1 kapılarını kapatmaz; gerçek
+  ajan+hâkim ve bağımsız kullanıcı kanıtı beklemeye devam eder.
 - 2026-07-18m: v0.11.1 PR #14 dört kapıdan geçti ve `731db9d7` ile `main`e
   birleşti. Pages ile Wiki canlıda v0.11.1 döndürdü; değişmez tag aynı commit'e
   bağlı ve GitHub Release HTTP 200 verdi. Yayın sonrası teftiş, sürüm hazırlama

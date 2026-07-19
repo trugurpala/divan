@@ -25,6 +25,11 @@ Gerçek OpenAI adapter'ı eklendiğinde en küçük yol izlenecek: önce tek `Ag
 `Runner`, sonra ihtiyaç kanıtlanırsa araç/handoff; çalıştırma izi ve eval sonucu
 model, adapter ve hakem bilgisiyle yayımlanacak.
 
+Gerçek koşu yapıldığında `evals/run.py --provenance provenance.json` redakte
+edilmiş ajan, hakem, sürüm, commit ve ortam kimliğini kamu sonucuna ekler. Bu
+kimlik kaydı API anahtarı içermez; tek başına kalite, performans veya v1 kabul
+kanıtı değildir.
+
 ## Kaynaklar
 
 - OpenAI Agents SDK: https://developers.openai.com/api/docs/guides/agents

@@ -99,6 +99,7 @@ class RepositoryTests(unittest.TestCase):
             VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
             self.assertIn("README 'v0.10.0'", "\n".join(errors))
 
+    @unittest.skipIf(os.name == "nt", "Shell installer coverage runs on POSIX hosts")
     def test_shell_installer_backs_up_collisions(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
             base = pathlib.Path(temporary)
@@ -131,6 +132,51 @@ class RepositoryTests(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
+            self.assertTrue(marker.exists())
+            self.assertEqual(marker.read_text(encoding="utf-8"), "koru")
+
+    @unittest.skipUnless(os.name == "nt", "PowerShell installer coverage runs on Windows hosts")
+    def test_powershell_installer_backs_up_collisions(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
+            base = pathlib.Path(temporary)
+            skills_dir = base / "skills"
+            state_dir = base / "state"
+            env = os.environ.copy()
+            env.update(
+                {
+                    "DIVAN_SOURCE_DIR": str(ROOT),
+                    "CODEX_SKILLS_DIR": str(skills_dir),
+                    "DIVAN_STATE_DIR": str(state_dir),
+                }
+            )
+            install = [
+                "powershell.exe",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(ROOT / "scripts" / "kur-codex.ps1"),
+            ]
+            uninstall = [
+                "powershell.exe",
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(ROOT / "scripts" / "kaldir-codex.ps1"),
+            ]
+            subprocess.run(install, check=True, env=env, capture_output=True, text=True)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
+
+            marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
+            marker.write_text("koru", encoding="utf-8")
+            subprocess.run(install, check=True, env=env, capture_output=True, text=True)
+            self.assertFalse(marker.exists())
+            backups = list(state_dir.glob("divan-backups/*/sadrazam/kullanici-dosyasi.txt"))
+            self.assertEqual(len(backups), 1)
+            self.assertEqual(backups[0].read_text(encoding="utf-8"), "koru")
+
+            subprocess.run(uninstall, check=True, env=env, capture_output=True, text=True)
             self.assertTrue(marker.exists())
             self.assertEqual(marker.read_text(encoding="utf-8"), "koru")
 

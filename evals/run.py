@@ -23,6 +23,14 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "evals" / "results" / "latest.json"
 MAX_ADAPTER_OUTPUT = 2_000_000
+PROVENANCE_REQUIRED_FIELDS = (
+    "agent",
+    "agent_version",
+    "judge",
+    "judge_version",
+    "source_commit",
+    "environment",
+)
 
 
 class EvalError(RuntimeError):
@@ -37,6 +45,31 @@ def _read_json(path: pathlib.Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise EvalError(f"{path}: kök JSON nesne olmalı")
     return value
+
+
+def _read_provenance(path: pathlib.Path) -> dict[str, str]:
+    """Read redacted runner provenance without accepting secret-like values."""
+    data = _read_json(path)
+    allowed = set(PROVENANCE_REQUIRED_FIELDS) | {"notes"}
+    unexpected = sorted(set(data) - allowed)
+    if unexpected:
+        raise EvalError(f"{path}: bilinmeyen provenance alanı: {', '.join(unexpected)}")
+    provenance: dict[str, str] = {}
+    for field in PROVENANCE_REQUIRED_FIELDS:
+        value = data.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise EvalError(f"{path}: provenance alanı eksik veya geçersiz: {field}")
+        if "sk-" in value.lower():
+            raise EvalError(f"{path}: provenance gizli anahtar benzeri değer içeremez: {field}")
+        provenance[field] = value.strip()
+    if "notes" in data:
+        notes = data["notes"]
+        if not isinstance(notes, str) or not notes.strip():
+            raise EvalError(f"{path}: provenance alanı eksik veya geçersiz: notes")
+        if "sk-" in notes.lower():
+            raise EvalError(f"{path}: provenance gizli anahtar benzeri değer içeremez: notes")
+        provenance["notes"] = notes.strip()
+    return provenance
 
 
 def discover_cases(
@@ -110,7 +143,10 @@ def discover_cases(
 
 
 def _run_adapter(command: str, payload: dict[str, Any], timeout: float) -> dict[str, Any]:
-    args = shlex.split(command)
+    # Windows paths commonly contain backslashes (for example, the temporary
+    # adapters created by the test suite). POSIX parsing treats those as escape
+    # characters and turns a valid executable path into a non-existent one.
+    args = shlex.split(command, posix=sys.platform != "win32")
     if not args:
         raise EvalError("adaptör komutu boş")
     try:
@@ -185,6 +221,7 @@ def run_evaluations(
     timeout: float = 120.0,
     seed: int = 0,
     min_skill_win_rate: float | None = None,
+    provenance: dict[str, str] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Gerçek adaptör koşularını yap; kamu sonucu ve gizli A/B anahtarını döndür."""
     if not cases:
@@ -287,6 +324,8 @@ def run_evaluations(
         },
         "cases": public_cases,
     }
+    if provenance is not None:
+        result["provenance"] = provenance
     key = {
         "schema_version": 1,
         "notice": "Kör inceleme tamamlanmadan bu dosyayı açmayın.",
@@ -313,6 +352,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timeout", type=float, default=120.0, help="Her adaptör çağrısı için saniye")
     parser.add_argument("--seed", type=int, default=0, help="A/B körleme tohumu")
     parser.add_argument("--min-skill-win-rate", type=float, help="0..1 yayın kapısı; hakem gerekir")
+    parser.add_argument("--provenance", type=pathlib.Path, help="Gerçek koşu için redakte edilmiş provenance JSON'u")
     parser.add_argument("--output", type=pathlib.Path, default=DEFAULT_OUTPUT)
     return parser
 
@@ -324,6 +364,8 @@ def main(argv: list[str] | None = None) -> int:
         cases = discover_cases(ROOT, selected)
         skills = sorted({case["skill_name"] for case in cases})
         if args.check:
+            if args.provenance:
+                raise EvalError("--provenance yalnız --run ile kullanılabilir")
             print(
                 json.dumps(
                     {"status": "valid", "skill_count": len(skills), "case_count": len(cases)},
@@ -333,6 +375,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if not args.adapter:
             raise EvalError("--run için --adapter zorunlu")
+        provenance = _read_provenance(args.provenance) if args.provenance else None
         result, key = run_evaluations(
             cases,
             args.adapter,
@@ -340,6 +383,7 @@ def main(argv: list[str] | None = None) -> int:
             timeout=args.timeout,
             seed=args.seed,
             min_skill_win_rate=args.min_skill_win_rate,
+            provenance=provenance,
         )
         write_results(args.output, result, key)
         print(
