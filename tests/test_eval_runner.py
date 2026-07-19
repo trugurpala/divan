@@ -74,6 +74,16 @@ class EvalRunnerTests(unittest.TestCase):
         with self.assertRaisesRegex(EVALS.EvalError, "non-tool"):
             EVALS._validate_provider_skill_scope({"arama-ustasi"})
 
+    def test_provider_seed_is_os_random_and_cannot_be_supplied_by_cli(self) -> None:
+        secure_seed = bytes(range(32))
+        with mock.patch.object(EVALS.secrets, "token_bytes", return_value=secure_seed) as token_bytes:
+            self.assertEqual(EVALS._select_blind_seed("claude-codex", None), secure_seed)
+        token_bytes.assert_called_once_with(32)
+        with self.assertRaisesRegex(EVALS.EvalError, "--seed"):
+            EVALS._select_blind_seed("claude-codex", 7)
+        self.assertEqual(EVALS._select_blind_seed(None, None), 0)
+        self.assertEqual(EVALS._select_blind_seed(None, 7), 7)
+
     def test_provenance_is_bound_to_clean_repository_head(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-eval-git-") as temporary:
             root = pathlib.Path(temporary)
@@ -100,7 +110,7 @@ class EvalRunnerTests(unittest.TestCase):
                 EVALS._repository_identity(root)
 
     def test_first_party_provenance_requires_and_records_models_and_run_profile(self) -> None:
-        publishable_seed = (1 << 200) + 123456789
+        publishable_seed = bytes(range(32))
         declared = {
             "agent": "declared",
             "agent_version": "declared",
@@ -137,7 +147,7 @@ class EvalRunnerTests(unittest.TestCase):
                 clear=True,
             ),
         ):
-            with self.assertRaisesRegex(EVALS.EvalError, "128-bit"):
+            with self.assertRaisesRegex(EVALS.EvalError, "runner-generated"):
                 EVALS._bind_provenance(
                     declared,
                     provider_preset="claude-codex",
@@ -162,11 +172,12 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertNotIn("blind_seed", bound)
         self.assertEqual(
             bound["blind_seed_sha256"],
-            hashlib.sha256(str(publishable_seed).encode("ascii")).hexdigest(),
+            hashlib.sha256(publishable_seed).hexdigest(),
         )
-        self.assertGreaterEqual(int(bound["blind_seed_entropy_bits"]), 128)
+        self.assertEqual(bound["blind_seed_entropy_bits"], "256")
+        self.assertEqual(bound["blinding_method"], "secrets.token_bytes(32)")
         self.assertIn("--skill baglam-muhafizi", bound["run_command"])
-        self.assertIn("--seed [PRIVATE]", bound["run_command"])
+        self.assertNotIn("--seed", bound["run_command"])
 
     def test_blind_pair_judge_and_threshold(self) -> None:
         case = EVALS.discover_cases(ROOT, {"kaynak-kuratori"})[:1]

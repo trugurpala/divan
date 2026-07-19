@@ -16,6 +16,7 @@ import pathlib
 import platform
 import random
 import re
+import secrets
 import shlex
 import shutil
 import subprocess
@@ -141,6 +142,16 @@ def _validate_provider_skill_scope(skills: set[str]) -> None:
         )
 
 
+def _select_blind_seed(
+    provider_preset: str | None, declared_seed: int | None
+) -> int | bytes:
+    if provider_preset == "claude-codex":
+        if declared_seed is not None:
+            raise EvalError("publishable provider runs generate blinding internally; omit --seed")
+        return secrets.token_bytes(32)
+    return 0 if declared_seed is None else declared_seed
+
+
 def _version_for_command(variable: str, default: str) -> str:
     command_text = os.environ.get(variable, default)
     args = shlex.split(command_text, posix=sys.platform != "win32")
@@ -181,7 +192,7 @@ def _bind_provenance(
     provenance: dict[str, str],
     *,
     provider_preset: str | None,
-    seed: int = 0,
+    seed: int | bytes = 0,
     selected_skills: list[str] | None = None,
     timeout: float = 120.0,
     min_skill_win_rate: float | None = None,
@@ -207,10 +218,8 @@ def _bind_provenance(
             if _redact_public_text(value) != value:
                 raise EvalError(f"{variable} contains private data")
             models[field] = value
-        if seed < 0 or seed.bit_length() < 128:
-            raise EvalError(
-                "publishable provider runs require a private seed with at least 128-bit entropy"
-            )
+        if not isinstance(seed, bytes) or len(seed) != 32:
+            raise EvalError("publishable provider runs require a 32-byte runner-generated seed")
         skills = sorted(selected_skills or [])
         command = [
             "python",
@@ -221,7 +230,7 @@ def _bind_provenance(
         ]
         for skill in skills:
             command.extend(["--skill", skill])
-        command.extend(["--seed", "[PRIVATE]", "--timeout", f"{timeout:g}"])
+        command.extend(["--timeout", f"{timeout:g}"])
         if min_skill_win_rate is not None:
             command.extend(["--min-skill-win-rate", f"{min_skill_win_rate:g}"])
         bound.update(
@@ -231,8 +240,9 @@ def _bind_provenance(
                 "judge": "Codex CLI",
                 "judge_version": _version_for_command("DIVAN_CODEX_BIN", "codex"),
                 **models,
-                "blind_seed_sha256": hashlib.sha256(str(seed).encode("ascii")).hexdigest(),
-                "blind_seed_entropy_bits": str(seed.bit_length()),
+                "blind_seed_sha256": hashlib.sha256(seed).hexdigest(),
+                "blind_seed_entropy_bits": "256",
+                "blinding_method": "secrets.token_bytes(32)",
                 "selected_skills": ",".join(skills),
                 "timeout_seconds": f"{timeout:g}",
                 "minimum_skill_win_rate": (
@@ -402,7 +412,7 @@ def run_evaluations(
     judge: str | None = None,
     *,
     timeout: float = 120.0,
-    seed: int = 0,
+    seed: int | bytes = 0,
     min_skill_win_rate: float | None = None,
     provenance: dict[str, str] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -516,7 +526,7 @@ def run_evaluations(
     key = {
         "schema_version": 1,
         "notice": "Kör inceleme tamamlanmadan bu dosyayı açmayın.",
-        "blind_seed": seed,
+        "blind_seed": seed.hex() if isinstance(seed, bytes) else seed,
         "cases": key_cases,
     }
     return result, key
@@ -546,7 +556,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Birinci taraf gerçek ajan/hakem adaptörlerini seç",
     )
     parser.add_argument("--timeout", type=float, default=120.0, help="Her adaptör çağrısı için saniye")
-    parser.add_argument("--seed", type=int, default=0, help="A/B körleme tohumu")
+    parser.add_argument("--seed", type=int, help="Özel adaptör koşuları için A/B tohumu")
     parser.add_argument("--min-skill-win-rate", type=float, help="0..1 yayın kapısı; hakem gerekir")
     parser.add_argument("--provenance", type=pathlib.Path, help="Gerçek koşu için redakte edilmiş provenance JSON'u")
     parser.add_argument("--output", type=pathlib.Path, default=DEFAULT_OUTPUT)
@@ -582,6 +592,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise EvalError("--run için --adapter veya --provider-preset zorunlu")
         elif args.provider_preset:
             raise EvalError("--provider-preset ile --adapter/--judge birlikte kullanılamaz")
+        run_seed = _select_blind_seed(args.provider_preset, args.seed)
         provenance = _read_provenance(args.provenance) if args.provenance else None
         if args.provider_preset and provenance is None:
             raise EvalError("--provider-preset requires --provenance")
@@ -589,7 +600,7 @@ def main(argv: list[str] | None = None) -> int:
             provenance = _bind_provenance(
                 provenance,
                 provider_preset=args.provider_preset,
-                seed=args.seed,
+                seed=run_seed,
                 selected_skills=skills,
                 timeout=args.timeout,
                 min_skill_win_rate=args.min_skill_win_rate,
@@ -599,7 +610,7 @@ def main(argv: list[str] | None = None) -> int:
             args.adapter,
             args.judge,
             timeout=args.timeout,
-            seed=args.seed,
+            seed=run_seed,
             min_skill_win_rate=args.min_skill_win_rate,
             provenance=provenance,
         )
