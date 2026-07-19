@@ -128,6 +128,13 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
 ## Devam ediyor
 
 - Yalnız dış kanıt isteyen gerçek ajan/hakem ve bağımsız kullanıcı kapıları.
+- 2026-07-19: v0.12 kanıt zinciri için tasarım onaylandı. İlk parça Windows
+  kurulum–yedek–kaldırma test eşliği ve gerçek eval koşularının provenance
+  sözleşmesidir; dış v1 kapıları bu mekanik çalışmayla kapanmayacaktır.
+- 2026-07-19: Windows PowerShell kur–yedekle–kaldır–geri yükle tatbikatı gerçek
+  geçici dizinlerde 41 skill ile geçti. Eval sonuçları için redakte edilmiş
+  provenance sözleşmesi eklendi; 33 test geçti, tam teftiş kanıtı
+  `evidence/teftis-20260719-v012-evidence-chain.md` altındadır.
 
 ## Bilinen açıklar
 
@@ -137,6 +144,7 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
 
 ## Sıradaki kesin adım
 
-Beyan edilmiş gerçek ajan + bağımsız hakem adaptörünü güvenilir yürütme ortamında
-koş; sonucu yayımla. Paralelde v0.11.0 sabit release'i için ilk bağımsız kabul
-kanıtını `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` akışından topla.
+Bu dalı inceleme ve CI için GitHub'a gönder. Ardından beyan edilmiş gerçek ajan +
+bağımsız hakem adaptörünü güvenilir yürütme ortamında provenance ile koş; sonucu
+yayınla. Paralelde sabit release için ilk bağımsız kabul kanıtını
+`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` akışından topla.

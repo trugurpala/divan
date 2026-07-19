@@ -85,11 +85,14 @@ threshold:
 python evals/run.py --check
 python evals/run.py --run --skill kaynak-kuratori \
   --adapter "python /trusted/path/agent_adapter.py" \
-  --judge "python /trusted/path/judge_adapter.py"
+  --judge "python /trusted/path/judge_adapter.py" \
+  --provenance provenance.json
 ```
 
 Without a real adapter or judge it records `review_required` instead of
-inventing a win rate. See the [adapter protocol](evals/README.md).
+inventing a win rate. Provenance identifies the agent, judge, and execution
+environment of a real run; it is not a quality claim and cannot close a pending
+v1 gate by itself. See the [adapter protocol](evals/README.md).
 
 ## How it improves itself
 

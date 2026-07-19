@@ -84,6 +84,48 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertIsNone(result["summary"]["skill_win_rate"])
         self.assertIsNone(result["summary"]["gate_passed"])
 
+    def test_run_retains_valid_public_provenance(self) -> None:
+        case = EVALS.discover_cases(ROOT, {"arama-ustasi"})[:1]
+        provenance = {
+            "agent": "Declared runner",
+            "agent_version": "1.2.3",
+            "judge": "Independent judge",
+            "judge_version": "4.5.6",
+            "source_commit": "0123456789abcdef",
+            "environment": "Windows 11; redacted local environment",
+        }
+        with tempfile.TemporaryDirectory(prefix="divan-eval-provenance-") as temporary:
+            adapter = pathlib.Path(temporary) / "adapter.py"
+            adapter.write_text(
+                "import json, sys; json.load(sys.stdin); print(json.dumps({'output':'yanit','events':[],'changed_files':[]}))\n",
+                encoding="utf-8",
+            )
+            result, key = EVALS.run_evaluations(
+                case,
+                f"{sys.executable} {adapter}",
+                provenance=provenance,
+            )
+        self.assertEqual(result["provenance"], provenance)
+        self.assertNotIn("provenance", key)
+
+    def test_read_provenance_rejects_missing_required_field(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-provenance-") as temporary:
+            path = pathlib.Path(temporary) / "provenance.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "agent": "Declared runner",
+                        "agent_version": "1.2.3",
+                        "judge": "Independent judge",
+                        "source_commit": "0123456789abcdef",
+                        "environment": "Windows 11",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(EVALS.EvalError, "judge_version"):
+                EVALS._read_provenance(path)
+
     def test_threshold_can_fail(self) -> None:
         case = EVALS.discover_cases(ROOT, {"baglam-muhafizi"})[:1]
         with tempfile.TemporaryDirectory(prefix="divan-eval-threshold-") as temporary:

@@ -97,11 +97,14 @@ vakayı baseline ve skill koşullarında gerçek ajan adaptörüyle çalıştır
 python evals/run.py --check
 python evals/run.py --run --skill kaynak-kuratori \
   --adapter "python /guvenilir/yol/agent_adapter.py" \
-  --judge "python /guvenilir/yol/judge_adapter.py"
+  --judge "python /guvenilir/yol/judge_adapter.py" \
+  --provenance provenance.json
 ```
 
 Hakem veya gerçek adaptör yoksa koşucu başarı oranı uydurmaz; sonucu
-`review_required` olarak kaydeder. Protokol: [evals/README.md](evals/README.md).
+`review_required` olarak kaydeder. Provenance kaydı koşunun ajan/hakem/ortam
+kimliğini açıklar; tek başına kalite kanıtı değildir ve v1 kapısını kapatmaz.
+Protokol: [evals/README.md](evals/README.md).
 
 ## Komutlar (Claude Code)
 
