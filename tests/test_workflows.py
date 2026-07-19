@@ -53,7 +53,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             "mypy scripts",
             "coverage run -m unittest discover -s tests",
             "coverage report",
-            "actionlint",
+            '"$(go env GOPATH)/bin/actionlint"',
         ):
             self.assertIn(command, text)
 

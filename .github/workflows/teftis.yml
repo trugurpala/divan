@@ -30,7 +30,7 @@ jobs:
           coverage run -m unittest discover -s tests
           coverage report
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
-          actionlint
+          "$(go env GOPATH)/bin/actionlint"
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1
