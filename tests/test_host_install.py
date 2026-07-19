@@ -311,6 +311,54 @@ class HostInstallTests(unittest.TestCase):
         self.assertIn(str(legacy_journal), recover_commands[0])
         self.assertEqual(recovered["status"], "recovered")
 
+    def test_rollback_reverses_a_completed_legacy_migration_before_native_entries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            root = pathlib.Path(temporary)
+            legacy_journal = root / "legacy-completed.json"
+            legacy_journal.write_text("{}\n", encoding="utf-8")
+            transaction = root / "install-verified.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "verified",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": None,
+                        "legacy_migration": {
+                            "result": {"journal": str(legacy_journal)}
+                        },
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        recovery_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if "legacy_state.py" in " ".join(command) and "recover" in command
+        )
+        plugin_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if command[1:3] == ("plugin", "remove")
+        )
+        self.assertLess(recovery_index, plugin_index)
+
     def test_interrupt_after_external_success_rolls_back_pending_owned_entry(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             state_dir = pathlib.Path(temporary)

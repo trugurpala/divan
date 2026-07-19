@@ -359,16 +359,33 @@ def rollback_transaction(
     plugin_rows = list(created.get("plugins", []))
     marketplace_hosts = list(created.get("marketplaces", []))
     pending = record.get("pending")
+    legacy_journal_text: str | None = None
     if isinstance(pending, dict) and pending.get("kind") in {
         "legacy-migration",
         "recovery-legacy",
     }:
-        journal_text = pending.get("journal")
-        if isinstance(journal_text, str) and pathlib.Path(journal_text).is_file():
+        pending_journal = pending.get("journal")
+        if isinstance(pending_journal, str):
+            legacy_journal_text = pending_journal
+    if legacy_journal_text is None:
+        completed_migration = record.get("legacy_migration")
+        if isinstance(completed_migration, dict):
+            migration_result = completed_migration.get("result")
+            if isinstance(migration_result, dict):
+                completed_journal = migration_result.get("journal")
+                if isinstance(completed_journal, str):
+                    legacy_journal_text = completed_journal
+    if legacy_journal_text is not None:
+        legacy_journal = pathlib.Path(legacy_journal_text)
+        if legacy_journal.is_file():
             _begin_mutation(
                 transaction_path,
                 record,
-                {"kind": "recovery-legacy", "host": "codex", "journal": journal_text},
+                {
+                    "kind": "recovery-legacy",
+                    "host": "codex",
+                    "journal": legacy_journal_text,
+                },
             )
             _run(
                 runner,
@@ -377,7 +394,7 @@ def rollback_transaction(
                     str(pathlib.Path(__file__).with_name("legacy_state.py")),
                     "recover",
                     "--journal",
-                    journal_text,
+                    legacy_journal_text,
                 ],
             )
             _finish_mutation(transaction_path, record)

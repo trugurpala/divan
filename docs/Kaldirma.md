@@ -38,6 +38,10 @@ Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 python scripts/kur-hostlar.py --rollback-transaction <install-....json>
 ```
 
+Aynı işlemde `--migrate-legacy` tamamlandıysa rollback önce karantinadaki
+doğrulanmış loose skill'leri ve çakışma yedeklerini işlem öncesi konumlarına
+geri getirir; ardından native paketleri ve pazarı kaldırır.
+
 ## 4. (İsteğe bağlı) Proje hafızası dosyaları
 Defterdar'ın SENİN projende ürettiği dosyalar sana aittir. `.divan/`,
 `AGENTS.md` ve `BLUEPRINT.md` başka araçlar veya ekip üyeleri tarafından da

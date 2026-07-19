@@ -117,12 +117,14 @@ def recover_legacy(journal: pathlib.Path) -> dict[str, Any]:
     record = _load_journal(journal)
     if record.get("status") == "recovered":
         return record
-    if record.get("status") not in {
+    status = record.get("status")
+    recoverable = status in {
         "in-progress",
         "rolling-back",
         "rollback-incomplete",
-    }:
-        raise LegacyStateError(f"legacy journal is not recoverable: {record.get('status')}")
+    } or (status == "quarantined" and record.get("kind") == "migration")
+    if not recoverable:
+        raise LegacyStateError(f"legacy journal is not recoverable: {status}")
     operations = record.get("operations")
     if not isinstance(operations, list):
         raise LegacyStateError("legacy journal lacks operations")

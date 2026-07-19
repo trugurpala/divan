@@ -192,6 +192,47 @@ class LegacyStateTests(unittest.TestCase):
             self.assertFalse(backup.exists())
             self.assertFalse(owned.exists())
 
+    def test_completed_migration_can_be_reversed_by_the_parent_transaction(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-legacy-") as temporary:
+            base = pathlib.Path(temporary)
+            skills = base / "skills"
+            state = base / "state"
+            target = skills / "sadrazam"
+            owned = state / "divan-quarantine" / "completed" / "sadrazam"
+            self._skill(owned, "installed")
+            journal = state / "divan-transactions" / "completed.json"
+            journal.parent.mkdir(parents=True)
+            journal.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "kind": "migration",
+                        "status": "quarantined",
+                        "skills_dir": str(skills),
+                        "state_dir": str(state),
+                        "pending": None,
+                        "operations": [
+                            {
+                                "name": "sadrazam",
+                                "target": str(target),
+                                "backup": "",
+                                "owned": str(owned),
+                                "quarantined": True,
+                                "backup_restored": False,
+                                "recovered": False,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            recovered = LEGACY_STATE.recover_legacy(journal)
+
+            self.assertEqual(recovered["status"], "recovered")
+            self.assertEqual((target / "SKILL.md").read_text(), "installed")
+            self.assertFalse(owned.exists())
+
     def test_fallback_install_failure_reverses_all_completed_rows(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-legacy-") as temporary:
             base = pathlib.Path(temporary)
