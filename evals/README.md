@@ -37,6 +37,32 @@ nesnesi döndürmelidir:
 Hakem verilmezse sonuç `review_required` olur ve performans iddiası üretmez.
 Körleme anahtarı `latest.key.json` dosyasına ayrı yazılır.
 
+## Birinci taraf Claude + Codex yolu
+
+Divan'ın gerçek sağlayıcı preset'i Claude Code'u ajan, Codex'i kör hakem olarak
+çalıştırır:
+
+```bash
+python evals/run.py --run \
+  --provider-preset claude-codex \
+  --skill arama-ustasi \
+  --provenance provenance.json \
+  --output evals/results/claude-codex.json
+```
+
+Claude baseline koşusu geçici boş dizinde, araçlar/MCP/ayar kaynakları kapalı
+çalışır. Skill koşusu aynı sınırlarla yalnız seçilen skill'in ait olduğu paket
+dizinini `--plugin-dir` üzerinden görür. Codex hakemi kullanıcı config ve proje
+kurallarını yüklemez; ephemeral ve `read-only` sandbox içinde katı JSON şeması
+ile yalnız kör A/B adaylarını değerlendirir. Hiçbir adaptör tehlikeli bypass
+bayrağı kullanmaz.
+
+İsteğe bağlı `DIVAN_CLAUDE_MODEL`, `DIVAN_CODEX_MODEL` ve
+`DIVAN_EVAL_TIMEOUT` ortam değişkenleri model ve çağrı süresini sabitler. Bu yol
+yerel Claude/Codex oturum haklarını kullanır ve sağlayıcı kullanım kotası
+tüketebilir. Fixture testleri yalnız sözleşmeyi kanıtlar; kalite artışı iddiası
+için yukarıdaki gerçek koşu ve kayıtlı provenance gerekir.
+
 ## Gerçek koşu provenance kaydı
 
 Yayımlanabilir bir gerçek koşuda ajan, hakem ve ortam kimliğini sonuçla birlikte

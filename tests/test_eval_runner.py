@@ -29,6 +29,12 @@ class EvalRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(EVALS.EvalError, "sıfır eval"):
                 EVALS.discover_cases(pathlib.Path(temporary))
 
+    def test_first_party_provider_preset_is_available(self) -> None:
+        args = EVALS.build_parser().parse_args(
+            ["--run", "--provider-preset", "claude-codex", "--skill", "arama-ustasi"]
+        )
+        self.assertEqual(args.provider_preset, "claude-codex")
+
     def test_blind_pair_judge_and_threshold(self) -> None:
         case = EVALS.discover_cases(ROOT, {"kaynak-kuratori"})[:1]
         with tempfile.TemporaryDirectory(prefix="divan-eval-adapter-") as temporary:

@@ -145,6 +145,11 @@ def _run_adapter(command: str, payload: dict[str, Any], timeout: float) -> dict[
     # adapters created by the test suite). POSIX parsing treats those as escape
     # characters and turns a valid executable path into a non-existent one.
     args = shlex.split(command, posix=sys.platform != "win32")
+    if sys.platform == "win32":
+        args = [
+            arg[1:-1] if len(arg) >= 2 and arg[0] == arg[-1] and arg[0] in {'"', "'"} else arg
+            for arg in args
+        ]
     if not args:
         raise EvalError("adaptör komutu boş")
     try:
@@ -347,6 +352,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skill", action="append", default=[], help="Yalnız seçilen skill; tekrarlanabilir")
     parser.add_argument("--adapter", help="JSON stdin/stdout ajan adaptörü komutu")
     parser.add_argument("--judge", help="JSON stdin/stdout kör hakem adaptörü komutu")
+    parser.add_argument(
+        "--provider-preset",
+        choices=("claude-codex",),
+        help="Birinci taraf gerçek ajan/hakem adaptörlerini seç",
+    )
     parser.add_argument("--timeout", type=float, default=120.0, help="Her adaptör çağrısı için saniye")
     parser.add_argument("--seed", type=int, default=0, help="A/B körleme tohumu")
     parser.add_argument("--min-skill-win-rate", type=float, help="0..1 yayın kapısı; hakem gerekir")
@@ -372,7 +382,17 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         if not args.adapter:
-            raise EvalError("--run için --adapter zorunlu")
+            if args.provider_preset == "claude-codex":
+                args.adapter = subprocess.list2cmdline(
+                    [sys.executable, str(ROOT / "evals" / "adapters" / "claude_agent.py")]
+                )
+                args.judge = subprocess.list2cmdline(
+                    [sys.executable, str(ROOT / "evals" / "adapters" / "codex_judge.py")]
+                )
+            else:
+                raise EvalError("--run için --adapter veya --provider-preset zorunlu")
+        elif args.provider_preset:
+            raise EvalError("--provider-preset ile --adapter/--judge birlikte kullanılamaz")
         provenance = _read_provenance(args.provenance) if args.provenance else None
         result, key = run_evaluations(
             cases,
