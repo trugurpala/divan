@@ -21,3 +21,18 @@ Tarih: 2026-07-20 (Europe/Istanbul)
 
 Bu bakım sürümü temizlik kapsamını genişletmez; yedek, kanıt, manifest ve
 kullanıcı dosyaları yine silinmez.
+
+## Kamusal teslim ve kurulum
+
+- PR #21 bütün zorunlu CI kontrollerinden geçti ve
+  `c226dccff4a91e7da6f54227942f78367836d934` ile `main`e birleşti.
+- Release workflow `29705195263` başarıyla tamamlandı. Değişmez `v0.12.2`
+  etiketi aynı commit'e bağlı; taslak/ön-sürüm olmayan GitHub Release ZIP ve
+  SHA-256 varlıklarını yayımlar.
+- Canlı Pages ve Wiki `v0.12.2` döndürdü; release Chromium etkileşim kontrolü
+  geçti.
+- Global kurulum dry-run sonrasında sahiplik kayıtlı v0.12.1 işlemini geri aldı
+  ve `install-20260719T215712Z-c9095665.json` işlemiyle doğrulandı.
+- Claude ve Codex'in her birinde 5 paket/41 skill etkin ve ref `v0.12.2` olarak
+  geri okundu. GitKraken, Prompts.chat, OpenAI bundled/runtime ve kişisel
+  `vibe-coder-standard` eklentileri korundu.
