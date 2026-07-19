@@ -1,0 +1,8 @@
+{
+  "name": "ui-pack",
+  "version": "0.1.0",
+  "description": "Frontend design, UI/UX guidance, and web application testing skills.",
+  "author": { "name": "trugurpala" },
+  "skills": "./skills/",
+  "interface": { "displayName": "Divan UI Pack" }
+}

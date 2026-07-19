@@ -13,6 +13,11 @@ import pathlib
 import re
 import sys
 
+try:
+    from host_marketplaces import check as host_marketplaces_check
+except ModuleNotFoundError:  # Imported as scripts.validate in unit tests.
+    from scripts.host_marketplaces import check as host_marketplaces_check
+
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 AD_DESENI = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -235,6 +240,13 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
             hatalar.append(
                 f"{ad}: marketplace surumu ({eklenti['version']}) != plugin.json ({pj['version']})"
             )
+
+    host_hatalari, host_paketleri, _host_skilleri = host_marketplaces_check(kok)
+    hatalar.extend(f"HOST PAZARI: {hata}" for hata in host_hatalari)
+    if host_paketleri != len(eklentiler):
+        hatalar.append(
+            f"HOST PAZARI: ortak paket sayisi ({host_paketleri}) != Claude paket sayisi ({len(eklentiler)})"
+        )
 
     # 2) SKILL.md — Agent Skills temel kurallari
     gorulen_adlar: dict[str, pathlib.Path] = {}

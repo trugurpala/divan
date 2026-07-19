@@ -1,0 +1,8 @@
+{
+  "name": "core-pack",
+  "version": "0.5.1",
+  "description": "Planning, TDD, debugging, context management, and verification skills.",
+  "author": { "name": "trugurpala" },
+  "skills": "./skills/",
+  "interface": { "displayName": "Divan Core Pack" }
+}
