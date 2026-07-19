@@ -39,6 +39,8 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("@openai/codex@0.144.6", text)
         self.assertIn('"--host", "both"', text)
         self.assertIn('"--rollback-transaction"', text)
+        self.assertIn('pathlib.Path(environment["CLAUDE_CONFIG_DIR"]).mkdir', text)
+        self.assertIn('pathlib.Path(environment["CODEX_HOME"]).mkdir', text)
 
     def test_primary_audit_runs_lint_types_coverage_and_actionlint(self) -> None:
         text = (WORKFLOWS / "teftis.yml").read_text(encoding="utf-8")

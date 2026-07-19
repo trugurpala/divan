@@ -131,6 +131,8 @@ jobs:
                   "CODEX_HOME": str(profile / ".codex"),
               }
           )
+          pathlib.Path(environment["CLAUDE_CONFIG_DIR"]).mkdir(parents=True, exist_ok=True)
+          pathlib.Path(environment["CODEX_HOME"]).mkdir(parents=True, exist_ok=True)
           install = [
               sys.executable,
               "scripts/kur-hostlar.py",
