@@ -4,12 +4,18 @@ Son güncelleme: 2026-07-20
 
 ## Güncel hedef
 
-v0.12.2 ile Windows salt-okunur cache temizliği düzeltmesini yayımlayıp global
-Claude+Codex kaynağını yeni sabit etikete taşımak. Sonrasında sıradaki kesin
-ürün kapısı, v1 bağımsız kullanıcı kabul kanıtıdır.
+v0.12.2 Windows salt-okunur cache düzeltmesi ve global Claude+Codex kurulumu
+tamamlandı. Sıradaki kesin ürün kapısı, v1 için dışarıda bekleyen bağımsız
+kullanıcı kabul kanıtını `registry/v1-gates.json` sözleşmesine uygun toplamaktır.
 
 ## Yapıldı
 
+- PR #21 bütün CI kapılarından geçti ve `c226dccf` ile `main`e birleşti.
+  Release workflow `29705195263`; tag/Release, ZIP+SHA-256, Pages, Wiki ve canlı
+  Chromium doğrulamasını başarıyla tamamladı.
+- Sabit v0.12.2 kaynağı Claude ve Codex'e global kuruldu. Her host 5 paket/41
+  skill ve doğru source/ref döndürdü; alakasız eklentiler korundu. Doğrulanmış
+  işlem: `install-20260719T215712Z-c9095665.json`.
 - Windows salt-okunur `__pycache__` hatası gerçek worktree'de üretildi;
   yalnız hata veren gerçek yolu yazılabilir yapıp junction/symlink üzerinde
   fail-closed kalan düzeltme iki Windows regresyonuyla test-first uygulandı.
