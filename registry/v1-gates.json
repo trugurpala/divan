@@ -24,8 +24,8 @@
     {
       "id": "native-clean-host-matrix",
       "title": "Claude Code ve Codex native Linux/macOS/Windows temiz-host yaşam döngüsü",
-      "status": "ready",
-      "evidence": [".github/workflows/uyumluluk.yml", "scripts/kur-hostlar.py", "tests/test_host_install.py"]
+      "status": "passed",
+      "evidence": [".github/workflows/uyumluluk.yml", "scripts/kur-hostlar.py", "tests/test_host_install.py", "https://github.com/trugurpala/divan/actions/runs/29700468615"]
     },
     {
       "id": "rollback-rehearsal",
