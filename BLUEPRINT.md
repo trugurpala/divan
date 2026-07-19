@@ -22,6 +22,9 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
    Varsayılan tek oturumdur; bağımsız işler yerel subagent'larla, eşzamanlı
    yazım worktree izolasyonuyla yürür. Agent Teams deneysel ve açık tercihtir.
    Gerekçe ve aday karnesi `docs/Orkestrasyon-Karari.md` içindedir.
+5. **Repo hijyeni:** Üretilmiş dosya temizliği allowlist ve fail-closed çalışır;
+   kullanıcı yedeği ile yayın kanıtı çöp sayılmaz. Birinci taraf metin UTF-8/LF,
+   çekirdek Python karmaşıklık bütçesi 25'tir. Ayrıntı ADR 0003'tedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -95,6 +98,11 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-19: Clean Code denetimi başlatıldı. Başlangıçta 87 test/Ruff/mypy
+  temizdi; repo kodlama sözleşmesi ve cache kapısı yoktu, üç çekirdek fonksiyon
+  McCabe 25'i aşıyordu. ADR 0003; güvenli allowlist temizliği, UTF-8/LF ve
+  davranış-korumalı sınırlı parçalama yaklaşımını seçti. Aktif rollback yedeği
+  kullanıcı verisi kabul edilerek korunacaktır.
 - 2026-07-19: v0.12 kanıt zinciri adayı Windows/Codex kurulum sözleşmesini gerçek
   PowerShell yaşam döngüsü testiyle eşitledi: 41 skill kuruldu, çakışan skill
   yedeklendi, kayıtla kaldırıldı ve kullanıcı dosyası geri yüklendi. Gerçek eval

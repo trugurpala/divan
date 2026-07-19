@@ -4,8 +4,9 @@ Son güncelleme: 2026-07-19
 
 ## Güncel hedef
 
-Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.0 release'i
-üzerinden dürüstçe yürütmek.
+v0.12.1 bakım sürümünde Clean Code, UTF-8/LF ve güvenli repo hijyeni kapılarını
+tamamlayıp Claude+Codex global kurulumuna kanıtla taşımak. Bağımsız kullanıcı
+kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
 
 ## Yapıldı
 
@@ -158,6 +159,8 @@ Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.
 
 ## Devam ediyor
 
+- 2026-07-19: ADR 0003 ve test-first v0.12.1 uygulama planı yazıldı. Sıradaki
+  parça hijyen testlerini kırmızıya getirip allowlist temizleyiciyi uygulamaktır.
 - Proje sahibi dışındaki bağımsız kullanıcıdan tekrar üretilebilir kurulum ve
   görev kanıtı.
 - 2026-07-19: v0.12 kanıt zinciri için tasarım onaylandı. İlk parça Windows
@@ -177,6 +180,6 @@ Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.
 
 ## Sıradaki kesin adım
 
-Proje sahibi dışındaki bir kullanıcının sabit v0.12.0 release'iyle kurulum ve
-gerçek görev kanıtını `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden al;
-yalnız bu dış kanıt doğrulanırsa `independent-adoption` kapısını güncelle.
+`tests/test_hijyen.py` ile bozuk UTF-8/BOM/mojibake ve güvenli cache temizliği
+sözleşmesini önce kırmızıya getir; ardından en küçük `scripts/hijyen.py`
+uygulamasıyla yeşile çevir.
