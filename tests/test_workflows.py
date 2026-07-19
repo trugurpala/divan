@@ -49,6 +49,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         text = (WORKFLOWS / "teftis.yml").read_text(encoding="utf-8")
         for command in (
             "pip install -r requirements-dev.txt",
+            "python scripts/hijyen.py --check",
             "ruff check .",
             "mypy scripts",
             "coverage run -m unittest discover -s tests",
@@ -56,6 +57,11 @@ class WorkflowHardeningTests(unittest.TestCase):
             '"$(go env GOPATH)/bin/actionlint"',
         ):
             self.assertIn(command, text)
+
+    def test_python_complexity_budget_is_pinned(self) -> None:
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        self.assertIn('select = ["E4", "E7", "E9", "F", "I", "C90"]', pyproject)
+        self.assertIn("max-complexity = 25", pyproject)
 
     def test_development_tools_are_exactly_pinned(self) -> None:
         requirements = (ROOT / "requirements-dev.txt").read_text(encoding="utf-8")

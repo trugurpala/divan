@@ -4,6 +4,7 @@ import importlib.util
 import json
 import pathlib
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -171,6 +172,15 @@ class HostInstallTests(unittest.TestCase):
         }
         values.update(changes)
         return HOST_INSTALL.Options(**values)
+
+    def test_host_cli_output_is_decoded_as_utf8_not_system_locale(self) -> None:
+        completed = subprocess.CompletedProcess(["tool"], 0, "Türkçe\n", "")
+        with mock.patch.object(HOST_INSTALL.subprocess, "run", return_value=completed) as run:
+            result = HOST_INSTALL._subprocess_runner([sys.executable, "--version"])
+
+        self.assertEqual(result.stdout, "Türkçe\n")
+        self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
+        self.assertEqual(run.call_args.kwargs["errors"], "replace")
 
     def test_dry_run_never_invokes_host_cli(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:

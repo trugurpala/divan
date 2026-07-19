@@ -18,8 +18,7 @@ DURUMLAR = {
 }
 
 
-def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
-    """Fail closed when the published blinded run is incomplete or deanonymized."""
+def _validate_evidence_shape(veri: dict, yol: pathlib.Path) -> tuple[list, int]:
     if veri.get("schema_version") != 1 or veri.get("status") != "completed":
         raise ValueError(f"{yol}: real-agent evidence schema/status geçersiz")
     vakalar = veri.get("cases")
@@ -34,21 +33,23 @@ def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
         or hukum_sayisi != vaka_sayisi
     ):
         raise ValueError(f"{yol}: case/judgement sayıları geçersiz")
+    return vakalar, hukum_sayisi
 
+
+def _reject_private_keys(value: object, yol: pathlib.Path) -> None:
     yasak_anahtarlar = {"mapping", "winner", "winner_label", "winner_condition"}
+    if isinstance(value, dict):
+        sizan = yasak_anahtarlar & set(value)
+        if sizan:
+            raise ValueError(f"{yol}: public evidence private key içeriyor: {sorted(sizan)}")
+        for child in value.values():
+            _reject_private_keys(child, yol)
+    elif isinstance(value, list):
+        for child in value:
+            _reject_private_keys(child, yol)
 
-    def ozel_anahtar_ara(deger: object) -> None:
-        if isinstance(deger, dict):
-            sizan = yasak_anahtarlar & set(deger)
-            if sizan:
-                raise ValueError(f"{yol}: public evidence private key içeriyor: {sorted(sizan)}")
-            for alt in deger.values():
-                ozel_anahtar_ara(alt)
-        elif isinstance(deger, list):
-            for alt in deger:
-                ozel_anahtar_ara(alt)
 
-    ozel_anahtar_ara(vakalar)
+def _validate_cases(vakalar: list, yol: pathlib.Path) -> None:
     for vaka in vakalar:
         if not isinstance(vaka, dict):
             raise ValueError(f"{yol}: case nesne olmalı")
@@ -59,6 +60,8 @@ def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
         if not isinstance(hukum, dict) or set(hukum) != {"expectation_scores"}:
             raise ValueError(f"{yol}: public judgement yalnız rubrik skorları içermeli")
 
+
+def _validate_summary(veri: dict, hukum_sayisi: int, yol: pathlib.Path) -> None:
     ozet = veri.get("summary")
     if not isinstance(ozet, dict):
         raise ValueError(f"{yol}: summary eksik")
@@ -75,6 +78,8 @@ def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
     if ozet.get("skill_win_rate") != beklenen_oran:
         raise ValueError(f"{yol}: skill_win_rate sayaçlarla eşleşmiyor")
 
+
+def _validate_provenance(veri: dict, yol: pathlib.Path) -> None:
     provenance = veri.get("provenance")
     zorunlu = (
         "agent",
@@ -116,6 +121,15 @@ def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
         raise ValueError(f"{yol}: provenance.blinding_method geçersiz")
     if "--seed" in provenance["run_command"]:
         raise ValueError(f"{yol}: publishable run_command dışarıdan seed alamaz")
+
+
+def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
+    """Fail closed when the published blinded run is incomplete or deanonymized."""
+    vakalar, hukum_sayisi = _validate_evidence_shape(veri, yol)
+    _reject_private_keys(vakalar, yol)
+    _validate_cases(vakalar, yol)
+    _validate_summary(veri, hukum_sayisi, yol)
+    _validate_provenance(veri, yol)
 
 
 def oku(kok: pathlib.Path = KOK) -> dict:

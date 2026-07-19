@@ -204,11 +204,8 @@ def surum_kayitlarini_denetle(
         hatalar.append("HAFIZA ESKI: progress.md siradaki kesin adimi icermiyor")
 
 
-def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
-    hatalar: list[str] = []
-    uyarilar: list[str] = []
-
-    # 1) Marketplace + plugin manifestleri + surum tutarliligi
+def marketplace_denetle(kok: pathlib.Path, hatalar: list[str]) -> tuple[dict, list]:
+    """Marketplace ve plugin manifestlerinin ortak kimliğini doğrula."""
     mp_yol = kok / ".claude-plugin" / "marketplace.json"
     mp = oku_json(mp_yol, hatalar, "marketplace.json")
     if not mp.get("name"):
@@ -247,8 +244,13 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         hatalar.append(
             f"HOST PAZARI: ortak paket sayisi ({host_paketleri}) != Claude paket sayisi ({len(eklentiler)})"
         )
+    return mp, eklentiler
 
-    # 2) SKILL.md — Agent Skills temel kurallari
+
+def skilleri_denetle(
+    kok: pathlib.Path, hatalar: list[str], uyarilar: list[str]
+) -> list[pathlib.Path]:
+    """Agent Skills temel sözleşmesini ve eval bağlantılarını doğrula."""
     gorulen_adlar: dict[str, pathlib.Path] = {}
     skiller = sorted(kok.glob("plugins/*/skills/*/SKILL.md"))
     for skill in skiller:
@@ -298,10 +300,13 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
             uyarilar.append(
                 f"{goreli}: govde {govde_satir} satir (>500 onerisi; references/ altina bol)"
             )
+    return skiller
 
-    # 3) Yer tutucular ve zorunlu belgeler
+
+def zorunlu_belgeleri_denetle(kok: pathlib.Path, hatalar: list[str]) -> None:
+    """Yer tutucu, zorunlu belge ve Claude devralma zincirini doğrula."""
     for dosya in list(kok.glob("**/*.json")) + list(kok.glob("*.md")) + [kok / "LICENSE"]:
-        if dosya.is_file() and "DEGISTIR" in dosya.read_text(errors="ignore"):
+        if dosya.is_file() and "DEGISTIR" in dosya.read_text(encoding="utf-8", errors="strict"):
             hatalar.append(f"{dosya.relative_to(kok)}: 'DEGISTIR' kalmis")
     for gerekli in [
         "THIRD_PARTY_LICENSES.md",
@@ -327,7 +332,9 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
             if devralma not in claude:
                 hatalar.append(f"CLAUDE DEVRALMA ESKI: CLAUDE.md '{devralma}' kaydini icermiyor")
 
-    # 4) Subagent ve hook denetimi
+
+def ajanlari_denetle(kok: pathlib.Path, hatalar: list[str]) -> None:
+    """Subagent frontmatter ve hook JSON sözleşmelerini doğrula."""
     for ajan in kok.glob("plugins/*/agents/*.md"):
         metin = ajan.read_text(encoding="utf-8", errors="strict")
         ayrilan = frontmatter(metin)
@@ -340,7 +347,15 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     for hook in kok.glob("plugins/*/hooks/hooks.json"):
         oku_json(hook, hatalar, str(hook.relative_to(kok)))
 
-    # 5) Vitrin ve belge tutarliligi
+
+def vitrini_denetle(
+    kok: pathlib.Path,
+    marketplace: dict,
+    eklentiler: list,
+    skiller: list[pathlib.Path],
+    hatalar: list[str],
+) -> None:
+    """Katalog, belge, komut ve sürüm yüzeylerinin aynı gerçeği taşımasını sağla."""
     gercek_sayi = len(skiller)
     katalog = kok / "docs" / "Vezir-Katalogu.md"
     if katalog.exists():
@@ -373,7 +388,18 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         if f"/{komut.stem}" not in belgeler["README"]:
             hatalar.append(f"VITRIN ESKI: README /{komut.stem} komutunu anmiyor")
 
-    surum_kayitlarini_denetle(kok, mp, hatalar)
+    surum_kayitlarini_denetle(kok, marketplace, hatalar)
+
+
+def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
+    """Bağımsız denetçileri tek raporda birleştiren ince orkestratör."""
+    hatalar: list[str] = []
+    uyarilar: list[str] = []
+    marketplace, eklentiler = marketplace_denetle(kok, hatalar)
+    skiller = skilleri_denetle(kok, hatalar, uyarilar)
+    zorunlu_belgeleri_denetle(kok, hatalar)
+    ajanlari_denetle(kok, hatalar)
+    vitrini_denetle(kok, marketplace, eklentiler, skiller, hatalar)
 
     return hatalar, uyarilar, len(eklentiler), len(skiller)
 

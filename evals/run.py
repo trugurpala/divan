@@ -112,6 +112,8 @@ def _repository_identity(root: pathlib.Path = ROOT) -> dict[str, str]:
             ["git", "-C", str(root), *arguments],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         if completed.returncode:

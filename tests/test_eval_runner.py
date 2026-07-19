@@ -20,6 +20,22 @@ SPEC.loader.exec_module(EVALS)
 
 
 class EvalRunnerTests(unittest.TestCase):
+    def test_repository_git_output_is_decoded_as_utf8_not_system_locale(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-encoding-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "VERSION").write_text("0.12.0\n", encoding="utf-8")
+            results = [
+                subprocess.CompletedProcess(["git"], 0, "a" * 40 + "\n", ""),
+                subprocess.CompletedProcess(["git"], 0, "", ""),
+            ]
+            with mock.patch.object(EVALS.subprocess, "run", side_effect=results) as run:
+                identity = EVALS._repository_identity(root)
+
+        self.assertEqual(identity["source_commit"], "a" * 40)
+        for call in run.call_args_list:
+            self.assertEqual(call.kwargs["encoding"], "utf-8")
+            self.assertEqual(call.kwargs["errors"], "replace")
+
     def test_adapter_protocol_uses_utf8_for_non_ascii_payloads(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-utf8-fixture-") as temporary:
             adapter = pathlib.Path(temporary) / "adapter.py"
