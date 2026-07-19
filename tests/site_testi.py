@@ -4,6 +4,7 @@ Kullanim: pip install playwright && playwright install chromium && python tests/
 import os
 import pathlib
 import sys
+import tempfile
 
 from playwright.sync_api import sync_playwright
 
@@ -30,6 +31,15 @@ with sync_playwright() as p:
         hatalar.append("Kurulum komutu gorunmuyor")
     if not sayfa.get_by_text(f"v{SURUM}").first.is_visible():
         hatalar.append(f"v{SURUM} vitrinde gorunmuyor")
+    if sayfa.locator("main#main-content").count() != 1:
+        hatalar.append("Tek main landmark bulunamadi")
+    sayfa.keyboard.press("Tab")
+    if "skip-link" not in sayfa.evaluate("document.activeElement.className"):
+        hatalar.append("Ilk klavye odagi skip link degil")
+    sayfa.keyboard.press("Enter")
+    sayfa.wait_for_timeout(100)
+    if sayfa.evaluate("document.activeElement.id") != "main-content":
+        hatalar.append("Skip link ana icerige odaklanmadi")
     if sayfa.locator("article.vezir").count() != 5:
         hatalar.append(f"Paket karti sayisi {sayfa.locator('article.vezir').count()} != 5")
     if sayfa.locator("#protokol ol.protokol li").count() != 6:
@@ -47,7 +57,15 @@ with sync_playwright() as p:
     sayfa.set_viewport_size({"width": 390, "height": 844})
     if not sayfa.locator("h1").is_visible():
         hatalar.append("Mobilde h1 gorunmuyor")
-    sayfa.screenshot(path="/tmp/divan-site.png", full_page=True)
+    if sayfa.evaluate("document.documentElement.scrollWidth > window.innerWidth"):
+        hatalar.append("Mobilde yatay tasma var")
+    sayfa.emulate_media(reduced_motion="reduce")
+    if sayfa.locator(".hero .tez").evaluate("element => getComputedStyle(element).animationName") != "none":
+        hatalar.append("Azaltilmis hareket tercihi animasyonu kapatmiyor")
+    sayfa.set_viewport_size({"width": 844, "height": 390})
+    if sayfa.evaluate("document.documentElement.scrollWidth > window.innerWidth"):
+        hatalar.append("Yatay mobil gorunumde tasma var")
+    sayfa.screenshot(path=str(pathlib.Path(tempfile.gettempdir()) / "divan-site.png"), full_page=True)
     if konsol_hatalari:
         hatalar.append(f"Konsol hatalari: {konsol_hatalari[:3]}")
     tarayici.close()
@@ -57,4 +75,4 @@ if hatalar:
     for h in hatalar:
         print("  X", h)
     sys.exit(1)
-print(f"SITE TESTI TEMIZ ✓ — HTTP 200, v{SURUM}, 5 niyet, etkilesim, 5 paket, 6 faz, mobil, konsol=0 hata")
+print(f"SITE TESTI TEMIZ - HTTP 200, v{SURUM}, 5 niyet, etkilesim, 5 paket, 6 faz, mobil, konsol=0 hata")

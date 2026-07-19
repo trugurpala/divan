@@ -4,12 +4,16 @@ on:
   push:
     paths:
       - 'docs/**'
+      - 'site/**'
       - 'tests/site_testi.py'
+      - 'tests/test_site_markup.py'
       - '.github/workflows/site-testi.yml'
   pull_request:
     paths:
       - 'docs/**'
+      - 'site/**'
       - 'tests/site_testi.py'
+      - 'tests/test_site_markup.py'
       - '.github/workflows/site-testi.yml'
   schedule:
     - cron: '0 6 * * 1'  # her pazartesi 06:00 UTC
