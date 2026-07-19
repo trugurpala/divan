@@ -207,6 +207,10 @@ def _bind_provenance(
             if _redact_public_text(value) != value:
                 raise EvalError(f"{variable} contains private data")
             models[field] = value
+        if seed < 0 or seed.bit_length() < 128:
+            raise EvalError(
+                "publishable provider runs require a private seed with at least 128-bit entropy"
+            )
         skills = sorted(selected_skills or [])
         command = [
             "python",
@@ -228,6 +232,7 @@ def _bind_provenance(
                 "judge_version": _version_for_command("DIVAN_CODEX_BIN", "codex"),
                 **models,
                 "blind_seed_sha256": hashlib.sha256(str(seed).encode("ascii")).hexdigest(),
+                "blind_seed_entropy_bits": str(seed.bit_length()),
                 "selected_skills": ",".join(skills),
                 "timeout_seconds": f"{timeout:g}",
                 "minimum_skill_win_rate": (

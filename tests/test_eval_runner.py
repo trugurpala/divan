@@ -100,6 +100,7 @@ class EvalRunnerTests(unittest.TestCase):
                 EVALS._repository_identity(root)
 
     def test_first_party_provenance_requires_and_records_models_and_run_profile(self) -> None:
+        publishable_seed = (1 << 200) + 123456789
         declared = {
             "agent": "declared",
             "agent_version": "declared",
@@ -136,10 +137,21 @@ class EvalRunnerTests(unittest.TestCase):
                 clear=True,
             ),
         ):
+            with self.assertRaisesRegex(EVALS.EvalError, "128-bit"):
+                EVALS._bind_provenance(
+                    declared,
+                    provider_preset="claude-codex",
+                    seed=7,
+                    selected_skills=["baglam-muhafizi"],
+                    timeout=120.0,
+                    min_skill_win_rate=None,
+                )
+
+            EVALS._version_for_command.side_effect = ["Claude CLI", "Codex CLI"]
             bound = EVALS._bind_provenance(
                 declared,
                 provider_preset="claude-codex",
-                seed=7,
+                seed=publishable_seed,
                 selected_skills=["baglam-muhafizi"],
                 timeout=120.0,
                 min_skill_win_rate=None,
@@ -148,7 +160,11 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertEqual(bound["agent_model"], "claude-model-pinned")
         self.assertEqual(bound["judge_model"], "codex-model-pinned")
         self.assertNotIn("blind_seed", bound)
-        self.assertEqual(bound["blind_seed_sha256"], hashlib.sha256(b"7").hexdigest())
+        self.assertEqual(
+            bound["blind_seed_sha256"],
+            hashlib.sha256(str(publishable_seed).encode("ascii")).hexdigest(),
+        )
+        self.assertGreaterEqual(int(bound["blind_seed_entropy_bits"]), 128)
         self.assertIn("--skill baglam-muhafizi", bound["run_command"])
         self.assertIn("--seed [PRIVATE]", bound["run_command"])
 
