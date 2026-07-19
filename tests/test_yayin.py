@@ -15,6 +15,34 @@ SPEC.loader.exec_module(YAYIN)
 
 
 class PublicationTests(unittest.TestCase):
+    def test_failed_rollback_reports_and_retains_recovery_backup(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-rollback-backup-") as temporary:
+            root = pathlib.Path(temporary)
+            first = root / "first.txt"
+            second = root / "second.txt"
+            first.write_text("old-first\n", encoding="utf-8")
+            second.write_text("old-second\n", encoding="utf-8")
+            real_replace = YAYIN.os.replace
+            calls = 0
+
+            def fail_write_and_restore(source, destination):
+                nonlocal calls
+                calls += 1
+                if calls in {2, 3}:
+                    raise OSError(f"fixture failure {calls}")
+                return real_replace(source, destination)
+
+            with mock.patch.object(YAYIN.os, "replace", side_effect=fail_write_and_restore):
+                with self.assertRaisesRegex(RuntimeError, "kurtarma yedeği:") as raised:
+                    YAYIN._write_transaction(
+                        [(first, "new-first\n"), (second, "new-second\n")]
+                    )
+
+            recovery_backups = list(root.glob(".first.txt.*"))
+            self.assertEqual(len(recovery_backups), 1)
+            self.assertIn(str(recovery_backups[0]), str(raised.exception))
+            self.assertEqual(recovery_backups[0].read_text(encoding="utf-8"), "old-first\n")
+
     def test_repository_publication_surfaces_match(self) -> None:
         current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         result = YAYIN.denetle(ROOT)

@@ -155,7 +155,9 @@ def _write_transaction(updates: list[tuple[pathlib.Path, str]]) -> None:
                 os.replace(backup_file, path)
             except OSError as rollback_error:
                 retained_backups.add(backup_file)
-                rollback_errors.append(f"{path}: {rollback_error}")
+                rollback_errors.append(
+                    f"{path}: {rollback_error}; kurtarma yedeği: {backup_file}"
+                )
         if rollback_errors:
             raise RuntimeError(
                 "yayın hazırlığı ve geri alma tamamlanamadı: " + "; ".join(rollback_errors)

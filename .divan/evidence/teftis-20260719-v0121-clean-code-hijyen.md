@@ -30,6 +30,9 @@ Tarih: 2026-07-19 (Europe/Istanbul)
 - İkinci inceleme, `encoding=`/`errors=` ile örtük açılan subprocess metin modu
   ile bozuk UTF-8/sözdizimli Python kaynağında tarayıcı çökmesini üretti. İki
   durum da kırmızı testten sonra deterministik issue raporuna dönüştürüldü.
+- İkinci incelemenin son kararında kritik/önemli bulgu kalmadı. Tek küçük bulgu
+  da kapatıldı: rollback geri alması dahi başarısızsa özgün dosyayı taşıyan
+  geçici kurtarma yedeği silinmez ve tam yolu `RuntimeError` içinde verilir.
 
 ## Kalıcı temizlik
 
@@ -56,7 +59,7 @@ Tarih: 2026-07-19 (Europe/Istanbul)
 - `python scripts/v1.py --check`: geçerli, hedef 1.0.0; bağımsız kabul bekliyor.
 - `python scripts/yayin.py --check`: v0.12.1, 27 kamusal yüzey.
 - `python evals/run.py --check`: 4 skill / 13 vaka sözleşmesi.
-- `python -m unittest discover -s tests -v`: 98 test geçti; 1 POSIX ve 1
+- `python -m unittest discover -s tests -v`: 99 test geçti; 1 POSIX ve 1
   ayrıcalık isteyen symlink testi Windows'ta beklenen biçimde atlandı.
 - `ruff check .`: temiz; C90 McCabe 25 dahildir.
 - `mypy scripts`: 12 kaynak dosyada hata yok.
