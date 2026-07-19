@@ -22,6 +22,9 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
    Varsayılan tek oturumdur; bağımsız işler yerel subagent'larla, eşzamanlı
    yazım worktree izolasyonuyla yürür. Agent Teams deneysel ve açık tercihtir.
    Gerekçe ve aday karnesi `docs/Orkestrasyon-Karari.md` içindedir.
+5. **Repo hijyeni:** Üretilmiş dosya temizliği allowlist ve fail-closed çalışır;
+   kullanıcı yedeği ile yayın kanıtı çöp sayılmaz. Birinci taraf metin UTF-8/LF,
+   çekirdek Python karmaşıklık bütçesi 25'tir. Ayrıntı ADR 0003'tedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -70,6 +73,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   erişilebilir site ile 15 kayıtlı upstream drift kararı. PR #17 `e9a2642e`
   ile `main`e birleşti; v0.12.0 tag/Release, Pages, Wiki ve çift global native
   kurulum ayrı kanıtlarla doğrulandı.
+- **v0.12.1 ✓** ürün kapsamı: UTF-8/LF repo sözleşmesi, allowlist tabanlı
+  güvenli hijyen komutu, McCabe 25 bütçesi ve üç kritik akışta davranış-korumalı
+  tek-sorumluluk refactor'ü. Bu satır kod kapsamını gösterir; PR/main/Release ve
+  global kurulum kanıtı tamamlanmadan sürüm yayımlandı sayılmaz.
 
 ### Sıradaki ürün kanıtı — v1 kabulü
 
@@ -95,6 +102,23 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-19: Clean Code denetimi başlatıldı. Başlangıçta 87 test/Ruff/mypy
+  temizdi; repo kodlama sözleşmesi ve cache kapısı yoktu, üç çekirdek fonksiyon
+  McCabe 25'i aşıyordu. ADR 0003; güvenli allowlist temizliği, UTF-8/LF ve
+  davranış-korumalı sınırlı parçalama yaklaşımını seçti. Aktif rollback yedeği
+  kullanıcı verisi kabul edilerek korunacaktır.
+- 2026-07-19: Hijyen uygulaması 99 teste çıktı; UTF-8/BOM/mojibake, LF, metin
+  subprocess encoding'i ve allowlist cache temizliği otomatik kapıya bağlandı.
+  McCabe 25'i aşan validate/rollback/v1 akışları tek-sorumluluk adımlarına
+  ayrıldı. Sürüm hazırlayıcının tarihsel v0.12.0 eval kaydını körlemesine
+  v0.12.1'e çevirdiği yakalandı; `version_patterns` regresyon sözleşmesi güncel
+  yüzeyi yükseltirken tarihsel provenance'ı koruyor. Bağımsız ilk incelemenin
+  LF, subprocess alias/kodlama, ana doğrulayıcı entegrasyonu ve atomik yayın
+  bulguları test-first kapatıldı; depo dışı symlink ile `.worktrees` taraması da
+  sertleştirildi. İkinci incelemenin örtük subprocess metin modu ve bozuk Python
+  kaynağında çökmeden raporlama bulguları da regresyon sözleşmesine dönüştü.
+  Rollback'in kendisi başarısız olursa korunan kurtarma yedeğinin tam yolu hata
+  raporuna yazılır.
 - 2026-07-19: v0.12 kanıt zinciri adayı Windows/Codex kurulum sözleşmesini gerçek
   PowerShell yaşam döngüsü testiyle eşitledi: 41 skill kuruldu, çakışan skill
   yedeklendi, kayıtla kaldırıldı ve kullanıcı dosyası geri yüklendi. Gerçek eval

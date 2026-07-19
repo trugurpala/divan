@@ -10,6 +10,29 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.12.1] - 2026-07-19
+
+### Added
+
+- `scripts/hijyen.py --check/--clean`: UTF-8/BOM/mojibake denetimi, açık
+  subprocess kodlaması kuralı ve yalnız yeniden üretilebilir cache'leri silen
+  fail-closed repo temizliği.
+- UTF-8/LF editor ve Git sözleşmesi ile Ruff C90 McCabe 25 karmaşıklık bütçesi.
+
+### Changed
+
+- Pazar, skill, belge, ajan ve vitrin denetimleri isimli tek-sorumluluk
+  fonksiyonlarına ayrıldı; kurulum rollback'i ile v1 kanıt doğrulaması aynı
+  public davranışı koruyan aşamalara bölündü.
+- Windows sistem locale'ine bırakılan host CLI ve Git metin çıktıları açık
+  `encoding="utf-8"` sözleşmesine geçirildi.
+
+### Security
+
+- Temizlik allowlist dışındaki yedek, manifest, kanıt ve kullanıcı dosyalarını
+  silmez. Aktif rollback yedekleri korunur; yalnız üretilebilir cache içeriği
+  kalıcı kaldırılabilir.
+
 ## [0.12.0] - 2026-07-19
 
 ### Added

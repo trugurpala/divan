@@ -5,9 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import re
+import stat
 import sys
+import tempfile
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = pathlib.Path("release-manifest.json")
@@ -111,6 +114,62 @@ def denetle(kok: pathlib.Path = KOK) -> dict:
     return {"status": "valid", "version": version, "surface_count": len(kimlikler)}
 
 
+def _staged_file(path: pathlib.Path, payload: bytes) -> pathlib.Path:
+    descriptor, name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    staged = pathlib.Path(name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.chmod(staged, stat.S_IMODE(path.stat().st_mode))
+    except BaseException:
+        staged.unlink(missing_ok=True)
+        raise
+    return staged
+
+
+def _write_transaction(updates: list[tuple[pathlib.Path, str]]) -> None:
+    """Stage every release surface and restore replaced files on any failure."""
+    if len({path for path, _content in updates}) != len(updates):
+        raise ValueError("yayın işleminde yinelenen hedef yolu")
+    staged: list[tuple[pathlib.Path, pathlib.Path, pathlib.Path]] = []
+    replaced: list[tuple[pathlib.Path, pathlib.Path]] = []
+    retained_backups: set[pathlib.Path] = set()
+    try:
+        for path, content in updates:
+            staged.append(
+                (
+                    path,
+                    _staged_file(path, content.encode("utf-8")),
+                    _staged_file(path, path.read_bytes()),
+                )
+            )
+        for path, new_file, backup_file in staged:
+            os.replace(new_file, path)
+            replaced.append((path, backup_file))
+    except BaseException as error:
+        rollback_errors: list[str] = []
+        for path, backup_file in reversed(replaced):
+            try:
+                os.replace(backup_file, path)
+            except OSError as rollback_error:
+                retained_backups.add(backup_file)
+                rollback_errors.append(
+                    f"{path}: {rollback_error}; kurtarma yedeği: {backup_file}"
+                )
+        if rollback_errors:
+            raise RuntimeError(
+                "yayın hazırlığı ve geri alma tamamlanamadı: " + "; ".join(rollback_errors)
+            ) from error
+        raise
+    finally:
+        for _path, new_file, backup_file in staged:
+            new_file.unlink(missing_ok=True)
+            if backup_file not in retained_backups:
+                backup_file.unlink(missing_ok=True)
+
+
 def hazirla(yeni: str, kok: pathlib.Path = KOK) -> None:
     if not SEMVER.fullmatch(yeni):
         raise ValueError(f"Yeni sürüm SemVer değil: {yeni!r}")
@@ -135,24 +194,37 @@ def hazirla(yeni: str, kok: pathlib.Path = KOK) -> None:
         if not yol.is_relative_to(kok.resolve()) or not yol.is_file():
             raise ValueError(f"Hazırlanacak yüzey bulunamadı: {yuzey['path']}")
         metin = yol.read_text(encoding="utf-8")
-        eski_metin = f"v{eski}"
-        eski_rozet = f"version-{eski}"
-        if eski_metin not in metin and eski_rozet not in metin:
-            raise ValueError(f"{yuzey['path']}: {eski_metin} bulunamadı; sessiz geçilmedi")
-        metin = metin.replace(eski_metin, f"v{yeni}")
-        metin = metin.replace(eski_rozet, f"version-{yeni}")
+        desenler = yuzey.get("version_patterns")
+        if not isinstance(desenler, list) or not desenler or not all(
+            isinstance(desen, str) and "{version}" in desen for desen in desenler
+        ):
+            raise ValueError(
+                f"{yuzey['path']}: replace_version yüzeyi version_patterns ister"
+            )
+        for desen in desenler:
+            eski_metin = desen.format(version=eski)
+            if eski_metin not in metin:
+                raise ValueError(
+                    f"{yuzey['path']}: {eski_metin} bulunamadı; sessiz geçilmedi"
+                )
+            metin = metin.replace(eski_metin, desen.format(version=yeni))
         guncellemeler.append((yol, metin))
 
-    # Bütün yüzeyler önce okunup doğrulandı; ancak bundan sonra diske yazılır.
-    # Böylece eksik bir işaret yarım sürüm hazırlığı bırakmaz.
-    (kok / "VERSION").write_text(yeni + "\n", encoding="utf-8")
-    pazar_yolu.write_text(json.dumps(pazar, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    # Bütün yüzeyler önce okunup doğrulanır ve aynı işlem için temp dosyalara
+    # yazılır. Bir replace hatası önceki dosyaları snapshot'lardan geri alır.
+    updates = [
+        (kok / "VERSION", yeni + "\n"),
+        (pazar_yolu, json.dumps(pazar, ensure_ascii=False, indent=2) + "\n"),
+    ]
     if codex_pazar is not None:
-        codex_pazar_yolu.write_text(
-            json.dumps(codex_pazar, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        updates.append(
+            (
+                codex_pazar_yolu,
+                json.dumps(codex_pazar, ensure_ascii=False, indent=2) + "\n",
+            )
         )
-    for yol, metin in guncellemeler:
-        yol.write_text(metin, encoding="utf-8")
+    updates.extend(guncellemeler)
+    _write_transaction(updates)
     print(
         f"v{eski} -> v{yeni}: deterministik yüzeyler hazırlandı. "
         "Şimdi CHANGELOG ve BLUEPRINT anlatısını yaz; sonra --check çalıştır."

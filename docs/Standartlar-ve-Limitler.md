@@ -40,6 +40,18 @@ doğrulayıcısı ve Claude Code'un resmî plugin doğrulayıcısı. Açılı ay
 Skills standardında genel olarak yasak değildir; YAML'ın geçerliliği resmî
 doğrulayıcıya bırakılır.
 
+## Repo hijyeni ve Clean Code bütçesi
+
+- `.editorconfig` birinci taraf metni UTF-8/LF; `.gitattributes` metin EOL'unu
+  LF olarak sabitler.
+- `python scripts/hijyen.py --check`, UTF-8/BOM/mojibake ve açık
+  `encoding="utf-8"` taşımayan metin subprocess'lerini reddeder.
+- `python scripts/hijyen.py --clean`, yalnız `__pycache__`, Ruff/mypy/pytest
+  cache'leri, `.coverage` ve `htmlcov` artefaktlarını siler. Yedek, manifest,
+  kanıt, worktree veya bilinmeyen dosya allowlist dışındadır.
+- Ruff C90 çekirdek Python fonksiyonlarında McCabe karmaşıklığını en çok 25
+  kabul eder; daha karmaşık akış isimli tek-sorumluluk adımlarına ayrılır.
+
 ## Yayın ve v1 kabul sözleşmesi
 
 `VERSION` tek sürüm kaynağıdır; `release-manifest.json` kamusal yüzeyleri,

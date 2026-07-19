@@ -49,6 +49,7 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 Teslimden önce en az şunları çalıştır:
 
 ```bash
+python scripts/hijyen.py --check
 python scripts/validate.py
 python scripts/devral.py --check
 python scripts/katalog.py --check

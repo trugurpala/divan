@@ -4,11 +4,30 @@ Son güncelleme: 2026-07-19
 
 ## Güncel hedef
 
-Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.0 release'i
-üzerinden dürüstçe yürütmek.
+v0.12.1 bakım sürümünde Clean Code, UTF-8/LF ve güvenli repo hijyeni kapılarını
+tamamlayıp Claude+Codex global kurulumuna kanıtla taşımak. Bağımsız kullanıcı
+kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
 
 ## Yapıldı
 
+- v0.12.1 hijyen kapsamı test-first tamamlandı: UTF-8/BOM/mojibake taraması,
+  locale-bağımsız text subprocess kuralı, allowlist cache temizliği,
+  `.editorconfig`/`.gitattributes` ve Ruff C90 McCabe 25 kapısı eklendi.
+- `validate.denetle`, `rollback_transaction` ve v1 gerçek-kanıt doğrulaması
+  aynı davranışı koruyan isimli sorumluluklara ayrıldı; 99 test yeşile geldi.
+- Bağımsız kod incelemesindeki LF, subprocess alias/kodlama, hijyen
+  entegrasyonu ve atomik yayın bulguları test-first kapatıldı; repo dışı
+  symlink ve gereksiz worktree yürüyüşü de sertleştirildi.
+- İkinci bağımsız incelemede önemli bulgu kalmadı. Tek küçük geri bildirim olan
+  başarısız rollback yedeğinin tam kurtarma yolu da test-first rapora eklendi.
+- Açık PR bulunmadığı doğrulandı; birleşmiş PR'lara ait 15 artık uzak `codex/*`
+  dalı kalıcı silindi. Sahipliği belirsiz `claude/*`, `main` ve aktif dal korundu.
+- Kapanmış PR #17/#16'nın yerel ve uzak dalları kaldırıldı. Ana repo ve aktif
+  rollback yedeğindeki yalnız `__pycache__` içeriği kalıcı silindi; manifestin
+  işaret ettiği gerçek kullanıcı skill yedeği korundu.
+- Yayın hazırlayıcının geçmiş sürüm kayıtlarını kör replace etmesi regresyon
+  testiyle düzeltildi. v0.12.1 güncel yüzeyleri değişirken v0.12.0 gerçek eval
+  provenance'ı tarihsel olarak kalır.
 - v0.12.0 ürün kapsamı tamamlandı: Claude ve Codex için aynı 5 paket/41 skill'i
   sunan yerel pazarlar, dry-run-first işlemsel kurucu, yalnız kendi kayıtlarını
   geri alan rollback ve alakasız eklentileri koruyan fixture testleri eklendi.
@@ -158,6 +177,10 @@ Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.
 
 ## Devam ediyor
 
+- 2026-07-19: v0.12.1 yüzeyleri hazır. Tam yerel teftiş, bağımsız code review,
+  PR/main/Release/Pages/Wiki ve çift-host global kurulum kanıtı sıradadır.
+- 2026-07-19: ADR 0003 ve test-first v0.12.1 uygulama planı yazıldı. Sıradaki
+  parça hijyen testlerini kırmızıya getirip allowlist temizleyiciyi uygulamaktır.
 - Proje sahibi dışındaki bağımsız kullanıcıdan tekrar üretilebilir kurulum ve
   görev kanıtı.
 - 2026-07-19: v0.12 kanıt zinciri için tasarım onaylandı. İlk parça Windows
@@ -177,6 +200,5 @@ Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.
 
 ## Sıradaki kesin adım
 
-Proje sahibi dışındaki bir kullanıcının sabit v0.12.0 release'iyle kurulum ve
-gerçek görev kanıtını `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden al;
-yalnız bu dış kanıt doğrulanırsa `independent-adoption` kapısını güncelle.
+AGENTS.md'deki tam teftiş zincirini Ruff, mypy ve coverage ile çalıştır; kanıtı
+`.divan/evidence/` altına yazıp bağımsız code review sonrası PR'ı `main`e taşı.

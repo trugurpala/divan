@@ -163,7 +163,11 @@ def klonla(repo: str, hedef: pathlib.Path) -> str:
         timeout=120,
     )
     return subprocess.check_output(
-        ["git", "-C", str(hedef), "rev-parse", "HEAD"], text=True, timeout=15
+        ["git", "-C", str(hedef), "rev-parse", "HEAD"],
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=15,
     ).strip()
 
 

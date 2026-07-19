@@ -50,7 +50,14 @@ def _subprocess_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
     actual = [resolved, *command[1:]]
     if os.name == "nt" and pathlib.Path(resolved).suffix.lower() in {".cmd", ".bat"}:
         actual = ["cmd.exe", "/d", "/s", "/c", resolved, *command[1:]]
-    return subprocess.run(actual, capture_output=True, text=True, check=False)
+    return subprocess.run(
+        actual,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
 
 
 def _run(runner: Runner, command: list[str]) -> str:
@@ -331,12 +338,7 @@ def _migrate_legacy(
     return {"command": command, "result": result}
 
 
-def rollback_transaction(
-    transaction_path: pathlib.Path,
-    *,
-    runner: Runner = _subprocess_runner,
-) -> dict[str, Any]:
-    """Recover an interrupted transaction using only entries absent from pre-state."""
+def _load_recoverable_transaction(transaction_path: pathlib.Path) -> dict[str, Any]:
     try:
         record = json.loads(transaction_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -355,9 +357,10 @@ def rollback_transaction(
     created = record.get("created")
     if not isinstance(before, dict) or not isinstance(created, dict):
         raise InstallError("transaction journal lacks ownership state")
+    return record
 
-    plugin_rows = list(created.get("plugins", []))
-    marketplace_hosts = list(created.get("marketplaces", []))
+
+def _legacy_journal(record: dict[str, Any]) -> tuple[bool, str | None]:
     pending = record.get("pending")
     legacy_journal_text: str | None = None
     legacy_migration_recorded = False
@@ -378,32 +381,45 @@ def rollback_transaction(
                 completed_journal = migration_result.get("journal")
                 if isinstance(completed_journal, str):
                     legacy_journal_text = completed_journal
-    if legacy_migration_recorded:
-        if legacy_journal_text is None:
-            raise InstallError("recorded legacy migration lacks a journal path")
-        legacy_journal = pathlib.Path(legacy_journal_text)
-        if not legacy_journal.is_file():
-            raise InstallError(f"recorded legacy journal is missing: {legacy_journal}")
-        _begin_mutation(
-            transaction_path,
-            record,
-            {
-                "kind": "recovery-legacy",
-                "host": "codex",
-                "journal": legacy_journal_text,
-            },
-        )
-        _run(
-            runner,
-            [
-                sys.executable,
-                str(pathlib.Path(__file__).with_name("legacy_state.py")),
-                "recover",
-                "--journal",
-                legacy_journal_text,
-            ],
-        )
-        _finish_mutation(transaction_path, record)
+    return legacy_migration_recorded, legacy_journal_text
+
+
+def _recover_recorded_legacy(
+    transaction_path: pathlib.Path,
+    record: dict[str, Any],
+    runner: Runner,
+) -> None:
+    recorded, journal_text = _legacy_journal(record)
+    if not recorded:
+        return
+    if journal_text is None:
+        raise InstallError("recorded legacy migration lacks a journal path")
+    journal = pathlib.Path(journal_text)
+    if not journal.is_file():
+        raise InstallError(f"recorded legacy journal is missing: {journal}")
+    _begin_mutation(
+        transaction_path,
+        record,
+        {"kind": "recovery-legacy", "host": "codex", "journal": journal_text},
+    )
+    _run(
+        runner,
+        [
+            sys.executable,
+            str(pathlib.Path(__file__).with_name("legacy_state.py")),
+            "recover",
+            "--journal",
+            journal_text,
+        ],
+    )
+    _finish_mutation(transaction_path, record)
+
+
+def _created_rows(record: dict[str, Any]) -> tuple[list[Any], list[Any]]:
+    created = record["created"]
+    plugin_rows = list(created.get("plugins", []))
+    marketplace_hosts = list(created.get("marketplaces", []))
+    pending = record.get("pending")
     if isinstance(pending, dict) and pending.get("kind") in {
         "plugin",
         "rollback-plugin",
@@ -416,7 +432,10 @@ def rollback_transaction(
         "recovery-marketplace",
     }:
         marketplace_hosts.append(pending.get("host"))
+    return plugin_rows, marketplace_hosts
 
+
+def _owned_plugins(plugin_rows: list[Any], before: dict[str, Any]) -> list[dict[str, str]]:
     owned_plugins: list[dict[str, str]] = []
     for row in plugin_rows:
         if not isinstance(row, dict):
@@ -431,7 +450,10 @@ def rollback_transaction(
             raise InstallError(f"transaction does not own pre-existing plugin: {selector}")
         if row not in owned_plugins:
             owned_plugins.append({"host": host, "id": selector})
+    return owned_plugins
 
+
+def _owned_marketplaces(marketplace_hosts: list[Any], before: dict[str, Any]) -> list[str]:
     owned_marketplaces: list[str] = []
     for host in marketplace_hosts:
         if host not in {"claude", "codex"}:
@@ -441,27 +463,56 @@ def rollback_transaction(
             raise InstallError(f"transaction does not own pre-existing marketplace: {host}")
         if host not in owned_marketplaces:
             owned_marketplaces.append(host)
+    return owned_marketplaces
+
+
+def _recover_owned_entries(
+    transaction_path: pathlib.Path,
+    record: dict[str, Any],
+    owned_plugins: list[dict[str, str]],
+    owned_marketplaces: list[str],
+    runner: Runner,
+) -> None:
+    for plugin in reversed(owned_plugins):
+        if plugin["id"] not in _plugins(plugin["host"], runner):
+            continue
+        _begin_mutation(transaction_path, record, {"kind": "recovery-plugin", **plugin})
+        _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
+        _finish_mutation(transaction_path, record)
+    for host in reversed(owned_marketplaces):
+        if "divan" not in _marketplaces(host, runner):
+            continue
+        _begin_mutation(
+            transaction_path,
+            record,
+            {"kind": "recovery-marketplace", "host": host},
+        )
+        _run(runner, _remove_marketplace_command(host))
+        _finish_mutation(transaction_path, record)
+
+
+def rollback_transaction(
+    transaction_path: pathlib.Path,
+    *,
+    runner: Runner = _subprocess_runner,
+) -> dict[str, Any]:
+    """Recover an interrupted transaction using only entries absent from pre-state."""
+    record = _load_recoverable_transaction(transaction_path)
+    before = record["before"]
+    _recover_recorded_legacy(transaction_path, record, runner)
+    plugin_rows, marketplace_hosts = _created_rows(record)
+    owned_plugins = _owned_plugins(plugin_rows, before)
+    owned_marketplaces = _owned_marketplaces(marketplace_hosts, before)
 
     record["status"] = "recovering"
     _persist_record(transaction_path, record)
-    for plugin in reversed(owned_plugins):
-        if plugin["id"] in _plugins(plugin["host"], runner):
-            _begin_mutation(
-                transaction_path,
-                record,
-                {"kind": "recovery-plugin", **plugin},
-            )
-            _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
-            _finish_mutation(transaction_path, record)
-    for host in reversed(owned_marketplaces):
-        if "divan" in _marketplaces(host, runner):
-            _begin_mutation(
-                transaction_path,
-                record,
-                {"kind": "recovery-marketplace", "host": host},
-            )
-            _run(runner, _remove_marketplace_command(host))
-            _finish_mutation(transaction_path, record)
+    _recover_owned_entries(
+        transaction_path,
+        record,
+        owned_plugins,
+        owned_marketplaces,
+        runner,
+    )
     record["status"] = "recovered"
     record["pending"] = None
     record["recovered_at"] = datetime.now(UTC).isoformat()
