@@ -6,9 +6,9 @@ Vibe coder olarak senin de asgari GitHub aklın bu tablo kadar olsun:
 | Nimet | Divan'da ne işe yarıyor | Sen nasıl kullanırsın |
 |---|---|---|
 | **Repo** | Tek gerçek kaynak; `/plugin marketplace add trugurpala/divan` buradan kurar | Kod + BLUEPRINT hep repoda; sohbette değil |
-| **Actions (CI)** | Yerel + Agent Skills + Claude Code teftişi; temiz-host matrisi, site/Wiki testi, yayın, upstream nöbeti ve Meclis keşfi | Yeşil tik görmeden birleştirme |
+| **Actions (CI)** | Yerel + Agent Skills + iki host pazarı + Claude Code teftişi; CodeQL, temiz-host matrisi, site/Wiki testi, yayın, upstream nöbeti ve Meclis keşfi | Yeşil tik görmeden birleştirme |
 | **Pages** | https://trugurpala.github.io/divan/ — ücretsiz, login'siz vitrin | docs/ klasörü = anında site |
-| **Releases** | `main` sonrası Pages ve Wiki v0.11.1 olunca CHANGELOG'dan otomatik tag/not üretir | Güncel tag'i Releases sayfasından doğrula; üretimde etikete sabitle |
+| **Releases** | `main` sonrası Pages ve Wiki v0.12.0 olunca CHANGELOG'dan otomatik tag/not üretir | Güncel tag'i Releases sayfasından doğrula; üretimde etikete sabitle |
 | **Issues + etiketler** | yeni-vezir / hata / conduct akışları | Fikrini şablonla aç, etiket yönlendirir |
 | **Discussions** | Serbest sohbet, soru-cevap | Issue'ya değmeyen her şey |
 | **Topics** | claude-code, agent-skills, vibe-coding... keşif | Arayanlar seni bulur |
@@ -23,8 +23,9 @@ kalıcı karar BLUEPRINT.md'ye işlenmeli — akıl orada yaşar.
   sorumlusunu belirler. Zorunlu inceleme için GitHub Ruleset içinde code-owner
   review ayrıca açılmalıdır.
 - `.github/dependabot.yml`, GitHub Actions için haftalık güncelleme PR'ları
-  açar. Dependabot alerts, secret scanning, push protection ve CodeQL depo
-  ayarlarıdır; dosya eklemek bunların açık olduğunu kanıtlamaz.
+  açar. `.github/workflows/codeql.yml` analizi üretir; Dependabot alerts,
+  security updates, secret scanning ve push protection ayrıca depo ayarlarıdır.
+  Dosya eklemek bu platform ayarlarının açık olduğunu tek başına kanıtlamaz.
 - Workflow'lar `GITHUB_TOKEN` yetkisini iş düzeyinde daraltır. Release ve Wiki
   yazma işleri dışında varsayılan erişim salt okunurdur.
 - `CLAUDE.md` ile `scripts/devral.py --check`, Claude Code'un sohbet geçmişi

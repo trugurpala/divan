@@ -8,14 +8,18 @@ on:
       - 'plugins/**'
       - 'scripts/kur-codex.*'
       - 'scripts/kaldir-codex.*'
+      - 'scripts/kur-hostlar.py'
       - '.claude-plugin/**'
+      - '.agents/**'
       - '.github/workflows/uyumluluk.yml'
   pull_request:
     paths:
       - 'plugins/**'
       - 'scripts/kur-codex.*'
       - 'scripts/kaldir-codex.*'
+      - 'scripts/kur-hostlar.py'
       - '.claude-plugin/**'
+      - '.agents/**'
       - '.github/workflows/uyumluluk.yml'
 
 permissions:
@@ -35,6 +39,13 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Claude/Codex pazar eşliği ve işlemsel kurucu sözleşmesi
+        run: |
+          python scripts/host_marketplaces.py --check
+          python -m unittest tests.test_host_marketplaces tests.test_host_install -v
       - name: Marketplace ve beş paketi resmî CLI ile doğrula
         run: |
           npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate . --strict

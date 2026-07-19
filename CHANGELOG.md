@@ -9,7 +9,44 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Planned
 
 - Independent adoption evidence and reproducible quality measurements.
-- First published comparison using a declared real-agent adapter and judge.
+
+## [0.12.0] - 2026-07-19
+
+### Added
+
+- Native Codex marketplace manifests for the same five packages and 41 skills
+  already published through Claude Code, with a cross-host drift validator.
+- Dry-run-first transactional installer for Claude Code/Desktop Code and Codex;
+  it records pre-state, preserves unrelated plugins, verifies all packages, and
+  rolls back only entries created by the failed transaction.
+- First-party real-provider evaluation adapters: Claude Code as the bounded
+  agent and an ephemeral read-only Codex process as the blinded JSON judge.
+- CodeQL, Ruff, mypy, Coverage, actionlint, and immutable GitHub Action pins.
+
+### Changed
+
+- The legacy loose-skill installer is now a compatibility fallback. Release
+  archives are SHA-256 verified before extraction and manifests record version,
+  ref, source commit, archive hash, install time, target, and backup.
+- Site navigation now has a keyboard-visible skip link, one main landmark,
+  WCAG AA coral contrast, reduced-motion verification, and mobile/landscape
+  overflow checks in real Chromium.
+- Root licensing is canonical MIT with separate notices; 15 current upstream
+  differences were reviewed and pinned without automatically copying content.
+
+### Security
+
+- Release workflows publish a versioned fallback archive and checksum with its
+  source commit; mutable `main` downloads and mutable Action tags are rejected.
+- Eval subprocesses are bounded, do not use dangerous bypass flags, and redact
+  secret-like provider diagnostics.
+
+### Verified
+
+- Fixture and repository tests prove host preservation/rollback, checksum
+  fail-closed behavior, marketplace parity, blind judging, and accessibility.
+- Fixture tests prove contracts only. A real cross-provider comparison remains
+  a separate evidence step and independent adoption remains pending for v1.
 
 ## [0.11.1] - 2026-07-18
 

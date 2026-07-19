@@ -54,11 +54,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.11.1 eski-host fallback kaydı (Task 3'te checksum doğrulamalı varlığa
-dönüştürülecek):
+v0.12.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.11.1/scripts/kur-codex.sh | DIVAN_REF=v0.11.1 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.12.0/scripts/kur-codex.sh | DIVAN_REF=v0.12.0 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
@@ -74,7 +74,7 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 
 | Katman | Claude Code | Codex / Cursor / diğer |
 |---|---|---|
-| Skills (41 vezir) | ✓ yerel plugin ile | ✓ yerel plugin ile |
+| Skills (41 vezir) | ✓ yerel plugin ile | ✓ Codex yerel plugin; diğer hostlarda Agent Skills klasörü |
 | Memory (defterdar dosyaları: AGENTS.md, BLUEPRINT, .divan/) | ✓ | ✓ düz dosya + AGENTS.md'yi Codex/Cursor doğal okur |
 | Komutlar (/ferman /sefer /defter /teftis) | ✓ | ✗ Claude Code'a özgü (skill tetikleyicileri yine çalışır) |
 | Subagents (kâşif, müfettiş) | ✓ | ✗ Claude Code'a özgü |
@@ -84,6 +84,6 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 Özet: skill'ler ve hafıza dosyaları her yerde taşınır; komut/subagent/hook
 katmanları Claude Code'da tam güçtedir.
 
-`uyumluluk` CI matrisi Claude Code marketplace/paket şemasını temiz CLI ile;
-Codex kurulumunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41
-skill keşfi ve kayıtlı kaldırma tatbikatıyla sınar.
+`uyumluluk` CI matrisi Claude Code ve Codex pazar/paket şemalarını; fallback
+yolunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41 skill
+keşfi ve kayıtlı kaldırma tatbikatıyla sınar.

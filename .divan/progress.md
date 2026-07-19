@@ -1,14 +1,32 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-18
+Son güncelleme: 2026-07-19
 
 ## Güncel hedef
 
-Gerçek ajan/hakem A/B sonucu ve proje sahibi dışındaki bağımsız kullanıcı kanıtı
-ile kalan iki v1 kapısını dürüstçe kapatmak.
+v0.12.0 çift-yerel-host sağlamlaştırmasını varsayılan dala, tag/Release'e ve
+canlı yüzeylere kanıtla taşımak; ardından dış kanıt isteyen iki v1 kapısını
+dürüstçe yürütmek.
 
 ## Yapıldı
 
+- v0.12.0 ürün kapsamı tamamlandı: Claude ve Codex için aynı 5 paket/41 skill'i
+  sunan yerel pazarlar, dry-run-first işlemsel kurucu, yalnız kendi kayıtlarını
+  geri alan rollback ve alakasız eklentileri koruyan fixture testleri eklendi.
+- Eski kopyalama fallback'i değişmez release varlığı + SHA-256 doğrulamasına
+  geçirildi; manifest sürüm/ref/commit/hash/zaman/hedef/yedek kaydeder. Release
+  workflow'u arşiv, checksum ve source commit yayınlayacak şekilde hazırlandı.
+- Bütün GitHub Actions tam commit SHA'sına sabitlendi; CodeQL, Ruff, mypy,
+  Coverage ve actionlint kapıları eklendi. Yerel taban 46 test ve %61 branch
+  dahil coverage ölçümüdür; bu bir davranış kalite artışı iddiası değildir.
+- Site skip link, tek main landmark, 4.5:1+ mercan kontrastı, reduced-motion ve
+  mobil/yatay taşma kontrolleriyle gerçek Chromium'da geçti.
+- Kök lisans kanonik MIT oldu; NOTICE ayrıldı. Güncel upstream HEAD'lerinde
+  bulunan 15 fark tek tek commit + yerel ağaç SHA-256 + KEEP gerekçesiyle
+  `registry/upstream-baselines.json` defterine işlendi; nöbet yeniden temizdir.
+- Claude Code gerçek ajan ve read-only/ephemeral kör Codex hakem adaptörleri
+  eklendi. Fixture'lar izolasyon, körlük, JSON şeması ve sır maskelemeyi kanıtlar;
+  gerçek model koşusu henüz ayrı dış kanıt adımıdır.
 - v0.11.1 için kök `CLAUDE.md` devralma sözleşmesi eklendi; Claude Code sohbet
   geçmişi olmadan AGENTS, BLUEPRINT, progress ve yayın/v1 kayıtlarına gider.
 - `scripts/devral.py --check` ve regresyon testleri hafıza zincirini denetler;
@@ -127,7 +145,8 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
 
 ## Devam ediyor
 
-- Yalnız dış kanıt isteyen gerçek ajan/hakem ve bağımsız kullanıcı kapıları.
+- v0.12.0 inceleme, CI, merge, tag/Release/Pages/Wiki ve çift global yerel kurulum.
+- Sonrasında dış kanıt isteyen gerçek ajan/hakem ve bağımsız kullanıcı kapıları.
 - 2026-07-19: v0.12 kanıt zinciri için tasarım onaylandı. İlk parça Windows
   kurulum–yedek–kaldırma test eşliği ve gerçek eval koşularının provenance
   sözleşmesidir; dış v1 kapıları bu mekanik çalışmayla kapanmayacaktır.
@@ -138,13 +157,14 @@ ile kalan iki v1 kapısını dürüstçe kapatmak.
 
 ## Bilinen açıklar
 
-- Eval koşucusu ve fixture testleri var; beyan edilmiş güvenilir gerçek ajan
-  adaptörü/hakemiyle yayımlanmış A/B sonucu henüz yok.
+- Gerçek adaptörler ve fixture testleri var; beyan edilmiş Claude ajanı/Codex
+  hakemiyle yayımlanmış A/B sonucu henüz yok.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
 
 ## Sıradaki kesin adım
 
-Bu dalı inceleme ve CI için GitHub'a gönder. Ardından beyan edilmiş gerçek ajan +
-bağımsız hakem adaptörünü güvenilir yürütme ortamında provenance ile koş; sonucu
-yayınla. Paralelde sabit release için ilk bağımsız kabul kanıtını
-`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` akışından topla.
+Tam yerel kapıyı ve zorunlu kod incelemesini geçir; dalı GitHub'a gönder, CI
+sonrası `main`e birleştir ve v0.12.0 tag/Release/Pages/Wiki yüzeylerini ayrı ayrı
+yeniden oku. Sonra iki hosta yerel kur, provenance'lı gerçek Claude/Codex koşusunu
+yap ve yalnız sözleşme sağlanırsa gerçek-ajan kapısını güncelle. Bağımsız kabul
+kanıtı `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden dışarıdan gelmelidir.

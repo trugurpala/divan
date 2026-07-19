@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "target": "1.0.0",
-  "updated": "2026-07-18",
+  "updated": "2026-07-19",
   "gates": [
     {
       "id": "public-contract",
@@ -13,7 +13,7 @@
       "id": "structural-and-eval-ci",
       "title": "Yapısal doğrulama ve davranış eval sözleşmesi yayın kapısı",
       "status": "passed",
-      "evidence": [".github/workflows/teftis.yml", "evals/run.py", "tests/test_eval_runner.py"]
+      "evidence": [".github/workflows/teftis.yml", ".github/workflows/codeql.yml", "evals/run.py", "tests/test_eval_runner.py", "tests/test_real_adapters.py"]
     },
     {
       "id": "live-documentation",
@@ -31,7 +31,7 @@
       "id": "rollback-rehearsal",
       "title": "Kayıtlı kaldırma ve önceki kurulumu geri yükleme tatbikatı",
       "status": "passed",
-      "evidence": ["scripts/kaldir-codex.sh", "scripts/kaldir-codex.ps1", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
+      "evidence": ["scripts/kur-hostlar.py", "tests/test_host_install.py", "scripts/kaldir-codex.sh", "scripts/kaldir-codex.ps1", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
     },
     {
       "id": "tagged-release",
@@ -43,7 +43,7 @@
       "id": "real-agent-comparison",
       "title": "Beyan edilmiş gerçek ajan ve hakemle yayımlanmış kör A/B kanıtı",
       "status": "pending",
-      "evidence": ["evals/README.md"]
+      "evidence": ["evals/README.md", "evals/adapters/claude_agent.py", "evals/adapters/codex_judge.py", "tests/test_real_adapters.py"]
     },
     {
       "id": "independent-adoption",

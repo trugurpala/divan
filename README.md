@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.11.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.12.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -11,10 +11,10 @@
 **Padişah sensin. Divan, vibe coder'ın vezirler kuruludur — 41 skill, 5 paket,
 kalıcı proje hafızası ve bağımsız denetim.**
 Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim eder
-ve kaldığın yeri asla unutmaz. Claude Code'da tam güç; Codex, Cursor ve tüm
-Agent Skills uyumlu ajanlarda taşınabilir.
+ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
+plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.11.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Sürüm:** v0.12.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -57,21 +57,16 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 
 ## Kurulum
 
-**Claude Code:**
-```
-/plugin marketplace add trugurpala/divan
-/plugin install sadrazam@divan     # orkestratör + hafıza + müşavir (çekirdek)
-/plugin install core-pack@divan    # metodoloji + kural hazinesi
-/plugin install ui-pack@divan
-/plugin install react-pack@divan
-/plugin install zanaat-pack@divan
+Önce değişiklik yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
+
+```powershell
+python scripts/kur-hostlar.py --host both --ref v0.12.0
+python scripts/kur-hostlar.py --host both --ref v0.12.0 --execute
 ```
 
-**Codex (Windows, tek komut):**
-```powershell
-irm https://raw.githubusercontent.com/trugurpala/divan/main/scripts/kur-codex.ps1 | iex
-```
-macOS/Linux ve ayrıntılar: [docs/Kurulum.md](docs/Kurulum.md)
+Kurucu Claude Code/Desktop Code ile Codex'in resmî plugin CLI'larını kullanır,
+mevcut eklentileri işlem kaydına alır ve alakasız eklentilere dokunmaz. Tek-host,
+elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md).
 
 ## Bir dakikada başla
 

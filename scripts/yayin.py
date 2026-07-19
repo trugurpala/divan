@@ -53,9 +53,9 @@ def release_notu(kok: pathlib.Path = KOK) -> str:
     return (
         f"# Divan v{version}\n\n{govde}\n\n"
         "## Sabitlenmiş kurulum\n\n"
-        f"- Claude Code: marketplace'i ekledikten sonra paketleri `divan` kaynağından kurun.\n"
-        f"- Codex/macOS/Linux: `DIVAN_REF=v{version}` ile `scripts/kur-codex.sh` kullanın.\n"
-        f"- Codex/Windows: `$env:DIVAN_REF = \"v{version}\"` ile `scripts/kur-codex.ps1` kullanın.\n\n"
+        f"- Claude Code/Desktop Code + Codex: `python scripts/kur-hostlar.py --host both --ref v{version} --execute`.\n"
+        f"- Önce dry-run için aynı komutu `--execute` olmadan çalıştırın.\n"
+        f"- Eski-host fallback varlıkları: `divan-v{version}.zip` ve `divan-v{version}.sha256`.\n\n"
         "Yükseltmeden önce [kurulum](https://github.com/trugurpala/divan/wiki/Kurulum) ve "
         "[kaldırma/geri alma](https://github.com/trugurpala/divan/wiki/Kaldirma) rehberlerini okuyun.\n"
     )
@@ -100,6 +100,11 @@ def denetle(kok: pathlib.Path = KOK) -> dict:
     pazar = json.loads((kok / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
     if pazar.get("version") != version or (pazar.get("metadata") or {}).get("version") != version:
         hatalar.append("marketplace version/metadata VERSION ile eşleşmiyor")
+    codex_pazar_yolu = kok / ".agents/plugins/marketplace.json"
+    if codex_pazar_yolu.is_file():
+        codex_pazar = json.loads(codex_pazar_yolu.read_text(encoding="utf-8"))
+        if codex_pazar.get("version") != version:
+            hatalar.append("Codex marketplace version VERSION ile eşleşmiyor")
 
     if hatalar:
         raise ValueError("Yayın yüzeyleri farklı:\n- " + "\n- ".join(hatalar))
@@ -117,6 +122,11 @@ def hazirla(yeni: str, kok: pathlib.Path = KOK) -> None:
     pazar = json.loads(pazar_yolu.read_text(encoding="utf-8"))
     pazar["version"] = yeni
     pazar.setdefault("metadata", {})["version"] = yeni
+    codex_pazar_yolu = kok / ".agents/plugins/marketplace.json"
+    codex_pazar = None
+    if codex_pazar_yolu.is_file():
+        codex_pazar = json.loads(codex_pazar_yolu.read_text(encoding="utf-8"))
+        codex_pazar["version"] = yeni
     guncellemeler: list[tuple[pathlib.Path, str]] = []
     for yuzey in veri["public_surfaces"]:
         if not yuzey.get("replace_version"):
@@ -137,10 +147,14 @@ def hazirla(yeni: str, kok: pathlib.Path = KOK) -> None:
     # Böylece eksik bir işaret yarım sürüm hazırlığı bırakmaz.
     (kok / "VERSION").write_text(yeni + "\n", encoding="utf-8")
     pazar_yolu.write_text(json.dumps(pazar, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if codex_pazar is not None:
+        codex_pazar_yolu.write_text(
+            json.dumps(codex_pazar, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
     for yol, metin in guncellemeler:
         yol.write_text(metin, encoding="utf-8")
     print(
-        f"v{eski} → v{yeni}: deterministik yüzeyler hazırlandı. "
+        f"v{eski} -> v{yeni}: deterministik yüzeyler hazırlandı. "
         "Şimdi CHANGELOG ve BLUEPRINT anlatısını yaz; sonra --check çalıştır."
     )
 
