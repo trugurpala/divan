@@ -71,6 +71,10 @@ class TextHygieneTests(unittest.TestCase):
                 "from subprocess import run\nrun(['tool'], text=True)\n",
                 encoding="utf-8",
             )
+            (scripts / "implicit_text.py").write_text(
+                "import subprocess\nsubprocess.run(['tool'], encoding='latin-1')\n",
+                encoding="utf-8",
+            )
 
             issues = hijyen.subprocess_encoding_issues(root)
 
@@ -78,9 +82,25 @@ class TextHygieneTests(unittest.TestCase):
                 issues,
                 [
                     "scripts/direct.py:2: text subprocess encoding='utf-8' ister",
+                    "scripts/implicit_text.py:2: text subprocess encoding='utf-8' ister",
                     "scripts/latin.py:2: text subprocess encoding='utf-8' ister",
                     "scripts/unsafe.py:2: text subprocess encoding='utf-8' ister",
                 ],
+            )
+
+    def test_subprocess_scan_reports_syntax_error_and_skips_invalid_utf8(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            scripts = root / "scripts"
+            scripts.mkdir()
+            (scripts / "invalid.py").write_bytes(b"# \xff\n")
+            (scripts / "syntax.py").write_bytes(b"if True print('broken')\n")
+
+            issues = hijyen.subprocess_encoding_issues(root)
+
+            self.assertEqual(
+                issues,
+                ["scripts/syntax.py:1: Python sözdizimi ayrıştırılamadı"],
             )
 
 

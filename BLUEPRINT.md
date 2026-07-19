@@ -107,7 +107,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   McCabe 25'i aşıyordu. ADR 0003; güvenli allowlist temizliği, UTF-8/LF ve
   davranış-korumalı sınırlı parçalama yaklaşımını seçti. Aktif rollback yedeği
   kullanıcı verisi kabul edilerek korunacaktır.
-- 2026-07-19: Hijyen uygulaması 97 teste çıktı; UTF-8/BOM/mojibake, LF, metin
+- 2026-07-19: Hijyen uygulaması 98 teste çıktı; UTF-8/BOM/mojibake, LF, metin
   subprocess encoding'i ve allowlist cache temizliği otomatik kapıya bağlandı.
   McCabe 25'i aşan validate/rollback/v1 akışları tek-sorumluluk adımlarına
   ayrıldı. Sürüm hazırlayıcının tarihsel v0.12.0 eval kaydını körlemesine
@@ -115,7 +115,8 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   yüzeyi yükseltirken tarihsel provenance'ı koruyor. Bağımsız ilk incelemenin
   LF, subprocess alias/kodlama, ana doğrulayıcı entegrasyonu ve atomik yayın
   bulguları test-first kapatıldı; depo dışı symlink ile `.worktrees` taraması da
-  sertleştirildi.
+  sertleştirildi. İkinci incelemenin örtük subprocess metin modu ve bozuk Python
+  kaynağında çökmeden raporlama bulguları da regresyon sözleşmesine dönüştü.
 - 2026-07-19: v0.12 kanıt zinciri adayı Windows/Codex kurulum sözleşmesini gerçek
   PowerShell yaşam döngüsü testiyle eşitledi: 41 skill kuruldu, çakışan skill
   yedeklendi, kayıtla kaldırıldı ve kullanıcı dosyası geri yüklendi. Gerçek eval

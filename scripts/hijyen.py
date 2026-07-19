@@ -161,7 +161,19 @@ def subprocess_encoding_issues(root: pathlib.Path = ROOT) -> list[str]:
         if "__pycache__" not in path.parts
     )
     for path in sources:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        try:
+            source = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            # Canonical text_issues() already reports the precise UTF-8 failure.
+            continue
+        try:
+            tree = ast.parse(source, filename=str(path))
+        except SyntaxError as error:
+            issues.append(
+                f"{_relative(path, root)}:{error.lineno or 1}: "
+                "Python sözdizimi ayrıştırılamadı"
+            )
+            continue
         module_aliases, function_aliases = _subprocess_aliases(tree)
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call) or not _is_subprocess_call(
@@ -169,7 +181,7 @@ def subprocess_encoding_issues(root: pathlib.Path = ROOT) -> list[str]:
             ):
                 continue
             keywords = {keyword.arg: keyword.value for keyword in node.keywords if keyword.arg}
-            text_mode = any(
+            text_mode = "encoding" in keywords or "errors" in keywords or any(
                 isinstance(value, ast.Constant) and value.value is True
                 for value in (keywords.get("text"), keywords.get("universal_newlines"))
             )

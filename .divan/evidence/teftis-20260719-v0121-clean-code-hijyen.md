@@ -27,6 +27,9 @@ Tarih: 2026-07-19 (Europe/Istanbul)
   buldu. Her bulgu önce kırmızı regresyon testiyle üretildi, sonra kapatıldı.
 - Küçük inceleme bulguları için `.worktrees`/cache ağaçları dosya sistemi
   fallback'inde de budandı ve depo dışına çıkan metin symlink'i reddedildi.
+- İkinci inceleme, `encoding=`/`errors=` ile örtük açılan subprocess metin modu
+  ile bozuk UTF-8/sözdizimli Python kaynağında tarayıcı çökmesini üretti. İki
+  durum da kırmızı testten sonra deterministik issue raporuna dönüştürüldü.
 
 ## Kalıcı temizlik
 
@@ -36,6 +39,9 @@ Tarih: 2026-07-19 (Europe/Istanbul)
   `ui-ux-pro-max/scripts/__pycache__` silindi. Manifestin işaret ettiği 36
   birinci taraf olmayan kullanıcı dosyası/skill içeriği korundu.
 - Birleşmiş PR #17/#16'nın yerel dalları ve GitHub uzak dalları silindi.
+- Açık PR olmadığı ve kalan 15 uzak `codex/*` dalının birleşmiş PR'lara ait
+  olduğu GitHub'dan doğrulandı; bu dallar da kalıcı silindi. `main`, aktif dal
+  ve sahipliği belirsiz `claude/*` dalı korundu.
 - PR #17 worktree Git kaydı ve 14 MB içeriği kaldırıldı. Windows'ta bir süreç
   boş üst dizin handle'ını tuttuğu için boş klasörün son kaldırması teftiş
   sonunda yeniden denenecektir; ürün veya Git kaydı içermez.
@@ -50,7 +56,7 @@ Tarih: 2026-07-19 (Europe/Istanbul)
 - `python scripts/v1.py --check`: geçerli, hedef 1.0.0; bağımsız kabul bekliyor.
 - `python scripts/yayin.py --check`: v0.12.1, 27 kamusal yüzey.
 - `python evals/run.py --check`: 4 skill / 13 vaka sözleşmesi.
-- `python -m unittest discover -s tests -v`: 97 test geçti; 1 POSIX ve 1
+- `python -m unittest discover -s tests -v`: 98 test geçti; 1 POSIX ve 1
   ayrıcalık isteyen symlink testi Windows'ta beklenen biçimde atlandı.
 - `ruff check .`: temiz; C90 McCabe 25 dahildir.
 - `mypy scripts`: 12 kaynak dosyada hata yok.
