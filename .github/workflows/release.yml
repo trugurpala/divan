@@ -124,14 +124,25 @@ jobs:
           version="$(cat VERSION)"
           tag="v${version}"
           notes="$RUNNER_TEMP/divan-release-notes.md"
+          archive="$RUNNER_TEMP/divan-${tag}.zip"
+          checksum="$RUNNER_TEMP/divan-${tag}.sha256"
           python scripts/yayin.py --notes "$notes"
+          if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
+            source_commit="$(git rev-parse "$tag^{commit}")"
+          else
+            source_commit="$GITHUB_SHA"
+          fi
+          git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
+          archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
+          printf '%s  %s\nsource_commit=%s\n' "$archive_sha256" "$(basename "$archive")" "$source_commit" > "$checksum"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             if gh release view "$tag" >/dev/null 2>&1; then
               gh release edit "$tag" --title "Divan $tag" --notes-file "$notes"
+              gh release upload "$tag" "$archive" "$checksum" --clobber
               echo "$tag Release sayfası kaynak notlarla eşitlendi; etiket taşınmadı."
             else
-              gh release create "$tag" --verify-tag --title "Divan $tag" --notes-file "$notes"
+              gh release create "$tag" "$archive" "$checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
             fi
           else
-            gh release create "$tag" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
+            gh release create "$tag" "$archive" "$checksum" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
           fi

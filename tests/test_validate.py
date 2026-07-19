@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import csv
 import os
 import pathlib
 import subprocess
@@ -99,6 +100,20 @@ class RepositoryTests(unittest.TestCase):
             VALIDATE.surum_kayitlarini_denetle(root, marketplace, errors)
             self.assertIn("README 'v0.10.0'", "\n".join(errors))
 
+    def test_fallback_installers_require_checksum_and_provenance(self) -> None:
+        for name in ("kur-codex.ps1", "kur-codex.sh"):
+            text = (ROOT / "scripts" / name).read_text(encoding="utf-8")
+            self.assertNotIn("DIVAN_REF:-main", text)
+            self.assertNotIn('else { "main" }', text)
+            self.assertIn("archive_sha256", text)
+            self.assertIn("source_commit", text)
+            self.assertIn("installed_at", text)
+            self.assertIn("SHA256", text.upper())
+        release = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
+        self.assertIn("git archive --format=zip", release)
+        self.assertIn("source_commit=", release)
+        self.assertIn("gh release upload", release)
+
     @unittest.skipIf(os.name == "nt", "Shell installer coverage runs on POSIX hosts")
     def test_shell_installer_backs_up_collisions(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:
@@ -167,6 +182,26 @@ class RepositoryTests(unittest.TestCase):
             ]
             subprocess.run(install, check=True, env=env, capture_output=True, text=True)
             self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
+            pointer = state_dir / "divan-install-latest"
+            manifest = pathlib.Path(pointer.read_text(encoding="utf-8-sig").strip())
+            with manifest.open(encoding="utf-8-sig", newline="") as handle:
+                rows = list(csv.DictReader(handle, delimiter="\t"))
+            self.assertEqual(len(rows), 41)
+            self.assertEqual(
+                set(rows[0]),
+                {
+                    "skill",
+                    "hedef",
+                    "yedek",
+                    "surum",
+                    "ref",
+                    "source_commit",
+                    "archive_sha256",
+                    "installed_at",
+                },
+            )
+            self.assertEqual(rows[0]["surum"], "0.11.1")
+            self.assertEqual(rows[0]["archive_sha256"], "local-source")
 
             marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
             marker.write_text("koru", encoding="utf-8")
@@ -179,6 +214,44 @@ class RepositoryTests(unittest.TestCase):
             subprocess.run(uninstall, check=True, env=env, capture_output=True, text=True)
             self.assertTrue(marker.exists())
             self.assertEqual(marker.read_text(encoding="utf-8"), "koru")
+
+    @unittest.skipUnless(os.name == "nt", "PowerShell checksum coverage runs on Windows hosts")
+    def test_powershell_installer_rejects_checksum_mismatch_before_extract(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-checksum-test-") as temporary:
+            base = pathlib.Path(temporary)
+            archive = base / "divan-v0.11.1.zip"
+            archive.write_bytes(b"not a trusted archive")
+            skills_dir = base / "skills"
+            env = os.environ.copy()
+            env.pop("DIVAN_SOURCE_DIR", None)
+            env.update(
+                {
+                    "DIVAN_REF": "v0.11.1",
+                    "DIVAN_ARCHIVE_PATH": str(archive),
+                    "DIVAN_ARCHIVE_SHA256": "0" * 64,
+                    "DIVAN_SOURCE_COMMIT": "fixture-commit",
+                    "CODEX_SKILLS_DIR": str(skills_dir),
+                    "DIVAN_STATE_DIR": str(base / "state"),
+                }
+            )
+            result = subprocess.run(
+                [
+                    "powershell.exe",
+                    "-NoProfile",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str(ROOT / "scripts" / "kur-codex.ps1"),
+                ],
+                check=False,
+                env=env,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("SHA-256", result.stderr + result.stdout)
+            self.assertFalse(skills_dir.exists())
 
 
 if __name__ == "__main__":

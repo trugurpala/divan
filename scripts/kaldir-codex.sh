@@ -30,7 +30,7 @@ if [[ ! -f "$MANIFEST" ]]; then
 fi
 
 DST="$(cd "$DST" && pwd -P)"
-while IFS=$'\t' read -r name target backup; do
+while IFS=$'\t' read -r name target backup _version _ref _source_commit _archive_sha256 _installed_at; do
   [[ "$name" == "skill" || -z "$name" ]] && continue
   case "$target" in
     "$DST"/*) ;;

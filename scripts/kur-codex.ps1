@@ -2,7 +2,7 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 $ErrorActionPreference = "Stop"
 
-$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "main" }
+$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v0.11.1" }
 $dst = if ($env:CODEX_SKILLS_DIR) {
   $env:CODEX_SKILLS_DIR
 } else {
@@ -18,12 +18,46 @@ $work = Join-Path ([IO.Path]::GetTempPath()) ("divan-kur-" + [Guid]::NewGuid())
 
 try {
   New-Item -ItemType Directory -Force -Path $work | Out-Null
+  $archiveSha256 = "local-source"
+  $sourceCommit = if ($env:DIVAN_SOURCE_COMMIT) { $env:DIVAN_SOURCE_COMMIT } else { "" }
   if ($env:DIVAN_SOURCE_DIR) {
     $source = $env:DIVAN_SOURCE_DIR
+    if (-not $sourceCommit) {
+      $gitCommit = & git -C $source rev-parse HEAD 2>$null
+      if ($LASTEXITCODE -eq 0) { $sourceCommit = ($gitCommit | Select-Object -First 1).Trim() }
+    }
+    if (-not $sourceCommit) { $sourceCommit = "local-unverified" }
   } else {
+    if ($ref -in @("main", "master", "latest")) {
+      throw "Degisebilir DIVAN_REF kabul edilmez: $ref"
+    }
     $zip = Join-Path $work "divan.zip"
+    $checksum = Join-Path $work "divan.sha256"
     $expanded = Join-Path $work "expanded"
-    Invoke-WebRequest "https://github.com/trugurpala/divan/archive/$ref.zip" -OutFile $zip
+    if ($env:DIVAN_ARCHIVE_PATH) {
+      Copy-Item -LiteralPath $env:DIVAN_ARCHIVE_PATH -Destination $zip
+    } else {
+      Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$ref/divan-$ref.zip" -OutFile $zip
+    }
+    if ($env:DIVAN_ARCHIVE_SHA256) {
+      $expectedSha256 = $env:DIVAN_ARCHIVE_SHA256.Trim().ToLowerInvariant()
+    } else {
+      Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$ref/divan-$ref.sha256" -OutFile $checksum
+      $checksumLines = @(Get-Content -LiteralPath $checksum)
+      $expectedSha256 = (($checksumLines[0] -split "\s+")[0]).Trim().ToLowerInvariant()
+      if (-not $sourceCommit) {
+        $commitLine = $checksumLines | Where-Object { $_ -match '^source_commit=' } | Select-Object -First 1
+        if ($commitLine) { $sourceCommit = $commitLine.Substring("source_commit=".Length).Trim() }
+      }
+    }
+    if ($expectedSha256 -notmatch '^[0-9a-f]{64}$') {
+      throw "Gecersiz SHA-256 kaydi: $expectedSha256"
+    }
+    $archiveSha256 = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($archiveSha256 -ne $expectedSha256) {
+      throw "SHA-256 uyusmazligi: beklenen $expectedSha256, bulunan $archiveSha256"
+    }
+    if (-not $sourceCommit) { $sourceCommit = $ref }
     Expand-Archive $zip -DestinationPath $expanded
     $source = (Get-ChildItem $expanded -Directory | Select-Object -First 1).FullName
   }
@@ -33,9 +67,16 @@ try {
   }
 
   New-Item -ItemType Directory -Force -Path $dst, $stateDir | Out-Null
+  $versionFile = Join-Path $source "VERSION"
+  $version = if (Test-Path -LiteralPath $versionFile -PathType Leaf) {
+    (Get-Content -LiteralPath $versionFile -Raw).Trim()
+  } else {
+    $ref.TrimStart("v")
+  }
+  $installedAt = (Get-Date).ToUniversalTime().ToString("o")
   $backupRoot = Join-Path $stateDir "divan-backups\$stamp"
   $manifest = Join-Path $stateDir "divan-install-$stamp.tsv"
-  "skill`thedef`tyedek" | Set-Content -Encoding utf8 $manifest
+  "skill`thedef`tyedek`tsurum`tref`tsource_commit`tarchive_sha256`tinstalled_at" | Set-Content -Encoding utf8 $manifest
   $seen = @{}
 
   $skills = Get-ChildItem (Join-Path $source "plugins\*\skills\*") -Directory
@@ -61,7 +102,7 @@ try {
       if ($backup -and (Test-Path $backup)) { Move-Item $backup $target }
       throw "$name kopyalanamadi; onceki surum geri getirildi. $($_.Exception.Message)"
     }
-    "$name`t$target`t$backup" | Add-Content -Encoding utf8 $manifest
+    "$name`t$target`t$backup`t$version`t$ref`t$sourceCommit`t$archiveSha256`t$installedAt" | Add-Content -Encoding utf8 $manifest
     Write-Host "  vezir: $name"
   }
 
