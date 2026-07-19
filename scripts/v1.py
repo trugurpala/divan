@@ -7,7 +7,6 @@ import argparse
 import json
 import pathlib
 
-
 KOK = pathlib.Path(__file__).resolve().parent.parent
 KAYNAK = pathlib.Path("registry/v1-gates.json")
 HEDEF = pathlib.Path("docs/V1-Hazirlik.md")

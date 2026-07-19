@@ -3,7 +3,6 @@ import importlib.util
 import pathlib
 import unittest
 
-
 KOK = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_meclis", KOK / "scripts" / "meclis.py")
 MECLIS = importlib.util.module_from_spec(SPEC)

@@ -4,7 +4,6 @@ import importlib.util
 import pathlib
 import unittest
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_v1", ROOT / "scripts" / "v1.py")
 assert SPEC and SPEC.loader

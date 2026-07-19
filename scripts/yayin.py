@@ -9,7 +9,6 @@ import pathlib
 import re
 import sys
 
-
 KOK = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = pathlib.Path("release-manifest.json")
 SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
@@ -71,10 +70,17 @@ def denetle(kok: pathlib.Path = KOK) -> dict:
         if not isinstance(yuzey, dict):
             hatalar.append("public surface girdisi nesne olmalı")
             continue
-        kimlik, yol_metni, marker = (yuzey.get(k) for k in ("id", "path", "marker"))
-        if not all(isinstance(x, str) and x for x in (kimlik, yol_metni, marker)):
+        kimlik = yuzey.get("id")
+        yol_metni = yuzey.get("path")
+        marker = yuzey.get("marker")
+        if not all(
+            isinstance(x, str) and bool(x) for x in (kimlik, yol_metni, marker)
+        ):
             hatalar.append(f"eksik public surface alanı: {yuzey}")
             continue
+        assert isinstance(kimlik, str)
+        assert isinstance(yol_metni, str)
+        assert isinstance(marker, str)
         if kimlik in kimlikler:
             hatalar.append(f"yinelenen public surface id: {kimlik}")
         kimlikler.add(kimlik)

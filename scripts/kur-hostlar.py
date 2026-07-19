@@ -14,7 +14,6 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
-
 PACKAGES = ("sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack")
 Runner = Callable[[list[str]], subprocess.CompletedProcess[str]]
 

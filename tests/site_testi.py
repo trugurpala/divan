@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Divan canli sayfa testi — gercek tarayicida (Chromium/Playwright).
 Kullanim: pip install playwright && playwright install chromium && python tests/site_testi.py"""
-import os, pathlib, sys
+import os
+import pathlib
+import sys
+
 from playwright.sync_api import sync_playwright
 
 URL = os.environ.get("DIVAN_SITE_URL", "https://trugurpala.github.io/divan/")
@@ -51,6 +54,7 @@ with sync_playwright() as p:
 
 if hatalar:
     print("SITE TESTI BASARISIZ:")
-    for h in hatalar: print("  X", h)
+    for h in hatalar:
+        print("  X", h)
     sys.exit(1)
 print(f"SITE TESTI TEMIZ ✓ — HTTP 200, v{SURUM}, 5 niyet, etkilesim, 5 paket, 6 faz, mobil, konsol=0 hata")

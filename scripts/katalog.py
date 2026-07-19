@@ -4,13 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import pathlib
 import re
 
 try:
-    from scripts import validate
+    validate = importlib.import_module("scripts.validate")
 except ModuleNotFoundError:  # `python scripts/katalog.py` çağrısı
-    import validate
+    validate = importlib.import_module("validate")
 
 
 KOK = pathlib.Path(__file__).resolve().parent.parent

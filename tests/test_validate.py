@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import importlib.util
 import csv
+import importlib.util
 import os
 import pathlib
 import subprocess
 import tempfile
 import unittest
-
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_validate", ROOT / "scripts" / "validate.py")

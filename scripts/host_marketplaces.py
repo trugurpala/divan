@@ -8,7 +8,6 @@ import json
 import pathlib
 from typing import Any
 
-
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 

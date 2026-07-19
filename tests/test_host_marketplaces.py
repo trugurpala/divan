@@ -6,7 +6,6 @@ import pathlib
 import tempfile
 import unittest
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
     "divan_host_marketplaces", ROOT / "scripts" / "host_marketplaces.py"

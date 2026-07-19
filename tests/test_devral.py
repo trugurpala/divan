@@ -26,12 +26,14 @@ class DevralTesti(unittest.TestCase):
 
     def test_tam_sozlesme_gecer(self):
         with tempfile.TemporaryDirectory() as gecici:
-            root = pathlib.Path(gecici); self.kur(root)
+            root = pathlib.Path(gecici)
+            self.kur(root)
             self.assertEqual(devral.denetle(root), [])
 
     def test_eksik_ilerleme_reddedilir(self):
         with tempfile.TemporaryDirectory() as gecici:
-            root = pathlib.Path(gecici); self.kur(root)
+            root = pathlib.Path(gecici)
+            self.kur(root)
             (root / ".divan/progress.md").unlink()
             self.assertTrue(any("ilerleme defteri" in h for h in devral.denetle(root)))
 

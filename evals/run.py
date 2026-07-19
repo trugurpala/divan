@@ -9,7 +9,6 @@ körleştirir ve isteğe bağlı bir hakem adaptörüyle ölçer. Yalnız stdlib
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import pathlib
 import random
@@ -18,7 +17,6 @@ import subprocess
 import sys
 import time
 from typing import Any
-
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "evals" / "results" / "latest.json"

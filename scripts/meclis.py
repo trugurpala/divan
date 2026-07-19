@@ -9,7 +9,6 @@ import json
 import pathlib
 import re
 
-
 KOK = pathlib.Path(__file__).resolve().parent.parent
 DEFTER = KOK / "registry" / "candidates.json"
 KATALOG = KOK / "docs" / "Aday-Meclisi.md"

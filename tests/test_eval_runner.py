@@ -8,7 +8,6 @@ import tempfile
 import textwrap
 import unittest
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_evals", ROOT / "evals" / "run.py")
 assert SPEC and SPEC.loader

@@ -68,14 +68,14 @@ def frontmatter_alani(fmt: str, alan: str) -> str | None:
                     pass
             return deger
 
-        blok: list[str] = []
+        blok_satirlari: list[str] = []
         for devam in satirlar[indeks + 1 :]:
             if devam and not devam[0].isspace():
                 break
-            blok.append(devam)
-        dolu = [len(s) - len(s.lstrip()) for s in blok if s.strip()]
+            blok_satirlari.append(devam)
+        dolu = [len(s) - len(s.lstrip()) for s in blok_satirlari if s.strip()]
         girinti = min(dolu) if dolu else 0
-        parcalar = [s[girinti:] if len(s) >= girinti else "" for s in blok]
+        parcalar = [s[girinti:] if len(s) >= girinti else "" for s in blok_satirlari]
         return "\n".join(parcalar).strip() if deger.startswith("|") else " ".join(
             s.strip() for s in parcalar
         ).strip()
