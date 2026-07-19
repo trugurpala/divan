@@ -19,13 +19,13 @@
       "id": "live-documentation",
       "title": "README, Pages ve Wiki canlı yüzey doğrulaması",
       "status": "passed",
-      "evidence": [".github/workflows/site-testi.yml", ".github/workflows/wiki-sync.yml", ".divan/evidence/teftis-20260718-v0103.md"]
+      "evidence": [".github/workflows/site-testi.yml", ".github/workflows/wiki-sync.yml", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/actions/runs/29702535899", "https://github.com/trugurpala/divan/actions/runs/29702535867"]
     },
     {
       "id": "native-clean-host-matrix",
       "title": "Claude Code ve Codex native Linux/macOS/Windows temiz-host yaşam döngüsü",
       "status": "passed",
-      "evidence": [".github/workflows/uyumluluk.yml", "scripts/kur-hostlar.py", "tests/test_host_install.py", "https://github.com/trugurpala/divan/actions/runs/29700468615"]
+      "evidence": [".github/workflows/uyumluluk.yml", "scripts/kur-hostlar.py", "tests/test_host_install.py", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/actions/runs/29702535873"]
     },
     {
       "id": "rollback-rehearsal",
@@ -37,7 +37,7 @@
       "id": "tagged-release",
       "title": "Etiketli GitHub Release, sürüm notu ve sabitlenebilir kurulum",
       "status": "passed",
-      "evidence": ["release-manifest.json", "https://github.com/trugurpala/divan/releases/tag/v0.11.0", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
+      "evidence": ["release-manifest.json", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/releases/tag/v0.12.0", "https://github.com/trugurpala/divan/actions/runs/29702535903"]
     },
     {
       "id": "real-agent-comparison",

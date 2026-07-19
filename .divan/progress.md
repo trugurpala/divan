@@ -4,9 +4,8 @@ Son güncelleme: 2026-07-19
 
 ## Güncel hedef
 
-v0.12.0 çift-yerel-host sağlamlaştırmasını varsayılan dala, tag/Release'e ve
-canlı yüzeylere kanıtla taşımak; ardından kalan tek dış v1 kapısı olan bağımsız
-kullanıcı kabulünü dürüstçe yürütmek.
+Kalan tek dış v1 kapısı olan bağımsız kullanıcı kabulünü sabit v0.12.0 release'i
+üzerinden dürüstçe yürütmek.
 
 ## Yapıldı
 
@@ -33,6 +32,14 @@ kullanıcı kabulünü dürüstçe yürütmek.
   skill galibiyeti bulunmadığı için kalite artışı iddiası yapılmadı.
   `evals/results/claude-codex-baglam-muhafizi-v012.json` kanıtıyla v1 karnesi
   7/8'e çıktı.
+- PR #17 bütün kontrollerden geçti ve `e9a2642e` ile `main`e birleşti. Ana-dal
+  teftişi, CodeQL, üç işletim sistemi uyumluluk matrisi, Pages, Wiki ve canlı
+  Chromium testi yeşildir. v0.12.0 etiketi aynı commit'e bağlı; GitHub Release
+  arşivi ile checksum'u yayımlandı ve SHA-256 yeniden eşleşti.
+- Sabit `v0.12.0` kaynağı dry-run sonrasında Claude Code/Desktop Code ve Codex'e
+  global native marketplace olarak kuruldu. İki hostta 5 paket/41 skill enabled;
+  önceki 2 Claude ve 11 Codex eklentisi ile bütün eski marketplace'ler korundu.
+  Tam kayıt `.divan/evidence/teftis-20260719-v012-release-install.md` dosyasındadır.
 - v0.11.1 için kök `CLAUDE.md` devralma sözleşmesi eklendi; Claude Code sohbet
   geçmişi olmadan AGENTS, BLUEPRINT, progress ve yayın/v1 kayıtlarına gider.
 - `scripts/devral.py --check` ve regresyon testleri hafıza zincirini denetler;
@@ -151,9 +158,8 @@ kullanıcı kabulünü dürüstçe yürütmek.
 
 ## Devam ediyor
 
-- v0.12.0 inceleme, CI, merge, tag/Release/Pages/Wiki ve çift global yerel kurulum.
-- Sonrasında proje sahibi dışındaki bağımsız kullanıcıdan tekrar üretilebilir
-  kurulum ve görev kanıtı.
+- Proje sahibi dışındaki bağımsız kullanıcıdan tekrar üretilebilir kurulum ve
+  görev kanıtı.
 - 2026-07-19: v0.12 kanıt zinciri için tasarım onaylandı. İlk parça Windows
   kurulum–yedek–kaldırma test eşliği ve gerçek eval koşularının provenance
   sözleşmesidir; dış v1 kapıları bu mekanik çalışmayla kapanmayacaktır.
@@ -165,11 +171,12 @@ kullanıcı kabulünü dürüstçe yürütmek.
 ## Bilinen açıklar
 
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
+- Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
+  manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
+  native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
 
 ## Sıradaki kesin adım
 
-Tam yerel kapıyı ve zorunlu kod incelemesini geçir; PR #17 CI sonrası `main`e
-birleştir ve v0.12.0 tag/Release/Pages/Wiki yüzeylerini ayrı ayrı yeniden oku.
-Sonra sabit v0.12.0 etiketini Claude ile Codex'e global yerel pazar olarak kurup
-alakasız mevcut eklentilerin korunduğunu doğrula. Bağımsız kabul kanıtı
-`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden dışarıdan gelmelidir.
+Proje sahibi dışındaki bir kullanıcının sabit v0.12.0 release'iyle kurulum ve
+gerçek görev kanıtını `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden al;
+yalnız bu dış kanıt doğrulanırsa `independent-adoption` kapısını güncelle.

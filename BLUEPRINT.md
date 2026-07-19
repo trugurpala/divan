@@ -67,12 +67,13 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - **v0.12.0 ✓** ürün kapsamı: Claude + Codex yerel pazar eşliği, dry-run-first
   işlemsel çift-host kurucu, checksum/provenance kontrollü fallback, gerçek
   Claude ajanı + kör Codex hakemi adaptörleri, CodeQL ve tam-SHA Action pinleri,
-  erişilebilir site ile 15 kayıtlı upstream drift kararı. Tag/canlı yayın
-  kanıtı bu dal `main`e birleştikten sonra ayrıca kaydedilir.
+  erişilebilir site ile 15 kayıtlı upstream drift kararı. PR #17 `e9a2642e`
+  ile `main`e birleşti; v0.12.0 tag/Release, Pages, Wiki ve çift global native
+  kurulum ayrı kanıtlarla doğrulandı.
 
 ### Sıradaki ürün kanıtı — v1 kabulü
 
-1. v0.12.0 birleştirme/tag/Release/Pages/Wiki kanıtını tamamla.
+1. ✓ v0.12.0 birleştirme/tag/Release/Pages/Wiki ve global kurulum kanıtı.
 2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
 3. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
 4. Bağımsız kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
@@ -215,6 +216,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-v0.12.0'ı birleştirip tag/Release/Pages/Wiki üzerinde doğrula; ardından gerçek
-Claude ajanı + kör Codex hakemi koşusunu provenance ile yayımla. Bağımsız kabul
-kanıtı gelmeden v1.0 etiketi koyma.
+Proje sahibi dışındaki bir kullanıcının sabit v0.12.0 release'iyle tekrar
+üretilebilir kurulum ve görev kanıtını
+`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden al. Bu bağımsız kanıt
+gelmeden v1.0 etiketi koyma.

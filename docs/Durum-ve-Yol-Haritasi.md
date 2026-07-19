@@ -22,19 +22,19 @@ Son doğrulama tarihi: 2026-07-19.
 
 ## Dürüst açıklar
 
-- Beyan edilmiş gerçek ajan ve hakem adapter'ıyla yayımlanmış A/B sonucu yok.
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
-- v0.12.0 tag/Release henüz yayımlanmadı; bu belge release adayı kaynağıdır.
-  Son doğrulanmış yayın v0.11.1 ve etiketi `731db9d7` commit'ine bağlıdır.
-  v0.12.0 ancak `main` sonrası [Releases sayfasından](https://github.com/trugurpala/divan/releases)
-  ve tag API'sinden ayrı ayrı okununca yayımlanmış sayılır.
+- Gerçek Claude/Codex A/B sonucu yayımlandı: skill 0, baseline 1, beraberlik 2.
+  Önceden eşik yoktur; kalite artışı iddiası yapılmaz.
+- v0.12.0 tag/Release yayımlandı ve `e9a2642e` `main` commit'ine bağlıdır.
+  Release arşivi/checksum'u, Pages, Wiki ve iki hosttaki global native kurulum
+  `.divan/evidence/teftis-20260719-v012-release-install.md` ile doğrulandı.
 - GitHub Wiki Git deposu başlatıldı; `wiki-sync` her `main` belge değişiminde 17
   çıktıyı yayımlar ve canlı `Home.md` sürümünü yeniden okur.
 
 ## Sıradaki ürün kanıtı
 
-1. v0.12.0 merge/tag/Release/Pages/Wiki ve çift-host global kurulum kanıtı.
-2. Gerçek ajan/hakem adapter'ıyla ilk yayımlanabilir kör A/B kanıtı.
+1. ✓ v0.12.0 merge/tag/Release/Pages/Wiki ve çift-host global kurulum kanıtı.
+2. ✓ Gerçek ajan/hakem adapter'ıyla ilk yayımlanabilir kör A/B kanıtı.
 3. Sabitlenmiş v0.12.0 release'ini deneyen bağımsız kullanıcı kabul kanıtı.
 
 ## v1.0 kapıları
