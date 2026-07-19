@@ -50,7 +50,8 @@ Versioning while the public API remains in initial development (`0.y.z`).
   secrets/PII/home paths, keep per-case A/B outcomes private, and bind publishable
   provenance to a clean Git HEAD plus provider-derived versions. Windows
   provider `.cmd` wrappers are resolved without invoking a shell for other
-  commands, and adapter JSON I/O is explicitly UTF-8 across platforms.
+  commands, adapter JSON I/O is explicitly UTF-8 across platforms, and the
+  Codex judge disables plugins while using a strict static score-array schema.
 
 ### Verified
 

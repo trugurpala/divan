@@ -131,7 +131,7 @@ class RealAdapterFixtureTests(unittest.TestCase):
                     output.write_text(json.dumps({
                         "winner": "A",
                         "reasons": ["fixture rubric"],
-                        "expectation_scores": {"safe": True}
+                        "expectation_scores": [{"expectation": "safe", "met": True}]
                     }), encoding="utf-8")
                     """
                 ),
@@ -162,12 +162,17 @@ class RealAdapterFixtureTests(unittest.TestCase):
 
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout)["winner"], "A")
+            self.assertEqual(
+                json.loads(result.stdout)["expectation_scores"], {"safe": True}
+            )
             invocation = json.loads(log.read_text(encoding="utf-8"))
             args = invocation["args"]
             self.assertEqual(args[args.index("--sandbox") + 1], "read-only")
             self.assertIn("--ignore-user-config", args)
             self.assertIn("--ignore-rules", args)
             self.assertIn("--output-schema", args)
+            self.assertIn("--disable", args)
+            self.assertEqual(args[args.index("--disable") + 1], "plugins")
             self.assertNotIn("dangerously", " ".join(args))
             self.assertNotIn('"condition"', invocation["prompt"])
             self.assertNotIn('"mapping"', invocation["prompt"])

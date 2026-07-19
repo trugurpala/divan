@@ -19,8 +19,16 @@ SCHEMA: dict[str, Any] = {
         "winner": {"type": "string", "enum": ["A", "B", "tie"]},
         "reasons": {"type": "array", "minItems": 1, "items": {"type": "string"}},
         "expectation_scores": {
-            "type": "object",
-            "additionalProperties": {"type": "boolean"},
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "expectation": {"type": "string"},
+                    "met": {"type": "boolean"},
+                },
+                "required": ["expectation", "met"],
+            },
         },
     },
     "required": ["winner", "reasons", "expectation_scores"],
@@ -55,6 +63,8 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
             "exec",
             "--ignore-user-config",
             "--ignore-rules",
+            "--disable",
+            "plugins",
             "--ephemeral",
             "--sandbox",
             "read-only",
@@ -85,8 +95,25 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         isinstance(reason, str) and reason.strip() for reason in reasons
     ):
         raise AdapterError("Codex judge reasons must be a non-empty string array")
-    if not isinstance(result.get("expectation_scores"), dict):
-        raise AdapterError("Codex judge expectation_scores must be an object")
+    raw_scores = result.get("expectation_scores")
+    if not isinstance(raw_scores, list):
+        raise AdapterError("Codex judge expectation_scores must be an array")
+    scores: dict[str, bool] = {}
+    for row in raw_scores:
+        if not isinstance(row, dict):
+            raise AdapterError("Codex judge expectation score must be an object")
+        expectation, met = row.get("expectation"), row.get("met")
+        if (
+            not isinstance(expectation, str)
+            or not expectation.strip()
+            or not isinstance(met, bool)
+            or expectation in scores
+        ):
+            raise AdapterError("Codex judge expectation score is invalid or duplicated")
+        scores[expectation] = met
+    if set(scores) != set(payload["expectations"]):
+        raise AdapterError("Codex judge must score every declared expectation exactly once")
+    result["expectation_scores"] = scores
     return result
 
 
