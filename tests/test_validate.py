@@ -199,7 +199,9 @@ class RepositoryTests(unittest.TestCase):
                     "installed_at",
                 },
             )
-            self.assertEqual(rows[0]["surum"], "0.11.1")
+            self.assertEqual(
+                rows[0]["surum"], (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+            )
             self.assertEqual(rows[0]["archive_sha256"], "local-source")
 
             marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
