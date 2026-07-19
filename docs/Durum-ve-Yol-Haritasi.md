@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v0.12.0
+# Durum ve Yol Haritası · v0.12.1
 
 Son doğrulama tarihi: 2026-07-19.
 
@@ -19,6 +19,9 @@ Son doğrulama tarihi: 2026-07-19.
 - Tek komutlu sürüm yüzeyi hazırlığı ve sapma teftişi; `main` sonrası Pages +
   Wiki eşliğinden CHANGELOG kaynaklı tag/GitHub Release'a giden yayın kapısı.
 - Claude Code resmî doğrulaması ve Linux/macOS/Windows Codex kur-keşfet-kaldır matrisi.
+- UTF-8/LF metin sözleşmesi, locale-bağımsız subprocess çıktısı, McCabe 25
+  karmaşıklık bütçesi ve yalnız yeniden üretilebilir cache'leri silebilen
+  allowlist tabanlı repo hijyeni.
 
 ## Dürüst açıklar
 
@@ -33,7 +36,8 @@ Son doğrulama tarihi: 2026-07-19.
 
 ## Sıradaki ürün kanıtı
 
-1. ✓ v0.12.0 merge/tag/Release/Pages/Wiki ve çift-host global kurulum kanıtı.
+1. v0.12.1 merge/tag/Release/Pages/Wiki ve çift-host global kurulum kanıtı
+   `main` teslimini bekliyor.
 2. ✓ Gerçek ajan/hakem adapter'ıyla ilk yayımlanabilir kör A/B kanıtı.
 3. Sabitlenmiş v0.12.0 release'ini deneyen bağımsız kullanıcı kabul kanıtı.
 

@@ -73,6 +73,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   erişilebilir site ile 15 kayıtlı upstream drift kararı. PR #17 `e9a2642e`
   ile `main`e birleşti; v0.12.0 tag/Release, Pages, Wiki ve çift global native
   kurulum ayrı kanıtlarla doğrulandı.
+- **v0.12.1 ✓** ürün kapsamı: UTF-8/LF repo sözleşmesi, allowlist tabanlı
+  güvenli hijyen komutu, McCabe 25 bütçesi ve üç kritik akışta davranış-korumalı
+  tek-sorumluluk refactor'ü. Bu satır kod kapsamını gösterir; PR/main/Release ve
+  global kurulum kanıtı tamamlanmadan sürüm yayımlandı sayılmaz.
 
 ### Sıradaki ürün kanıtı — v1 kabulü
 
@@ -103,6 +107,12 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   McCabe 25'i aşıyordu. ADR 0003; güvenli allowlist temizliği, UTF-8/LF ve
   davranış-korumalı sınırlı parçalama yaklaşımını seçti. Aktif rollback yedeği
   kullanıcı verisi kabul edilerek korunacaktır.
+- 2026-07-19: Hijyen uygulaması 94 teste çıktı; UTF-8/BOM/mojibake, metin
+  subprocess encoding'i ve allowlist cache temizliği otomatik kapıya bağlandı.
+  McCabe 25'i aşan validate/rollback/v1 akışları tek-sorumluluk adımlarına
+  ayrıldı. Sürüm hazırlayıcının tarihsel v0.12.0 eval kaydını körlemesine
+  v0.12.1'e çevirdiği yakalandı; `version_patterns` regresyon sözleşmesi güncel
+  yüzeyi yükseltirken tarihsel provenance'ı koruyor.
 - 2026-07-19: v0.12 kanıt zinciri adayı Windows/Codex kurulum sözleşmesini gerçek
   PowerShell yaşam döngüsü testiyle eşitledi: 41 skill kuruldu, çakışan skill
   yedeklendi, kayıtla kaldırıldı ve kullanıcı dosyası geri yüklendi. Gerçek eval

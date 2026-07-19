@@ -48,6 +48,7 @@ class PublicationTests(unittest.TestCase):
                 ".agents/plugins/marketplace.json",
                 "scripts/kur-hostlar.py",
                 "scripts/legacy_state.py",
+                "scripts/hijyen.py",
                 "evals/run.py",
                 "evals/adapters/claude_agent.py",
                 "evals/adapters/codex_judge.py",
@@ -56,6 +57,12 @@ class PublicationTests(unittest.TestCase):
                 ".github/workflows/uyumluluk.yml",
             }.issubset(paths)
         )
+        real_evidence = next(
+            surface
+            for surface in manifest["public_surfaces"]
+            if surface["id"] == "real-eval-evidence"
+        )
+        self.assertNotIn("{version}", real_evidence["marker"])
 
     def test_stale_surface_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-yayin-test-") as temporary:
@@ -91,8 +98,8 @@ class PublicationTests(unittest.TestCase):
                     "schema_version": 1,
                     "version_source": "VERSION",
                     "public_surfaces": [
-                        {"id": "readme", "path": "README.md", "marker": "v{version}", "replace_version": True},
-                        {"id": "stale", "path": "STALE.md", "marker": "v{version}", "replace_version": True},
+                        {"id": "readme", "path": "README.md", "marker": "v{version}", "replace_version": True, "version_patterns": ["v{version}", "version-{version}"]},
+                        {"id": "stale", "path": "STALE.md", "marker": "v{version}", "replace_version": True, "version_patterns": ["v{version}"]},
                     ],
                 }),
                 encoding="utf-8",
@@ -105,6 +112,48 @@ class PublicationTests(unittest.TestCase):
                 YAYIN.hazirla("1.3.0", root)
             self.assertEqual((root / "VERSION").read_text(encoding="utf-8"), "1.2.3\n")
             self.assertEqual((root / "README.md").read_text(encoding="utf-8"), "v1.2.3 version-1.2.3\n")
+
+    def test_prepare_preserves_historical_version_mentions(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-prepare-history-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / ".claude-plugin").mkdir()
+            (root / "VERSION").write_text("1.2.3\n", encoding="utf-8")
+            (root / "README.md").write_text(
+                "Current v1.2.3\nHistory v1.2.3\nbadge version-1.2.3\n",
+                encoding="utf-8",
+            )
+            (root / "release-manifest.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "version_source": "VERSION",
+                        "public_surfaces": [
+                            {
+                                "id": "readme",
+                                "path": "README.md",
+                                "marker": "Current v{version}",
+                                "replace_version": True,
+                                "version_patterns": [
+                                    "Current v{version}",
+                                    "version-{version}",
+                                ],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (root / ".claude-plugin/marketplace.json").write_text(
+                json.dumps({"version": "1.2.3", "metadata": {"version": "1.2.3"}}),
+                encoding="utf-8",
+            )
+
+            YAYIN.hazirla("1.2.4", root)
+
+            self.assertEqual(
+                (root / "README.md").read_text(encoding="utf-8"),
+                "Current v1.2.4\nHistory v1.2.3\nbadge version-1.2.4\n",
+            )
 
 
 if __name__ == "__main__":

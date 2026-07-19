@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.12.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.12.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
 plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.12.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Sürüm:** v0.12.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -60,8 +60,8 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 Önce değişiklik yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
-python scripts/kur-hostlar.py --host both --ref v0.12.0
-python scripts/kur-hostlar.py --host both --ref v0.12.0 --execute
+python scripts/kur-hostlar.py --host both --ref v0.12.1
+python scripts/kur-hostlar.py --host both --ref v0.12.1 --execute
 ```
 
 Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
@@ -71,6 +71,19 @@ hata verir.
 Kurucu Claude Code/Desktop Code ile Codex'in resmî plugin CLI'larını kullanır,
 mevcut eklentileri işlem kaydına alır ve alakasız eklentilere dokunmaz. Tek-host,
 elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md).
+
+## Temiz geliştirme
+
+```powershell
+python scripts/hijyen.py --check
+python scripts/hijyen.py --clean
+```
+
+`--check`; birinci taraf metinde UTF-8/BOM/mojibake, locale'e bırakılmış metin
+subprocess'i ve repo cache'lerini reddeder. `--clean` yalnız sabit allowlist'teki
+yeniden üretilebilir cache'leri kalıcı siler; `.divan/evidence`, eval sonuçları,
+manifestler, worktree'ler ve kullanıcı/rollback yedeklerine dokunmaz. Repo metni
+UTF-8/LF, çekirdek Python karmaşıklık bütçesi McCabe 25 olarak CI'da sabittir.
 
 ## Bir dakikada başla
 

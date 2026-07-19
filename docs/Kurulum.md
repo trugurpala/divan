@@ -18,6 +18,11 @@ Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını 
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel
 kaynak olarak verin: `--source <repo-yolu> --ref <40-karakter-SHA>`.
 
+Repo üzerinden geliştirme yapıyorsanız önce
+`python scripts/hijyen.py --check` çalıştırın. Cache temizliği gerektiğinde
+`--clean` yalnız yeniden üretilebilir allowlist'i siler; kurulum manifestleri,
+kanıtlar ve geri alma yedekleri korunur.
+
 Kurucu, aynı isimde mevcut bir `divan` pazarı veya pazarsız kalmış `@divan`
 eklentisi görürse onun kaynak ve ref bilgisini güvenilir biçimde kanıtlayamadığı
 için durur; mevcut pazarı veya eklentileri değiştirmez. Önce host'un kendi
@@ -79,11 +84,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.12.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.12.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.12.0/scripts/kur-codex.sh | DIVAN_REF=v0.12.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.12.1/scripts/kur-codex.sh | DIVAN_REF=v0.12.1 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

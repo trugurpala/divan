@@ -10,6 +10,17 @@ kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
 
 ## Yapıldı
 
+- v0.12.1 hijyen kapsamı test-first tamamlandı: UTF-8/BOM/mojibake taraması,
+  locale-bağımsız text subprocess kuralı, allowlist cache temizliği,
+  `.editorconfig`/`.gitattributes` ve Ruff C90 McCabe 25 kapısı eklendi.
+- `validate.denetle`, `rollback_transaction` ve v1 gerçek-kanıt doğrulaması
+  aynı davranışı koruyan isimli sorumluluklara ayrıldı; 94 test yeşile geldi.
+- Kapanmış PR #17/#16'nın yerel ve uzak dalları kaldırıldı. Ana repo ve aktif
+  rollback yedeğindeki yalnız `__pycache__` içeriği kalıcı silindi; manifestin
+  işaret ettiği gerçek kullanıcı skill yedeği korundu.
+- Yayın hazırlayıcının geçmiş sürüm kayıtlarını kör replace etmesi regresyon
+  testiyle düzeltildi. v0.12.1 güncel yüzeyleri değişirken v0.12.0 gerçek eval
+  provenance'ı tarihsel olarak kalır.
 - v0.12.0 ürün kapsamı tamamlandı: Claude ve Codex için aynı 5 paket/41 skill'i
   sunan yerel pazarlar, dry-run-first işlemsel kurucu, yalnız kendi kayıtlarını
   geri alan rollback ve alakasız eklentileri koruyan fixture testleri eklendi.
@@ -159,6 +170,8 @@ kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
 
 ## Devam ediyor
 
+- 2026-07-19: v0.12.1 yüzeyleri hazır. Tam yerel teftiş, bağımsız code review,
+  PR/main/Release/Pages/Wiki ve çift-host global kurulum kanıtı sıradadır.
 - 2026-07-19: ADR 0003 ve test-first v0.12.1 uygulama planı yazıldı. Sıradaki
   parça hijyen testlerini kırmızıya getirip allowlist temizleyiciyi uygulamaktır.
 - Proje sahibi dışındaki bağımsız kullanıcıdan tekrar üretilebilir kurulum ve
@@ -180,6 +193,5 @@ kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
 
 ## Sıradaki kesin adım
 
-`tests/test_hijyen.py` ile bozuk UTF-8/BOM/mojibake ve güvenli cache temizliği
-sözleşmesini önce kırmızıya getir; ardından en küçük `scripts/hijyen.py`
-uygulamasıyla yeşile çevir.
+AGENTS.md'deki tam teftiş zincirini Ruff, mypy ve coverage ile çalıştır; kanıtı
+`.divan/evidence/` altına yazıp bağımsız code review sonrası PR'ı `main`e taşı.

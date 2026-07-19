@@ -135,12 +135,20 @@ def hazirla(yeni: str, kok: pathlib.Path = KOK) -> None:
         if not yol.is_relative_to(kok.resolve()) or not yol.is_file():
             raise ValueError(f"Hazırlanacak yüzey bulunamadı: {yuzey['path']}")
         metin = yol.read_text(encoding="utf-8")
-        eski_metin = f"v{eski}"
-        eski_rozet = f"version-{eski}"
-        if eski_metin not in metin and eski_rozet not in metin:
-            raise ValueError(f"{yuzey['path']}: {eski_metin} bulunamadı; sessiz geçilmedi")
-        metin = metin.replace(eski_metin, f"v{yeni}")
-        metin = metin.replace(eski_rozet, f"version-{yeni}")
+        desenler = yuzey.get("version_patterns")
+        if not isinstance(desenler, list) or not desenler or not all(
+            isinstance(desen, str) and "{version}" in desen for desen in desenler
+        ):
+            raise ValueError(
+                f"{yuzey['path']}: replace_version yüzeyi version_patterns ister"
+            )
+        for desen in desenler:
+            eski_metin = desen.format(version=eski)
+            if eski_metin not in metin:
+                raise ValueError(
+                    f"{yuzey['path']}: {eski_metin} bulunamadı; sessiz geçilmedi"
+                )
+            metin = metin.replace(eski_metin, desen.format(version=yeni))
         guncellemeler.append((yol, metin))
 
     # Bütün yüzeyler önce okunup doğrulandı; ancak bundan sonra diske yazılır.
