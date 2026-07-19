@@ -56,7 +56,7 @@ def run(payload: dict[str, Any]) -> dict[str, Any]:
         "",
         "--strict-mcp-config",
         "--mcp-config",
-        "{}",
+        '{"mcpServers":{}}',
         "--setting-sources",
         "",
     ]

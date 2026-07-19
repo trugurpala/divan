@@ -107,6 +107,10 @@ class RealAdapterFixtureTests(unittest.TestCase):
             for command in commands:
                 self.assertIn("--no-session-persistence", command)
                 self.assertIn("--strict-mcp-config", command)
+                self.assertEqual(
+                    command[command.index("--mcp-config") + 1],
+                    '{"mcpServers":{}}',
+                )
                 self.assertNotIn("--dangerously-skip-permissions", command)
 
     def test_codex_judge_is_read_only_structured_and_blinded(self) -> None:
