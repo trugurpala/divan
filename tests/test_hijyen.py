@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import pathlib
+import stat
+import subprocess
 import tempfile
 import unittest
 
@@ -105,6 +108,50 @@ class TextHygieneTests(unittest.TestCase):
 
 
 class GeneratedArtifactTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows junction davranışı")
+    def test_clean_does_not_chmod_through_junction(self) -> None:
+        with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as outside:
+            root = pathlib.Path(temp)
+            generated = root / "pkg" / "__pycache__"
+            generated.mkdir(parents=True)
+            outside_file = pathlib.Path(outside) / "protected.txt"
+            outside_file.write_bytes(b"keep")
+            os.chmod(outside_file, stat.S_IREAD)
+            junction = generated / "outside"
+            subprocess.run(
+                ["cmd", "/c", "mklink", "/J", str(junction), outside],
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+            try:
+                hijyen.clean_generated(root)
+
+                self.assertTrue(outside_file.exists())
+                self.assertFalse(outside_file.stat().st_mode & stat.S_IWUSR)
+            finally:
+                if junction.exists():
+                    os.rmdir(junction)
+                os.chmod(outside_file, outside_file.stat().st_mode | stat.S_IWUSR)
+
+    @unittest.skipUnless(os.name == "nt", "Windows salt-okunur dizin davranışı")
+    def test_clean_removes_readonly_generated_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            root = pathlib.Path(temp)
+            generated = root / "pkg" / "__pycache__"
+            generated.mkdir(parents=True)
+            (generated / "module.pyc").write_bytes(b"cache")
+            os.chmod(generated, stat.S_IREAD)
+            try:
+                removed = hijyen.clean_generated(root)
+            finally:
+                if generated.exists():
+                    os.chmod(generated, generated.stat().st_mode | stat.S_IWUSR)
+
+            self.assertEqual(removed, [generated])
+            self.assertFalse(generated.exists())
+
     def test_clean_removes_only_allowlisted_generated_artifacts(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)

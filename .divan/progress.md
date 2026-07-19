@@ -1,15 +1,18 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-19
+Son güncelleme: 2026-07-20
 
 ## Güncel hedef
 
-v0.12.1 Clean Code/hijyen teslimi ve Claude+Codex global kurulumu tamamlandı.
-Sıradaki kesin ürün kapısı, v1 için dışarıda bekleyen bağımsız kullanıcı kabul
-kanıtını `registry/v1-gates.json` sözleşmesine uygun toplamaktır.
+v0.12.2 ile Windows salt-okunur cache temizliği düzeltmesini yayımlayıp global
+Claude+Codex kaynağını yeni sabit etikete taşımak. Sonrasında sıradaki kesin
+ürün kapısı, v1 bağımsız kullanıcı kabul kanıtıdır.
 
 ## Yapıldı
 
+- Windows salt-okunur `__pycache__` hatası gerçek worktree'de üretildi;
+  yalnız hata veren gerçek yolu yazılabilir yapıp junction/symlink üzerinde
+  fail-closed kalan düzeltme iki Windows regresyonuyla test-first uygulandı.
 - PR #19 bütün CI kapılarından geçti ve `4125c31e` ile `main`e birleşti.
   Release workflow `29704548820`; v0.12.1 tag/Release, ZIP+SHA-256, Pages, Wiki
   ve canlı Chromium doğrulamasını başarıyla tamamladı.

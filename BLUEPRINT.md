@@ -77,6 +77,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   güvenli hijyen komutu, McCabe 25 bütçesi ve üç kritik akışta davranış-korumalı
   tek-sorumluluk refactor'ü. Bu satır kod kapsamını gösterir; PR/main/Release ve
   global kurulum kanıtı tamamlanmadan sürüm yayımlandı sayılmaz.
+- **v0.12.2 ✓** Windows bakım kapsamı: salt-okunur öznitelikli allowlist cache
+  yollarını yalnız silme hatası anında ve junction/symlink reddiyle düzelten
+  dayanıklı silme ile regresyon testleri.
 
 ### Sıradaki ürün kanıtı — v1 kabulü
 
@@ -102,6 +105,12 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-20: v0.12.1 sonrası yeni worktree'de Windows salt-okunur dizin
+  özniteliği `shutil.rmtree` son adımını engelledi. Hata gerçek ortamda
+  üretildi. İlk tüm-ağaç yaklaşımının junction üzerinden kök dışına çıkabildiği
+  bağımsız incelemede gerçek testle yakalandı ve reddedildi. Son çözüm yalnız
+  `rmtree` hatası veren gerçek yolu düzeltir; symlink/junction üzerinde fail-closed
+  kalır. İki Windows regresyon testi v0.12.2'ye eklendi.
 - 2026-07-19: Clean Code denetimi başlatıldı. Başlangıçta 87 test/Ruff/mypy
   temizdi; repo kodlama sözleşmesi ve cache kapısı yoktu, üç çekirdek fonksiyon
   McCabe 25'i aşıyordu. ADR 0003; güvenli allowlist temizliği, UTF-8/LF ve
