@@ -84,11 +84,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.12.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.12.2 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.12.1/scripts/kur-codex.sh | DIVAN_REF=v0.12.1 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.12.2/scripts/kur-codex.sh | DIVAN_REF=v0.12.2 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

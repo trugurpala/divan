@@ -8,9 +8,11 @@ import ast
 import os
 import pathlib
 import shutil
+import stat
 import subprocess
 import sys
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from types import TracebackType
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GENERATED_DIRECTORIES = frozenset(
@@ -222,6 +224,26 @@ def find_generated(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
     return roots
 
 
+def _is_linklike(path: pathlib.Path) -> bool:
+    attributes = getattr(path.lstat(), "st_file_attributes", 0)
+    reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return path.is_symlink() or bool(attributes & reparse)
+
+
+def _retry_readonly(
+    function: Callable[..., object],
+    target: str,
+    exc_info: tuple[type[BaseException], BaseException, TracebackType | None],
+) -> None:
+    """Retry only a failed real path; never chmod through links or junctions."""
+    error = exc_info[1]
+    path = pathlib.Path(target)
+    if not isinstance(error, PermissionError) or _is_linklike(path):
+        raise error
+    path.chmod(path.stat().st_mode | stat.S_IWUSR)
+    function(target)
+
+
 def clean_generated(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
     """Permanently delete allowlisted artifacts; refuse paths escaping root."""
     resolved_root = root.resolve()
@@ -232,7 +254,7 @@ def clean_generated(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
         if path.is_symlink() or path.is_file():
             path.unlink()
         else:
-            shutil.rmtree(path)
+            shutil.rmtree(path, onerror=_retry_readonly)
         removed.append(path)
     return removed
 

@@ -10,6 +10,15 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.12.2] - 2026-07-20
+
+### Fixed
+
+- `scripts/hijyen.py --clean` artık Windows'ta salt-okunur özniteliği taşıyan
+  allowlist cache ağaçlarını, silme sınırını genişletmeden yazılabilir yapıp
+  kalıcı kaldırır.
+- Windows salt-okunur `__pycache__` regresyonu birim testine bağlandı.
+
 ## [0.12.1] - 2026-07-19
 
 ### Added

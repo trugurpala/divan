@@ -1,4 +1,4 @@
-# Divan Wiki · v0.12.1
+# Divan Wiki · v0.12.2
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -7,7 +7,7 @@ kalıcı bir teslim akışına çeviren Agent Skills pazarıdır. Aynı 5 paket/
 Claude Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
 davranış eval'i ve yayın teftişi aynı çatıdadır.
 
-> **Güncel durum:** v0.12.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel durum:** v0.12.2 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

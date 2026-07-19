@@ -8,7 +8,7 @@ Vibe coder olarak senin de asgari GitHub aklın bu tablo kadar olsun:
 | **Repo** | Tek gerçek kaynak; `/plugin marketplace add trugurpala/divan` buradan kurar | Kod + BLUEPRINT hep repoda; sohbette değil |
 | **Actions (CI)** | Yerel + Agent Skills + iki host pazarı + Claude Code teftişi; CodeQL, temiz-host matrisi, site/Wiki testi, yayın, upstream nöbeti ve Meclis keşfi | Yeşil tik görmeden birleştirme |
 | **Pages** | https://trugurpala.github.io/divan/ — ücretsiz, login'siz vitrin | docs/ klasörü = anında site |
-| **Releases** | `main` sonrası Pages ve Wiki v0.12.1 olunca CHANGELOG'dan otomatik tag/not üretir | Güncel tag'i Releases sayfasından doğrula; üretimde etikete sabitle |
+| **Releases** | `main` sonrası Pages ve Wiki v0.12.2 olunca CHANGELOG'dan otomatik tag/not üretir | Güncel tag'i Releases sayfasından doğrula; üretimde etikete sabitle |
 | **Issues + etiketler** | yeni-vezir / hata / conduct akışları | Fikrini şablonla aç, etiket yönlendirir |
 | **Discussions** | Serbest sohbet, soru-cevap | Issue'ya değmeyen her şey |
 | **Topics** | claude-code, agent-skills, vibe-coding... keşif | Arayanlar seni bulur |
