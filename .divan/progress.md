@@ -4,12 +4,18 @@ Son güncelleme: 2026-07-19
 
 ## Güncel hedef
 
-v0.12.1 bakım sürümünde Clean Code, UTF-8/LF ve güvenli repo hijyeni kapılarını
-tamamlayıp Claude+Codex global kurulumuna kanıtla taşımak. Bağımsız kullanıcı
-kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
+v0.12.1 Clean Code/hijyen teslimi ve Claude+Codex global kurulumu tamamlandı.
+Sıradaki kesin ürün kapısı, v1 için dışarıda bekleyen bağımsız kullanıcı kabul
+kanıtını `registry/v1-gates.json` sözleşmesine uygun toplamaktır.
 
 ## Yapıldı
 
+- PR #19 bütün CI kapılarından geçti ve `4125c31e` ile `main`e birleşti.
+  Release workflow `29704548820`; v0.12.1 tag/Release, ZIP+SHA-256, Pages, Wiki
+  ve canlı Chromium doğrulamasını başarıyla tamamladı.
+- Sabit v0.12.1 kaynağı Claude ve Codex'e global kuruldu. Her host 5 paket/41
+  skill ve doğru source/ref döndürdü; alakasız eklentiler korundu. Doğrulanmış
+  işlem: `install-20260719T213732Z-5a357853.json`.
 - v0.12.1 hijyen kapsamı test-first tamamlandı: UTF-8/BOM/mojibake taraması,
   locale-bağımsız text subprocess kuralı, allowlist cache temizliği,
   `.editorconfig`/`.gitattributes` ve Ruff C90 McCabe 25 kapısı eklendi.

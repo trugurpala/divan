@@ -73,5 +73,24 @@ Tarih: 2026-07-19 (Europe/Istanbul)
 - `git diff --check`: hata yok.
 
 Bu kanıt mekanik kalite ve teslim kapılarını gösterir; davranış win-rate'i veya
-v1 bağımsız kullanıcı kabulü iddiası değildir. PR/main/Release/Pages/Wiki ve
-global host kanıtı kamusal teslim sonrasında bu kayda eklenecektir.
+v1 bağımsız kullanıcı kabulü iddiası değildir.
+
+## Kamusal teslim ve global kurulum
+
+- PR #19 bütün zorunlu kontrollerden geçti ve
+  `4125c31ea51170414c1349c1992182b0968e6b9d` ile `main`e birleşti.
+- Release workflow `29704548820` başarıyla tamamlandı. `v0.12.1` değişmez etiketi
+  aynı commit'e bağlı; GitHub Release taslak/ön-sürüm değildir ve ZIP ile
+  SHA-256 varlıklarını yayımlar.
+- Canlı Pages ve Wiki doğrudan geri okumada `v0.12.1` döndürdü; release
+  workflow'un Chromium etkileşim adımı da geçti.
+- Global kurulum dry-run ile başladı. Mevcut v0.12.0 kurulumu ilk doğrulanmış
+  işlem günlüğüyle sahiplik kontrollü kaldırıldı; yeni kurulum
+  `install-20260719T213732Z-5a357853.json` işleminde `verified` oldu.
+- Claude ve Codex'in her birinde 5 paket/41 skill etkin; source
+  `https://github.com/trugurpala/divan.git`, ref `v0.12.1` olarak geri okundu.
+  GitKraken, Prompts.chat, OpenAI bundled/runtime ve kişisel
+  `vibe-coder-standard` eklentileri eksiksiz korundu.
+- İlk yükseltme denemesi mevcut kaydı kanıtsız sahiplenmeyi reddederek hiçbir
+  değişiklik yapmadan `rolled-back` oldu; ardından doğrulanmış önceki işlem
+  üzerinden desteklenen kaldır-yeniden-kur yolu kullanıldı.
