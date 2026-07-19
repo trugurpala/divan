@@ -45,10 +45,11 @@ Versioning while the public API remains in initial development (`0.y.z`).
   transactions have an ownership-checked, resumable recovery command. Legacy
   migration and fallback copying use their own durable, reversible journals;
   parent rollback restores even a completed legacy migration before removing
-  native packages.
+  native packages and fails closed if the recorded legacy journal is missing.
 - Eval subprocesses are bounded, do not use dangerous bypass flags, redact
   secrets/PII/home paths, keep per-case A/B outcomes private, and bind publishable
-  provenance to a clean Git HEAD plus provider-derived versions.
+  provenance to a clean Git HEAD plus provider-derived versions. Windows
+  provider `.cmd` wrappers are resolved without invoking a shell for other commands.
 
 ### Verified
 

@@ -360,10 +360,12 @@ def rollback_transaction(
     marketplace_hosts = list(created.get("marketplaces", []))
     pending = record.get("pending")
     legacy_journal_text: str | None = None
+    legacy_migration_recorded = False
     if isinstance(pending, dict) and pending.get("kind") in {
         "legacy-migration",
         "recovery-legacy",
     }:
+        legacy_migration_recorded = True
         pending_journal = pending.get("journal")
         if isinstance(pending_journal, str):
             legacy_journal_text = pending_journal
@@ -372,32 +374,36 @@ def rollback_transaction(
         if isinstance(completed_migration, dict):
             migration_result = completed_migration.get("result")
             if isinstance(migration_result, dict):
+                legacy_migration_recorded = True
                 completed_journal = migration_result.get("journal")
                 if isinstance(completed_journal, str):
                     legacy_journal_text = completed_journal
-    if legacy_journal_text is not None:
+    if legacy_migration_recorded:
+        if legacy_journal_text is None:
+            raise InstallError("recorded legacy migration lacks a journal path")
         legacy_journal = pathlib.Path(legacy_journal_text)
-        if legacy_journal.is_file():
-            _begin_mutation(
-                transaction_path,
-                record,
-                {
-                    "kind": "recovery-legacy",
-                    "host": "codex",
-                    "journal": legacy_journal_text,
-                },
-            )
-            _run(
-                runner,
-                [
-                    sys.executable,
-                    str(pathlib.Path(__file__).with_name("legacy_state.py")),
-                    "recover",
-                    "--journal",
-                    legacy_journal_text,
-                ],
-            )
-            _finish_mutation(transaction_path, record)
+        if not legacy_journal.is_file():
+            raise InstallError(f"recorded legacy journal is missing: {legacy_journal}")
+        _begin_mutation(
+            transaction_path,
+            record,
+            {
+                "kind": "recovery-legacy",
+                "host": "codex",
+                "journal": legacy_journal_text,
+            },
+        )
+        _run(
+            runner,
+            [
+                sys.executable,
+                str(pathlib.Path(__file__).with_name("legacy_state.py")),
+                "recover",
+                "--journal",
+                legacy_journal_text,
+            ],
+        )
+        _finish_mutation(transaction_path, record)
     if isinstance(pending, dict) and pending.get("kind") in {
         "plugin",
         "rollback-plugin",
@@ -566,53 +572,26 @@ def install(
         _persist_record(transaction_path, record)
         return record
     except BaseException as exc:
-        rollback_errors: list[str] = []
-        pending = record.get("pending")
-        rollback_plugins = list(record["created"]["plugins"])
-        rollback_marketplaces = list(record["created"]["marketplaces"])
-        if isinstance(pending, dict) and pending.get("kind") == "plugin":
-            pending_host, pending_id = pending.get("host"), pending.get("id")
-            candidate = {"host": pending_host, "id": pending_id}
-            if (
-                pending_host in {"claude", "codex"}
-                and isinstance(pending_id, str)
-                and candidate not in rollback_plugins
-            ):
-                rollback_plugins.append(candidate)
-        elif isinstance(pending, dict) and pending.get("kind") == "marketplace":
-            pending_host = pending.get("host")
-            if pending_host in {"claude", "codex"} and pending_host not in rollback_marketplaces:
-                rollback_marketplaces.append(pending_host)
-        for plugin in reversed(rollback_plugins):
+        try:
+            recovered = rollback_transaction(transaction_path, runner=runner)
+        except BaseException as rollback_exc:
             try:
-                if plugin["id"] in _plugins(plugin["host"], runner):
-                    _begin_mutation(
-                        transaction_path,
-                        record,
-                        {"kind": "rollback-plugin", **plugin},
-                    )
-                    _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
-                    _finish_mutation(transaction_path, record)
-            except InstallError as rollback_exc:
-                rollback_errors.append(str(rollback_exc))
-        for host in reversed(rollback_marketplaces):
-            try:
-                if "divan" in _marketplaces(host, runner):
-                    _begin_mutation(
-                        transaction_path,
-                        record,
-                        {"kind": "rollback-marketplace", "host": host},
-                    )
-                    _run(runner, _remove_marketplace_command(host))
-                    _finish_mutation(transaction_path, record)
-            except InstallError as rollback_exc:
-                rollback_errors.append(str(rollback_exc))
-        record["status"] = "rolled-back" if not rollback_errors else "rollback-incomplete"
-        record["error"] = str(exc)
-        record["rollback_errors"] = rollback_errors
-        record["pending"] = None
-        record["finished_at"] = datetime.now(UTC).isoformat()
-        _persist_record(transaction_path, record)
+                current = json.loads(transaction_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                current = record
+            current["status"] = "rollback-incomplete"
+            current["error"] = str(exc)
+            current["rollback_errors"] = [str(rollback_exc)]
+            current["finished_at"] = datetime.now(UTC).isoformat()
+            _persist_record(transaction_path, current)
+            raise InstallError(
+                f"{exc}; rollback incomplete: {rollback_exc}; transaction: {transaction_path}"
+            ) from exc
+        recovered["status"] = "rolled-back"
+        recovered["error"] = str(exc)
+        recovered["rollback_errors"] = []
+        recovered["finished_at"] = datetime.now(UTC).isoformat()
+        _persist_record(transaction_path, recovered)
         raise InstallError(f"{exc}; transaction: {transaction_path}") from exc
 
 

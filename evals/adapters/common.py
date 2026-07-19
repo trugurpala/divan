@@ -7,6 +7,7 @@ import os
 import pathlib
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -65,6 +66,19 @@ def timeout_seconds() -> float:
     return value
 
 
+def resolve_command(args: list[str]) -> list[str]:
+    """Resolve PATH aliases and make Windows cmd/bat wrappers executable."""
+    if not args:
+        raise AdapterError("provider command is empty")
+    resolved = shutil.which(args[0])
+    if resolved is None:
+        raise AdapterError(f"provider executable was not found: {redact(args[0])}")
+    command = [resolved, *args[1:]]
+    if os.name == "nt" and pathlib.Path(resolved).suffix.lower() in {".cmd", ".bat"}:
+        return ["cmd.exe", "/d", "/s", "/c", resolved, *args[1:]]
+    return command
+
+
 def run_command(
     args: list[str],
     *,
@@ -74,7 +88,7 @@ def run_command(
 ) -> subprocess.CompletedProcess[str]:
     try:
         completed = subprocess.run(
-            args,
+            resolve_command(args),
             cwd=cwd,
             input=stdin,
             capture_output=True,

@@ -6,6 +6,7 @@ import pathlib
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_host_install", ROOT / "scripts" / "kur-hostlar.py")
@@ -358,6 +359,81 @@ class HostInstallTests(unittest.TestCase):
             if command[1:3] == ("plugin", "remove")
         )
         self.assertLess(recovery_index, plugin_index)
+
+    def test_rollback_fails_closed_when_recorded_legacy_journal_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            root = pathlib.Path(temporary)
+            transaction = root / "install-verified.json"
+            missing = root / "missing-legacy.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "verified",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": None,
+                        "legacy_migration": {"result": {"journal": str(missing)}},
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "legacy journal is missing"):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertIn("sadrazam@divan", runner.plugins["codex"])
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "remove") for command in runner.commands)
+        )
+
+    def test_automatic_failure_undoes_legacy_before_removing_native_entries(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = FakeRunner()
+
+            def fail_after_legacy(
+                _root: pathlib.Path,
+                _runner: HOST_INSTALL.Runner,
+                journal: pathlib.Path,
+            ) -> None:
+                journal.write_text("{}\n", encoding="utf-8")
+                raise HOST_INSTALL.InstallError("legacy migration returned invalid JSON")
+
+            with mock.patch.object(HOST_INSTALL, "_migrate_legacy", fail_after_legacy):
+                with self.assertRaisesRegex(HOST_INSTALL.InstallError, "invalid JSON"):
+                    HOST_INSTALL.install(
+                        self.options(state_dir, host="codex", migrate_legacy=True),
+                        runner=runner,
+                    )
+            transaction = next(state_dir.glob("install-*.json"))
+            record = json.loads(transaction.read_text(encoding="utf-8"))
+
+        recovery_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if "legacy_state.py" in " ".join(command) and "recover" in command
+        )
+        plugin_index = next(
+            index
+            for index, command in enumerate(runner.commands)
+            if command[1:3] == ("plugin", "remove")
+        )
+        self.assertLess(recovery_index, plugin_index)
+        self.assertEqual(record["status"], "rolled-back")
 
     def test_interrupt_after_external_success_rolls_back_pending_owned_entry(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:

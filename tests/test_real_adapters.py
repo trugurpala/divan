@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import pathlib
@@ -8,13 +9,33 @@ import sys
 import tempfile
 import textwrap
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CLAUDE_ADAPTER = ROOT / "evals" / "adapters" / "claude_agent.py"
 CODEX_JUDGE = ROOT / "evals" / "adapters" / "codex_judge.py"
+COMMON_SPEC = importlib.util.spec_from_file_location(
+    "divan_eval_adapter_common", ROOT / "evals" / "adapters" / "common.py"
+)
+assert COMMON_SPEC and COMMON_SPEC.loader
+COMMON = importlib.util.module_from_spec(COMMON_SPEC)
+COMMON_SPEC.loader.exec_module(COMMON)
 
 
 class RealAdapterFixtureTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows command wrapper regression")
+    def test_provider_cmd_wrapper_is_invokable_on_windows(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-cmd-fixture-") as temporary:
+            root = pathlib.Path(temporary)
+            command = root / "provider.cmd"
+            command.write_text("@echo off\r\necho fixture-provider\r\n", encoding="utf-8")
+
+            path_value = str(root) + os.pathsep + os.environ.get("PATH", "")
+            with mock.patch.dict(os.environ, {"PATH": path_value}):
+                completed = COMMON.run_command(["provider"], cwd=root, timeout=5)
+
+        self.assertEqual(completed.stdout.strip(), "fixture-provider")
+
     def _run_adapter(
         self, path: pathlib.Path, payload: dict, env: dict[str, str]
     ) -> subprocess.CompletedProcess[str]:

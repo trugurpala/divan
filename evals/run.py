@@ -16,6 +16,7 @@ import platform
 import random
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import time
@@ -140,8 +141,8 @@ def _validate_provider_skill_scope(skills: set[str]) -> None:
 
 
 def _version_for_command(variable: str, default: str) -> str:
-    command = os.environ.get(variable, default)
-    args = shlex.split(command, posix=sys.platform != "win32")
+    command_text = os.environ.get(variable, default)
+    args = shlex.split(command_text, posix=sys.platform != "win32")
     if sys.platform == "win32":
         args = [
             item[1:-1]
@@ -149,9 +150,18 @@ def _version_for_command(variable: str, default: str) -> str:
             else item
             for item in args
         ]
-    completed = subprocess.run(
-        [*args, "--version"], capture_output=True, text=True, check=False, timeout=30
-    )
+    resolved = shutil.which(args[0]) if args else None
+    if resolved is None:
+        raise EvalError(f"provider version executable cannot be found: {variable}")
+    invocation = [resolved, *args[1:], "--version"]
+    if os.name == "nt" and pathlib.Path(resolved).suffix.lower() in {".cmd", ".bat"}:
+        invocation = ["cmd.exe", "/d", "/s", "/c", resolved, *args[1:], "--version"]
+    try:
+        completed = subprocess.run(
+            invocation, capture_output=True, text=True, check=False, timeout=30
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise EvalError(f"provider version cannot be derived: {variable}") from exc
     version = (completed.stdout or completed.stderr).strip().splitlines()
     if completed.returncode or not version:
         raise EvalError(f"provider version cannot be derived: {variable}")

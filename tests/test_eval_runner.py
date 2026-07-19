@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import pathlib
 import subprocess
 import sys
 import tempfile
 import textwrap
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_evals", ROOT / "evals" / "run.py")
@@ -17,6 +19,20 @@ SPEC.loader.exec_module(EVALS)
 
 
 class EvalRunnerTests(unittest.TestCase):
+    @unittest.skipUnless(os.name == "nt", "Windows command wrapper regression")
+    def test_provider_version_supports_windows_cmd_wrappers(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-version-fixture-") as temporary:
+            command = pathlib.Path(temporary) / "provider.cmd"
+            command.write_text("@echo off\r\necho provider 1.2.3\r\n", encoding="utf-8")
+            path_value = str(command.parent) + os.pathsep + os.environ.get("PATH", "")
+            with mock.patch.dict(
+                os.environ,
+                {"DIVAN_FIXTURE_BIN": "provider", "PATH": path_value},
+            ):
+                version = EVALS._version_for_command("DIVAN_FIXTURE_BIN", "missing")
+
+        self.assertEqual(version, "provider 1.2.3")
+
     def test_discovers_current_contracts(self) -> None:
         cases = EVALS.discover_cases(ROOT)
         self.assertEqual(len(cases), 13)
