@@ -18,6 +18,7 @@
     {"id": "claude-agent-adapter", "path": "evals/adapters/claude_agent.py", "marker": "DIVAN_CLAUDE_MODEL", "replace_version": false},
     {"id": "codex-judge-adapter", "path": "evals/adapters/codex_judge.py", "marker": "read-only", "replace_version": false},
     {"id": "eval-runner", "path": "evals/run.py", "marker": "FIRST_PARTY_NON_TOOL_SKILLS", "replace_version": false},
+    {"id": "real-eval-evidence", "path": "evals/results/claude-codex-baglam-muhafizi-v012.json", "marker": "\"divan_version\": \"{version}\"", "replace_version": false},
     {"id": "notice", "path": "NOTICE.md", "marker": "THIRD_PARTY_LICENSES.md", "replace_version": false},
     {"id": "upstream-baselines", "path": "registry/upstream-baselines.json", "marker": "local_tree_sha256", "replace_version": false},
     {"id": "codeql", "path": ".github/workflows/codeql.yml", "marker": "security-events: write", "replace_version": false},

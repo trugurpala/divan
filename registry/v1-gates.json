@@ -42,8 +42,8 @@
     {
       "id": "real-agent-comparison",
       "title": "Beyan edilmiş gerçek ajan ve hakemle yayımlanmış kör A/B kanıtı",
-      "status": "pending",
-      "evidence": ["evals/README.md", "evals/adapters/claude_agent.py", "evals/adapters/codex_judge.py", "tests/test_real_adapters.py"]
+      "status": "passed",
+      "evidence": ["evals/results/claude-codex-baglam-muhafizi-v012.json", "evals/README.md", "evals/adapters/claude_agent.py", "evals/adapters/codex_judge.py", "tests/test_real_adapters.py"]
     },
     {
       "id": "independent-adoption",

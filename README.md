@@ -102,7 +102,11 @@ python evals/run.py --run --skill kaynak-kuratori \
 
 Hakem veya gerçek adaptör yoksa koşucu başarı oranı uydurmaz; sonucu
 `review_required` olarak kaydeder. Provenance kaydı koşunun ajan/hakem/ortam
-kimliğini açıklar; tek başına kalite kanıtı değildir ve v1 kapısını kapatmaz.
+kimliğini açıklar; tek başına kalite kanıtı değildir. v0.12.0'ın ilk gerçek
+Claude→Codex kör A/B koşusu üç vakada skill 0, baseline 1, beraberlik 2 sonucu
+verdi; önceden belirlenmiş eşik olmadığı ve skill galibiyeti bulunmadığı için
+kalite artışı iddiası değildir. Kamu sonucu:
+[evals/results/claude-codex-baglam-muhafizi-v012.json](evals/results/claude-codex-baglam-muhafizi-v012.json).
 Protokol: [evals/README.md](evals/README.md).
 
 ## Komutlar (Claude Code)
@@ -155,10 +159,11 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
 ancak henüz v1.0 değildir. 41 skill yapısal olarak doğrulanır; 4 özgün skill için
 13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
-yüzeylerini ve temiz-host matrisini otomatikleştirir. Güvenilir gerçek ajan/hakem
-karşılaştırması ile bağımsız kullanıcı kanıtı hâlâ dış kapıdır. Güncel, makine-
-okunur durum [v1 hazırlık karnesinde](docs/V1-Hazirlik.md) bulunur; bunlar
-gelmeden hız, gelir veya “dünyanın en iyisi” iddiası yapılmaz.
+yüzeylerini ve temiz-host matrisini otomatikleştirir. İlk güvenilir gerçek
+ajan/hakem karşılaştırması yayımlanmıştır; bağımsız kullanıcı kanıtı hâlâ dış
+kapıdır. Güncel, makine-okunur durum [v1 hazırlık karnesinde](docs/V1-Hazirlik.md)
+bulunur; bağımsız kanıt gelmeden hız, gelir veya “dünyanın en iyisi” iddiası
+yapılmaz.
 
 ## Kaldırma
 

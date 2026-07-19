@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
+import json
 import pathlib
 import unittest
 
@@ -30,6 +32,26 @@ class V1GateTests(unittest.TestCase):
         gates = {gate["id"]: gate for gate in V1.oku(ROOT)["gates"]}
         self.assertEqual(gates["native-clean-host-matrix"]["status"], "passed")
         self.assertEqual(gates["independent-adoption"]["status"], "pending")
+
+    def test_real_agent_evidence_schema_rejects_public_mapping_leaks(self) -> None:
+        path = ROOT / "evals" / "results" / "claude-codex-baglam-muhafizi-v012.json"
+        evidence = json.loads(path.read_text(encoding="utf-8"))
+        V1._validate_real_agent_evidence(evidence, path)
+
+        leaked = copy.deepcopy(evidence)
+        leaked["cases"][0]["judgement"]["winner"] = "A"
+        with self.assertRaisesRegex(ValueError, "private key"):
+            V1._validate_real_agent_evidence(leaked, path)
+
+        missing_model = copy.deepcopy(evidence)
+        del missing_model["provenance"]["agent_model"]
+        with self.assertRaisesRegex(ValueError, "agent_model"):
+            V1._validate_real_agent_evidence(missing_model, path)
+
+        leaked_seed = copy.deepcopy(evidence)
+        leaked_seed["provenance"]["blind_seed"] = "17"
+        with self.assertRaisesRegex(ValueError, "private key"):
+            V1._validate_real_agent_evidence(leaked_seed, path)
 
 
 if __name__ == "__main__":

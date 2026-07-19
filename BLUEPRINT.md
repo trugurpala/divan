@@ -73,9 +73,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ### Sıradaki ürün kanıtı — v1 kabulü
 
 1. v0.12.0 birleştirme/tag/Release/Pages/Wiki kanıtını tamamla.
-2. Beyan edilmiş gerçek Claude ajanı + Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
+2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
 3. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
-4. Bu iki dış kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
+4. Bağımsız kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
    v1 sözleşmesine sabitleme.
 
 ### v1.0 kabul kapıları

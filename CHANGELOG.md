@@ -58,8 +58,16 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Fixture and repository tests prove host preservation/rollback, checksum
   fail-closed behavior, transactional legacy quarantine, marketplace parity,
   blind judging, and accessibility.
-- Fixture tests prove contracts only. A real cross-provider comparison remains
-  a separate evidence step and independent adoption remains pending for v1.
+- A publishable first-party comparison ran three `baglam-muhafizi` cases with
+  Claude Code 2.1.209 / `claude-sonnet-5` as the bounded agent and Codex CLI
+  0.144.4 / `gpt-5.6-terra` as the blinded judge. The skill condition won zero
+  cases, baseline won one, and two tied; no release threshold was predeclared,
+  so this is auditable run evidence rather than a quality-improvement claim. Independent
+  adoption remains pending for v1.
+- Public eval evidence uses a commit-reveal boundary with a runner-generated
+  256-bit OS-random seed: the raw blinding seed, condition mapping, per-case
+  winner, and judge reasons remain in the private
+  key while the public provenance records only the seed's SHA-256 commitment.
 
 ## [0.11.1] - 2026-07-18
 

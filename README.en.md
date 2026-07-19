@@ -88,8 +88,12 @@ python evals/run.py --run --skill kaynak-kuratori \
 
 Without a real adapter or judge it records `review_required` instead of
 inventing a win rate. Provenance identifies the agent, judge, and execution
-environment of a real run; it is not a quality claim and cannot close a pending
-v1 gate by itself. See the [adapter protocol](evals/README.md).
+environment of a real run; it is not a quality claim by itself. The first
+v0.12.0 Claude→Codex blinded run recorded zero skill wins, one baseline win,
+and two ties. No threshold was predeclared and the skill condition did not win,
+so this is auditable execution evidence, not a quality-improvement claim. See the
+[public result](evals/results/claude-codex-baglam-muhafizi-v012.json) and the
+[adapter protocol](evals/README.md).
 
 ## How it improves itself
 
@@ -127,9 +131,10 @@ Divan follows the open Agent Skills specification and ships the standard GitHub
 community and security files, but it is not v1.0 yet. All 41 skills receive
 structural validation; four original skills provide 13 behavioral cases and a
 provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
-compatibility checks. A declared real-agent/judge comparison and independent
-user evidence remain external gates; see the [machine-backed v1 scorecard](docs/V1-Hazirlik.md).
-Until those exist, the project does not claim a speed multiplier, revenue
+compatibility checks. The first declared real-agent/judge comparison is now
+published; independent user evidence remains the external gate. See the
+[machine-backed v1 scorecard](docs/V1-Hazirlik.md). Until that evidence exists,
+the project does not claim a speed multiplier, revenue
 increase, or “best in the world” status.
 
 ## Contributing and security

@@ -95,9 +95,21 @@ eşleştirir. Birinci taraf preset'inde Claude ve Codex sürümlerini doğrudan
 CLI'lardan, Divan sürümünü `VERSION` dosyasından, işletim sistemi bilgisini de
 çalışan ortamdan türetir; beyan edilen değerleri kanıt saymaz. Kamu sonucuna
 yazmadan önce secret, e-posta ve kullanıcı-home yolu örüntülerini redakte eder.
-Kör A/B vaka eşlemesi ile `winner_condition` yalnız ayrı anahtar dosyasında
-kalır; kamu dosyasında sadece toplu sayımlar bulunur. Provenance tek başına
-kalite kanıtı değildir ve bekleyen v1 kapılarını değiştirmez.
+Kör A/B adaylarının baseline/skill eşlemesi ile `winner_condition` yalnız ayrı
+anahtar dosyasında kalır; kamu dosyasında adaylar A/B etiketiyle, kör rubrik
+skorları ve toplu sayımlarla bulunur. Provenance tek başına
+kalite kanıtı değildir. v0.12.0 için yayımlanan ilk gerçek koşu
+`evals/results/claude-codex-baglam-muhafizi-v012.json` dosyasındadır: Claude Code
+2.1.209 / `claude-sonnet-5` ajanı ile Codex CLI 0.144.4 /
+`gpt-5.6-terra` kör hakemi üç vakayı değerlendirdi; skill koşulu sıfır, baseline
+bir vaka kazandı ve iki beraberlik çıktı. Eşik önceden belirlenmediği ve skill
+galibiyeti bulunmadığı için sonuç kalite artışı veya release-geçiş iddiası
+değildir; yalnız gerçek
+ajan/hakem kapısının denetlenebilir çalıştırma kanıtıdır. Ham körleme seed'i,
+eşleme, vaka gerekçeleri, kazanan etiketi ve `winner_condition` özel anahtar
+dosyasında kalmış, repoya alınmamıştır. Yayımlanabilir preset dışarıdan `--seed`
+kabul etmez; OS CSPRNG ile `secrets.token_bytes(32)` üretir. Kamu provenance'ında
+seed'in yalnız SHA-256 taahhüdü, 256 bit uzunluğu ve üretim yöntemi bulunur.
 
 ## Otomatik hakem ve kapı
 

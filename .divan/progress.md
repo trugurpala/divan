@@ -5,8 +5,8 @@ Son güncelleme: 2026-07-19
 ## Güncel hedef
 
 v0.12.0 çift-yerel-host sağlamlaştırmasını varsayılan dala, tag/Release'e ve
-canlı yüzeylere kanıtla taşımak; ardından dış kanıt isteyen iki v1 kapısını
-dürüstçe yürütmek.
+canlı yüzeylere kanıtla taşımak; ardından kalan tek dış v1 kapısı olan bağımsız
+kullanıcı kabulünü dürüstçe yürütmek.
 
 ## Yapıldı
 
@@ -26,7 +26,13 @@ dürüstçe yürütmek.
   `registry/upstream-baselines.json` defterine işlendi; nöbet yeniden temizdir.
 - Claude Code gerçek ajan ve read-only/ephemeral kör Codex hakem adaptörleri
   eklendi. Fixture'lar izolasyon, körlük, JSON şeması ve sır maskelemeyi kanıtlar;
-  gerçek model koşusu henüz ayrı dış kanıt adımıdır.
+  gerçek model koşusu ayrıca yayımlanabilir provenance ile tamamlandı.
+- Claude Code 2.1.209 ajanı ve Codex CLI 0.144.4 kör hakemiyle üç
+  `baglam-muhafizi` vakası sabit modellerle gerçek çalıştırıldı. Kamu sonucunda
+  skill 0, baseline 1 kazandı, 2 beraberlik çıktı; önceden eşik tanımlanmadığı ve
+  skill galibiyeti bulunmadığı için kalite artışı iddiası yapılmadı.
+  `evals/results/claude-codex-baglam-muhafizi-v012.json` kanıtıyla v1 karnesi
+  7/8'e çıktı.
 - v0.11.1 için kök `CLAUDE.md` devralma sözleşmesi eklendi; Claude Code sohbet
   geçmişi olmadan AGENTS, BLUEPRINT, progress ve yayın/v1 kayıtlarına gider.
 - `scripts/devral.py --check` ve regresyon testleri hafıza zincirini denetler;
@@ -146,7 +152,8 @@ dürüstçe yürütmek.
 ## Devam ediyor
 
 - v0.12.0 inceleme, CI, merge, tag/Release/Pages/Wiki ve çift global yerel kurulum.
-- Sonrasında dış kanıt isteyen gerçek ajan/hakem ve bağımsız kullanıcı kapıları.
+- Sonrasında proje sahibi dışındaki bağımsız kullanıcıdan tekrar üretilebilir
+  kurulum ve görev kanıtı.
 - 2026-07-19: v0.12 kanıt zinciri için tasarım onaylandı. İlk parça Windows
   kurulum–yedek–kaldırma test eşliği ve gerçek eval koşularının provenance
   sözleşmesidir; dış v1 kapıları bu mekanik çalışmayla kapanmayacaktır.
@@ -157,14 +164,12 @@ dürüstçe yürütmek.
 
 ## Bilinen açıklar
 
-- Gerçek adaptörler ve fixture testleri var; beyan edilmiş Claude ajanı/Codex
-  hakemiyle yayımlanmış A/B sonucu henüz yok.
 - Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
 
 ## Sıradaki kesin adım
 
-Tam yerel kapıyı ve zorunlu kod incelemesini geçir; dalı GitHub'a gönder, CI
-sonrası `main`e birleştir ve v0.12.0 tag/Release/Pages/Wiki yüzeylerini ayrı ayrı
-yeniden oku. Sonra iki hosta yerel kur, provenance'lı gerçek Claude/Codex koşusunu
-yap ve yalnız sözleşme sağlanırsa gerçek-ajan kapısını güncelle. Bağımsız kabul
-kanıtı `.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden dışarıdan gelmelidir.
+Tam yerel kapıyı ve zorunlu kod incelemesini geçir; PR #17 CI sonrası `main`e
+birleştir ve v0.12.0 tag/Release/Pages/Wiki yüzeylerini ayrı ayrı yeniden oku.
+Sonra sabit v0.12.0 etiketini Claude ile Codex'e global yerel pazar olarak kurup
+alakasız mevcut eklentilerin korunduğunu doğrula. Bağımsız kabul kanıtı
+`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden dışarıdan gelmelidir.
