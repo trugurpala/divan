@@ -192,6 +192,8 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertIn("mapping", key["cases"][0])
         self.assertEqual(list(result["cases"][0]["candidates"]), ["A", "B"])
         self.assertEqual(key["cases"][0]["mapping"]["A"], "skill")
+        self.assertNotIn("winner", result["cases"][0]["judgement"])
+        self.assertIn("winner_label", key["cases"][0])
         self.assertNotIn("winner_condition", result["cases"][0]["judgement"])
         self.assertIn("winner_condition", key["cases"][0])
 

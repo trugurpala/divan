@@ -471,7 +471,11 @@ def run_evaluations(
             winner_label = judgement["winner"]
             winner_condition = "tie" if winner_label == "tie" else mapping[winner_label]
             totals[winner_condition] += 1
-            public_case["judgement"] = judgement
+            public_case["judgement"] = {
+                "reasons": judgement["reasons"],
+                "expectation_scores": judgement["expectation_scores"],
+            }
+            key_case["winner_label"] = winner_label
             key_case["winner_condition"] = winner_condition
 
         public_cases.append(public_case)
