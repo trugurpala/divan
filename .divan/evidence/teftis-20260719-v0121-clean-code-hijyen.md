@@ -22,6 +22,11 @@ Tarih: 2026-07-19 (Europe/Istanbul)
   verdi.
 - Tarihsel sürüm testi, `History v1.2.3` satırının yanlış biçimde `v1.2.4`
   yapılmasını yakaladı; `version_patterns` sonrasında tarihsel satır korundu.
+- Bağımsız ilk inceleme gerçek LF kontrolü, subprocess alias/kodlama kapsamı,
+  ana teftişe hijyen entegrasyonu ve çok dosyalı yayın atomikliği açıklarını
+  buldu. Her bulgu önce kırmızı regresyon testiyle üretildi, sonra kapatıldı.
+- Küçük inceleme bulguları için `.worktrees`/cache ağaçları dosya sistemi
+  fallback'inde de budandı ve depo dışına çıkan metin symlink'i reddedildi.
 
 ## Kalıcı temizlik
 
@@ -45,8 +50,8 @@ Tarih: 2026-07-19 (Europe/Istanbul)
 - `python scripts/v1.py --check`: geçerli, hedef 1.0.0; bağımsız kabul bekliyor.
 - `python scripts/yayin.py --check`: v0.12.1, 27 kamusal yüzey.
 - `python evals/run.py --check`: 4 skill / 13 vaka sözleşmesi.
-- `python -m unittest discover -s tests -v`: 94 test geçti, 1 POSIX testi
-  Windows'ta atlandı.
+- `python -m unittest discover -s tests -v`: 97 test geçti; 1 POSIX ve 1
+  ayrıcalık isteyen symlink testi Windows'ta beklenen biçimde atlandı.
 - `ruff check .`: temiz; C90 McCabe 25 dahildir.
 - `mypy scripts`: 12 kaynak dosyada hata yok.
 - `coverage run ... && coverage report`: toplam %63 branch coverage,

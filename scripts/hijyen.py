@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import os
 import pathlib
 import shutil
 import subprocess
@@ -60,6 +61,18 @@ def _is_text(path: pathlib.Path) -> bool:
     return path.name in TEXT_NAMES or path.suffix.lower() in TEXT_SUFFIXES
 
 
+def _filesystem_text_paths(root: pathlib.Path) -> list[pathlib.Path]:
+    paths: list[pathlib.Path] = []
+    excluded = FIRST_PARTY_EXCLUDES | EXCLUDED_TREES | GENERATED_DIRECTORIES
+    for current, directories, files in os.walk(root, topdown=True, followlinks=False):
+        directories[:] = [name for name in directories if name not in excluded]
+        current_path = pathlib.Path(current)
+        paths.extend(
+            current_path / name for name in files if _is_text(current_path / name)
+        )
+    return paths
+
+
 def first_party_text_paths(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
     """Return tracked first-party text paths, with a filesystem fallback for fixtures."""
     try:
@@ -72,7 +85,7 @@ def first_party_text_paths(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
         )
         candidates = [root / item for item in completed.stdout.split("\0") if item]
     except (OSError, subprocess.CalledProcessError, UnicodeError):
-        candidates = [path for path in root.rglob("*") if path.is_file()]
+        candidates = _filesystem_text_paths(root)
     return sorted(
         path
         for path in candidates
@@ -87,8 +100,12 @@ def text_issues(
 ) -> list[str]:
     """Report invalid UTF-8, BOM and common double-decoding signatures."""
     issues: list[str] = []
+    resolved_root = root.resolve()
     for path in paths if paths is not None else first_party_text_paths(root):
         label = _relative(path, root)
+        if path.is_symlink() and not path.resolve().is_relative_to(resolved_root):
+            issues.append(f"{label}: repo kökü dışına çıkan symlink reddedildi")
+            continue
         payload = path.read_bytes()
         try:
             text = payload.decode("utf-8")
@@ -97,9 +114,40 @@ def text_issues(
             continue
         if text.startswith("\ufeff"):
             issues.append(f"{label}: UTF-8 BOM içeriyor")
+        if "\r" in text:
+            issues.append(f"{label}: satır sonları yalnız LF olmalı")
         if any(marker in text for marker in MOJIBAKE_MARKERS):
             issues.append(f"{label}: olası mojibake karakter dizisi içeriyor")
     return issues
+
+
+def _subprocess_aliases(tree: ast.AST) -> tuple[set[str], set[str]]:
+    modules: set[str] = set()
+    functions: set[str] = set()
+    supported = {"run", "check_output", "Popen"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "subprocess":
+                    modules.add(alias.asname or alias.name)
+        elif isinstance(node, ast.ImportFrom) and node.module == "subprocess":
+            for alias in node.names:
+                if alias.name in supported:
+                    functions.add(alias.asname or alias.name)
+    return modules, functions
+
+
+def _is_subprocess_call(
+    node: ast.Call, module_aliases: set[str], function_aliases: set[str]
+) -> bool:
+    if isinstance(node.func, ast.Name):
+        return node.func.id in function_aliases
+    return (
+        isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"run", "check_output", "Popen"}
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id in module_aliases
+    )
 
 
 def subprocess_encoding_issues(root: pathlib.Path = ROOT) -> list[str]:
@@ -114,17 +162,24 @@ def subprocess_encoding_issues(root: pathlib.Path = ROOT) -> list[str]:
     )
     for path in sources:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        module_aliases, function_aliases = _subprocess_aliases(tree)
         for node in ast.walk(tree):
-            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
-                continue
-            if node.func.attr not in {"run", "check_output", "Popen"}:
+            if not isinstance(node, ast.Call) or not _is_subprocess_call(
+                node, module_aliases, function_aliases
+            ):
                 continue
             keywords = {keyword.arg: keyword.value for keyword in node.keywords if keyword.arg}
             text_mode = any(
                 isinstance(value, ast.Constant) and value.value is True
                 for value in (keywords.get("text"), keywords.get("universal_newlines"))
             )
-            if text_mode and "encoding" not in keywords:
+            encoding = keywords.get("encoding")
+            explicit_utf8 = (
+                isinstance(encoding, ast.Constant)
+                and isinstance(encoding.value, str)
+                and encoding.value.lower().replace("_", "-") in {"utf-8", "utf8"}
+            )
+            if text_mode and not explicit_utf8:
                 issues.append(
                     f"{_relative(path, root)}:{node.lineno}: "
                     "text subprocess encoding='utf-8' ister"
@@ -132,17 +187,22 @@ def subprocess_encoding_issues(root: pathlib.Path = ROOT) -> list[str]:
     return issues
 
 
+def source_issues(root: pathlib.Path = ROOT) -> list[str]:
+    """Return canonical source-encoding issues without cache state."""
+    return [*text_issues(root), *subprocess_encoding_issues(root)]
+
+
 def find_generated(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
     """Find only allowlisted, reproducible artifacts without entering worktrees."""
     found: list[pathlib.Path] = []
-    for path in root.rglob("*"):
-        relative = path.relative_to(root)
-        if any(part in EXCLUDED_TREES for part in relative.parts):
-            continue
-        if path.is_dir() and path.name in GENERATED_DIRECTORIES:
-            found.append(path)
-        elif path.is_file() and path.name == ".coverage":
-            found.append(path)
+    for current, directories, files in os.walk(root, topdown=True, followlinks=False):
+        current_path = pathlib.Path(current)
+        directories[:] = [name for name in directories if name not in EXCLUDED_TREES]
+        generated_here = [name for name in directories if name in GENERATED_DIRECTORIES]
+        found.extend(current_path / name for name in generated_here)
+        directories[:] = [name for name in directories if name not in GENERATED_DIRECTORIES]
+        if ".coverage" in files:
+            found.append(current_path / ".coverage")
     roots: list[pathlib.Path] = []
     for path in sorted(found, key=lambda item: (len(item.parts), item.as_posix())):
         if not any(parent in roots for parent in path.parents):
@@ -166,8 +226,7 @@ def clean_generated(root: pathlib.Path = ROOT) -> list[pathlib.Path]:
 
 
 def check(root: pathlib.Path = ROOT) -> list[str]:
-    issues = text_issues(root)
-    issues.extend(subprocess_encoding_issues(root))
+    issues = source_issues(root)
     issues.extend(
         f"{_relative(path, root)}: yeniden üretilebilir artefakt; --clean ile kaldır"
         for path in find_generated(root)

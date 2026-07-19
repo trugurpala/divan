@@ -5,6 +5,7 @@ import json
 import pathlib
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_yayin", ROOT / "scripts" / "yayin.py")
@@ -154,6 +155,53 @@ class PublicationTests(unittest.TestCase):
                 (root / "README.md").read_text(encoding="utf-8"),
                 "Current v1.2.4\nHistory v1.2.3\nbadge version-1.2.4\n",
             )
+
+    def test_prepare_rolls_back_every_file_when_replace_fails(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-prepare-atomic-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / ".claude-plugin").mkdir()
+            (root / "VERSION").write_text("1.2.3\n", encoding="utf-8")
+            (root / "README.md").write_text("Current v1.2.3\n", encoding="utf-8")
+            (root / "release-manifest.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "version_source": "VERSION",
+                        "public_surfaces": [
+                            {
+                                "id": "readme",
+                                "path": "README.md",
+                                "marker": "Current v{version}",
+                                "replace_version": True,
+                                "version_patterns": ["Current v{version}"],
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            marketplace = root / ".claude-plugin" / "marketplace.json"
+            marketplace.write_text(
+                json.dumps({"version": "1.2.3", "metadata": {"version": "1.2.3"}}),
+                encoding="utf-8",
+            )
+            real_replace = YAYIN.os.replace
+            calls = 0
+
+            def fail_once(source, destination):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise OSError("fixture replace failure")
+                return real_replace(source, destination)
+
+            with mock.patch.object(YAYIN.os, "replace", side_effect=fail_once):
+                with self.assertRaisesRegex(OSError, "fixture replace failure"):
+                    YAYIN.hazirla("1.2.4", root)
+
+            self.assertEqual((root / "VERSION").read_text(encoding="utf-8"), "1.2.3\n")
+            self.assertIn('"version": "1.2.3"', marketplace.read_text(encoding="utf-8"))
+            self.assertEqual((root / "README.md").read_text(encoding="utf-8"), "Current v1.2.3\n")
 
 
 if __name__ == "__main__":

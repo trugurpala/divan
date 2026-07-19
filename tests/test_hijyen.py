@@ -13,6 +13,21 @@ SPEC.loader.exec_module(hijyen)
 
 
 class TextHygieneTests(unittest.TestCase):
+    def test_text_symlink_escaping_repo_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temp, tempfile.TemporaryDirectory() as outside:
+            root = pathlib.Path(temp)
+            target = pathlib.Path(outside) / "secret.md"
+            target.write_bytes("repo dışı\n".encode("utf-8"))
+            link = root / "link.md"
+            try:
+                link.symlink_to(target)
+            except OSError as error:
+                self.skipTest(f"symlink desteklenmiyor: {error}")
+
+            issues = hijyen.text_issues(root, [link])
+
+            self.assertEqual(issues, ["link.md: repo kökü dışına çıkan symlink reddedildi"])
+
     def test_invalid_utf8_bom_and_mojibake_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
@@ -20,17 +35,20 @@ class TextHygieneTests(unittest.TestCase):
             bom = root / "bom.md"
             mojibake = root / "mojibake.md"
             clean = root / "clean.md"
+            crlf = root / "crlf.md"
             invalid.write_bytes(b"invalid: \xff\n")
             bom.write_bytes(b"\xef\xbb\xbfheading\n")
-            mojibake.write_text("G\u00c3\u00b6rev bozuk\n", encoding="utf-8")
-            clean.write_text("Görev temiz\n", encoding="utf-8")
+            mojibake.write_bytes("G\u00c3\u00b6rev bozuk\n".encode("utf-8"))
+            clean.write_bytes("Görev temiz\n".encode("utf-8"))
+            crlf.write_bytes("Satır\r\n".encode("utf-8"))
 
-            issues = hijyen.text_issues(root, [invalid, bom, mojibake, clean])
+            issues = hijyen.text_issues(root, [invalid, bom, mojibake, clean, crlf])
 
-            self.assertEqual(len(issues), 3)
+            self.assertEqual(len(issues), 4)
             self.assertTrue(any("UTF-8" in issue and "invalid.md" in issue for issue in issues))
             self.assertTrue(any("BOM" in issue and "bom.md" in issue for issue in issues))
             self.assertTrue(any("mojibake" in issue and "mojibake.md" in issue for issue in issues))
+            self.assertTrue(any("LF" in issue and "crlf.md" in issue for issue in issues))
 
     def test_text_subprocess_without_explicit_utf8_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -45,10 +63,25 @@ class TextHygieneTests(unittest.TestCase):
                 "import subprocess\nsubprocess.run(['tool'], text=True, encoding='utf-8')\n",
                 encoding="utf-8",
             )
+            (scripts / "latin.py").write_text(
+                "import subprocess\nsubprocess.run(['tool'], text=True, encoding='latin-1')\n",
+                encoding="utf-8",
+            )
+            (scripts / "direct.py").write_text(
+                "from subprocess import run\nrun(['tool'], text=True)\n",
+                encoding="utf-8",
+            )
 
             issues = hijyen.subprocess_encoding_issues(root)
 
-            self.assertEqual(issues, ["scripts/unsafe.py:2: text subprocess encoding='utf-8' ister"])
+            self.assertEqual(
+                issues,
+                [
+                    "scripts/direct.py:2: text subprocess encoding='utf-8' ister",
+                    "scripts/latin.py:2: text subprocess encoding='utf-8' ister",
+                    "scripts/unsafe.py:2: text subprocess encoding='utf-8' ister",
+                ],
+            )
 
 
 class GeneratedArtifactTests(unittest.TestCase):

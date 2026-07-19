@@ -14,8 +14,10 @@ import re
 import sys
 
 try:
+    from hijyen import source_issues as hijyen_source_issues
     from host_marketplaces import check as host_marketplaces_check
 except ModuleNotFoundError:  # Imported as scripts.validate in unit tests.
+    from scripts.hijyen import source_issues as hijyen_source_issues
     from scripts.host_marketplaces import check as host_marketplaces_check
 
 
@@ -395,6 +397,7 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     """Bağımsız denetçileri tek raporda birleştiren ince orkestratör."""
     hatalar: list[str] = []
     uyarilar: list[str] = []
+    hatalar.extend(f"REPO HIJYENI: {issue}" for issue in hijyen_source_issues(kok))
     marketplace, eklentiler = marketplace_denetle(kok, hatalar)
     skiller = skilleri_denetle(kok, hatalar, uyarilar)
     zorunlu_belgeleri_denetle(kok, hatalar)

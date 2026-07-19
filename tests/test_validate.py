@@ -7,6 +7,7 @@ import pathlib
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location("divan_validate", ROOT / "scripts" / "validate.py")
@@ -33,6 +34,13 @@ class FrontmatterTests(unittest.TestCase):
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_repository_audit_includes_source_hygiene(self) -> None:
+        with mock.patch.object(
+            VALIDATE, "hijyen_source_issues", return_value=["fixture encoding issue"]
+        ):
+            errors, _warnings, _packages, _skills = VALIDATE.denetle(ROOT)
+
+        self.assertIn("REPO HIJYENI: fixture encoding issue", errors)
     def test_repository_passes_local_audit(self) -> None:
         errors, _warnings, packages, skills = VALIDATE.denetle(ROOT)
         self.assertEqual(errors, [])

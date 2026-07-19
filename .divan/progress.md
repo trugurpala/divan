@@ -14,7 +14,10 @@ kabulü v1 için dışarıda bekleyen tek kapı olarak kalır.
   locale-bağımsız text subprocess kuralı, allowlist cache temizliği,
   `.editorconfig`/`.gitattributes` ve Ruff C90 McCabe 25 kapısı eklendi.
 - `validate.denetle`, `rollback_transaction` ve v1 gerçek-kanıt doğrulaması
-  aynı davranışı koruyan isimli sorumluluklara ayrıldı; 94 test yeşile geldi.
+  aynı davranışı koruyan isimli sorumluluklara ayrıldı; 97 test yeşile geldi.
+- Bağımsız kod incelemesindeki LF, subprocess alias/kodlama, hijyen
+  entegrasyonu ve atomik yayın bulguları test-first kapatıldı; repo dışı
+  symlink ve gereksiz worktree yürüyüşü de sertleştirildi.
 - Kapanmış PR #17/#16'nın yerel ve uzak dalları kaldırıldı. Ana repo ve aktif
   rollback yedeğindeki yalnız `__pycache__` içeriği kalıcı silindi; manifestin
   işaret ettiği gerçek kullanıcı skill yedeği korundu.
