@@ -34,6 +34,7 @@ try {
     $zip = Join-Path $work "divan.zip"
     $checksum = Join-Path $work "divan.sha256"
     $expanded = Join-Path $work "expanded"
+    $downloadedRelease = -not [bool]$env:DIVAN_ARCHIVE_PATH
     if ($env:DIVAN_ARCHIVE_PATH) {
       Copy-Item -LiteralPath $env:DIVAN_ARCHIVE_PATH -Destination $zip
     } else {
@@ -58,12 +59,28 @@ try {
       throw "SHA-256 uyusmazligi: beklenen $expectedSha256, bulunan $archiveSha256"
     }
     if (-not $sourceCommit) { $sourceCommit = $ref }
+    if ($downloadedRelease) {
+      $remoteRefs = @(& git ls-remote https://github.com/trugurpala/divan.git "refs/tags/$ref" "refs/tags/$ref^{}")
+      if ($LASTEXITCODE -ne 0 -or -not $remoteRefs) { throw "Etiket commit'i dogrulanamadi: $ref" }
+      $peeled = $remoteRefs | Where-Object { $_ -match '\^\{\}$' } | Select-Object -First 1
+      $selectedRef = if ($peeled) { $peeled } else { $remoteRefs[0] }
+      $tagCommit = ($selectedRef -split "`t")[0].Trim().ToLowerInvariant()
+      if ($tagCommit -ne $sourceCommit.Trim().ToLowerInvariant()) {
+        throw "Etiket/source_commit uyusmazligi: $tagCommit != $sourceCommit"
+      }
+    }
     Expand-Archive $zip -DestinationPath $expanded
     $source = (Get-ChildItem $expanded -Directory | Select-Object -First 1).FullName
   }
 
   if (-not (Test-Path (Join-Path $source "plugins"))) {
     throw "Divan kaynagi bulunamadi: $source"
+  }
+  $python = Get-Command python -ErrorAction SilentlyContinue
+  if (-not $python) { throw "Python 3 bulunamadi; guvenli kurulum kaydi uretilemiyor." }
+  $legacyState = Join-Path $source "scripts\legacy_state.py"
+  if (-not (Test-Path -LiteralPath $legacyState -PathType Leaf)) {
+    throw "Legacy durum yardimcisi bulunamadi: $legacyState"
   }
 
   New-Item -ItemType Directory -Force -Path $dst, $stateDir | Out-Null
@@ -76,7 +93,7 @@ try {
   $installedAt = (Get-Date).ToUniversalTime().ToString("o")
   $backupRoot = Join-Path $stateDir "divan-backups\$stamp"
   $manifest = Join-Path $stateDir "divan-install-$stamp.tsv"
-  "skill`thedef`tyedek`tsurum`tref`tsource_commit`tarchive_sha256`tinstalled_at" | Set-Content -Encoding utf8 $manifest
+  "skill`thedef`tyedek`tsurum`tref`tsource_commit`tarchive_sha256`tinstalled_sha256`tinstalled_at" | Set-Content -Encoding utf8 $manifest
   $seen = @{}
 
   $skills = Get-ChildItem (Join-Path $source "plugins\*\skills\*") -Directory
@@ -102,7 +119,11 @@ try {
       if ($backup -and (Test-Path $backup)) { Move-Item $backup $target }
       throw "$name kopyalanamadi; onceki surum geri getirildi. $($_.Exception.Message)"
     }
-    "$name`t$target`t$backup`t$version`t$ref`t$sourceCommit`t$archiveSha256`t$installedAt" | Add-Content -Encoding utf8 $manifest
+    $installedSha256 = (& $python.Source $legacyState digest $target | Select-Object -Last 1).Trim()
+    if ($LASTEXITCODE -ne 0 -or $installedSha256 -notmatch '^[0-9a-f]{64}$') {
+      throw "$name kurulum ozeti uretilemedi."
+    }
+    "$name`t$target`t$backup`t$version`t$ref`t$sourceCommit`t$archiveSha256`t$installedSha256`t$installedAt" | Add-Content -Encoding utf8 $manifest
     Write-Host "  vezir: $name"
   }
 

@@ -119,6 +119,26 @@ def _planned_commands(options: Options) -> list[list[str]]:
     return commands
 
 
+def _persist_record(path: pathlib.Path, record: dict[str, Any]) -> None:
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    temporary.write_text(
+        json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, path)
+
+
+def _begin_mutation(
+    path: pathlib.Path, record: dict[str, Any], pending: dict[str, str]
+) -> None:
+    record["pending"] = pending
+    _persist_record(path, record)
+
+
+def _finish_mutation(path: pathlib.Path, record: dict[str, Any]) -> None:
+    record["pending"] = None
+    _persist_record(path, record)
+
+
 def _migrate_legacy(root: pathlib.Path, runner: Runner) -> list[str] | None:
     state_dir = pathlib.Path(os.environ.get("DIVAN_STATE_DIR", pathlib.Path.home() / ".codex"))
     pointer = state_dir / "divan-install-latest"
@@ -144,6 +164,86 @@ def _migrate_legacy(root: pathlib.Path, runner: Runner) -> list[str] | None:
         command = ["bash", str(root / "scripts" / "kaldir-codex.sh"), str(manifest)]
     _run(runner, command)
     return command
+
+
+def rollback_transaction(
+    transaction_path: pathlib.Path,
+    *,
+    runner: Runner = _subprocess_runner,
+) -> dict[str, Any]:
+    """Recover an interrupted transaction using only entries absent from pre-state."""
+    try:
+        record = json.loads(transaction_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise InstallError(f"transaction journal is unreadable: {transaction_path}") from exc
+    if not isinstance(record, dict) or record.get("schema") != 1:
+        raise InstallError("unsupported transaction journal schema")
+    if record.get("status") not in {"in-progress", "rollback-incomplete", "verified"}:
+        raise InstallError(f"transaction is not recoverable: {record.get('status')}")
+
+    before = record.get("before")
+    created = record.get("created")
+    if not isinstance(before, dict) or not isinstance(created, dict):
+        raise InstallError("transaction journal lacks ownership state")
+
+    plugin_rows = list(created.get("plugins", []))
+    marketplace_hosts = list(created.get("marketplaces", []))
+    pending = record.get("pending")
+    if isinstance(pending, dict) and pending.get("kind") == "plugin":
+        plugin_rows.append({"host": pending.get("host"), "id": pending.get("id")})
+    elif isinstance(pending, dict) and pending.get("kind") == "marketplace":
+        marketplace_hosts.append(pending.get("host"))
+
+    owned_plugins: list[dict[str, str]] = []
+    for row in plugin_rows:
+        if not isinstance(row, dict):
+            raise InstallError("transaction contains an invalid plugin entry")
+        host, selector = row.get("host"), row.get("id")
+        if host not in {"claude", "codex"} or not isinstance(selector, str):
+            raise InstallError("transaction contains an invalid plugin identity")
+        if not selector.endswith("@divan"):
+            raise InstallError("transaction refuses to remove a non-Divan plugin")
+        host_before = before.get(host, {})
+        if selector in host_before.get("plugins", []):
+            raise InstallError(f"transaction does not own pre-existing plugin: {selector}")
+        if row not in owned_plugins:
+            owned_plugins.append({"host": host, "id": selector})
+
+    owned_marketplaces: list[str] = []
+    for host in marketplace_hosts:
+        if host not in {"claude", "codex"}:
+            raise InstallError("transaction contains an invalid marketplace host")
+        host_before = before.get(host, {})
+        if "divan" in host_before.get("marketplaces", []):
+            raise InstallError(f"transaction does not own pre-existing marketplace: {host}")
+        if host not in owned_marketplaces:
+            owned_marketplaces.append(host)
+
+    record["status"] = "recovering"
+    _persist_record(transaction_path, record)
+    for plugin in reversed(owned_plugins):
+        if plugin["id"] in _plugins(plugin["host"], runner):
+            _begin_mutation(
+                transaction_path,
+                record,
+                {"kind": "recovery-plugin", **plugin},
+            )
+            _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
+            _finish_mutation(transaction_path, record)
+    for host in reversed(owned_marketplaces):
+        if "divan" in _marketplaces(host, runner):
+            _begin_mutation(
+                transaction_path,
+                record,
+                {"kind": "recovery-marketplace", "host": host},
+            )
+            _run(runner, _remove_marketplace_command(host))
+            _finish_mutation(transaction_path, record)
+    record["status"] = "recovered"
+    record["pending"] = None
+    record["recovered_at"] = datetime.now(UTC).isoformat()
+    _persist_record(transaction_path, record)
+    return record
 
 
 def install(
@@ -175,6 +275,9 @@ def install(
     record["transaction_path"] = str(transaction_path)
     record["started_at"] = datetime.now(UTC).isoformat()
     record["before"] = {}
+    record["status"] = "in-progress"
+    record["pending"] = None
+    _persist_record(transaction_path, record)
 
     try:
         for host in _hosts(options.host):
@@ -184,6 +287,7 @@ def install(
                 "marketplaces": sorted(before_marketplaces),
                 "plugins": sorted(before_plugins),
             }
+            _persist_record(transaction_path, record)
             if "divan" in before_marketplaces:
                 raise InstallError(
                     f"{host}: existing divan marketplace source/ref cannot be proven; "
@@ -197,14 +301,26 @@ def install(
                     f"{host}: existing divan plugin source/ref cannot be proven: "
                     f"{', '.join(orphaned_divan_plugins)}; no existing entry was changed"
                 )
+            _begin_mutation(
+                transaction_path,
+                record,
+                {"kind": "marketplace", "host": host},
+            )
             _run(runner, _add_marketplace_command(host, options.source, options.ref))
             record["created"]["marketplaces"].append(host)
+            _finish_mutation(transaction_path, record)
             for package in PACKAGES:
                 selector = f"{package}@divan"
                 if selector in before_plugins:
                     continue
+                _begin_mutation(
+                    transaction_path,
+                    record,
+                    {"kind": "plugin", "host": host, "id": selector},
+                )
                 _run(runner, _install_command(host, package))
                 record["created"]["plugins"].append({"host": host, "id": selector})
+                _finish_mutation(transaction_path, record)
 
             installed = _plugins(host, runner)
             missing = [f"{package}@divan" for package in PACKAGES if f"{package}@divan" not in installed]
@@ -213,27 +329,64 @@ def install(
 
         record["status"] = "verified"
         if options.migrate_legacy:
+            _begin_mutation(
+                transaction_path,
+                record,
+                {"kind": "legacy-migration", "host": "codex"},
+            )
             record["legacy_migration_command"] = _migrate_legacy(repository, runner)
+            _finish_mutation(transaction_path, record)
         record["finished_at"] = datetime.now(UTC).isoformat()
-        transaction_path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        _persist_record(transaction_path, record)
         return record
-    except Exception as exc:
+    except BaseException as exc:
         rollback_errors: list[str] = []
-        for plugin in reversed(record["created"]["plugins"]):
+        pending = record.get("pending")
+        rollback_plugins = list(record["created"]["plugins"])
+        rollback_marketplaces = list(record["created"]["marketplaces"])
+        if isinstance(pending, dict) and pending.get("kind") == "plugin":
+            pending_host, pending_id = pending.get("host"), pending.get("id")
+            candidate = {"host": pending_host, "id": pending_id}
+            if (
+                pending_host in {"claude", "codex"}
+                and isinstance(pending_id, str)
+                and candidate not in rollback_plugins
+            ):
+                rollback_plugins.append(candidate)
+        elif isinstance(pending, dict) and pending.get("kind") == "marketplace":
+            pending_host = pending.get("host")
+            if pending_host in {"claude", "codex"} and pending_host not in rollback_marketplaces:
+                rollback_marketplaces.append(pending_host)
+        for plugin in reversed(rollback_plugins):
             try:
-                _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
+                if plugin["id"] in _plugins(plugin["host"], runner):
+                    _begin_mutation(
+                        transaction_path,
+                        record,
+                        {"kind": "rollback-plugin", **plugin},
+                    )
+                    _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
+                    _finish_mutation(transaction_path, record)
             except InstallError as rollback_exc:
                 rollback_errors.append(str(rollback_exc))
-        for host in reversed(record["created"]["marketplaces"]):
+        for host in reversed(rollback_marketplaces):
             try:
-                _run(runner, _remove_marketplace_command(host))
+                if "divan" in _marketplaces(host, runner):
+                    _begin_mutation(
+                        transaction_path,
+                        record,
+                        {"kind": "rollback-marketplace", "host": host},
+                    )
+                    _run(runner, _remove_marketplace_command(host))
+                    _finish_mutation(transaction_path, record)
             except InstallError as rollback_exc:
                 rollback_errors.append(str(rollback_exc))
         record["status"] = "rolled-back" if not rollback_errors else "rollback-incomplete"
         record["error"] = str(exc)
         record["rollback_errors"] = rollback_errors
+        record["pending"] = None
         record["finished_at"] = datetime.now(UTC).isoformat()
-        transaction_path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        _persist_record(transaction_path, record)
         raise InstallError(f"{exc}; transaction: {transaction_path}") from exc
 
 
@@ -265,7 +418,19 @@ def _parse_options(argv: list[str] | None = None) -> Options:
 
 
 def main(argv: list[str] | None = None) -> int:
-    options = _parse_options(argv)
+    arguments = list(sys.argv[1:] if argv is None else argv)
+    if "--rollback-transaction" in arguments:
+        parser = argparse.ArgumentParser(description="Recover an interrupted Divan install")
+        parser.add_argument("--rollback-transaction", type=pathlib.Path, required=True)
+        recovery = parser.parse_args(arguments)
+        try:
+            record = rollback_transaction(recovery.rollback_transaction)
+        except InstallError as exc:
+            print(f"HATA: {exc}", file=sys.stderr)
+            return 1
+        print(f"RECOVERED - transaction: {record['transaction_path']}")
+        return 0
+    options = _parse_options(arguments)
     try:
         record = install(options)
     except InstallError as exc:

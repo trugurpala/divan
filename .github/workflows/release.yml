@@ -127,19 +127,33 @@ jobs:
           archive="$RUNNER_TEMP/divan-${tag}.zip"
           checksum="$RUNNER_TEMP/divan-${tag}.sha256"
           python scripts/yayin.py --notes "$notes"
+          source_commit="$GITHUB_SHA"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
-            source_commit="$(git rev-parse "$tag^{commit}")"
-          else
-            source_commit="$GITHUB_SHA"
+            tagged_commit="$(git rev-parse "$tag^{commit}")"
+            test "$source_commit" = "$GITHUB_SHA"
+            test "$tagged_commit" = "$GITHUB_SHA" || {
+              echo "HATA: $tag etiketi $tagged_commit commit'inde; $GITHUB_SHA uzerine tasinmayacak." >&2
+              exit 1
+            }
           fi
           git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
-          printf '%s  %s\nsource_commit=%s\n' "$archive_sha256" "$(basename "$archive")" "$source_commit" > "$checksum"
+          printf '%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$source_commit" "$tag" > "$checksum"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             if gh release view "$tag" >/dev/null 2>&1; then
-              gh release edit "$tag" --title "Divan $tag" --notes-file "$notes"
-              gh release upload "$tag" "$archive" "$checksum" --clobber
-              echo "$tag Release sayfası kaynak notlarla eşitlendi; etiket taşınmadı."
+              existing="$RUNNER_TEMP/existing-$tag"
+              mkdir -p "$existing"
+              gh release download "$tag" --pattern "$(basename "$archive")" --dir "$existing"
+              gh release download "$tag" --pattern "$(basename "$checksum")" --dir "$existing"
+              cmp --silent "$archive" "$existing/$(basename "$archive")" || {
+                echo "HATA: mevcut immutable archive yeni byte'larla uyusmuyor." >&2
+                exit 1
+              }
+              cmp --silent "$checksum" "$existing/$(basename "$checksum")" || {
+                echo "HATA: mevcut immutable checksum yeni kayitla uyusmuyor." >&2
+                exit 1
+              }
+              echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
             else
               gh release create "$tag" "$archive" "$checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
             fi

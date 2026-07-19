@@ -27,7 +27,9 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - The legacy loose-skill installer is now a compatibility fallback. Release
   archives are SHA-256 verified before extraction and manifests record version,
-  ref, source commit, archive hash, install time, target, and backup.
+  ref, source commit, archive hash, per-skill installed hash, install time,
+  target, and backup. Migration preflights every row, quarantines owned content,
+  preserves changed targets, and reverses every move on failure.
 - Site navigation now has a keyboard-visible skip link, one main landmark,
   WCAG AA coral contrast, reduced-motion verification, and mobile/landscape
   overflow checks in real Chromium.
@@ -37,14 +39,19 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Security
 
 - Release workflows publish a versioned fallback archive and checksum with its
-  source commit; mutable `main` downloads and mutable Action tags are rejected.
-- Eval subprocesses are bounded, do not use dangerous bypass flags, and redact
-  secret-like provider diagnostics.
+  source commit; mutable `main` downloads, mutable Action tags, moved release
+  tags, and release-asset overwrite attempts are rejected.
+- Host mutations are atomically journaled before execution and interrupted
+  transactions have an ownership-checked recovery command.
+- Eval subprocesses are bounded, do not use dangerous bypass flags, redact
+  secrets/PII/home paths, keep per-case A/B outcomes private, and bind publishable
+  provenance to a clean Git HEAD plus provider-derived versions.
 
 ### Verified
 
 - Fixture and repository tests prove host preservation/rollback, checksum
-  fail-closed behavior, marketplace parity, blind judging, and accessibility.
+  fail-closed behavior, transactional legacy quarantine, marketplace parity,
+  blind judging, and accessibility.
 - Fixture tests prove contracts only. A real cross-provider comparison remains
   a separate evidence step and independent adoption remains pending for v1.
 

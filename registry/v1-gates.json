@@ -22,10 +22,10 @@
       "evidence": [".github/workflows/site-testi.yml", ".github/workflows/wiki-sync.yml", ".divan/evidence/teftis-20260718-v0103.md"]
     },
     {
-      "id": "clean-host-matrix",
-      "title": "Claude Code ve Codex Linux/macOS/Windows temiz-host uyumluluk matrisi",
-      "status": "passed",
-      "evidence": [".github/workflows/uyumluluk.yml", "https://github.com/trugurpala/divan/actions/runs/29633649126"]
+      "id": "native-clean-host-matrix",
+      "title": "Claude Code ve Codex native Linux/macOS/Windows temiz-host yaşam döngüsü",
+      "status": "ready",
+      "evidence": [".github/workflows/uyumluluk.yml", "scripts/kur-hostlar.py", "tests/test_host_install.py"]
     },
     {
       "id": "rollback-rehearsal",

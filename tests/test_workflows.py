@@ -24,6 +24,21 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("github/codeql-action/init@", text)
         self.assertIn("github/codeql-action/analyze@", text)
         self.assertIn("security-events: write", text)
+        self.assertIn("python, javascript-typescript", text)
+
+    def test_release_assets_are_never_clobbered_or_moved_to_another_commit(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        self.assertNotIn("--clobber", text)
+        self.assertIn('test "$source_commit" = "$GITHUB_SHA"', text)
+        self.assertIn('cmp --silent "$archive"', text)
+        self.assertIn('cmp --silent "$checksum"', text)
+
+    def test_compatibility_matrix_runs_both_native_host_clis(self) -> None:
+        text = (WORKFLOWS / "uyumluluk.yml").read_text(encoding="utf-8")
+        self.assertIn("@anthropic-ai/claude-code@2.1.215", text)
+        self.assertIn("@openai/codex@0.144.6", text)
+        self.assertIn('"--host", "both"', text)
+        self.assertIn('"--rollback-transaction"', text)
 
     def test_primary_audit_runs_lint_types_coverage_and_actionlint(self) -> None:
         text = (WORKFLOWS / "teftis.yml").read_text(encoding="utf-8")

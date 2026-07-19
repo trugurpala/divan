@@ -10,8 +10,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
+import platform
 import random
+import re
 import shlex
 import subprocess
 import sys
@@ -21,6 +24,15 @@ from typing import Any
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "evals" / "results" / "latest.json"
 MAX_ADAPTER_OUTPUT = 2_000_000
+PUBLIC_PATTERNS = (
+    re.compile(
+        r"(?i)(?:sk-[a-z0-9_-]{8,}|github_pat_[a-z0-9_]{8,}|gh[opusr]_[a-z0-9]{8,}|"
+        r"(?:api[_-]?key|access[_-]?token|token|secret|password|passwd)\s*[=:]\s*[^\s,;]+)"
+    ),
+    re.compile(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"),
+    re.compile(r"(?i)\b[A-Z]:\\Users\\[^\\/\s]+"),
+    re.compile(r"/(?:home|Users)/[^/\s]+"),
+)
 PROVENANCE_REQUIRED_FIELDS = (
     "agent",
     "agent_version",
@@ -29,10 +41,31 @@ PROVENANCE_REQUIRED_FIELDS = (
     "source_commit",
     "environment",
 )
+FIRST_PARTY_NON_TOOL_SKILLS = {"baglam-muhafizi"}
 
 
 class EvalError(RuntimeError):
     """Kullanıcıya gösterilebilir eval sözleşmesi veya koşu hatası."""
+
+
+def _redact_public_text(value: str) -> str:
+    redacted = value
+    for pattern in PUBLIC_PATTERNS:
+        redacted = pattern.sub("[REDACTED]", redacted)
+    return redacted
+
+
+def _sanitize_public(value: Any) -> Any:
+    if isinstance(value, str):
+        return _redact_public_text(value)
+    if isinstance(value, list):
+        return [_sanitize_public(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            _redact_public_text(str(key)): _sanitize_public(item)
+            for key, item in value.items()
+        }
+    return value
 
 
 def _read_json(path: pathlib.Path) -> dict[str, Any]:
@@ -57,17 +90,101 @@ def _read_provenance(path: pathlib.Path) -> dict[str, str]:
         value = data.get(field)
         if not isinstance(value, str) or not value.strip():
             raise EvalError(f"{path}: provenance alanı eksik veya geçersiz: {field}")
-        if "sk-" in value.lower():
-            raise EvalError(f"{path}: provenance gizli anahtar benzeri değer içeremez: {field}")
+        if _redact_public_text(value) != value:
+            raise EvalError(f"{path}: provenance gizli/kişisel değer içeremez: {field}")
         provenance[field] = value.strip()
     if "notes" in data:
         notes = data["notes"]
         if not isinstance(notes, str) or not notes.strip():
             raise EvalError(f"{path}: provenance alanı eksik veya geçersiz: notes")
-        if "sk-" in notes.lower():
-            raise EvalError(f"{path}: provenance gizli anahtar benzeri değer içeremez: notes")
+        if _redact_public_text(notes) != notes:
+            raise EvalError(f"{path}: provenance gizli/kişisel değer içeremez: notes")
         provenance["notes"] = notes.strip()
     return provenance
+
+
+def _repository_identity(root: pathlib.Path = ROOT) -> dict[str, str]:
+    def git(*arguments: str) -> str:
+        completed = subprocess.run(
+            ["git", "-C", str(root), *arguments],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if completed.returncode:
+            detail = _redact_public_text(completed.stderr.strip()) or "git failed"
+            raise EvalError(f"repository identity cannot be derived: {detail}")
+        return completed.stdout.strip()
+
+    source_commit = git("rev-parse", "HEAD")
+    if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+        raise EvalError("repository HEAD is not a full Git commit")
+    if git("status", "--porcelain", "--untracked-files=all"):
+        raise EvalError("real eval requires a clean repository worktree")
+    try:
+        version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    except OSError as exc:
+        raise EvalError("repository VERSION cannot be read") from exc
+    if not version:
+        raise EvalError("repository VERSION is empty")
+    return {"source_commit": source_commit, "divan_version": version}
+
+
+def _validate_provider_skill_scope(skills: set[str]) -> None:
+    unsupported = sorted(skills - FIRST_PARTY_NON_TOOL_SKILLS)
+    if unsupported:
+        raise EvalError(
+            "first-party preset only supports audited non-tool eval skills; rejected: "
+            + ", ".join(unsupported)
+        )
+
+
+def _version_for_command(variable: str, default: str) -> str:
+    command = os.environ.get(variable, default)
+    args = shlex.split(command, posix=sys.platform != "win32")
+    if sys.platform == "win32":
+        args = [
+            item[1:-1]
+            if len(item) >= 2 and item[0] == item[-1] and item[0] in {'"', "'"}
+            else item
+            for item in args
+        ]
+    completed = subprocess.run(
+        [*args, "--version"], capture_output=True, text=True, check=False, timeout=30
+    )
+    version = (completed.stdout or completed.stderr).strip().splitlines()
+    if completed.returncode or not version:
+        raise EvalError(f"provider version cannot be derived: {variable}")
+    value = _redact_public_text(version[0])
+    if value != version[0]:
+        raise EvalError(f"provider version contains private data: {variable}")
+    return value
+
+
+def _bind_provenance(
+    provenance: dict[str, str],
+    *,
+    provider_preset: str | None,
+    root: pathlib.Path = ROOT,
+) -> dict[str, str]:
+    identity = _repository_identity(root)
+    if provenance["source_commit"] != identity["source_commit"]:
+        raise EvalError("provenance source_commit does not match clean repository HEAD")
+    bound = dict(provenance)
+    bound.update(identity)
+    bound["environment"] = "; ".join(
+        filter(None, (platform.system(), platform.release(), platform.machine()))
+    )
+    if provider_preset == "claude-codex":
+        bound.update(
+            {
+                "agent": "Claude Code",
+                "agent_version": _version_for_command("DIVAN_CLAUDE_BIN", "claude"),
+                "judge": "Codex CLI",
+                "judge_version": _version_for_command("DIVAN_CODEX_BIN", "codex"),
+            }
+        )
+    return bound
 
 
 def discover_cases(
@@ -163,9 +280,9 @@ def _run_adapter(command: str, payload: dict[str, Any], timeout: float) -> dict[
             check=False,
         )
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise EvalError(f"adaptör çalışmadı: {error}") from error
+        raise EvalError(f"adaptör çalışmadı: {_redact_public_text(str(error))}") from error
     if completed.returncode != 0:
-        detail = completed.stderr.strip()[-1000:] or "stderr boş"
+        detail = _redact_public_text(completed.stderr.strip()[-1000:]) or "stderr boş"
         raise EvalError(f"adaptör exit={completed.returncode}: {detail}")
     if len(completed.stdout.encode("utf-8")) > MAX_ADAPTER_OUTPUT:
         raise EvalError("adaptör çıktısı 2 MB sınırını aştı")
@@ -190,7 +307,9 @@ def _validate_agent_result(result: dict[str, Any]) -> dict[str, Any]:
         isinstance(item, str) for item in changed_files
     ):
         raise EvalError("ajan adaptörü changed_files için metin dizisi döndürmeli")
-    return {"output": output, "events": events, "changed_files": changed_files}
+    return _sanitize_public(
+        {"output": output, "events": events, "changed_files": changed_files}
+    )
 
 
 def _validate_judgement(result: dict[str, Any]) -> dict[str, Any]:
@@ -205,7 +324,9 @@ def _validate_judgement(result: dict[str, Any]) -> dict[str, Any]:
     scores = result.get("expectation_scores", {})
     if not isinstance(scores, dict):
         raise EvalError("hakem expectation_scores nesne olmalı")
-    return {"winner": winner, "reasons": reasons, "expectation_scores": scores}
+    return _sanitize_public(
+        {"winner": winner, "reasons": reasons, "expectation_scores": scores}
+    )
 
 
 def _public_candidate(result: dict[str, Any]) -> dict[str, Any]:
@@ -294,10 +415,7 @@ def run_evaluations(
             winner_label = judgement["winner"]
             winner_condition = "tie" if winner_label == "tie" else mapping[winner_label]
             totals[winner_condition] += 1
-            public_case["judgement"] = {
-                **judgement,
-                "winner_condition": winner_condition,
-            }
+            public_case["judgement"] = judgement
             key_case["winner_condition"] = winner_condition
 
         public_cases.append(public_case)
@@ -340,7 +458,10 @@ def run_evaluations(
 def write_results(output: pathlib.Path, result: dict[str, Any], key: dict[str, Any]) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     key_path = output.with_name(output.stem + ".key" + output.suffix)
-    output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    public_result = _sanitize_public(result)
+    output.write_text(
+        json.dumps(public_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     key_path.write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
@@ -383,6 +504,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if not args.adapter:
             if args.provider_preset == "claude-codex":
+                _validate_provider_skill_scope(set(skills))
                 args.adapter = subprocess.list2cmdline(
                     [sys.executable, str(ROOT / "evals" / "adapters" / "claude_agent.py")]
                 )
@@ -394,6 +516,13 @@ def main(argv: list[str] | None = None) -> int:
         elif args.provider_preset:
             raise EvalError("--provider-preset ile --adapter/--judge birlikte kullanılamaz")
         provenance = _read_provenance(args.provenance) if args.provenance else None
+        if args.provider_preset and provenance is None:
+            raise EvalError("--provider-preset requires --provenance")
+        if provenance is not None:
+            provenance = _bind_provenance(
+                provenance,
+                provider_preset=args.provider_preset,
+            )
         result, key = run_evaluations(
             cases,
             args.adapter,

@@ -25,7 +25,9 @@ else
   archive="$WORK/divan.zip"
   checksum="$WORK/divan.sha256"
   expanded="$WORK/expanded"
+  downloaded_release=1
   if [[ -n "${DIVAN_ARCHIVE_PATH:-}" ]]; then
+    downloaded_release=0
     cp "$DIVAN_ARCHIVE_PATH" "$archive"
   else
     curl -fsSL "https://github.com/trugurpala/divan/releases/download/$REF/divan-$REF.zip" -o "$archive"
@@ -57,6 +59,17 @@ else
     exit 1
   fi
   SOURCE_COMMIT="${SOURCE_COMMIT:-$REF}"
+  if ((downloaded_release)); then
+    remote_refs="$(git ls-remote https://github.com/trugurpala/divan.git "refs/tags/$REF" "refs/tags/$REF^{}")"
+    tag_commit="$(printf '%s\n' "$remote_refs" | awk '$2 ~ /\^\{\}$/ {print $1; found=1} END {if (!found) exit 1}' || true)"
+    if [[ -z "$tag_commit" ]]; then
+      tag_commit="$(printf '%s\n' "$remote_refs" | awk 'NR==1 {print $1}')"
+    fi
+    if [[ -z "$tag_commit" || "${tag_commit,,}" != "${SOURCE_COMMIT,,}" ]]; then
+      echo "HATA: Etiket/source_commit uyusmazligi: ${tag_commit:-missing} != $SOURCE_COMMIT" >&2
+      exit 1
+    fi
+  fi
   mkdir -p "$expanded"
   unzip -q "$archive" -d "$expanded"
   SOURCE="$(find "$expanded" -mindepth 1 -maxdepth 1 -type d -print -quit)"
@@ -64,6 +77,16 @@ fi
 
 if [[ ! -d "$SOURCE/plugins" ]]; then
   echo "HATA: Divan kaynagi bulunamadi: $SOURCE" >&2
+  exit 1
+fi
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo "HATA: Python 3 bulunamadi; guvenli kurulum kaydi uretilemiyor." >&2
+  exit 1
+fi
+LEGACY_STATE="$SOURCE/scripts/legacy_state.py"
+if [[ ! -f "$LEGACY_STATE" ]]; then
+  echo "HATA: Legacy durum yardimcisi bulunamadi: $LEGACY_STATE" >&2
   exit 1
 fi
 
@@ -76,7 +99,7 @@ fi
 INSTALLED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 BACKUP_ROOT="$STATE_DIR/divan-backups/$STAMP"
 MANIFEST="$STATE_DIR/divan-install-$STAMP.tsv"
-printf 'skill\thedef\tyedek\tsurum\tref\tsource_commit\tarchive_sha256\tinstalled_at\n' > "$MANIFEST"
+printf 'skill\thedef\tyedek\tsurum\tref\tsource_commit\tarchive_sha256\tinstalled_sha256\tinstalled_at\n' > "$MANIFEST"
 
 shopt -s nullglob
 skills=("$SOURCE"/plugins/*/skills/*)
@@ -108,8 +131,13 @@ for skill in "${skills[@]}"; do
     echo "HATA: $name kopyalanamadi; onceki surum geri getirildi." >&2
     exit 1
   fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-    "$name" "$target" "$backup" "$VERSION" "$REF" "$SOURCE_COMMIT" "$ARCHIVE_SHA256" "$INSTALLED_AT" >> "$MANIFEST"
+  installed_sha256="$($PYTHON_BIN "$LEGACY_STATE" digest "$target")"
+  if [[ ! "$installed_sha256" =~ ^[0-9a-f]{64}$ ]]; then
+    echo "HATA: $name kurulum ozeti uretilemedi." >&2
+    exit 1
+  fi
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$name" "$target" "$backup" "$VERSION" "$REF" "$SOURCE_COMMIT" "$ARCHIVE_SHA256" "$installed_sha256" "$INSTALLED_AT" >> "$MANIFEST"
   echo "  vezir: $name"
 done
 

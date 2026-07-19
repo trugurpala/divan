@@ -59,6 +59,32 @@ class FakeRunner:
         return subprocess.CompletedProcess(command, 0, "{}", "")
 
 
+class JournalObservingRunner(FakeRunner):
+    def __init__(self, state_dir: pathlib.Path) -> None:
+        super().__init__()
+        self.state_dir = state_dir
+        self.saw_pending_journal = False
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        if command[1:4] == ["plugin", "marketplace", "add"]:
+            journals = list(self.state_dir.glob("install-*.json"))
+            if journals:
+                record = json.loads(journals[0].read_text(encoding="utf-8"))
+                self.saw_pending_journal = record.get("pending") == {
+                    "kind": "marketplace",
+                    "host": command[0],
+                }
+        return super().__call__(command)
+
+
+class InterruptAfterMutationRunner(FakeRunner):
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super().__call__(command)
+        if command[1:3] == ["plugin", "add"] and command[3] == "sadrazam@divan":
+            raise KeyboardInterrupt
+        return result
+
+
 class HostInstallTests(unittest.TestCase):
     def options(self, state_dir: pathlib.Path, **changes: object):
         values = {
@@ -99,6 +125,72 @@ class HostInstallTests(unittest.TestCase):
             for package in HOST_INSTALL.PACKAGES:
                 self.assertIn(f"{package}@divan", runner.plugins["claude"])
                 self.assertIn(f"{package}@divan", runner.plugins["codex"])
+
+    def test_journal_is_persisted_before_every_external_mutation(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = JournalObservingRunner(state_dir)
+            HOST_INSTALL.install(
+                self.options(state_dir, host="claude"),
+                runner=runner,
+            )
+
+        self.assertTrue(runner.saw_pending_journal)
+
+    def test_in_progress_journal_can_be_recovered_without_touching_unrelated_state(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-interrupted.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "in-progress",
+                        "before": {
+                            "codex": {
+                                "marketplaces": ["personal"],
+                                "plugins": ["vibe-coder-standard@personal"],
+                            }
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": {
+                            "kind": "plugin",
+                            "host": "codex",
+                            "id": "core-pack@divan",
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].update(
+                {"sadrazam@divan", "core-pack@divan"}
+            )
+
+            recovered = HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertEqual(recovered["status"], "recovered")
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+
+    def test_interrupt_after_external_success_rolls_back_pending_owned_entry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = InterruptAfterMutationRunner()
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.install(self.options(state_dir), runner=runner)
+            journal = json.loads(
+                next(state_dir.glob("install-*.json")).read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(journal["status"], "rolled-back")
+        self.assertEqual(runner.marketplaces["claude"], {"claude-plugins-official"})
+        self.assertEqual(runner.marketplaces["codex"], {"personal"})
+        self.assertEqual(runner.plugins["claude"], {"unrelated@claude-plugins-official"})
+        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
 
     def test_failure_rolls_back_only_entries_created_by_transaction(self) -> None:
         failure = ("codex", "plugin", "add", "ui-pack@divan", "--json")

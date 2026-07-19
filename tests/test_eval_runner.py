@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 import textwrap
@@ -31,9 +32,38 @@ class EvalRunnerTests(unittest.TestCase):
 
     def test_first_party_provider_preset_is_available(self) -> None:
         args = EVALS.build_parser().parse_args(
-            ["--run", "--provider-preset", "claude-codex", "--skill", "arama-ustasi"]
+            ["--run", "--provider-preset", "claude-codex", "--skill", "baglam-muhafizi"]
         )
         self.assertEqual(args.provider_preset, "claude-codex")
+
+    def test_first_party_provider_rejects_tool_dependent_skill_contracts(self) -> None:
+        with self.assertRaisesRegex(EVALS.EvalError, "non-tool"):
+            EVALS._validate_provider_skill_scope({"arama-ustasi"})
+
+    def test_provenance_is_bound_to_clean_repository_head(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-git-") as temporary:
+            root = pathlib.Path(temporary)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "config", "user.email", "fixture@example.invalid"],
+                check=True,
+            )
+            subprocess.run(
+                ["git", "-C", str(root), "config", "user.name", "Fixture"], check=True
+            )
+            (root / "VERSION").write_text("9.9.9\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "VERSION"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-qm", "fixture"], check=True)
+            head = subprocess.check_output(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+            ).strip()
+
+            identity = EVALS._repository_identity(root)
+            self.assertEqual(identity, {"source_commit": head, "divan_version": "9.9.9"})
+
+            (root / "VERSION").write_text("changed\n", encoding="utf-8")
+            with self.assertRaisesRegex(EVALS.EvalError, "clean"):
+                EVALS._repository_identity(root)
 
     def test_blind_pair_judge_and_threshold(self) -> None:
         case = EVALS.discover_cases(ROOT, {"kaynak-kuratori"})[:1]
@@ -75,6 +105,22 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertTrue(result["summary"]["gate_passed"])
         self.assertNotIn("mapping", result["cases"][0])
         self.assertIn("mapping", key["cases"][0])
+        self.assertNotIn("winner_condition", result["cases"][0]["judgement"])
+        self.assertIn("winner_condition", key["cases"][0])
+
+    def test_public_candidate_redacts_secrets_email_and_home_paths(self) -> None:
+        result = EVALS._validate_agent_result(
+            {
+                "output": "token=super-secret user@example.com C:\\Users\\Pala\\private.txt",
+                "events": ["api_key=abc123456789"],
+                "changed_files": ["/home/pala/private.txt"],
+            }
+        )
+
+        rendered = json.dumps(result)
+        for secret in ("super-secret", "user@example.com", "Pala", "/home/pala"):
+            self.assertNotIn(secret, rendered)
+        self.assertIn("[REDACTED]", rendered)
 
     def test_without_judge_requires_review(self) -> None:
         case = EVALS.discover_cases(ROOT, {"arama-ustasi"})[:1]

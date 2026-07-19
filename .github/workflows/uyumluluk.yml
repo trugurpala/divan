@@ -86,3 +86,85 @@ jobs:
           & ./scripts/kaldir-codex.ps1
           $remaining = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
           if ($remaining -ne 0) { throw "Kaldirma sonrasi $remaining skill kaldi" }
+
+  native-hosts:
+    name: Claude + Codex native / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Sabitlenmiş resmî host CLI'larını kur
+        run: npm install --global @anthropic-ai/claude-code@2.1.215 @openai/codex@0.144.6
+      - name: Temiz profilde iki native pazarı kur, doğrula ve geri al
+        shell: bash
+        env:
+          DIVAN_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          DIVAN_PROFILE: ${{ runner.temp }}/divan-native-profile
+          DIVAN_TRANSACTION_DIR: ${{ runner.temp }}/divan-native-transactions
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import pathlib
+          import subprocess
+          import sys
+
+          profile = pathlib.Path(os.environ["DIVAN_PROFILE"])
+          state = pathlib.Path(os.environ["DIVAN_TRANSACTION_DIR"])
+          profile.mkdir(parents=True, exist_ok=True)
+          environment = os.environ.copy()
+          environment.update(
+              {
+                  "HOME": str(profile),
+                  "USERPROFILE": str(profile),
+                  "CLAUDE_CONFIG_DIR": str(profile / ".claude"),
+                  "CODEX_HOME": str(profile / ".codex"),
+              }
+          )
+          install = [
+              sys.executable,
+              "scripts/kur-hostlar.py",
+              "--host", "both",
+              "--ref", os.environ["DIVAN_REF"],
+              "--execute",
+              "--state-dir", str(state),
+          ]
+          subprocess.run(install, check=True, env=environment)
+          transaction = next(state.glob("install-*.json"))
+
+          def installed(host: str) -> set[str]:
+              output = subprocess.check_output(
+                  [host, "plugin", "list", "--json"], env=environment, text=True
+              )
+              value = json.loads(output)
+              rows = value if host == "claude" else value["installed"]
+              key = "id" if host == "claude" else "pluginId"
+              return {row[key] for row in rows}
+
+          expected = {
+              "sadrazam@divan", "core-pack@divan", "ui-pack@divan",
+              "react-pack@divan", "zanaat-pack@divan",
+          }
+          for host in ("claude", "codex"):
+              if not expected.issubset(installed(host)):
+                  raise SystemExit(f"{host}: five native Divan packages were not installed")
+
+          subprocess.run(
+              [sys.executable, "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)],
+              check=True,
+              env=environment,
+          )
+          for host in ("claude", "codex"):
+              if installed(host) & expected:
+                  raise SystemExit(f"{host}: native rollback left Divan packages behind")
+          PY

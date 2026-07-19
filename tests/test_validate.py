@@ -106,12 +106,14 @@ class RepositoryTests(unittest.TestCase):
             self.assertNotIn('else { "main" }', text)
             self.assertIn("archive_sha256", text)
             self.assertIn("source_commit", text)
+            self.assertIn("ls-remote", text)
             self.assertIn("installed_at", text)
             self.assertIn("SHA256", text.upper())
         release = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
         self.assertIn("git archive --format=zip", release)
         self.assertIn("source_commit=", release)
-        self.assertIn("gh release upload", release)
+        self.assertIn("gh release create", release)
+        self.assertNotIn("--clobber", release)
 
     @unittest.skipIf(os.name == "nt", "Shell installer coverage runs on POSIX hosts")
     def test_shell_installer_backs_up_collisions(self) -> None:
@@ -196,6 +198,7 @@ class RepositoryTests(unittest.TestCase):
                     "ref",
                     "source_commit",
                     "archive_sha256",
+                    "installed_sha256",
                     "installed_at",
                 },
             )

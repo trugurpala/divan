@@ -32,6 +32,11 @@ codex plugin marketplace remove divan
 `~/.divan/transactions/install-*.json` dosyası kurulum öncesi host listelerini
 ve o işlemde oluşturulan kayıtları gösterir. Geri alırken yalnız `created`
 alanındaki Divan girdilerini hedefle; başka marketplace veya eklentileri silme.
+Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
+
+```bash
+python scripts/kur-hostlar.py --rollback-transaction <install-....json>
+```
 
 ## 4. (İsteğe bağlı) Proje hafızası dosyaları
 Defterdar'ın SENİN projende ürettiği dosyalar sana aittir. `.divan/`,
@@ -46,7 +51,7 @@ kurucusunun oluşturduğu `~/.codex/divan-install-*.tsv` kaydı hedefleri ve var
 önceki sürüm yedeklerini gösterir; yedekleri geri yüklemeden önce içeriklerini
 incele.
 
-v0.11.0 ile kurucu kullanıldıysa kayıtlı kaldırma/geri alma yolu:
+v0.12.0 fallback kurucusu kullanıldıysa kayıtlı kaldırma/geri alma yolu:
 
 ```bash
 bash scripts/kaldir-codex.sh
@@ -56,9 +61,12 @@ bash scripts/kaldir-codex.sh
 ./scripts/kaldir-codex.ps1
 ```
 
-Betikler yalnız kurulum kaydındaki ve `CODEX_SKILLS_DIR` altındaki hedefleri
-kaldırır; çakışma sırasında alınan yedeği yerine koyar, kayıt dosyasını kanıt
-olarak korur. Şüphede manifest yolunu açık argüman ver ve önce içeriğini oku.
+Betikler bütün manifesti önce doğrular; her hedefin `installed_sha256` özeti
+kurulum kaydıyla eşleşmedikçe hiçbir dosyayı taşımaz. Doğrulanan Divan kopyaları
+silinmez, `~/.codex/divan-quarantine/` altına taşınır; çakışma sırasında alınan
+yedekler yerine konur ve ara hata bütün taşıma işlemlerini geri alır. Eski,
+özet alanı bulunmayan manifest fail-closed reddedilir. Şüphede manifest yolunu
+açık argüman ver ve önce içeriğini oku.
 
 ## 6. Önbellek kalıntısı (nadiren gerekir)
 Claude Code marketplace klonlarını `~/.claude/` altında tutar; adım 2

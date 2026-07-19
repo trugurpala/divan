@@ -45,14 +45,17 @@ Divan'ın gerçek sağlayıcı preset'i Claude Code'u ajan, Codex'i kör hakem o
 ```bash
 python evals/run.py --run \
   --provider-preset claude-codex \
-  --skill arama-ustasi \
+  --skill baglam-muhafizi \
   --provenance provenance.json \
   --output evals/results/claude-codex.json
 ```
 
-Claude baseline koşusu geçici boş dizinde, araçlar/MCP/ayar kaynakları kapalı
-çalışır. Skill koşusu aynı sınırlarla yalnız seçilen skill'in ait olduğu paket
-dizinini `--plugin-dir` üzerinden görür. Codex hakemi kullanıcı config ve proje
+Bu preset yalnız araç gerektirmeyen, denetlenmiş `baglam-muhafizi` sözleşmesini
+kabul eder. Böylece geçici boş çalışma dizini ve kapalı araçlarla repo araması
+yapılmış gibi davranan sahte bir operasyonel kanıt üretilemez. Claude baseline
+koşusu geçici boş dizinde, araçlar/MCP/ayar kaynakları kapalı çalışır. Skill
+koşusu aynı sınırlarla yalnız seçilen skill'in ait olduğu paket dizinini
+`--plugin-dir` üzerinden görür. Codex hakemi kullanıcı config ve proje
 kurallarını yüklemez; ephemeral ve `read-only` sandbox içinde katı JSON şeması
 ile yalnız kör A/B adaylarını değerlendirir. Hiçbir adaptör tehlikeli bypass
 bayrağı kullanmaz.
@@ -75,7 +78,7 @@ müşteri verisi veya `sk-` ile başlayan herhangi bir değer eklemeyin:
   "agent_version": "1.2.3",
   "judge": "Independent judge",
   "judge_version": "4.5.6",
-  "source_commit": "0123456789abcdef",
+  "source_commit": "0123456789abcdef0123456789abcdef01234567",
   "environment": "Windows 11; redacted local environment"
 }
 ```
@@ -87,9 +90,14 @@ python evals/run.py --run --skill kaynak-kuratori \
   --provenance provenance.json
 ```
 
-Bu kayıt kamu sonucundaki `provenance` alanına yazılır; kör A/B eşlemesi yalnız
-ayrı anahtar dosyasında kalır. Provenance, koşunun kimliğini açıklar fakat tek
-başına kalite kanıtı değildir ve bekleyen v1 kapılarını değiştirmez.
+Koşucu `source_commit` değerini temiz Git çalışma ağacının tam `HEAD` değeriyle
+eşleştirir. Birinci taraf preset'inde Claude ve Codex sürümlerini doğrudan
+CLI'lardan, Divan sürümünü `VERSION` dosyasından, işletim sistemi bilgisini de
+çalışan ortamdan türetir; beyan edilen değerleri kanıt saymaz. Kamu sonucuna
+yazmadan önce secret, e-posta ve kullanıcı-home yolu örüntülerini redakte eder.
+Kör A/B vaka eşlemesi ile `winner_condition` yalnız ayrı anahtar dosyasında
+kalır; kamu dosyasında sadece toplu sayımlar bulunur. Provenance tek başına
+kalite kanıtı değildir ve bekleyen v1 kapılarını değiştirmez.
 
 ## Otomatik hakem ve kapı
 

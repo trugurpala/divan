@@ -47,10 +47,13 @@ class PublicationTests(unittest.TestCase):
             {
                 ".agents/plugins/marketplace.json",
                 "scripts/kur-hostlar.py",
+                "scripts/legacy_state.py",
+                "evals/run.py",
                 "evals/adapters/claude_agent.py",
                 "evals/adapters/codex_judge.py",
                 "NOTICE.md",
                 "registry/upstream-baselines.json",
+                ".github/workflows/uyumluluk.yml",
             }.issubset(paths)
         )
 

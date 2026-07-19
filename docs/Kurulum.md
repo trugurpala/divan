@@ -20,6 +20,18 @@ için durur; mevcut pazarı veya eklentileri değiştirmez. Önce host'un kendi
 listeleme komutlarıyla kayıtları inceleyin ve yalnız size ait olduklarından
 eminseniz elle kaldırıp işlemi yeniden çalıştırın.
 
+Her dış CLI değişikliğinden önce işlem günlüğü atomik yazılır. Kesinti sonrası
+`in-progress` veya `rollback-incomplete` kaydını yalnız o işlemin oluşturduğu
+girdilerle geri almak için:
+
+```bash
+python scripts/kur-hostlar.py --rollback-transaction <islem.json>
+```
+
+Eski gevşek-skill göçü de tüm hedeflerin kurulum özetini önce doğrular; değişmiş
+dosyaya dokunmaz, hedefleri silmek yerine `.codex/divan-quarantine/` altında
+saklar ve ara hata olursa bütün taşıma işlemlerini tersine çevirir.
+
 `--host claude` veya `--host codex` tek host seçer. Kurucu iki ürünün resmî
 plugin CLI'larını kullanır, mevcut durumun tam listesini işlem kaydına yazar,
 yalnız kendi eklediği `divan` kayıtlarını geri alır ve alakasız eklentilere

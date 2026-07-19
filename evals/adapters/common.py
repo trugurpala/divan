@@ -13,8 +13,11 @@ from typing import Any
 
 MAX_INPUT_BYTES = 2_000_000
 MAX_OUTPUT_BYTES = 2_000_000
-SECRET_PATTERN = re.compile(
-    r"(?i)(?:sk-[a-z0-9_-]{8,}|(?:api[_-]?key|token|secret)\s*[=:]\s*[^\s,;]+)"
+PRIVATE_PATTERN = re.compile(
+    r"(?i)(?:sk-[a-z0-9_-]{8,}|github_pat_[a-z0-9_]{8,}|gh[opusr]_[a-z0-9]{8,}|"
+    r"(?:api[_-]?key|access[_-]?token|token|secret|password|passwd)\s*[=:]\s*[^\s,;]+|"
+    r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b|"
+    r"\b[A-Z]:\\Users\\[^\\/\s]+|/(?:home|Users)/[^/\s]+)"
 )
 
 
@@ -23,7 +26,7 @@ class AdapterError(RuntimeError):
 
 
 def redact(text: str) -> str:
-    return SECRET_PATTERN.sub("[REDACTED]", text)
+    return PRIVATE_PATTERN.sub("[REDACTED]", text)
 
 
 def read_payload() -> dict[str, Any]:

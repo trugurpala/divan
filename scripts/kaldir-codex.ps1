@@ -28,23 +28,9 @@ if (-not (Test-Path -LiteralPath $Manifest -PathType Leaf)) {
   throw "Kurulum kaydi bulunamadi: $Manifest"
 }
 
-$dstFull = [IO.Path]::GetFullPath($dst).TrimEnd([IO.Path]::DirectorySeparatorChar)
-$prefix = $dstFull + [IO.Path]::DirectorySeparatorChar
-$rows = Import-Csv -LiteralPath $Manifest -Delimiter "`t"
-foreach ($row in $rows) {
-  $target = [IO.Path]::GetFullPath($row.hedef)
-  if (-not $target.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) {
-    throw "Kayitli hedef skill dizini disinda: $target"
-  }
-  if (Test-Path -LiteralPath $target) {
-    Remove-Item -LiteralPath $target -Recurse -Force
-  }
-  if ($row.yedek -and (Test-Path -LiteralPath $row.yedek)) {
-    Move-Item -LiteralPath $row.yedek -Destination $target
-    Write-Host "  geri yuklendi: $($row.skill)"
-  } else {
-    Write-Host "  kaldirildi: $($row.skill)"
-  }
-}
-
-Write-Host "Divan kaldirildi; kullanilan kayit korundu -> $Manifest"
+$python = Get-Command python -ErrorAction SilentlyContinue
+if (-not $python) { throw "Python 3 bulunamadi; guvenli kaldirma calistirilamiyor." }
+$helper = Join-Path $PSScriptRoot "legacy_state.py"
+& $python.Source $helper migrate --manifest $Manifest --skills-dir $dst --state-dir $stateDir
+if ($LASTEXITCODE -ne 0) { throw "Legacy Divan kaldirma islemi guvenli bicimde geri alindi." }
+Write-Host "Divan karantinaya alindi; kullanilan kayit korundu -> $Manifest"
