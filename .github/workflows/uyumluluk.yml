@@ -108,7 +108,7 @@ jobs:
       - name: Temiz profilde iki native pazarı kur, doğrula ve geri al
         shell: bash
         env:
-          DIVAN_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          DIVAN_REF: ${{ github.sha }}
           DIVAN_PROFILE: ${{ runner.temp }}/divan-native-profile
           DIVAN_TRANSACTION_DIR: ${{ runner.temp }}/divan-native-transactions
         run: |
@@ -116,6 +116,7 @@ jobs:
           import json
           import os
           import pathlib
+          import shutil
           import subprocess
           import sys
 
@@ -145,9 +146,19 @@ jobs:
           subprocess.run(install, check=True, env=environment)
           transaction = next(state.glob("install-*.json"))
 
+          def host_command(host: str, *arguments: str) -> list[str]:
+              resolved = shutil.which(host)
+              if resolved is None:
+                  raise SystemExit(f"{host}: executable was not found")
+              if os.name == "nt" and pathlib.Path(resolved).suffix.lower() in {".cmd", ".bat"}:
+                  return ["cmd.exe", "/d", "/s", "/c", resolved, *arguments]
+              return [resolved, *arguments]
+
           def installed(host: str) -> set[str]:
               output = subprocess.check_output(
-                  [host, "plugin", "list", "--json"], env=environment, text=True
+                  host_command(host, "plugin", "list", "--json"),
+                  env=environment,
+                  text=True,
               )
               value = json.loads(output)
               rows = value if host == "claude" else value["installed"]

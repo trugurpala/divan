@@ -24,6 +24,17 @@ class UpstreamGovernanceTests(unittest.TestCase):
             crlf.write_bytes(b"one\r\ntwo\r\n")
             self.assertEqual(UPSTREAM.sha256(lf), UPSTREAM.sha256(crlf))
 
+    def test_tree_inventory_uses_platform_independent_paths(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upstream-") as temporary:
+            root = pathlib.Path(temporary)
+            nested = root / "references" / "example.md"
+            nested.parent.mkdir(parents=True)
+            nested.write_text("example\n", encoding="utf-8")
+
+            inventory = UPSTREAM.imza(root)
+
+        self.assertEqual(list(inventory), ["references/example.md"])
+
     def test_root_license_is_canonical_and_notice_is_separate(self) -> None:
         license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
         self.assertTrue(license_text.startswith("MIT License\n\nCopyright (c) 2026 trugurpala\n"))

@@ -14,7 +14,7 @@
       "source": "obra/superpowers",
       "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
       "decision": "KEEP",
-      "local_tree_sha256": "0cbb52a22a9aded1a41c010a099076b3cf641d2bb67a97cc7edfd440a4958eb9",
+      "local_tree_sha256": "274d1b989314ed126ab50575867f61964912f3abb88cf9390c0e9e21ec371983",
       "changed_files": ["SKILL.md", "scripts/helper.js", "scripts/start-server.sh", "scripts/stop-server.sh", "spec-document-reviewer-prompt.md", "visual-companion.md"],
       "reason": "Upstream adds a visual companion and server harness; v0.12 keeps Divan's dependency-light approved design gate pending a separate eval."
     },
@@ -68,7 +68,7 @@
       "source": "obra/superpowers",
       "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
       "decision": "KEEP",
-      "local_tree_sha256": "2b0969301092b995915b36b7efcd369920e0269ce361fe353a7f4da139f38080",
+      "local_tree_sha256": "744286f6c3e5cf779a0702e12fc369944747107c45356b84359da646c28610a3",
       "changed_files": ["SKILL.md", "implementer-prompt.md", "task-reviewer-prompt.md"],
       "reason": "Multi-agent prompt changes need concurrency and ownership tests before adoption."
     },
@@ -122,7 +122,7 @@
       "source": "obra/superpowers",
       "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
       "decision": "KEEP",
-      "local_tree_sha256": "c51147191e47a01031dc2d7f2af8c016cc823bcd5619d2abf05975d23958c949",
+      "local_tree_sha256": "783961b5abaa23ce869072f852af95f551dc939e6881c1135597d408777c9a39",
       "changed_files": ["SKILL.md", "anthropic-best-practices.md", "persuasion-principles.md", "render-graphs.js", "testing-skills-with-subagents.md"],
       "reason": "Large upstream expansion requires file-by-file licensing and skill-creation evals before vendoring."
     },
@@ -131,7 +131,7 @@
       "source": "vercel-labs/agent-skills",
       "reviewed_head": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
       "decision": "KEEP",
-      "local_tree_sha256": "5e8dc56d89739d3b6cdb67d1d555f9aaade0c374bf796f444fad7eba5534e369",
+      "local_tree_sha256": "e6250a17b5ff79173571b6f379fa7bae882bf84d6ffc5225522a52f61df4a5e8",
       "changed_files": ["AGENTS.md"],
       "reason": "Retain Divan's documented link repair until upstream link changes are verified against all local rules."
     },
@@ -140,7 +140,7 @@
       "source": "anthropics/skills",
       "reviewed_head": "fa0fa64bdc967915dc8399e803be67759e1e62b8",
       "decision": "KEEP",
-      "local_tree_sha256": "966a286e489325fe3d61bbb6d9fc38aec4b46423d6d1ad03cc46d622662d99d5",
+      "local_tree_sha256": "cb0fd51821be409b89bb0a8eabc662397fe696b0ee6d1b3e8ba202e54d809e1b",
       "changed_files": ["SKILL.md"],
       "reason": "Retain the local Agent Skills description-length patch; upstream text still requires schema review."
     }

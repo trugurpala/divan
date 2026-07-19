@@ -70,7 +70,7 @@ def harita(kok: pathlib.Path) -> dict[str, pathlib.Path]:
 
 def imza(dizin: pathlib.Path) -> dict[str, str]:
     return {
-        str(dosya.relative_to(dizin)): sha256(dosya)
+        dosya.relative_to(dizin).as_posix(): sha256(dosya)
         for dosya in sorted(dizin.rglob("*"))
         if dosya.is_file()
         and ".git" not in dosya.parts
