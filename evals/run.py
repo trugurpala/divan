@@ -9,6 +9,7 @@ körleştirir ve isteğe bağlı bir hakem adaptörüyle ölçer. Yalnız stdlib
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import pathlib
@@ -216,7 +217,7 @@ def _bind_provenance(
         ]
         for skill in skills:
             command.extend(["--skill", skill])
-        command.extend(["--seed", str(seed), "--timeout", f"{timeout:g}"])
+        command.extend(["--seed", "[PRIVATE]", "--timeout", f"{timeout:g}"])
         if min_skill_win_rate is not None:
             command.extend(["--min-skill-win-rate", f"{min_skill_win_rate:g}"])
         bound.update(
@@ -226,7 +227,7 @@ def _bind_provenance(
                 "judge": "Codex CLI",
                 "judge_version": _version_for_command("DIVAN_CODEX_BIN", "codex"),
                 **models,
-                "blind_seed": str(seed),
+                "blind_seed_sha256": hashlib.sha256(str(seed).encode("ascii")).hexdigest(),
                 "selected_skills": ",".join(skills),
                 "timeout_seconds": f"{timeout:g}",
                 "minimum_skill_win_rate": (
@@ -472,9 +473,9 @@ def run_evaluations(
             winner_condition = "tie" if winner_label == "tie" else mapping[winner_label]
             totals[winner_condition] += 1
             public_case["judgement"] = {
-                "reasons": judgement["reasons"],
                 "expectation_scores": judgement["expectation_scores"],
             }
+            key_case["reasons"] = judgement["reasons"]
             key_case["winner_label"] = winner_label
             key_case["winner_condition"] = winner_condition
 
@@ -510,6 +511,7 @@ def run_evaluations(
     key = {
         "schema_version": 1,
         "notice": "Kör inceleme tamamlanmadan bu dosyayı açmayın.",
+        "blind_seed": seed,
         "cases": key_cases,
     }
     return result, key

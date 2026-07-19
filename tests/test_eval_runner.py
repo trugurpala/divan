@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import os
@@ -146,8 +147,10 @@ class EvalRunnerTests(unittest.TestCase):
 
         self.assertEqual(bound["agent_model"], "claude-model-pinned")
         self.assertEqual(bound["judge_model"], "codex-model-pinned")
-        self.assertEqual(bound["blind_seed"], "7")
+        self.assertNotIn("blind_seed", bound)
+        self.assertEqual(bound["blind_seed_sha256"], hashlib.sha256(b"7").hexdigest())
         self.assertIn("--skill baglam-muhafizi", bound["run_command"])
+        self.assertIn("--seed [PRIVATE]", bound["run_command"])
 
     def test_blind_pair_judge_and_threshold(self) -> None:
         case = EVALS.discover_cases(ROOT, {"kaynak-kuratori"})[:1]
@@ -193,9 +196,12 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertEqual(list(result["cases"][0]["candidates"]), ["A", "B"])
         self.assertEqual(key["cases"][0]["mapping"]["A"], "skill")
         self.assertNotIn("winner", result["cases"][0]["judgement"])
+        self.assertNotIn("reasons", result["cases"][0]["judgement"])
+        self.assertIn("reasons", key["cases"][0])
         self.assertIn("winner_label", key["cases"][0])
         self.assertNotIn("winner_condition", result["cases"][0]["judgement"])
         self.assertIn("winner_condition", key["cases"][0])
+        self.assertEqual(key["blind_seed"], 1)
 
     def test_public_candidate_redacts_secrets_email_and_home_paths(self) -> None:
         result = EVALS._validate_agent_result(
