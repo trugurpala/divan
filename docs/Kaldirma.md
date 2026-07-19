@@ -2,7 +2,7 @@
 
 Misafirlik bitti mi? Divan iz bırakmadan gider. Sıra önemli:
 
-## 1. Claude Code'dan paketleri kaldır
+## 1. Claude Code/Desktop Code'dan paketleri kaldır
 ```
 /plugin uninstall sadrazam@divan
 /plugin uninstall core-pack@divan
@@ -18,14 +18,29 @@ Misafirlik bitti mi? Divan iz bırakmadan gider. Sıra önemli:
 Bu ikisi komutları, skill'leri, subagent'ları (kâşif, müfettiş) ve
 SessionStart hook'unu tamamen devre dışı bırakır.
 
-## 3. (İsteğe bağlı) Proje hafızası dosyaları
+## 3. Codex'ten yerel paketleri kaldır
+
+```powershell
+codex plugin remove sadrazam@divan
+codex plugin remove core-pack@divan
+codex plugin remove ui-pack@divan
+codex plugin remove react-pack@divan
+codex plugin remove zanaat-pack@divan
+codex plugin marketplace remove divan
+```
+
+`~/.divan/transactions/install-*.json` dosyası kurulum öncesi host listelerini
+ve o işlemde oluşturulan kayıtları gösterir. Geri alırken yalnız `created`
+alanındaki Divan girdilerini hedefle; başka marketplace veya eklentileri silme.
+
+## 4. (İsteğe bağlı) Proje hafızası dosyaları
 Defterdar'ın SENİN projende ürettiği dosyalar sana aittir. `.divan/`,
 `AGENTS.md` ve `BLUEPRINT.md` başka araçlar veya ekip üyeleri tarafından da
 kullanılıyor olabilir; otomatik bir silme komutu çalıştırma. Önce yedek al,
 `git status` ile sahipliği ve değişiklikleri denetle, sonra yalnızca Divan'a ait
 olduğundan emin olduğun dosyaları tek tek kaldır.
 
-## 4. Cursor/Codex'e elle kopyaladıysan
+## 5. Cursor/Codex'e elle kopyaladıysan
 Kopyaladığın skill klasörlerini ilgili skill dizininden tek tek kaldır. Codex
 kurucusunun oluşturduğu `~/.codex/divan-install-*.tsv` kaydı hedefleri ve varsa
 önceki sürüm yedeklerini gösterir; yedekleri geri yüklemeden önce içeriklerini
@@ -45,7 +60,7 @@ Betikler yalnız kurulum kaydındaki ve `CODEX_SKILLS_DIR` altındaki hedefleri
 kaldırır; çakışma sırasında alınan yedeği yerine koyar, kayıt dosyasını kanıt
 olarak korur. Şüphede manifest yolunu açık argüman ver ve önce içeriğini oku.
 
-## 5. Önbellek kalıntısı (nadiren gerekir)
+## 6. Önbellek kalıntısı (nadiren gerekir)
 Claude Code marketplace klonlarını `~/.claude/` altında tutar; adım 2
 bunu yönetir. Şüphen varsa `~/.claude/plugins/` içinde "divan" ara, sil.
 
