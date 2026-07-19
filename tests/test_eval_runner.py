@@ -98,6 +98,57 @@ class EvalRunnerTests(unittest.TestCase):
             with self.assertRaisesRegex(EVALS.EvalError, "clean"):
                 EVALS._repository_identity(root)
 
+    def test_first_party_provenance_requires_and_records_models_and_run_profile(self) -> None:
+        declared = {
+            "agent": "declared",
+            "agent_version": "declared",
+            "judge": "declared",
+            "judge_version": "declared",
+            "source_commit": "a" * 40,
+            "environment": "declared",
+        }
+        identity = {"source_commit": "a" * 40, "divan_version": "0.12.0"}
+        with (
+            mock.patch.object(EVALS, "_repository_identity", return_value=identity),
+            mock.patch.object(EVALS, "_version_for_command", side_effect=["Claude CLI", "Codex CLI"]),
+            mock.patch.dict(os.environ, {}, clear=True),
+        ):
+            with self.assertRaisesRegex(EVALS.EvalError, "DIVAN_CLAUDE_MODEL"):
+                EVALS._bind_provenance(
+                    declared,
+                    provider_preset="claude-codex",
+                    seed=7,
+                    selected_skills=["baglam-muhafizi"],
+                    timeout=120.0,
+                    min_skill_win_rate=None,
+                )
+
+        with (
+            mock.patch.object(EVALS, "_repository_identity", return_value=identity),
+            mock.patch.object(EVALS, "_version_for_command", side_effect=["Claude CLI", "Codex CLI"]),
+            mock.patch.dict(
+                os.environ,
+                {
+                    "DIVAN_CLAUDE_MODEL": "claude-model-pinned",
+                    "DIVAN_CODEX_MODEL": "codex-model-pinned",
+                },
+                clear=True,
+            ),
+        ):
+            bound = EVALS._bind_provenance(
+                declared,
+                provider_preset="claude-codex",
+                seed=7,
+                selected_skills=["baglam-muhafizi"],
+                timeout=120.0,
+                min_skill_win_rate=None,
+            )
+
+        self.assertEqual(bound["agent_model"], "claude-model-pinned")
+        self.assertEqual(bound["judge_model"], "codex-model-pinned")
+        self.assertEqual(bound["blind_seed"], "7")
+        self.assertIn("--skill baglam-muhafizi", bound["run_command"])
+
     def test_blind_pair_judge_and_threshold(self) -> None:
         case = EVALS.discover_cases(ROOT, {"kaynak-kuratori"})[:1]
         with tempfile.TemporaryDirectory(prefix="divan-eval-adapter-") as temporary:
@@ -130,6 +181,7 @@ class EvalRunnerTests(unittest.TestCase):
                 case,
                 f"{sys.executable} {adapter}",
                 f"{sys.executable} {judge}",
+                seed=1,
                 min_skill_win_rate=1.0,
             )
 
@@ -138,6 +190,8 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertTrue(result["summary"]["gate_passed"])
         self.assertNotIn("mapping", result["cases"][0])
         self.assertIn("mapping", key["cases"][0])
+        self.assertEqual(list(result["cases"][0]["candidates"]), ["A", "B"])
+        self.assertEqual(key["cases"][0]["mapping"]["A"], "skill")
         self.assertNotIn("winner_condition", result["cases"][0]["judgement"])
         self.assertIn("winner_condition", key["cases"][0])
 

@@ -55,6 +55,18 @@ def uret(kok: pathlib.Path = KOK) -> str:
     kapilar = veri["gates"]
     gecen = sum(k["status"] == "passed" for k in kapilar)
     hazir = sum(k["status"] == "ready" for k in kapilar)
+    kalan_metinleri = {
+        "real-agent-comparison": "Gerçek bir ajan adaptörü ve bağımsız hakemle aynı vakaları baseline/skill olarak koşup sonucu yayımlamak.",
+        "independent-adoption": "Proje sahibi dışındaki en az bir kullanıcının sabitlenmiş release üzerinden kurulum ve görev kanıtını kabul formuyla göndermesi.",
+    }
+    kalan = [
+        kalan_metinleri.get(kapi["id"], kapi["title"])
+        for kapi in kapilar
+        if kapi["status"] != "passed"
+    ]
+    kalan_satirlari = [f"{sira}. {metin}" for sira, metin in enumerate(kalan, start=1)]
+    if not kalan_satirlari:
+        kalan_satirlari = ["Bütün v1 kapıları kanıtla geçti."]
     satirlar = [
         "# v1 Hazırlık Karnesi",
         "",
@@ -81,8 +93,7 @@ def uret(kok: pathlib.Path = KOK) -> str:
             "",
             "## v1 için kalan gerçek işler",
             "",
-            "1. Gerçek bir ajan adaptörü ve bağımsız hakemle aynı vakaları baseline/skill olarak koşup sonucu yayımlamak.",
-            "2. Proje sahibi dışındaki en az bir kullanıcının sabitlenmiş release üzerinden kurulum ve görev kanıtını kabul formuyla göndermesi.",
+            *kalan_satirlari,
             "",
             "Bu sayfa elle güncellenmez. Kaynak `registry/v1-gates.json`; üretim "
             "`python scripts/v1.py --render`, sapma teftişi `python scripts/v1.py --check` komutudur.",

@@ -180,6 +180,10 @@ def _bind_provenance(
     provenance: dict[str, str],
     *,
     provider_preset: str | None,
+    seed: int = 0,
+    selected_skills: list[str] | None = None,
+    timeout: float = 120.0,
+    min_skill_win_rate: float | None = None,
     root: pathlib.Path = ROOT,
 ) -> dict[str, str]:
     identity = _repository_identity(root)
@@ -191,12 +195,44 @@ def _bind_provenance(
         filter(None, (platform.system(), platform.release(), platform.machine()))
     )
     if provider_preset == "claude-codex":
+        models: dict[str, str] = {}
+        for variable, field in (
+            ("DIVAN_CLAUDE_MODEL", "agent_model"),
+            ("DIVAN_CODEX_MODEL", "judge_model"),
+        ):
+            value = os.environ.get(variable, "").strip()
+            if not value:
+                raise EvalError(f"{variable} must pin the provider model for publishable runs")
+            if _redact_public_text(value) != value:
+                raise EvalError(f"{variable} contains private data")
+            models[field] = value
+        skills = sorted(selected_skills or [])
+        command = [
+            "python",
+            "evals/run.py",
+            "--run",
+            "--provider-preset",
+            "claude-codex",
+        ]
+        for skill in skills:
+            command.extend(["--skill", skill])
+        command.extend(["--seed", str(seed), "--timeout", f"{timeout:g}"])
+        if min_skill_win_rate is not None:
+            command.extend(["--min-skill-win-rate", f"{min_skill_win_rate:g}"])
         bound.update(
             {
                 "agent": "Claude Code",
                 "agent_version": _version_for_command("DIVAN_CLAUDE_BIN", "claude"),
                 "judge": "Codex CLI",
                 "judge_version": _version_for_command("DIVAN_CODEX_BIN", "codex"),
+                **models,
+                "blind_seed": str(seed),
+                "selected_skills": ",".join(skills),
+                "timeout_seconds": f"{timeout:g}",
+                "minimum_skill_win_rate": (
+                    "none" if min_skill_win_rate is None else f"{min_skill_win_rate:g}"
+                ),
+                "run_command": subprocess.list2cmdline(command),
             }
         )
     return bound
@@ -396,8 +432,11 @@ def run_evaluations(
         labels = ["A", "B"]
         rng.shuffle(labels)
         mapping = {labels[0]: "baseline", labels[1]: "skill"}
+        # Public and judge-visible candidate order must be stable and independent
+        # from the randomized baseline/skill mapping. Otherwise dict insertion
+        # order itself reconstructs the supposedly private mapping.
         candidates = {
-            label: _public_candidate(outputs[condition]) for label, condition in mapping.items()
+            label: _public_candidate(outputs[mapping[label]]) for label in ("A", "B")
         }
         public_case: dict[str, Any] = {
             "skill_name": case["skill_name"],
@@ -539,6 +578,10 @@ def main(argv: list[str] | None = None) -> int:
             provenance = _bind_provenance(
                 provenance,
                 provider_preset=args.provider_preset,
+                seed=args.seed,
+                selected_skills=skills,
+                timeout=args.timeout,
+                min_skill_win_rate=args.min_skill_win_rate,
             )
         result, key = run_evaluations(
             cases,
