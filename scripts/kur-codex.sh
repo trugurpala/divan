@@ -6,7 +6,6 @@ set -Eeuo pipefail
 REF="${DIVAN_REF:-v0.12.0}"
 DST="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
-STAMP="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/divan-kur.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
@@ -97,52 +96,10 @@ else
   VERSION="${REF#v}"
 fi
 INSTALLED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-BACKUP_ROOT="$STATE_DIR/divan-backups/$STAMP"
-MANIFEST="$STATE_DIR/divan-install-$STAMP.tsv"
-printf 'skill\thedef\tyedek\tsurum\tref\tsource_commit\tarchive_sha256\tinstalled_sha256\tinstalled_at\n' > "$MANIFEST"
-
-shopt -s nullglob
-skills=("$SOURCE"/plugins/*/skills/*)
-if ((${#skills[@]} == 0)); then
-  echo "HATA: Kurulacak skill bulunamadi." >&2
-  exit 1
-fi
-
-seen_names=$'\n'
-for skill in "${skills[@]}"; do
-  [[ -d "$skill" && -f "$skill/SKILL.md" ]] || continue
-  name="$(basename "$skill")"
-  if [[ "$seen_names" == *$'\n'"$name"$'\n'* ]]; then
-    echo "HATA: Tekrarlanan skill adi: $name" >&2
-    exit 1
-  fi
-  seen_names+="$name"$'\n'
-
-  target="$DST/$name"
-  backup=""
-  if [[ -e "$target" ]]; then
-    backup="$BACKUP_ROOT/$name"
-    mkdir -p "$BACKUP_ROOT"
-    mv "$target" "$backup"
-  fi
-
-  if ! cp -R "$skill" "$target"; then
-    [[ -n "$backup" && -e "$backup" ]] && mv "$backup" "$target"
-    echo "HATA: $name kopyalanamadi; onceki surum geri getirildi." >&2
-    exit 1
-  fi
-  installed_sha256="$($PYTHON_BIN "$LEGACY_STATE" digest "$target")"
-  if [[ ! "$installed_sha256" =~ ^[0-9a-f]{64}$ ]]; then
-    echo "HATA: $name kurulum ozeti uretilemedi." >&2
-    exit 1
-  fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
-    "$name" "$target" "$backup" "$VERSION" "$REF" "$SOURCE_COMMIT" "$ARCHIVE_SHA256" "$installed_sha256" "$INSTALLED_AT" >> "$MANIFEST"
-  echo "  vezir: $name"
-done
-
+"$PYTHON_BIN" "$LEGACY_STATE" install --source "$SOURCE" --skills-dir "$DST" \
+  --state-dir "$STATE_DIR" --version "$VERSION" --ref "$REF" \
+  --source-commit "$SOURCE_COMMIT" --archive-sha256 "$ARCHIVE_SHA256" \
+  --installed-at "$INSTALLED_AT"
 echo
-printf '%s\n' "$MANIFEST" > "$STATE_DIR/divan-install-latest"
 echo "Divan kuruldu -> $DST"
-echo "Kurulum kaydi -> $MANIFEST"
 echo "Codex'i yeniden baslat, sonra dene: 'bastan sona yap: kucuk bir todo uygulamasi'"

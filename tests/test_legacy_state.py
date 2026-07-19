@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import importlib.util
+import json
 import pathlib
 import tempfile
 import unittest
@@ -104,6 +105,120 @@ class LegacyStateTests(unittest.TestCase):
                     (state / "divan-backups" / "old" / name / "SKILL.md").read_text(),
                     f"user {name}",
                 )
+
+    def test_durable_migration_journal_recovers_after_process_loss(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-legacy-") as temporary:
+            base = pathlib.Path(temporary)
+            skills = base / "skills"
+            state = base / "state"
+            target = skills / "sadrazam"
+            backup = state / "divan-backups" / "old" / "sadrazam"
+            quarantine = state / "divan-quarantine" / "crash" / "sadrazam"
+            self._skill(quarantine, "installed")
+            self._skill(target, "user copy")
+            journal = state / "divan-transactions" / "crash.json"
+            journal.parent.mkdir(parents=True)
+            journal.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "kind": "migration",
+                        "status": "in-progress",
+                        "skills_dir": str(skills),
+                        "state_dir": str(state),
+                        "pending": {"kind": "restore-backup", "name": "sadrazam"},
+                        "operations": [
+                            {
+                                "name": "sadrazam",
+                                "target": str(target),
+                                "backup": str(backup),
+                                "owned": str(quarantine),
+                                "quarantined": True,
+                                "backup_restored": True,
+                                "recovered": False,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            recovered = LEGACY_STATE.recover_legacy(journal)
+
+            self.assertEqual(recovered["status"], "recovered")
+            self.assertEqual((target / "SKILL.md").read_text(), "installed")
+            self.assertEqual((backup / "SKILL.md").read_text(), "user copy")
+
+    def test_recovery_leaves_an_unprocessed_row_with_a_missing_backup_untouched(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-legacy-") as temporary:
+            base = pathlib.Path(temporary)
+            skills = base / "skills"
+            state = base / "state"
+            target = skills / "sadrazam"
+            backup = state / "divan-backups" / "old" / "sadrazam"
+            owned = state / "divan-quarantine" / "crash" / "sadrazam"
+            self._skill(target, "installed")
+            journal = state / "divan-transactions" / "crash.json"
+            journal.parent.mkdir(parents=True)
+            journal.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "kind": "migration",
+                        "status": "in-progress",
+                        "skills_dir": str(skills),
+                        "state_dir": str(state),
+                        "pending": None,
+                        "operations": [
+                            {
+                                "name": "sadrazam",
+                                "target": str(target),
+                                "backup": str(backup),
+                                "owned": str(owned),
+                                "quarantined": False,
+                                "backup_restored": False,
+                                "recovered": False,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            recovered = LEGACY_STATE.recover_legacy(journal)
+
+            self.assertEqual(recovered["status"], "recovered")
+            self.assertEqual((target / "SKILL.md").read_text(), "installed")
+            self.assertFalse(backup.exists())
+            self.assertFalse(owned.exists())
+
+    def test_fallback_install_failure_reverses_all_completed_rows(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-legacy-") as temporary:
+            base = pathlib.Path(temporary)
+            source = base / "source"
+            skills = base / "skills"
+            state = base / "state"
+            for name in ("sadrazam", "defterdar"):
+                self._skill(source / "plugins" / "pack" / "skills" / name, f"new {name}")
+                self._skill(skills / name, f"user {name}")
+
+            with self.assertRaisesRegex(LEGACY_STATE.LegacyStateError, "rolled back"):
+                LEGACY_STATE.install_legacy(
+                    source,
+                    skills,
+                    state,
+                    {
+                        "version": "0.12.0",
+                        "ref": "v0.12.0",
+                        "source_commit": "a" * 40,
+                        "archive_sha256": "b" * 64,
+                        "installed_at": "2026-07-19T00:00:00Z",
+                    },
+                    fail_after=1,
+                )
+
+            for name in ("sadrazam", "defterdar"):
+                self.assertEqual((skills / name / "SKILL.md").read_text(), f"user {name}")
 
 
 if __name__ == "__main__":

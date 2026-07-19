@@ -42,7 +42,8 @@ Versioning while the public API remains in initial development (`0.y.z`).
   source commit; mutable `main` downloads, mutable Action tags, moved release
   tags, and release-asset overwrite attempts are rejected.
 - Host mutations are atomically journaled before execution and interrupted
-  transactions have an ownership-checked recovery command.
+  transactions have an ownership-checked, resumable recovery command. Legacy
+  migration and fallback copying use their own durable, reversible journals.
 - Eval subprocesses are bounded, do not use dangerous bypass flags, redact
   secrets/PII/home paths, keep per-case A/B outcomes private, and bind publishable
   provenance to a clean Git HEAD plus provider-derived versions.

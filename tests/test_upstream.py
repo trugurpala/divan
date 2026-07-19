@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import pathlib
+import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -14,6 +15,15 @@ SPEC.loader.exec_module(UPSTREAM)
 
 
 class UpstreamGovernanceTests(unittest.TestCase):
+    def test_text_hash_is_stable_across_line_endings(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upstream-eol-") as temporary:
+            root = pathlib.Path(temporary)
+            lf = root / "lf.md"
+            crlf = root / "crlf.md"
+            lf.write_bytes(b"one\ntwo\n")
+            crlf.write_bytes(b"one\r\ntwo\r\n")
+            self.assertEqual(UPSTREAM.sha256(lf), UPSTREAM.sha256(crlf))
+
     def test_root_license_is_canonical_and_notice_is_separate(self) -> None:
         license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
         self.assertTrue(license_text.startswith("MIT License\n\nCopyright (c) 2026 trugurpala\n"))

@@ -47,7 +47,14 @@ KARARLAR = {"KEEP", "ADAPT", "ADOPT", "REFERENCE", "REJECT"}
 
 
 def sha256(dosya: pathlib.Path) -> str:
-    return hashlib.sha256(dosya.read_bytes()).hexdigest()
+    payload = dosya.read_bytes()
+    try:
+        text = payload.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    else:
+        payload = text.replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def harita(kok: pathlib.Path) -> dict[str, pathlib.Path]:

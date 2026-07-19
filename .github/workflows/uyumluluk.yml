@@ -135,6 +135,7 @@ jobs:
               sys.executable,
               "scripts/kur-hostlar.py",
               "--host", "both",
+              "--source", os.getcwd(),
               "--ref", os.environ["DIVAN_REF"],
               "--execute",
               "--state-dir", str(state),
@@ -155,9 +156,19 @@ jobs:
               "sadrazam@divan", "core-pack@divan", "ui-pack@divan",
               "react-pack@divan", "zanaat-pack@divan",
           }
+          record = json.loads(transaction.read_text(encoding="utf-8"))
+          if record.get("status") != "verified":
+              raise SystemExit("native install transaction was not verified")
           for host in ("claude", "codex"):
               if not expected.issubset(installed(host)):
                   raise SystemExit(f"{host}: five native Divan packages were not installed")
+              evidence = record.get("verified", {}).get(host, {})
+              if evidence.get("package_count") != 5 or evidence.get("skill_count") != 41:
+                  raise SystemExit(f"{host}: native package/skill evidence is incomplete")
+              if evidence.get("ref") != os.environ["DIVAN_REF"]:
+                  raise SystemExit(f"{host}: verified ref does not match CI commit")
+              if evidence.get("all_enabled") is not True:
+                  raise SystemExit(f"{host}: one or more native packages are disabled")
 
           subprocess.run(
               [sys.executable, "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)],

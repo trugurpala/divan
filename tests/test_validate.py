@@ -102,12 +102,13 @@ class RepositoryTests(unittest.TestCase):
     def test_fallback_installers_require_checksum_and_provenance(self) -> None:
         for name in ("kur-codex.ps1", "kur-codex.sh"):
             text = (ROOT / "scripts" / name).read_text(encoding="utf-8")
+            normalized = text.lower().replace("-", "_")
             self.assertNotIn("DIVAN_REF:-main", text)
             self.assertNotIn('else { "main" }', text)
-            self.assertIn("archive_sha256", text)
-            self.assertIn("source_commit", text)
+            self.assertIn("archive_sha256", normalized)
+            self.assertIn("source_commit", normalized)
             self.assertIn("ls-remote", text)
-            self.assertIn("installed_at", text)
+            self.assertIn("installed_at", normalized)
             self.assertIn("SHA256", text.upper())
         release = (ROOT / ".github" / "workflows" / "release.yml").read_text(encoding="utf-8")
         self.assertIn("git archive --format=zip", release)

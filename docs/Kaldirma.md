@@ -67,6 +67,9 @@ silinmez, `~/.codex/divan-quarantine/` altına taşınır; çakışma sırasınd
 yedekler yerine konur ve ara hata bütün taşıma işlemlerini geri alır. Eski,
 özet alanı bulunmayan manifest fail-closed reddedilir. Şüphede manifest yolunu
 açık argüman ver ve önce içeriğini oku.
+Yarım kalan fallback/göç işlemleri `divan-transactions/legacy-*.json` günlüğüyle
+`python scripts/legacy_state.py recover --journal <günlük.json>` üzerinden
+yeniden ve güvenli biçimde toparlanabilir.
 
 ## 6. Önbellek kalıntısı (nadiren gerekir)
 Claude Code marketplace klonlarını `~/.claude/` altında tutar; adım 2

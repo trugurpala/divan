@@ -13,7 +13,6 @@ $stateDir = if ($env:DIVAN_STATE_DIR) {
 } else {
   Join-Path $env:USERPROFILE ".codex"
 }
-$stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ") + "-" + [Guid]::NewGuid().ToString("N").Substring(0, 8)
 $work = Join-Path ([IO.Path]::GetTempPath()) ("divan-kur-" + [Guid]::NewGuid())
 
 try {
@@ -91,46 +90,12 @@ try {
     $ref.TrimStart("v")
   }
   $installedAt = (Get-Date).ToUniversalTime().ToString("o")
-  $backupRoot = Join-Path $stateDir "divan-backups\$stamp"
-  $manifest = Join-Path $stateDir "divan-install-$stamp.tsv"
-  "skill`thedef`tyedek`tsurum`tref`tsource_commit`tarchive_sha256`tinstalled_sha256`tinstalled_at" | Set-Content -Encoding utf8 $manifest
-  $seen = @{}
-
-  $skills = Get-ChildItem (Join-Path $source "plugins\*\skills\*") -Directory
-  if (-not $skills) { throw "Kurulacak skill bulunamadi." }
-
-  foreach ($skill in $skills) {
-    if (-not (Test-Path (Join-Path $skill.FullName "SKILL.md"))) { continue }
-    $name = $skill.Name
-    if ($seen.ContainsKey($name)) { throw "Tekrarlanan skill adi: $name" }
-    $seen[$name] = $true
-
-    $target = Join-Path $dst $name
-    $backup = ""
-    if (Test-Path $target) {
-      New-Item -ItemType Directory -Force -Path $backupRoot | Out-Null
-      $backup = Join-Path $backupRoot $name
-      Move-Item $target $backup
-    }
-
-    try {
-      Copy-Item $skill.FullName -Destination $target -Recurse
-    } catch {
-      if ($backup -and (Test-Path $backup)) { Move-Item $backup $target }
-      throw "$name kopyalanamadi; onceki surum geri getirildi. $($_.Exception.Message)"
-    }
-    $installedSha256 = (& $python.Source $legacyState digest $target | Select-Object -Last 1).Trim()
-    if ($LASTEXITCODE -ne 0 -or $installedSha256 -notmatch '^[0-9a-f]{64}$') {
-      throw "$name kurulum ozeti uretilemedi."
-    }
-    "$name`t$target`t$backup`t$version`t$ref`t$sourceCommit`t$archiveSha256`t$installedSha256`t$installedAt" | Add-Content -Encoding utf8 $manifest
-    Write-Host "  vezir: $name"
-  }
-
-  $manifest | Set-Content -Encoding utf8 (Join-Path $stateDir "divan-install-latest")
+  & $python.Source $legacyState install --source $source --skills-dir $dst --state-dir $stateDir `
+    --version $version --ref $ref --source-commit $sourceCommit `
+    --archive-sha256 $archiveSha256 --installed-at $installedAt
+  if ($LASTEXITCODE -ne 0) { throw "Islemsel fallback kurulumu geri alindi." }
   Write-Host ""
   Write-Host "Divan kuruldu -> $dst"
-  Write-Host "Kurulum kaydi -> $manifest"
   Write-Host "Codex'i yeniden baslat, sonra dene: 'bastan sona yap: kucuk bir todo uygulamasi'"
 } finally {
   if (Test-Path $work) { Remove-Item $work -Recurse -Force }
