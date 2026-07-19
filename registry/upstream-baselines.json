@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-07-19",
+  "policy": "Reviewed drift is never copied automatically; a new upstream commit reopens review.",
+  "sources": [
+    {"repository": "obra/superpowers", "license": "MIT", "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99"},
+    {"repository": "anthropics/skills", "license": "Apache-2.0", "reviewed_head": "fa0fa64bdc967915dc8399e803be67759e1e62b8"},
+    {"repository": "vercel-labs/agent-skills", "license": "MIT", "reviewed_head": "f8a72b9603728bb92a217a879b7e62e43ad76c81"},
+    {"repository": "nextlevelbuilder/ui-ux-pro-max-skill", "license": "MIT", "reviewed_head": "f8ac5e1266dba8354ea96e19994d9f4345e7ec31"}
+  ],
+  "reviews": [
+    {
+      "skill": "brainstorming",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "88bf4afb9889707b0dbb70dc493e8d29695b61d4d0132483a773be465c146d2c",
+      "changed_files": ["SKILL.md", "scripts/helper.js", "scripts/start-server.sh", "scripts/stop-server.sh", "spec-document-reviewer-prompt.md", "visual-companion.md"],
+      "reason": "Upstream adds a visual companion and server harness; v0.12 keeps Divan's dependency-light approved design gate pending a separate eval."
+    },
+    {
+      "skill": "dispatching-parallel-agents",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "0b58fd8fe7813315f442ccbbf945519c250e03452fad3bb7898482d8e13b2722",
+      "changed_files": ["SKILL.md"],
+      "reason": "Current Divan orchestration contract remains compatible; semantic changes require isolated agent eval before adoption."
+    },
+    {
+      "skill": "executing-plans",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "70579ff0cea1eb398c5dc4b1f4944d4b317a257f77a65071340c8bf35a08df3f",
+      "changed_files": ["SKILL.md"],
+      "reason": "Keep the currently validated execution checkpoints until cross-provider behavior evaluation covers the upstream revision."
+    },
+    {
+      "skill": "finishing-a-development-branch",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "38529c108e1e611f925bb59c4a3682e00140266adc5d170429039a1bcc7a9e2c",
+      "changed_files": ["SKILL.md"],
+      "reason": "Divan's public-delivery rules are stricter than a generic branch finish; retain the local contract for v0.12."
+    },
+    {
+      "skill": "receiving-code-review",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "f6580254e90ffc0f30c47eafb23ebab2922231b06f1b5361df45bd5ca2a2505a",
+      "changed_files": ["SKILL.md"],
+      "reason": "No proven Divan gap justifies changing the current evidence-first review intake behavior."
+    },
+    {
+      "skill": "requesting-code-review",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "44696241e6d02a471fbfeea6e85b0a20c8a24a4f186a10e9fdce5caac504a061",
+      "changed_files": ["SKILL.md", "code-reviewer.md"],
+      "reason": "Reviewer prompt changes can alter severity judgments; defer until blinded regression cases exist."
+    },
+    {
+      "skill": "subagent-driven-development",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "f1939554becbc5accf29744bb561bdaa905f5920df5381d041aa1d8473ae9193",
+      "changed_files": ["SKILL.md", "implementer-prompt.md", "task-reviewer-prompt.md"],
+      "reason": "Multi-agent prompt changes need concurrency and ownership tests before adoption."
+    },
+    {
+      "skill": "systematic-debugging",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "bf6a9d7cb80e5a1b26a78db995d3fab3c17a941de02de191850ada1686950629",
+      "changed_files": ["SKILL.md", "CREATION-LOG.md", "condition-based-waiting.md", "defense-in-depth.md", "root-cause-tracing.md"],
+      "reason": "Upstream expands references and examples; retain the smaller validated bundle until license and behavior review is complete."
+    },
+    {
+      "skill": "test-driven-development",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "69f1c44860ae5ba0c185f9f427c84e0aed98ecea62f36995b655c40f1af3a1d6",
+      "changed_files": ["SKILL.md", "testing-anti-patterns.md"],
+      "reason": "The current red-green-refactor contract is already enforced; evaluate new anti-pattern guidance separately."
+    },
+    {
+      "skill": "using-git-worktrees",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "9eb6634ad4480b2fd971ddde072270ded12642b2225989b37d69e94d91ca8eeb",
+      "changed_files": ["SKILL.md"],
+      "reason": "Divan's Windows-safe worktree rules remain necessary and validated."
+    },
+    {
+      "skill": "verification-before-completion",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "6f035b78d6e0fd10dd1d9e97174b58712e7f7d798d458c9ab9a7e4d76359357c",
+      "changed_files": ["SKILL.md"],
+      "reason": "The local completion-evidence contract aligns with Divan's release gates; no measured gap is present."
+    },
+    {
+      "skill": "writing-plans",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "937fe100d6a731587878a9c20d2946e03aff147c34099172ba2c721be3a3e986",
+      "changed_files": ["SKILL.md", "plan-document-reviewer-prompt.md"],
+      "reason": "The new plan reviewer prompt needs an eval before becoming a bundled agent dependency."
+    },
+    {
+      "skill": "writing-skills",
+      "source": "obra/superpowers",
+      "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
+      "decision": "KEEP",
+      "local_tree_sha256": "5121d38f66f587a2e73d283b042cc17b0aad5ca6e1c82f57b6d1e987f27c129a",
+      "changed_files": ["SKILL.md", "anthropic-best-practices.md", "persuasion-principles.md", "render-graphs.js", "testing-skills-with-subagents.md"],
+      "reason": "Large upstream expansion requires file-by-file licensing and skill-creation evals before vendoring."
+    },
+    {
+      "skill": "vercel-react-best-practices",
+      "source": "vercel-labs/agent-skills",
+      "reviewed_head": "f8a72b9603728bb92a217a879b7e62e43ad76c81",
+      "decision": "KEEP",
+      "local_tree_sha256": "5eefaa818849eb2305c31e01edcac113fb5c622a867fa0eeb3c17b5a50daeeaf",
+      "changed_files": ["AGENTS.md"],
+      "reason": "Retain Divan's documented link repair until upstream link changes are verified against all local rules."
+    },
+    {
+      "skill": "claude-api",
+      "source": "anthropics/skills",
+      "reviewed_head": "fa0fa64bdc967915dc8399e803be67759e1e62b8",
+      "decision": "KEEP",
+      "local_tree_sha256": "69bdde171b048c8ab11bbcfa34bd0d7f40da59bd25f81fdb4e83fed3a4fd5125",
+      "changed_files": ["SKILL.md"],
+      "reason": "Retain the local Agent Skills description-length patch; upstream text still requires schema review."
+    }
+  ]
+}

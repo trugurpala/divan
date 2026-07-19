@@ -306,6 +306,7 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     for gerekli in [
         "THIRD_PARTY_LICENSES.md",
         "LICENSE",
+        "NOTICE.md",
         "README.md",
         "README.en.md",
         "CHANGELOG.md",
@@ -313,6 +314,7 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
         "BLUEPRINT.md",
         "CLAUDE.md",
         "UPSTREAM.md",
+        "registry/upstream-baselines.json",
         "CONTRIBUTING.md",
     ]:
         if not (kok / gerekli).exists():

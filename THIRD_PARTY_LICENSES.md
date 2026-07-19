@@ -2,7 +2,7 @@
 
 Bu derleme aşağıdaki açık kaynak projelerden seçilmiş skill'ler içerir. Lisans
 metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
-2026-07-17.
+2026-07-19. Genel bildirim ve marka notları `NOTICE.md` içindedir.
 
 | Paket / içerik | Skill sayısı | Kaynak | Lisans ve yerel metin |
 |---|---:|---|---|
