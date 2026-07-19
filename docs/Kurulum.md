@@ -14,6 +14,12 @@ python scripts/kur-hostlar.py --host both --ref <tag-veya-commit>
 python scripts/kur-hostlar.py --host both --ref <tag-veya-commit> --execute
 ```
 
+Kurucu, aynı isimde mevcut bir `divan` pazarı veya pazarsız kalmış `@divan`
+eklentisi görürse onun kaynak ve ref bilgisini güvenilir biçimde kanıtlayamadığı
+için durur; mevcut pazarı veya eklentileri değiştirmez. Önce host'un kendi
+listeleme komutlarıyla kayıtları inceleyin ve yalnız size ait olduklarından
+eminseniz elle kaldırıp işlemi yeniden çalıştırın.
+
 `--host claude` veya `--host codex` tek host seçer. Kurucu iki ürünün resmî
 plugin CLI'larını kullanır, mevcut durumun tam listesini işlem kaydına yazar,
 yalnız kendi eklediği `divan` kayıtlarını geri alır ve alakasız eklentilere

@@ -64,6 +64,10 @@ python scripts/kur-hostlar.py --host both --ref v0.12.0
 python scripts/kur-hostlar.py --host both --ref v0.12.0 --execute
 ```
 
+Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
+veya `@divan` eklentisinin üzerine yazmaz; kaydı olduğu gibi bırakıp açık bir
+hata verir.
+
 Kurucu Claude Code/Desktop Code ile Codex'in resmî plugin CLI'larını kullanır,
 mevcut eklentileri işlem kaydına alır ve alakasız eklentilere dokunmaz. Tek-host,
 elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md).

@@ -184,9 +184,21 @@ def install(
                 "marketplaces": sorted(before_marketplaces),
                 "plugins": sorted(before_plugins),
             }
-            if "divan" not in before_marketplaces:
-                _run(runner, _add_marketplace_command(host, options.source, options.ref))
-                record["created"]["marketplaces"].append(host)
+            if "divan" in before_marketplaces:
+                raise InstallError(
+                    f"{host}: existing divan marketplace source/ref cannot be proven; "
+                    "no existing entry was changed"
+                )
+            orphaned_divan_plugins = sorted(
+                plugin for plugin in before_plugins if plugin.endswith("@divan")
+            )
+            if orphaned_divan_plugins:
+                raise InstallError(
+                    f"{host}: existing divan plugin source/ref cannot be proven: "
+                    f"{', '.join(orphaned_divan_plugins)}; no existing entry was changed"
+                )
+            _run(runner, _add_marketplace_command(host, options.source, options.ref))
+            record["created"]["marketplaces"].append(host)
             for package in PACKAGES:
                 selector = f"{package}@divan"
                 if selector in before_plugins:

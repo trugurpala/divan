@@ -47,6 +47,10 @@ python scripts/kur-hostlar.py --host both --ref v0.12.0
 python scripts/kur-hostlar.py --host both --ref v0.12.0 --execute
 ```
 
+For safety, the installer never overwrites an existing `divan` marketplace or
+`@divan` plugin whose source/ref cannot be proven; it leaves the entry untouched
+and fails with an actionable error.
+
 The installer delegates to the official Claude and Codex plugin CLIs, records
 pre-state, and never removes unrelated plugins. See
 [installation options](docs/Kurulum.md) for single-host, manual, legacy

@@ -124,6 +124,47 @@ class HostInstallTests(unittest.TestCase):
         self.assertIn("divan", runner.marketplaces["claude"])
         self.assertIn("sadrazam@divan", runner.plugins["claude"])
 
+    def test_existing_divan_marketplace_is_not_trusted_without_provenance(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].update(
+                f"{package}@divan" for package in HOST_INSTALL.PACKAGES
+            )
+            before_plugins = set(runner.plugins["codex"])
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "source/ref"):
+                HOST_INSTALL.install(
+                    self.options(pathlib.Path(temporary), host="codex"), runner=runner
+                )
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertEqual(runner.plugins["codex"], before_plugins)
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "remove") for command in runner.commands)
+        )
+
+    def test_orphaned_divan_plugins_are_not_trusted_without_provenance(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("personal")
+            runner.plugins["codex"].update(
+                f"{package}@divan" for package in HOST_INSTALL.PACKAGES
+            )
+            before_marketplaces = set(runner.marketplaces["codex"])
+            before_plugins = set(runner.plugins["codex"])
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "plugin source/ref"):
+                HOST_INSTALL.install(
+                    self.options(pathlib.Path(temporary), host="codex"), runner=runner
+                )
+
+        self.assertEqual(runner.marketplaces["codex"], before_marketplaces)
+        self.assertEqual(runner.plugins["codex"], before_plugins)
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "add") for command in runner.commands)
+        )
+
     def test_legacy_migration_requires_verified_codex_target(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             runner = FakeRunner()
