@@ -34,4 +34,3 @@ GitHub güvenlik ve branch kuralları repo içi kanıtla eşlenecek.
 - Telemetri, hosted dashboard ve üçüncü taraf runtime eklenmez.
 - v0.13.0 bu mekanik güvenceyi yayımlar; bağımsız kullanıcı kanıtı olmadan v1
   veya davranış kalitesi iddiası yapılmaz.
-
