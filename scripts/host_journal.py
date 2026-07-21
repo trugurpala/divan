@@ -328,8 +328,7 @@ def _created_plugin_matches(
             row["host"],
             row["install_path"],
             pathlib.Path(marketplace["root"]),
-            package,
-            row["version"],
+            package, row["version"], target["source"],
         )
         and row["version"] == target["versions"][package]
     )

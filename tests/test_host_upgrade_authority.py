@@ -148,6 +148,46 @@ class HostUpgradeAuthorityTests(unittest.TestCase):
                 )
             evidence.assert_not_called()
 
+    def test_local_claude_schema2_terminal_recovery_and_source_tamper(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-local-claude-schema2-") as temporary:
+            config = pathlib.Path(temporary) / ".claude"
+            install = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.9.1"
+            target = {
+                "source": str(ROOT),
+                "ref": TARGET_REF,
+                "root": str(ROOT),
+                "commit": "a" * 40,
+                "catalog_digest": "b" * 64,
+                "versions": TARGET_VERSIONS,
+            }
+            marketplace = {
+                "host": "claude",
+                **{key: target[key] for key in ("source", "ref", "root", "commit", "catalog_digest")},
+            }
+            plugin = {
+                "host": "claude",
+                "id": "sadrazam@divan",
+                "version": "0.9.1",
+                "marketplace_root": str(ROOT),
+                "install_path": str(install),
+                "native_provenance": True,
+            }
+            created = {"marketplaces": [marketplace], "plugins": [plugin]}
+            with mock.patch.dict(
+                "os.environ", {"CLAUDE_CONFIG_DIR": str(config)}
+            ):
+                self.assertTrue(
+                    HOSTS._host_journal._created(
+                        created, {"claude"}, target, HOSTS._normalize_source
+                    )
+                )
+                tampered = {**target, "source": SOURCE}
+                self.assertFalse(
+                    HOSTS._host_journal._created(
+                        created, {"claude"}, tampered, HOSTS._normalize_source
+                    )
+                )
+
     def options(self, state_dir: pathlib.Path, **changes: object) -> object:
         values = {
             "host": "codex",
