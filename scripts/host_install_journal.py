@@ -115,7 +115,11 @@ def capture_plugin(
         raise InstallJournalError(f"{host}: created {selector} ownership is missing")
     try:
         fingerprint = host_state.plugin_fingerprint(
-            host, selector, row, pathlib.Path(marketplace["root"])
+            host,
+            selector,
+            row,
+            pathlib.Path(marketplace["root"]),
+            marketplace["source"],
         )
     except host_state.StateError as exc:
         raise InstallJournalError(str(exc)) from exc
@@ -145,7 +149,11 @@ def recover_native(
             continue
         try:
             fingerprint = host_state.plugin_fingerprint(
-                entry["host"], entry["id"], current, pathlib.Path(entry["marketplace_root"])
+                entry["host"],
+                entry["id"],
+                current,
+                pathlib.Path(entry["marketplace_root"]),
+                record["target"]["source"],
             )
         except host_state.StateError as exc:
             raise InstallJournalError(str(exc)) from exc

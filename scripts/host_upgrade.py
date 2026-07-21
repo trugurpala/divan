@@ -148,8 +148,10 @@ def _assert_progressive_before_removal(
             raise host_state.StateError(f"{host}: plugin set drifted during removal")
         root = pathlib.Path(before["root"])
         for selector, row in current.items():
-            if host_state.plugin_fingerprint(host, selector, row, root) != (
-                host_state.plugin_fingerprint(host, selector, expected[selector], root)
+            if host_state.plugin_fingerprint(host, selector, row, root, before["source"]) != (
+                host_state.plugin_fingerprint(
+                    host, selector, expected[selector], root, before["source"]
+                )
             ):
                 raise host_state.StateError(f"{host}: {selector} fingerprint drifted during removal")
     except host_state.StateError as exc:
@@ -213,7 +215,11 @@ def _install_target_plugin(
         raise host_transactions.TransactionError(f"{host}: installed {selector} is missing")
     try:
         fingerprint = host_state.plugin_fingerprint(
-            host, selector, row, pathlib.Path(marketplace["root"])
+            host,
+            selector,
+            row,
+            pathlib.Path(marketplace["root"]),
+            marketplace["source"],
         )
     except host_state.StateError as exc:
         raise host_transactions.TransactionError(str(exc)) from exc
