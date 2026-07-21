@@ -492,6 +492,12 @@ class HostInstallTests(unittest.TestCase):
                 fingerprint = HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
                     "claude", "sadrazam@divan", row, source, source=str(source)
                 )
+                with self.assertRaisesRegex(
+                    HOST_INSTALL._host_upgrade.host_state.StateError, "path|native"
+                ):
+                    HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
+                        "claude", "sadrazam@divan", row, source, source=SOURCE
+                    )
 
             self.assertEqual(
                 pathlib.Path(fingerprint["install_path"]), install_path.resolve()

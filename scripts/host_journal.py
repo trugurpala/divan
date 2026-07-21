@@ -272,12 +272,9 @@ def _snapshot_rows(host: str, snapshot: dict[str, Any], normalize: Callable[[str
         if not isinstance(row, dict):
             return False
         try:
+            root = pathlib.Path(snapshot["root"])
             fingerprint = host_state.plugin_fingerprint(
-                host,
-                selector,
-                row,
-                pathlib.Path(snapshot["root"]),
-                snapshot["source"],
+                host, selector, row, root, snapshot["source"]
             )
         except host_state.StateError:
             return False

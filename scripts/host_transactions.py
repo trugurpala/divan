@@ -185,9 +185,7 @@ def _plugin_fingerprint(
     host: str, selector: str, row: dict[str, Any], root: str, source: str
 ) -> dict[str, Any]:
     try:
-        return host_state.plugin_fingerprint(
-            host, selector, row, pathlib.Path(root), source
-        )
+        return host_state.plugin_fingerprint(host, selector, row, pathlib.Path(root), source)
     except host_state.StateError as exc:
         raise TransactionError(str(exc)) from exc
 
@@ -207,18 +205,10 @@ def _promote_forward(path: pathlib.Path, record: dict[str, Any], io: RecoveryIO)
         entry = _marketplace_fingerprint(host, markets["divan"], record["target"], io)
         _append_unique(record["created"]["marketplaces"], entry)
     elif action == "install-plugin" and pending["id"] in plugins:
-        target_market = next(
-            (row for row in record["created"]["marketplaces"] if row["host"] == host), None
-        )
+        target_market = next((row for row in record["created"]["marketplaces"] if row["host"] == host), None)
         if target_market is None:
             raise TransactionError(f"{host}: target marketplace ownership is missing")
-        entry = _plugin_fingerprint(
-            host,
-            pending["id"],
-            plugins[pending["id"]],
-            target_market["root"],
-            target_market["source"],
-        )
+        entry = _plugin_fingerprint(host, pending["id"], plugins[pending["id"]], target_market["root"], target_market["source"])
         _append_unique(record["created"]["plugins"], entry)
     elif action == "remove-plugin" and pending["id"] not in plugins:
         _append_unique(record["removed"], {"kind": "plugin", "host": host, "id": pending["id"]})
@@ -236,16 +226,13 @@ def _remove_target_plugins(
 ) -> None:
     installed = io.plugin_rows(host)
     entries = [row for row in record["created"]["plugins"] if row["host"] == host]
+    source = record["target"]["source"]
     for entry in reversed(entries):
         selector = entry["id"]
         if selector not in installed:
             continue
         current = _plugin_fingerprint(
-            host,
-            selector,
-            installed[selector],
-            entry["marketplace_root"],
-            record["target"]["source"],
+            host, selector, installed[selector], entry["marketplace_root"], source
         )
         if current != entry:
             raise TransactionError(f"{host}: recovery refuses replaced {selector}")
@@ -337,19 +324,14 @@ def _restore_plugins(
     path: pathlib.Path, record: dict[str, Any], host: str, io: RecoveryIO
 ) -> None:
     before = record["before_rows"][host]
-    before_plugins = before["plugins"]
     installed = io.plugin_rows(host)
-    root = before["root"]
-    for selector, before_row in before_plugins.items():
+    root, source = before["root"], before["source"]
+    for selector, before_row in before["plugins"].items():
         current = installed.get(selector)
         if current is not None:
-            expected = _plugin_fingerprint(
-                host, selector, before_row, root, before["source"]
-            )
-            if (
-                _plugin_fingerprint(host, selector, current, root, before["source"])
-                != expected
-            ):
+            expected = _plugin_fingerprint(host, selector, before_row, root, source)
+            actual = _plugin_fingerprint(host, selector, current, root, source)
+            if actual != expected:
                 raise TransactionError(f"{host}: recovery found conflicting {selector}")
             continue
         package = selector.removesuffix("@divan")

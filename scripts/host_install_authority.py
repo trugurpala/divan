@@ -204,7 +204,7 @@ def _created_plugins(
             return False
         if host_adapters.native_install_path(
             row["host"], row["install_path"], pathlib.Path(roots[row["host"]]),
-            package, row["version"],
+            package, row["version"], target["source"],
         ) is None:
             return False
         keys.append((row["host"], selector))
