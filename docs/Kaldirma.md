@@ -38,6 +38,21 @@ Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 python scripts/kur-hostlar.py --rollback-transaction <install-....json>
 ```
 
+`upgrade-*.json` schema-2 kayıtları farklıdır: `before_rows` kanıtlanmış eski
+marketplace source/ref ve paket sürümlerini; `target`, `removed`, `created`,
+`verified` ve `pending` alanları ise yükseltme yaşam döngüsünü taşır. Başarısız
+yükseltme yalnız işlem tarafından oluşturulmuş hedef Divan satırlarını kaldırır
+ve eski iki-host durumunu ters host sırasında yeniden kurar; alakasız satırları
+silmez. `rollback-incomplete` kaydında yazılı kesin komutu kullanın:
+
+```bash
+python scripts/kur-hostlar.py --rollback-transaction <upgrade-....json>
+```
+
+Recovery tekrar kesilirse aynı komut güvenle yeniden çalıştırılabilir. Journal
+kanıtlamadığı bir `@divan` satırını elle silmeyin; önce doctor ve journal
+alanlarıyla sahipliği inceleyin.
+
 Aynı işlemde `--migrate-legacy` tamamlandıysa rollback önce karantinadaki
 doğrulanmış loose skill'leri ve çakışma yedeklerini işlem öncesi konumlarına
 geri getirir; ardından native paketleri ve pazarı kaldırır.

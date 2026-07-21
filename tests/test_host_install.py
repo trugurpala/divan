@@ -174,6 +174,15 @@ class HostInstallTests(unittest.TestCase):
         values.update(changes)
         return HOST_INSTALL.Options(**values)
 
+    def test_transaction_primitives_are_extracted_with_compatibility_exports(self) -> None:
+        transactions = sys.modules["host_transactions"]
+
+        self.assertIs(HOST_INSTALL._persist_record, transactions.persist_record)
+        self.assertIs(HOST_INSTALL._begin_mutation, transactions.begin_mutation)
+        self.assertIs(HOST_INSTALL._finish_mutation, transactions.finish_mutation)
+        self.assertIs(HOST_INSTALL._created_rows, transactions.schema1_created_rows)
+        self.assertIs(HOST_INSTALL._owned_plugins, transactions.schema1_owned_plugins)
+
     def test_host_cli_output_is_decoded_as_utf8_not_system_locale(self) -> None:
         completed = subprocess.CompletedProcess(["tool"], 0, "Türkçe\n", "")
         with mock.patch.object(HOST_INSTALL.subprocess, "run", return_value=completed) as run:

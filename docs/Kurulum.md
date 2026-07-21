@@ -33,6 +33,44 @@ Her doctor sonucu bir sonraki kesin komutu yazar; tamamlanmamış işlemde bu,
 ilgili `--rollback-transaction` komutudur. Doctor host CLI'larını veya işlem
 günlüklerini değiştirmez.
 
+## Güvenli sürüm yükseltme
+
+Yükseltme de varsayılan olarak yalnız remove/add/install planını gösterir:
+
+```powershell
+python scripts/kur-hostlar.py --upgrade --host both --ref <yeni-release-tag>
+```
+
+Planı aynı sabit hedefe uygulamak için `--execute` ekleyin:
+
+```powershell
+python scripts/kur-hostlar.py --upgrade --host both --ref <yeni-release-tag> --execute
+```
+
+Kaynak, ref ve beş `@divan` paketinin sürümleri hedef sözleşmeyle zaten
+aynıysa işlem `no-op` döner. Yükseltme başlamadan önce iki hosttaki mevcut
+Divan pazarının istenen depoya ait olduğunu, checkout ref'ini, paket kümesini,
+sürümleri, etkinliği ve kurulum yollarını kanıtlar. Bilinmeyen/yabancı kaynak,
+eksik veya fazla Divan paketi ya da sürüm uyuşmazlığı journal veya dış mutasyon
+oluşmadan reddedilir.
+
+Execute modunda schema-2 günlüğü her remove/add/install çağrısından önce
+`pending` niyetini diske yazar; önceki marketplace ve paket satırlarını
+`before_rows` altında saklar. İki host doğrulanmadan işlem tamamlanmış sayılmaz.
+Hata veya kesintide yalnız bu işlemin oluşturduğu hedef satırlar kaldırılır;
+kanıtlanmış önceki source/ref/package sürümleri hostların ters sırasında yeniden
+kurulur. Alakasız marketplace ve eklentiler korunur.
+
+Otomatik geri alma da kesilirse günlük `rollback-incomplete` kalır ve içindeki
+tam `recovery_command` çalıştırılır:
+
+```powershell
+python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+```
+
+Aynı recovery komutu idempotenttir; dış komut başarıdan hemen sonra kesilmiş
+olsa bile mevcut durumu yeniden okuyup eksik adımdan güvenle devam eder.
+
 Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel
 kaynak olarak verin: `--source <repo-yolu> --ref <40-karakter-SHA>`.
@@ -49,8 +87,8 @@ listeleme komutlarıyla kayıtları inceleyin ve yalnız size ait olduklarından
 eminseniz elle kaldırıp işlemi yeniden çalıştırın.
 
 Her dış CLI değişikliğinden önce işlem günlüğü atomik yazılır. Kesinti sonrası
-`in-progress`, `recovering` veya `rollback-incomplete` kaydını yalnız o işlemin oluşturduğu
-girdilerle geri almak için:
+`in-progress`, `recovering` veya `rollback-incomplete` kaydını yalnız o işlemin
+oluşturduğu girdilerle geri almak için:
 
 ```bash
 python scripts/kur-hostlar.py --rollback-transaction <islem.json>
