@@ -6,12 +6,15 @@ import json
 import os
 import pathlib
 import subprocess
+import sys
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
 import host_adapters
+import host_journal
+import host_state
 
 
 class TransactionError(RuntimeError):
@@ -48,7 +51,9 @@ def load_transaction(path: pathlib.Path) -> dict[str, Any]:
     return record
 
 
-def load_recoverable_transaction(path: pathlib.Path) -> dict[str, Any]:
+def load_recoverable_transaction(
+    path: pathlib.Path, normalize_source: Callable[[str], str] | None = None
+) -> dict[str, Any]:
     record = load_transaction(path)
     if record.get("status") not in {
         "in-progress",
@@ -57,6 +62,13 @@ def load_recoverable_transaction(path: pathlib.Path) -> dict[str, Any]:
         "verified",
     }:
         raise TransactionError(f"transaction is not recoverable: {record.get('status')}")
+    if record["schema"] == 2:
+        if normalize_source is None:
+            raise TransactionError("schema-2 recovery requires source normalization")
+        try:
+            host_journal.validate_schema2(path, record, normalize_source)
+        except host_journal.JournalError as exc:
+            raise TransactionError(str(exc)) from exc
     ownership = "before" if record["schema"] == 1 else "before_rows"
     if not isinstance(record.get(ownership), dict) or not isinstance(
         record.get("created"), dict
@@ -119,8 +131,9 @@ def schema1_owned_marketplaces(
 
 
 def recovery_command(path: pathlib.Path) -> str:
+    script = pathlib.Path(__file__).resolve().with_name("kur-hostlar.py")
     return subprocess.list2cmdline(
-        ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(path)]
+        [sys.executable, str(script), "--rollback-transaction", str(path.resolve())]
     )
 
 
@@ -128,7 +141,6 @@ def recovery_command(path: pathlib.Path) -> str:
 class RecoveryIO:
     marketplace_rows: Callable[[str], dict[str, dict[str, Any]]]
     plugin_rows: Callable[[str], dict[str, dict[str, Any]]]
-    marketplace_identity: Callable[[str, dict[str, Any]], tuple[str, str]]
     normalize_source: Callable[[str], str]
     run: Callable[[list[str]], str]
 
@@ -143,59 +155,76 @@ def mark_rollback_incomplete(
     persist_record(path, record)
 
 
-def _mutation(
+def _recovery_mutation(
     path: pathlib.Path,
     record: dict[str, Any],
     pending: dict[str, str],
     command: list[str],
     io: RecoveryIO,
 ) -> None:
-    begin_mutation(path, record, pending)
+    record["recovery_pending"] = pending
+    persist_record(path, record)
     io.run(command)
-    finish_mutation(path, record)
+    record["recovery_pending"] = None
+    persist_record(path, record)
 
 
-def _snapshot_identity(snapshot: dict[str, Any]) -> tuple[str, str]:
-    source, ref = snapshot.get("source"), snapshot.get("ref")
-    if not isinstance(source, str) or not isinstance(ref, str):
-        raise TransactionError("upgrade journal lacks proven marketplace identity")
-    return source, ref
+def _marketplace_evidence(
+    host: str, row: dict[str, Any], expected: dict[str, Any], io: RecoveryIO
+) -> dict[str, Any]:
+    try:
+        return host_state.marketplace_evidence(
+            host, row, expected["source"], expected["ref"], io.run, io.normalize_source
+        )
+    except host_state.StateError as exc:
+        raise TransactionError(str(exc)) from exc
 
 
-def _same_identity(
-    io: RecoveryIO, left: tuple[str, str], right: tuple[str, str]
-) -> bool:
-    return io.normalize_source(left[0]) == io.normalize_source(right[0]) and left[1] == right[1]
-
-
-def _created_plugin_ids(record: dict[str, Any], host: str) -> list[str]:
-    rows = record["created"].get("plugins", [])
-    selectors = [
-        row.get("id")
-        for row in rows
-        if isinstance(row, dict) and row.get("host") == host
-    ]
-    pending = record.get("pending")
-    if (
-        isinstance(pending, dict)
-        and pending.get("phase") == "forward"
-        and pending.get("action") == "install-plugin"
-        and pending.get("host") == host
-    ):
-        selectors.append(pending.get("id"))
-    return list(dict.fromkeys(item for item in selectors if isinstance(item, str)))
-
-
-def _created_marketplace(record: dict[str, Any], host: str) -> bool:
-    if host in record["created"].get("marketplaces", []):
-        return True
-    pending = record.get("pending")
-    return bool(
-        isinstance(pending, dict)
-        and pending.get("phase") == "forward"
-        and pending.get("action") == "add-marketplace"
-        and pending.get("host") == host
+def _marketplace_fingerprint(
+    host: str, row: dict[str, Any], expected: dict[str, Any], io: RecoveryIO
+) -> dict[str, Any]:
+    return host_state.marketplace_fingerprint(
+        host, _marketplace_evidence(host, row, expected, io)
     )
+
+
+def _plugin_fingerprint(
+    host: str, selector: str, row: dict[str, Any], root: str
+) -> dict[str, Any]:
+    try:
+        return host_state.plugin_fingerprint(host, selector, row, pathlib.Path(root))
+    except host_state.StateError as exc:
+        raise TransactionError(str(exc)) from exc
+
+
+def _append_unique(rows: list[Any], entry: Any) -> None:
+    if entry not in rows:
+        rows.append(entry)
+
+
+def _promote_forward(path: pathlib.Path, record: dict[str, Any], io: RecoveryIO) -> None:
+    pending = record.get("pending")
+    if not isinstance(pending, dict):
+        return
+    host, action = pending["host"], pending["action"]
+    markets, plugins = io.marketplace_rows(host), io.plugin_rows(host)
+    if action == "add-marketplace" and "divan" in markets:
+        entry = _marketplace_fingerprint(host, markets["divan"], record["target"], io)
+        _append_unique(record["created"]["marketplaces"], entry)
+    elif action == "install-plugin" and pending["id"] in plugins:
+        target_market = next(
+            (row for row in record["created"]["marketplaces"] if row["host"] == host), None
+        )
+        if target_market is None:
+            raise TransactionError(f"{host}: target marketplace ownership is missing")
+        entry = _plugin_fingerprint(host, pending["id"], plugins[pending["id"]], target_market["root"])
+        _append_unique(record["created"]["plugins"], entry)
+    elif action == "remove-plugin" and pending["id"] not in plugins:
+        _append_unique(record["removed"], {"kind": "plugin", "host": host, "id": pending["id"]})
+    elif action == "remove-marketplace" and "divan" not in markets:
+        _append_unique(record["removed"], {"kind": "marketplace", "host": host})
+    record["pending"] = None
+    persist_record(path, record)
 
 
 def _remove_target_plugins(
@@ -205,10 +234,17 @@ def _remove_target_plugins(
     io: RecoveryIO,
 ) -> None:
     installed = io.plugin_rows(host)
-    for selector in reversed(_created_plugin_ids(record, host)):
+    entries = [row for row in record["created"]["plugins"] if row["host"] == host]
+    for entry in reversed(entries):
+        selector = entry["id"]
         if selector not in installed:
             continue
-        _mutation(
+        current = _plugin_fingerprint(
+            host, selector, installed[selector], entry["marketplace_root"]
+        )
+        if current != entry:
+            raise TransactionError(f"{host}: recovery refuses replaced {selector}")
+        _recovery_mutation(
             path,
             record,
             {"phase": "recovery", "action": "remove-target-plugin", "host": host, "id": selector},
@@ -226,32 +262,27 @@ def _cleanup_target_host(
     marketplace = io.marketplace_rows(host).get("divan")
     if marketplace is None:
         return
-    identity = io.marketplace_identity(host, marketplace)
-    if _same_identity(io, identity, _snapshot_identity(record["before_rows"][host])):
-        return
-    target = record["target"]
-    target_identity = (target.get("source"), target.get("ref"))
-    if not all(isinstance(item, str) for item in target_identity) or not _same_identity(
-        io, identity, target_identity
-    ):
-        raise TransactionError(f"{host}: recovery refuses an unknown marketplace identity")
-    _remove_target_plugins(path, record, host, io)
-    if not _created_marketplace(record, host):
+    before = host_state.marketplace_fingerprint(host, record["before_rows"][host])
+    try:
+        if _marketplace_fingerprint(host, marketplace, record["before_rows"][host], io) == before:
+            return
+    except TransactionError:
+        pass
+    created = next(
+        (row for row in record["created"]["marketplaces"] if row["host"] == host), None
+    )
+    if created is None:
         raise TransactionError(f"{host}: transaction does not own target marketplace")
-    _mutation(
+    current = _marketplace_fingerprint(host, marketplace, record["target"], io)
+    if current != created:
+        raise TransactionError(f"{host}: recovery refuses replaced marketplace")
+    _remove_target_plugins(path, record, host, io)
+    _recovery_mutation(
         path,
         record,
         {"phase": "recovery", "action": "remove-target-marketplace", "host": host},
         host_adapters.remove_marketplace_command(host),
         io,
-    )
-
-
-def _plugin_matches(host: str, row: dict[str, Any], before: dict[str, Any]) -> bool:
-    return bool(
-        row.get("version") == before.get("version")
-        and row.get("enabled") is True
-        and host_adapters.plugin_provenance_valid(host, row)
     )
 
 
@@ -264,17 +295,15 @@ def _restore_marketplace(
     before = record["before_rows"][host]
     marketplace = io.marketplace_rows(host).get("divan")
     if marketplace is not None:
-        if not _same_identity(
-            io, io.marketplace_identity(host, marketplace), _snapshot_identity(before)
-        ):
+        current = _marketplace_fingerprint(host, marketplace, before, io)
+        if current != host_state.marketplace_fingerprint(host, before):
             raise TransactionError(f"{host}: recovery found a conflicting marketplace")
         return
-    source, ref = _snapshot_identity(before)
-    _mutation(
+    _recovery_mutation(
         path,
         record,
         {"phase": "recovery", "action": "restore-marketplace", "host": host},
-        host_adapters.add_marketplace_command(host, source, ref),
+        host_adapters.add_marketplace_command(host, before["source"], before["ref"]),
         io,
     )
 
@@ -287,14 +316,16 @@ def _restore_plugins(
 ) -> None:
     before_plugins = record["before_rows"][host]["plugins"]
     installed = io.plugin_rows(host)
-    for selector, before in before_plugins.items():
+    root = record["before_rows"][host]["root"]
+    for selector, before_row in before_plugins.items():
         current = installed.get(selector)
         if current is not None:
-            if not _plugin_matches(host, current, before):
+            expected = _plugin_fingerprint(host, selector, before_row, root)
+            if _plugin_fingerprint(host, selector, current, root) != expected:
                 raise TransactionError(f"{host}: recovery found conflicting {selector}")
             continue
         package = selector.removesuffix("@divan")
-        _mutation(
+        _recovery_mutation(
             path,
             record,
             {"phase": "recovery", "action": "restore-plugin", "host": host, "id": selector},
@@ -307,14 +338,27 @@ def _restore_plugins(
 def _verify_restored(record: dict[str, Any], host: str, io: RecoveryIO) -> None:
     before = record["before_rows"][host]
     marketplace = io.marketplace_rows(host).get("divan")
-    if marketplace is None or not _same_identity(
-        io, io.marketplace_identity(host, marketplace), _snapshot_identity(before)
-    ):
+    if marketplace is None:
         raise TransactionError(f"{host}: prior marketplace was not restored")
-    installed = io.plugin_rows(host)
-    for selector, expected in before["plugins"].items():
-        if not _plugin_matches(host, installed.get(selector, {}), expected):
-            raise TransactionError(f"{host}: prior {selector} was not restored")
+    current = _marketplace_fingerprint(host, marketplace, before, io)
+    if current != host_state.marketplace_fingerprint(host, before):
+        raise TransactionError(f"{host}: prior marketplace was not restored exactly")
+    try:
+        host_state.validate_plugins(
+            host, pathlib.Path(before["root"]), before["contract"], io.plugin_rows(host)
+        )
+    except host_state.StateError as exc:
+        raise TransactionError(str(exc)) from exc
+
+
+def _affected_hosts(record: dict[str, Any]) -> set[str]:
+    hosts = {row["host"] for row in record["removed"]}
+    hosts.update(row["host"] for row in record["created"]["plugins"])
+    hosts.update(row["host"] for row in record["created"]["marketplaces"])
+    recovery = record.get("recovery_pending")
+    if isinstance(recovery, dict):
+        hosts.add(recovery["host"])
+    return hosts
 
 
 def recover_upgrade(
@@ -322,19 +366,24 @@ def recover_upgrade(
 ) -> dict[str, Any]:
     hosts = list(record.get("hosts", []))
     try:
+        _promote_forward(path, record, io)
+        affected = _affected_hosts(record)
         record["status"] = "recovering"
         persist_record(path, record)
         for host in reversed(hosts):
-            _cleanup_target_host(path, record, host, io)
+            if host in affected:
+                _cleanup_target_host(path, record, host, io)
         for host in reversed(hosts):
-            _restore_marketplace(path, record, host, io)
-            _restore_plugins(path, record, host, io)
-            _verify_restored(record, host, io)
+            if host in affected:
+                _restore_marketplace(path, record, host, io)
+                _restore_plugins(path, record, host, io)
+                _verify_restored(record, host, io)
     except BaseException as exc:
         mark_rollback_incomplete(path, record, exc)
         raise
     record["status"] = "recovered"
     record["pending"] = None
+    record["recovery_pending"] = None
     record["rollback_errors"] = []
     persist_record(path, record)
     return record

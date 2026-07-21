@@ -78,6 +78,7 @@ class UpgradeRunner:
             }
             for host in ("claude", "codex")
         }
+        self.plugin_overrides: dict[tuple[str, str], dict[str, object]] = {}
         self.fail_on: tuple[str, ...] | None = None
         self.interrupt_after: tuple[str, ...] | None = None
         self.interrupt_once = False
@@ -105,10 +106,14 @@ class UpgradeRunner:
     def _git(self, command: list[str]) -> subprocess.CompletedProcess[str]:
         root = pathlib.Path(command[2])
         host = next((name for name, value in self.roots.items() if value == root), None)
-        if "get-url" in command:
-            output = self.sources[host or "claude"]
+        source = SOURCE if root == ROOT else self.sources[host or "claude"]
+        ref = TARGET_REF if root == ROOT else self.refs[host or "claude"]
+        if "status" in command:
+            output = ""
+        elif "get-url" in command:
+            output = source
         elif "describe" in command:
-            output = self.refs[host or "claude"]
+            output = ref
         else:
             output = "a" * 40
         return subprocess.CompletedProcess(command, 0, output + "\n", "")
@@ -166,6 +171,7 @@ class UpgradeRunner:
                     ),
                 }
             )
+        row.update(self.plugin_overrides.get((host, selector), {}))
         return row
 
     def _observe_journal(self, argv: tuple[str, ...]) -> None:
@@ -173,7 +179,9 @@ class UpgradeRunner:
         if not journals:
             return
         record = json.loads(journals[0].read_text(encoding="utf-8"))
-        if isinstance(record.get("pending"), dict):
+        if isinstance(record.get("pending"), dict) or isinstance(
+            record.get("recovery_pending"), dict
+        ):
             self.journaled_mutations.append(argv)
 
     def _mutate(self, command: list[str]) -> None:

@@ -14,6 +14,8 @@
     {"id": "dual-host-installer", "path": "scripts/kur-hostlar.py", "marker": "trugurpala/divan", "replace_version": false},
     {"id": "host-transactions", "path": "scripts/host_transactions.py", "marker": "recover_upgrade", "replace_version": false},
     {"id": "host-upgrade", "path": "scripts/host_upgrade.py", "marker": "Provenance proof", "replace_version": false},
+    {"id": "host-journal", "path": "scripts/host_journal.py", "marker": "Schema-2 journal authority", "replace_version": false},
+    {"id": "host-state", "path": "scripts/host_state.py", "marker": "Strict, reusable state evidence", "replace_version": false},
     {"id": "legacy-transaction", "path": "scripts/legacy_state.py", "marker": "installed_sha256", "replace_version": false},
     {"id": "repo-hygiene", "path": "scripts/hijyen.py", "marker": "GENERATED_DIRECTORIES", "replace_version": false},
     {"id": "community-standards-registry", "path": "registry/community-standards.json", "marker": "DCS-010", "replace_version": false},

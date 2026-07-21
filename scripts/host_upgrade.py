@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
 import pathlib
-import re
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -12,6 +10,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 import host_adapters
+import host_journal
+import host_state
 import host_transactions
 
 
@@ -20,113 +20,8 @@ class UpgradeIO:
     marketplace_rows: Callable[[str], dict[str, dict[str, Any]]]
     plugin_rows: Callable[[str], dict[str, dict[str, Any]]]
     run: Callable[[list[str]], str]
-    verify_host: Callable[[str, Any, dict[str, dict[str, Any]]], dict[str, Any]]
     rollback: Callable[[pathlib.Path], dict[str, Any]]
     normalize_source: Callable[[str], str]
-
-
-def _catalog_versions(root: pathlib.Path, packages: tuple[str, ...]) -> dict[str, str]:
-    path = root / ".agents" / "plugins" / "marketplace.json"
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise host_transactions.TransactionError(
-            f"cannot prove marketplace version contract: {path}"
-        ) from exc
-    versions: dict[str, str] = {}
-    for row in value.get("plugins", []):
-        if not isinstance(row, dict):
-            continue
-        name, version = row.get("name"), row.get("version")
-        if isinstance(name, str) and isinstance(version, str):
-            versions[name] = version
-    if set(versions) != set(packages):
-        raise host_transactions.TransactionError(
-            "marketplace version contract does not define the expected packages"
-        )
-    return versions
-
-
-def marketplace_identity(
-    host: str, row: dict[str, Any], run: Callable[[list[str]], str]
-) -> tuple[str, str]:
-    root = host_adapters.marketplace_root(host, row)
-    if root is None:
-        raise host_transactions.TransactionError(
-            f"{host}: divan marketplace root is missing"
-        )
-    source = run(["git", "-C", root, "remote", "get-url", "origin"]).strip()
-    reported_ref = host_adapters.marketplace_ref(row)
-    command = ["git", "-C", root, "rev-parse", "HEAD"]
-    if not isinstance(reported_ref, str) or not re.fullmatch(r"[0-9a-f]{40}", reported_ref):
-        command = ["git", "-C", root, "describe", "--tags", "--exact-match"]
-    actual_ref = run(command).strip()
-    if reported_ref is not None and reported_ref != actual_ref:
-        raise host_transactions.TransactionError(
-            f"{host}: marketplace ref cannot be proven"
-        )
-    return source, actual_ref
-
-
-def _path_is_owned(root: pathlib.Path, value: str | None) -> bool:
-    if value is None:
-        return False
-    try:
-        pathlib.Path(value).resolve().relative_to(root.resolve())
-    except ValueError:
-        return False
-    return True
-
-
-def _capture_owned_host(
-    host: str, options: Any, packages: tuple[str, ...], io: UpgradeIO
-) -> dict[str, Any]:
-    marketplace = io.marketplace_rows(host).get("divan")
-    if marketplace is None:
-        raise host_transactions.TransactionError(f"{host}: divan marketplace is missing")
-    source, ref = marketplace_identity(host, marketplace, io.run)
-    if io.normalize_source(source) != io.normalize_source(options.source):
-        raise host_transactions.TransactionError(
-            f"{host}: marketplace source does not match requested repository"
-        )
-    root_value = host_adapters.marketplace_root(host, marketplace)
-    assert root_value is not None
-    contract = _catalog_versions(pathlib.Path(root_value), packages)
-    rows = io.plugin_rows(host)
-    owned = {key: row for key, row in rows.items() if key.endswith("@divan")}
-    if set(owned) != {f"{package}@divan" for package in contract}:
-        raise host_transactions.TransactionError(
-            f"{host}: installed Divan package set does not match marketplace contract"
-        )
-    _prove_plugins(host, pathlib.Path(root_value), contract, owned)
-    return {
-        "source": source,
-        "ref": ref,
-        "root": root_value,
-        "marketplace": marketplace,
-        "plugins": owned,
-        "contract": contract,
-    }
-
-
-def _prove_plugins(
-    host: str,
-    root: pathlib.Path,
-    contract: dict[str, str],
-    owned: dict[str, dict[str, Any]],
-) -> None:
-    for selector, row in owned.items():
-        package = selector.removesuffix("@divan")
-        valid = (
-            row.get("version") == contract[package]
-            and row.get("enabled") is True
-            and host_adapters.plugin_provenance_valid(host, row)
-            and _path_is_owned(root, host_adapters.plugin_install_path(host, row))
-        )
-        if not valid:
-            raise host_transactions.TransactionError(
-                f"{host}: {selector} does not match marketplace version contract"
-            )
 
 
 def _planned_commands(options: Any, packages: tuple[str, ...]) -> list[list[str]]:
@@ -158,6 +53,7 @@ def _record(
         "before_rows": {},
         "target": {"source": options.source, "ref": options.ref, "versions": versions},
         "pending": None,
+        "recovery_pending": None,
         "removed": [],
         "created": {"marketplaces": [], "plugins": []},
         "verified": {},
@@ -225,15 +121,27 @@ def _install_target(
     packages: tuple[str, ...],
     io: UpgradeIO,
 ) -> None:
-    _mutation(
-        path,
-        record,
-        {"phase": "forward", "action": "add-marketplace", "host": host},
-        host_adapters.add_marketplace_command(host, options.source, options.ref),
-        record["created"]["marketplaces"],
-        host,
-        io,
+    pending = {"phase": "forward", "action": "add-marketplace", "host": host}
+    host_transactions.begin_mutation(path, record, pending)
+    io.run(host_adapters.add_marketplace_command(host, options.source, options.ref))
+    marketplace = io.marketplace_rows(host).get("divan")
+    if marketplace is None:
+        raise host_transactions.TransactionError(f"{host}: target marketplace is missing")
+    try:
+        evidence = host_state.marketplace_evidence(
+            host,
+            marketplace,
+            record["target"]["source"],
+            record["target"]["ref"],
+            io.run,
+            io.normalize_source,
+        )
+    except host_state.StateError as exc:
+        raise host_transactions.TransactionError(str(exc)) from exc
+    record["created"]["marketplaces"].append(
+        host_state.marketplace_fingerprint(host, evidence)
     )
+    host_transactions.finish_mutation(path, record)
     for package in packages:
         _install_target_plugin(path, record, host, package, io)
 
@@ -246,23 +154,84 @@ def _install_target_plugin(
     io: UpgradeIO,
 ) -> None:
     selector = f"{package}@divan"
-    _mutation(
-        path,
-        record,
-        {"phase": "forward", "action": "install-plugin", "host": host, "id": selector},
-        host_adapters.install_command(host, package),
-        record["created"]["plugins"],
-        {"host": host, "id": selector},
-        io,
+    pending = {
+        "phase": "forward",
+        "action": "install-plugin",
+        "host": host,
+        "id": selector,
+    }
+    host_transactions.begin_mutation(path, record, pending)
+    io.run(host_adapters.install_command(host, package))
+    row = io.plugin_rows(host).get(selector)
+    marketplace = next(
+        entry for entry in record["created"]["marketplaces"] if entry["host"] == host
     )
+    if row is None:
+        raise host_transactions.TransactionError(f"{host}: installed {selector} is missing")
+    try:
+        fingerprint = host_state.plugin_fingerprint(
+            host, selector, row, pathlib.Path(marketplace["root"])
+        )
+    except host_state.StateError as exc:
+        raise host_transactions.TransactionError(str(exc)) from exc
+    record["created"]["plugins"].append(fingerprint)
+    host_transactions.finish_mutation(path, record)
 
 
 def _matches_target(before: dict[str, Any], target: dict[str, Any], io: UpgradeIO) -> bool:
-    return bool(
-        io.normalize_source(before["source"]) == io.normalize_source(target["source"])
-        and before["ref"] == target["ref"]
-        and before["contract"] == target["versions"]
-    )
+    return host_state.target_matches(before, target, io.normalize_source)
+
+
+def _capture_host(host: str, source: str, ref: str, io: UpgradeIO) -> dict[str, Any]:
+    try:
+        return host_state.capture_host(
+            host,
+            source,
+            ref,
+            io.marketplace_rows(host),
+            io.plugin_rows(host),
+            io.run,
+            io.normalize_source,
+        )
+    except host_state.StateError as exc:
+        raise host_transactions.TransactionError(str(exc)) from exc
+
+
+def _capture_before(host: str, source: str, io: UpgradeIO) -> dict[str, Any]:
+    marketplaces = io.marketplace_rows(host)
+    marketplace = marketplaces.get("divan")
+    if marketplace is None:
+        raise host_transactions.TransactionError(f"{host}: divan marketplace is missing")
+    ref = host_adapters.marketplace_ref(marketplace)
+    if ref is None:
+        raise host_transactions.TransactionError(f"{host}: marketplace ref is missing")
+    try:
+        return host_state.capture_host(
+            host,
+            source,
+            ref,
+            marketplaces,
+            io.plugin_rows(host),
+            io.run,
+            io.normalize_source,
+        )
+    except host_state.StateError as exc:
+        raise host_transactions.TransactionError(str(exc)) from exc
+
+
+def _assert_unchanged(host: str, expected: dict[str, Any], io: UpgradeIO) -> None:
+    current = _capture_host(host, expected["source"], expected["ref"], io)
+    if host_state.snapshot_key(host, current, io.normalize_source) != host_state.snapshot_key(
+        host, expected, io.normalize_source
+    ):
+        raise host_transactions.TransactionError(f"{host}: host state drifted after preflight")
+
+
+def _verify_target(host: str, record: dict[str, Any], io: UpgradeIO) -> dict[str, Any]:
+    current = _capture_host(host, record["target"]["source"], record["target"]["ref"], io)
+    if not _matches_target(current, record["target"], io):
+        raise host_transactions.TransactionError(f"{host}: target fingerprint verification failed")
+    return current
 
 
 def _apply_host(
@@ -271,13 +240,13 @@ def _apply_host(
     host: str,
     options: Any,
     packages: tuple[str, ...],
-    expected: dict[str, dict[str, Any]],
     io: UpgradeIO,
 ) -> None:
     if not _matches_target(record["before_rows"][host], record["target"], io):
+        _assert_unchanged(host, record["before_rows"][host], io)
         _remove_previous(path, record, host, io)
         _install_target(path, record, host, options, packages, io)
-    record["verified"][host] = io.verify_host(host, options, expected)
+    record["verified"][host] = _verify_target(host, record, io)
     host_transactions.persist_record(path, record)
 
 
@@ -303,14 +272,40 @@ def upgrade(
     packages: tuple[str, ...],
     expected: dict[str, dict[str, Any]],
     io: UpgradeIO,
+    repository: pathlib.Path,
 ) -> dict[str, Any]:
     versions = {package: row["version"] for package, row in expected.items()}
     record = _record(options, packages, versions)
     if not options.execute:
         return record
+    try:
+        with host_journal.UpgradeLock(options.state_dir):
+            host_journal.assert_no_active(options.state_dir)
+            return _execute(options, packages, versions, io, repository, record)
+    except (host_journal.JournalError, host_state.StateError) as exc:
+        raise host_transactions.TransactionError(str(exc)) from exc
+
+
+def _execute(
+    options: Any,
+    packages: tuple[str, ...],
+    versions: dict[str, str],
+    io: UpgradeIO,
+    repository: pathlib.Path,
+    record: dict[str, Any],
+) -> dict[str, Any]:
+    target = host_state.checkout_evidence(
+        repository, options.source, options.ref, io.run, io.normalize_source
+    )
+    if target["contract"] != versions:
+        raise host_state.StateError("target checkout contract does not match native catalog")
+    target_versions = target.pop("contract")
+    record["target"] = {**target, "versions": target_versions}
     record["before_rows"] = {
-        host: _capture_owned_host(host, options, packages, io) for host in options.hosts
+        host: _capture_before(host, record["target"]["source"], io) for host in options.hosts
     }
+    for before in record["before_rows"].values():
+        host_state.assert_same_ref_reproducible(before, record["target"], io.normalize_source)
     if all(_matches_target(before, record["target"], io) for before in record["before_rows"].values()):
         record["status"] = "no-op"
         return record
@@ -318,7 +313,7 @@ def upgrade(
     path = _start_transaction(options, record)
     try:
         for host in options.hosts:
-            _apply_host(path, record, host, options, packages, expected, io)
+            _apply_host(path, record, host, options, packages, io)
     except BaseException as exc:
         _fail(path, exc, io)
     record["status"] = "verified"
@@ -329,7 +324,7 @@ def upgrade(
 
 def _start_transaction(options: Any, record: dict[str, Any]) -> pathlib.Path:
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    path = options.state_dir / f"upgrade-{stamp}-{uuid.uuid4().hex[:8]}.json"
+    path = (options.state_dir / f"upgrade-{stamp}-{uuid.uuid4().hex[:8]}.json").resolve()
     record.update(
         {
             "transaction_path": str(path),

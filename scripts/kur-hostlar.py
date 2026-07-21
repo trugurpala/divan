@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import host_adapters as _host_adapters
+import host_journal as _host_journal
 import host_transactions as _host_transactions
 import host_upgrade as _host_upgrade
 
@@ -380,17 +381,22 @@ def rollback_transaction(
     transaction_path: pathlib.Path,
     *,
     runner: Runner = _subprocess_runner,
+    _locked: bool = False,
 ) -> dict[str, Any]:
     """Recover an interrupted schema-1 install or schema-2 upgrade."""
-    record = _load_recoverable_transaction(transaction_path)
+    transaction_path = transaction_path.expanduser().resolve()
+    if not _locked:
+        try:
+            with _host_journal.UpgradeLock(transaction_path.parent):
+                return rollback_transaction(transaction_path, runner=runner, _locked=True)
+        except _host_journal.JournalError as exc:
+            raise InstallError(str(exc)) from exc
+    record = _load_recoverable_transaction(transaction_path, _normalize_source)
     if record["schema"] == 1:
         return _rollback_install_transaction(transaction_path, record, runner)
     io = _host_transactions.RecoveryIO(
         marketplace_rows=lambda host: _marketplace_rows(host, runner),
         plugin_rows=lambda host: _plugin_rows(host, runner),
-        marketplace_identity=lambda host, row: _host_upgrade.marketplace_identity(
-            host, row, lambda command: _run(runner, command)
-        ),
         normalize_source=_normalize_source,
         run=lambda command: _run(runner, command),
     )
@@ -536,13 +542,10 @@ def upgrade(
         marketplace_rows=lambda host: _marketplace_rows(host, runner),
         plugin_rows=lambda host: _plugin_rows(host, runner),
         run=lambda command: _run(runner, command),
-        verify_host=lambda host, selected, contracts: _verify_host(
-            host, selected, contracts, runner
-        ),
-        rollback=lambda path: rollback_transaction(path, runner=runner),
+        rollback=lambda path: rollback_transaction(path, runner=runner, _locked=True),
         normalize_source=_normalize_source,
     )
-    return _host_upgrade.upgrade(options, PACKAGES, expected, io)
+    return _host_upgrade.upgrade(options, PACKAGES, expected, io, repository)
 
 
 def doctor(
@@ -607,7 +610,11 @@ def _parse_options(argv: list[str] | None = None) -> Options:
 
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
-    if "--rollback-transaction" in arguments:
+    if any(
+        argument == "--rollback-transaction"
+        or argument.startswith("--rollback-transaction=")
+        for argument in arguments
+    ):
         parser = argparse.ArgumentParser(description="Recover an interrupted Divan install")
         parser.add_argument("--rollback-transaction", type=pathlib.Path, required=True)
         recovery = parser.parse_args(arguments)

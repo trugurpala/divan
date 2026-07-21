@@ -55,8 +55,11 @@ eksik veya fazla Divan paketi ya da sürüm uyuşmazlığı journal veya dış m
 oluşmadan reddedilir.
 
 Execute modunda schema-2 günlüğü her remove/add/install çağrısından önce
-`pending` niyetini diske yazar; önceki marketplace ve paket satırlarını
-`before_rows` altında saklar. İki host doğrulanmadan işlem tamamlanmış sayılmaz.
+`pending` niyetini diske yazar; recovery niyetini ayrı `recovery_pending`
+alanında tutar. Önceki marketplace ve paket satırlarını commit, katalog özeti,
+tam kurulum yolu ve native provenance kanıtlarıyla `before_rows` altında saklar.
+İki host doğrulanmadan işlem tamamlanmış sayılmaz. Aktif bir yükseltme günlüğü
+veya işlem kilidi varken yeni execute/no-op çağrısı başlamaz.
 Hata veya kesintide yalnız bu işlemin oluşturduğu hedef satırlar kaldırılır;
 kanıtlanmış önceki source/ref/package sürümleri hostların ters sırasında yeniden
 kurulur. Alakasız marketplace ve eklentiler korunur.
@@ -74,6 +77,10 @@ olsa bile mevcut durumu yeniden okuyup eksik adımdan güvenle devam eder.
 Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel
 kaynak olarak verin: `--source <repo-yolu> --ref <40-karakter-SHA>`.
+Yerel kaynak yalnız çözümlenmiş marketplace kökü aynı checkout olduğunda,
+çalışma ağacı temizken ve HEAD istenen SHA ile birebir eşleşirken kanıtlanır.
+Değiştirilebilir bir checkout yerinde transactional sürüm değiştirmek için
+kullanılmaz; böyle bir durum journal oluşmadan reddedilir.
 
 Repo üzerinden geliştirme yapıyorsanız önce
 `python scripts/hijyen.py --check` çalıştırın. Cache temizliği gerektiğinde

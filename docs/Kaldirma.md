@@ -40,7 +40,9 @@ python scripts/kur-hostlar.py --rollback-transaction <install-....json>
 
 `upgrade-*.json` schema-2 kayıtları farklıdır: `before_rows` kanıtlanmış eski
 marketplace source/ref ve paket sürümlerini; `target`, `removed`, `created`,
-`verified` ve `pending` alanları ise yükseltme yaşam döngüsünü taşır. Başarısız
+`verified`, forward `pending` ve ayrı `recovery_pending` alanları ise yükseltme
+yaşam döngüsünü taşır. `created` girdileri selector ile yetinmez; tam sürüm,
+marketplace kökü, kurulum yolu ve native provenance parmak izini taşır. Başarısız
 yükseltme yalnız işlem tarafından oluşturulmuş hedef Divan satırlarını kaldırır
 ve eski iki-host durumunu ters host sırasında yeniden kurar; alakasız satırları
 silmez. `rollback-incomplete` kaydında yazılı kesin komutu kullanın:
