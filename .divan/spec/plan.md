@@ -1,10 +1,15 @@
-# Etkin plan — v0.12.1 Clean Code ve Repo Hijyeni
+# Etkin plan — v0.13.0 Topluluk Standartları
 
-Ayrıntılı, test-first plan:
-`docs/superpowers/plans/2026-07-19-clean-code-hygiene.md`.
+Ayrıntılı test-first plan:
+`docs/superpowers/plans/2026-07-21-community-standards.md`.
 
-1. UTF-8/LF ve güvenli cache temizliği kapısını kur.
-2. McCabe 25 bütçesini CI'a ekle; yalnız üç kritik fonksiyonu parçala.
-3. Kanıtlanmış cache/worktree/merged-branch artıklarını kalıcı sil.
-4. v0.12.1 yüzeylerini ve global Claude+Codex kurulumunu eşitle.
-5. Tam teftiş, bağımsız review, PR/main/Release/Pages/Wiki kanıtını tamamla.
+1. DCS-001..DCS-010 registry, renderer ve doğrulama kapısını kur.
+2. Clean Code borç ratchet'ini kur ve eval sorumluluklarını dar modüllere ayır.
+3. Salt-okunur çift-host doctor ve host adaptör sınırını ekle.
+4. Provenance-gated, journaled ve geri alınabilir upgrade yaşam döngüsünü ekle.
+5. SPDX SBOM, Scorecard, dependency review ve artifact attestation ekle.
+6. Destek, katkı, başlangıç, Wiki, Pages ve iki dil yüzeylerini eşitle.
+7. Tam teftiş, bağımsız review, PR/main/ruleset/Release ve global kurulumu kanıtla.
+
+Yürütme: izole `codex/community-standards-v013` worktree'sinde sıralı Sefer;
+her görev test-first implementer ve bağımsız reviewer kapısından geçer.

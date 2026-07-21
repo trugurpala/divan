@@ -25,6 +25,9 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 5. **Repo hijyeni:** Üretilmiş dosya temizliği allowlist ve fail-closed çalışır;
    kullanıcı yedeği ile yayın kanıtı çöp sayılmaz. Birinci taraf metin UTF-8/LF,
    çekirdek Python karmaşıklık bütçesi 25'tir. Ayrıntı ADR 0003'tedir.
+6. **Topluluk standartları kod olarak:** DCS-001..DCS-010 makine-okunur tek
+   registry'den doğrulanır; framework/host ayrıntıları adaptör sınırında kalır,
+   istisnalar dar ve süreli olur. Ayrıntı ADR 0004'tedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
