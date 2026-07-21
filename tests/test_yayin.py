@@ -3,8 +3,10 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import struct
 import tempfile
 import unittest
+import zlib
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -12,6 +14,21 @@ SPEC = importlib.util.spec_from_file_location("divan_yayin", ROOT / "scripts" / 
 assert SPEC and SPEC.loader
 YAYIN = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(YAYIN)
+
+
+def png_chunk(kind: bytes, payload: bytes) -> bytes:
+    checksum = zlib.crc32(kind + payload) & 0xFFFFFFFF
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", checksum)
+
+
+def minimal_png(width: int = 1280, height: int = 640) -> bytes:
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + png_chunk(b"IHDR", ihdr)
+        + png_chunk(b"IDAT", zlib.compress(b""))
+        + png_chunk(b"IEND", b"")
+    )
 
 
 class PublicationTests(unittest.TestCase):
@@ -30,16 +47,10 @@ class PublicationTests(unittest.TestCase):
         YAYIN._validate_binary_surface(ROOT / surface["path"], surface["binary"])
 
     def test_png_contract_rejects_wrong_dimensions_and_oversize(self) -> None:
-        valid_header = (
-            b"\x89PNG\r\n\x1a\n"
-            + b"\x00\x00\x00\rIHDR"
-            + (1280).to_bytes(4, "big")
-            + (640).to_bytes(4, "big")
-            + b"\x08\x02\x00\x00\x00"
-        )
+        valid_png = minimal_png()
         with tempfile.TemporaryDirectory(prefix="divan-preview-") as temporary:
             preview = pathlib.Path(temporary) / "preview.png"
-            preview.write_bytes(valid_header)
+            preview.write_bytes(valid_png)
             YAYIN._validate_binary_surface(
                 preview,
                 {"format": "png", "width": 1280, "height": 640, "max_bytes": 100},
@@ -54,6 +65,22 @@ class PublicationTests(unittest.TestCase):
                     preview,
                     {"format": "png", "width": 1280, "height": 640, "max_bytes": 10},
                 )
+
+    def test_png_contract_rejects_truncation_missing_chunks_and_bad_crc(self) -> None:
+        contract = {"format": "png", "width": 1280, "height": 640, "max_bytes": 1000}
+        payload = minimal_png()
+        with tempfile.TemporaryDirectory(prefix="divan-preview-") as temporary:
+            preview = pathlib.Path(temporary) / "preview.png"
+            for invalid in (payload[:-1], payload[:33]):
+                with self.subTest(length=len(invalid)):
+                    preview.write_bytes(invalid)
+                    with self.assertRaisesRegex(ValueError, "chunk|IDAT|IEND"):
+                        YAYIN._validate_binary_surface(preview, contract)
+            corrupt = bytearray(payload)
+            corrupt[29] ^= 0x01
+            preview.write_bytes(corrupt)
+            with self.assertRaisesRegex(ValueError, "CRC"):
+                YAYIN._validate_binary_surface(preview, contract)
 
     def test_failed_rollback_reports_and_retains_recovery_backup(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-rollback-backup-") as temporary:

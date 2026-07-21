@@ -30,7 +30,7 @@ def ruff_result(findings: list[dict[str, object]]) -> subprocess.CompletedProces
 class CleanCodeTests(unittest.TestCase):
     def test_quality_gate_and_release_manifest_include_clean_code_contracts(self) -> None:
         configuration = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
-        self.assertEqual(configuration["tool"]["coverage"]["report"]["fail_under"], 60)
+        self.assertEqual(configuration["tool"]["coverage"]["report"]["fail_under"], 64)
         self.assertEqual(configuration["tool"]["mypy"]["files"], ["scripts", "evals"])
 
         workflow = (ROOT / ".github" / "workflows" / "teftis.yml").read_text(
@@ -38,6 +38,7 @@ class CleanCodeTests(unittest.TestCase):
         )
         self.assertLess(workflow.index("ruff check ."), workflow.index("clean_code.py --check"))
         self.assertLess(workflow.index("clean_code.py --check"), workflow.index("mypy scripts evals"))
+        self.assertIn("coverage report --fail-under=64", workflow)
 
         manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
         paths = {surface["path"] for surface in manifest["public_surfaces"]}
@@ -113,7 +114,7 @@ class CleanCodeTests(unittest.TestCase):
             ],
         )
 
-    def test_increased_and_new_debt_fail_but_deleted_and_shrunk_debt_pass(self) -> None:
+    def test_new_grown_shrunk_and_removed_debt_all_require_exact_baseline(self) -> None:
         baseline = {
             "schema_version": 1,
             "violations": [
@@ -134,13 +135,17 @@ class CleanCodeTests(unittest.TestCase):
 
         errors = CLEAN.compare_baseline(measured, baseline)
 
-        self.assertEqual(len(errors), 2)
+        self.assertEqual(len(errors), 3)
         self.assertTrue(any("evals/run.py" in error and "640" in error for error in errors))
         self.assertTrue(any("scripts/new.py" in error and "new" in error for error in errors))
+        self.assertTrue(any("run_evaluations" in error and "shrunk" in error for error in errors))
 
         measured["module-lines"].pop("evals/run.py")
         measured["module-lines"].pop("scripts/new.py")
-        self.assertEqual(CLEAN.compare_baseline(measured, baseline), [])
+        errors = CLEAN.compare_baseline(measured, baseline)
+        self.assertEqual(len(errors), 2)
+        self.assertTrue(any("evals/run.py" in error and "removed" in error for error in errors))
+        self.assertTrue(any("run_evaluations" in error and "shrunk" in error for error in errors))
 
     def test_silent_broad_exception_pass_is_measured(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-clean-code-") as temporary:

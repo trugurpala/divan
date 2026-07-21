@@ -26,8 +26,9 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Changed
 
 - New code is ratcheted at McCabe 10, 50 lines per function, and 400 lines per
-  module. The branch-coverage floor is 60% and measured coverage may not drop
-  below the recorded 64% baseline.
+  module. The enforced branch-coverage floor is the recorded 64% baseline.
+- The legacy-debt registry must exactly match current violations; growth is
+  rejected and shrinkage/removal requires the same reviewed baseline refresh.
 - Host adapters, transaction journals, lock/transition validation, eval
   provenance, and result contracts moved into smaller stdlib modules.
 - README, Wiki sources, Pages, install, upgrade, rollback, uninstall, and
@@ -41,10 +42,12 @@ Versioning while the public API remains in initial development (`0.y.z`).
   rollback touch only transaction-owned Divan rows and reject foreign state.
 - GitHub Actions remain full-SHA pinned, narrowly permissioned, and release
   assets are never overwritten.
+- Social-preview validation traverses every PNG chunk and requires valid CRCs,
+  one exact IHDR, at least one IDAT, and a terminal empty IEND.
 
 ### Verified
 
-- Local pre-release integration passed 212 tests (2 platform-specific Windows
+- Local pre-release integration passed 223 tests (2 platform-specific Windows
   skips), Ruff, mypy, Clean Code, actionlint 1.7.10, skills-ref 0.1.1 for all
   41 skills, and Claude Code 2.1.212 for the marketplace and five packages.
 - This is local release-candidate evidence. PR/main, repository rules, Pages,

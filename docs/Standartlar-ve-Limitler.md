@@ -57,8 +57,9 @@ doğrulayıcıya bırakılır.
 - Repo geneli McCabe 25 sert tavanını korur. Yeni/kötüleşen birinci taraf Python
   kodu `scripts/clean_code.py` ile fonksiyon başına McCabe 10, 50 mantıksal
   satır ve modül başına 400 fiziksel satır ratchet'ine tabidir.
-- Dal kapsamı en az %60 olmalı; ölçülen kapsam kayıtlı %64 tabanının altına
-  inemez. Eski borç yalnız tam path/symbol/değer kaydıyla daralabilir.
+- Dal kapsamı en az %64 olmalı. Eski borç yalnız tam path/symbol/değer
+  kaydıyla izlenir; ihlal büyürse de, daralır veya kaybolur da baseline tam
+  mevcut ölçüme yenilenmeden kapı geçmez.
 
 ## Yayın ve v1 kabul sözleşmesi
 

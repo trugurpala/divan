@@ -12,8 +12,8 @@
 
 - The registry contains exactly the stable IDs `DCS-001` through `DCS-010`, all at level `required`.
 - New first-party Python functions have McCabe complexity at most 10 and at most 50 logical lines; new first-party Python modules have at most 400 physical lines.
-- Existing violations are keyed by exact path and symbol, cannot grow, and can only shrink or disappear; the repository-wide McCabe 25 ceiling remains active.
-- The branch-coverage configuration floor is at least 60%, and the measured full-suite result must remain at least the recorded 64% v0.12.2 baseline.
+- Existing violations are keyed by exact path and symbol; growth fails, while shrinkage or disappearance requires the baseline to be refreshed to the exact current measurement. The repository-wide McCabe 25 ceiling remains active.
+- The branch-coverage configuration floor and measured full-suite result must both remain at least the recorded 64% v0.12.2 baseline.
 - Doctor is read-only. Install and upgrade are dry-run by default. Unknown provenance fails before mutation.
 - Every external host mutation is journaled first; rollback affects only proven Divan-owned state and never unrelated extensions.
 - First-party runtime code uses Python stdlib only; no application framework, telemetry, hosted dashboard, or auto-installing discovery is added.
@@ -63,8 +63,8 @@
 - [ ] Implement schema-1 baseline rows such as `{"kind":"module-lines","target":"evals/run.py","value":640}`. Obtain complexity from `ruff check scripts evals --select C901 --config lint.mccabe.max-complexity=10 --output-format=json`; missing Ruff is an actionable failure.
 - [ ] Add characterization tests for `_read_provenance`, `_repository_identity`, `_bind_provenance`, `_sanitize_public`, `_validate_agent_result`, `_validate_judgement`, `_public_candidate`, and `write_results`; verify them against the old module before extraction.
 - [ ] Move provenance helpers to `evals/provenance.py` and result/redaction helpers to `evals/result_contracts.py`; re-export them from `evals/run.py`.
-- [ ] Set coverage `fail_under = 60`, wire `clean_code.py --check` after Ruff, record only measured legacy violations, and remove entries eliminated by extraction.
-- [ ] Run the focused eval/clean-code tests, Ruff, `mypy scripts evals`, full coverage with `--fail-under=60`, the clean-code checker, and `git diff --check`; measured coverage must remain at least 64%.
+- [ ] Set coverage `fail_under = 64`, wire `clean_code.py --check` after Ruff, record only measured legacy violations, and remove entries eliminated by extraction.
+- [ ] Run the focused eval/clean-code tests, Ruff, `mypy scripts evals`, full coverage with `--fail-under=64`, the clean-code checker, and `git diff --check`; measured coverage must remain at least 64%.
 - [ ] Commit as `refactor: ratchet clean code debt`.
 
 ---
@@ -143,7 +143,7 @@
 - [ ] Run every focused suite from Tasks 1-6 plus Ruff, mypy, coverage, Actionlint, Agent Skills validation, and Claude plugin validation; fix integration drift before versioning.
 - [ ] Run `python scripts/yayin.py --prepare 0.13.0`, then write truthful CHANGELOG, BLUEPRINT, and progress narratives without changing independent-adoption evidence.
 - [ ] Create a 1280x640 under-1-MB Mühürdar social preview with strong contrast and minimal text. Set GitHub homepage by API, upload the preview through repository settings, preserve topics, and record readback evidence.
-- [ ] Run the complete AGENTS.md gate plus `python scripts/standartlar.py --check`, `python scripts/clean_code.py --check`, Ruff, `mypy scripts evals`, coverage `--fail-under=60`, Actionlint, and `git diff --check`.
+- [ ] Run the complete AGENTS.md gate plus `python scripts/standartlar.py --check`, `python scripts/clean_code.py --check`, Ruff, `mypy scripts evals`, coverage `--fail-under=64`, Actionlint, and `git diff --check`.
 - [ ] Request independent whole-branch review of `origin/main..HEAD`; fix all Critical and Important findings with regression tests and obtain clean re-review.
 - [ ] Push the branch, open a ready PR, wait for all workflows, and record actual successful check names.
 - [ ] Merge only after green CI. Apply/read back a `main` ruleset requiring PRs and the actual checks with administrator recovery bypass; store redacted evidence.

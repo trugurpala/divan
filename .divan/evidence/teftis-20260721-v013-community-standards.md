@@ -61,7 +61,7 @@ the stdlib; no image runtime dependency was added.
   warnings, not failures.
 - `python scripts/devral.py --check`, `python scripts/katalog.py --check`,
   `python scripts/v1.py --check`, `python scripts/yayin.py --check`, and
-  `python evals/run.py --check`: passed. Publication reports 58 surfaces; eval
+  `python evals/run.py --check`: passed. Publication reports 59 surfaces; eval
   discovery reports 4 skills and 13 cases.
 - `python scripts/wiki.py --check`, `python scripts/meclis.py --check`, and
   `python scripts/standartlar.py --check`: passed; Wiki reports 18 pages and
@@ -69,8 +69,8 @@ the stdlib; no image runtime dependency was added.
 - `ruff check .`, `python scripts/clean_code.py --check`, and
   `mypy scripts evals`: passed.
 - `coverage run -m unittest discover -s tests` followed by
-  `coverage report --fail-under=60`: 212 passed, 2 skipped, 72% branch coverage.
-  This is above both the 60% configured floor and the recorded 64% baseline.
+  `coverage report --fail-under=64`: 223 passed, 2 skipped, 72% branch coverage.
+  This is above the enforced 64% baseline.
 - Local `tests/site_testi.py` against a temporary server for `docs/`: HTTP 200,
   v0.13.0 visible, 5 intents, interactions, 5 packages, 6 phases, mobile layout,
   and zero console errors. Running it against the default live Pages URL first
@@ -85,6 +85,15 @@ still comparing against hardcoded v0.12.2, and the browser check expected an
 old visible repository string removed by the new lifecycle layout. Each failure
 was reproduced before its smallest test-only correction: SBOM now reads
 `VERSION`, while the browser verifies the visible canonical repository link.
+
+Whole-branch review then exposed four quality-contract gaps. Regression tests
+first proved that shrunk/removed debt was accepted, coverage could fall to 60%,
+DCS-003/DCS-007 omitted their actual gates, and a header-only or bad-CRC PNG
+passed. The fixes now require exact baseline parity, enforce 64% in config and
+CI, publish complete DCS-003/DCS-005/DCS-007 checks and evidence, and validate
+PNG chunk boundaries plus CRC/IHDR/IDAT/IEND structure. During the final freeze,
+the new ratchet rejected an intermediate host `install` growth of 74 versus 73
+logical lines; it was refactored to 72 rather than blessing a higher baseline.
 
 ## Pending external delivery
 

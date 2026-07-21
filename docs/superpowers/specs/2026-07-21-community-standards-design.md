@@ -129,16 +129,18 @@ New or newly oversized first-party Python code is held to:
 - typed public boundaries and structured errors;
 - no silent broad-exception fallback.
 
-The repository branch-coverage floor rises from 55% to 60% in v0.13. The
-measured v0.12.2 baseline is 64%, so this tightens the enforced floor without
-misrepresenting untested adapter entry points. Later releases can raise the
-floor, but v0.13 must never lower it or reduce measured coverage below 64%.
+The repository branch-coverage floor rises from 55% to the measured 64%
+v0.12.2 baseline in v0.13. This prevents the enforced threshold from trailing
+the stated non-regression promise. Later releases can raise the floor, but
+v0.13 must never lower it or reduce measured coverage below 64%.
 
 Existing violations are recorded by exact path, symbol, and measured value in
 `registry/clean-code-baseline.json`. The checker fails if a baseline violation
-grows, if a new violation appears, or if a removed violation is reintroduced.
+grows, shrinks, or disappears until the registry is refreshed to the exact
+current measurement; it also rejects every new violation.
 The existing repository-wide McCabe 25 hard ceiling remains in place during the
-ratchet. Baseline entries can only disappear or shrink.
+ratchet. Baseline entries can only disappear or shrink in the same reviewed
+change that refreshes the registry to the exact measurement.
 
 The v0.13 implementation extracts host command adapters and transaction/report
 formatting from `scripts/kur-hostlar.py`. It extracts result redaction,
@@ -223,8 +225,8 @@ message and non-zero exit status. Broad exceptions cannot be silently ignored.
 
 Behavior changes begin with a failing regression test. Unit, transaction,
 cross-platform smoke, and publication checks cover the relevant boundary. The
-enforced branch-coverage floor is at least 60%, and the measured suite result is
-at least the recorded 64% baseline. Behavioral-quality claims still require the
+enforced branch-coverage floor and measured suite result are both at least the
+recorded 64% baseline. Behavioral-quality claims still require the
 existing real-adapter and blinded-judge protocol.
 
 ### DCS-006 — Secure supply chain

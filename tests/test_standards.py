@@ -57,6 +57,40 @@ class CommunityStandardsTests(unittest.TestCase):
         self.assertEqual([row["id"] for row in data["standards"]], list(STANDARTLAR.REQUIRED_IDS))
         self.assertEqual({row["level"] for row in data["standards"]}, {"required"})
 
+    def test_clean_code_and_lifecycle_standards_name_their_full_gates(self) -> None:
+        rows = {row["id"]: row for row in STANDARTLAR.load_contract(ROOT)["standards"]}
+        self.assertIn("python scripts/clean_code.py --check", rows["DCS-003"]["checks"])
+        self.assertIn("scripts/clean_code.py", rows["DCS-003"]["evidence"])
+        self.assertIn(
+            "coverage run -m unittest discover -s tests",
+            rows["DCS-005"]["checks"],
+        )
+        self.assertIn("coverage report --fail-under=64", rows["DCS-005"]["checks"])
+        self.assertTrue(
+            {"pyproject.toml", ".github/workflows/teftis.yml"}.issubset(
+                rows["DCS-005"]["evidence"]
+            )
+        )
+        lifecycle_tests = {
+            "tests/test_host_upgrade.py",
+            "tests/test_host_upgrade_security.py",
+            "tests/test_host_upgrade_authority.py",
+            "tests/test_host_upgrade_locking.py",
+        }
+        lifecycle_modules = {
+            "scripts/host_upgrade.py",
+            "scripts/host_transactions.py",
+            "scripts/host_install_journal.py",
+            "scripts/host_journal.py",
+            "scripts/host_journal_scan.py",
+            "scripts/host_journal_transitions.py",
+            "scripts/host_state.py",
+        }
+        self.assertTrue(lifecycle_tests.issubset(rows["DCS-007"]["evidence"]))
+        self.assertTrue(lifecycle_modules.issubset(rows["DCS-007"]["evidence"]))
+        command = "python -m unittest " + " ".join(sorted(lifecycle_tests)) + " -v"
+        self.assertIn(command, rows["DCS-007"]["checks"])
+
     def test_duplicate_and_missing_ids_are_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
             root = pathlib.Path(temporary)

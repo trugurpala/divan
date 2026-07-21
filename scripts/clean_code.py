@@ -202,7 +202,7 @@ def _baseline_rows(baseline: dict[str, Any]) -> dict[tuple[str, str], int]:
 
 
 def compare_baseline(measured: dict[str, dict[str, int]], baseline: dict[str, Any]) -> list[str]:
-    """Report new or increased debt; shrinking and removed debt are accepted."""
+    """Require the baseline to describe every current violation exactly."""
     allowed = _baseline_rows(baseline)
     errors: list[str] = []
     for kind in KINDS:
@@ -212,6 +212,15 @@ def compare_baseline(measured: dict[str, dict[str, int]], baseline: dict[str, An
                 errors.append(f"new {kind} violation: {target} = {value}")
             elif value > previous:
                 errors.append(f"increased {kind} violation: {target} = {value} (baseline {previous})")
+    for (kind, target), previous in sorted(allowed.items()):
+        current = measured.get(kind, {}).get(target)
+        if current is None:
+            errors.append(f"removed {kind} violation needs baseline refresh: {target} (baseline {previous})")
+        elif current < previous:
+            errors.append(
+                f"shrunk {kind} violation needs baseline refresh: "
+                f"{target} = {current} (baseline {previous})"
+            )
     return errors
 
 

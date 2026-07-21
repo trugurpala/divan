@@ -27,8 +27,8 @@
       "title_en": "Small, cohesive code",
       "level": "required",
       "purpose": "Temiz kod ratcheti yeni karmasikligi, uzun fonksiyonlari ve buyuk modulleri onler; eski borc kuculur.",
-      "checks": ["python scripts/hijyen.py --check"],
-      "evidence": ["scripts/hijyen.py", "docs/Standartlar-ve-Limitler.md", "pyproject.toml"],
+      "checks": ["python scripts/hijyen.py --check", "python scripts/clean_code.py --check"],
+      "evidence": ["scripts/hijyen.py", "scripts/clean_code.py", "registry/clean-code-baseline.json", "docs/Standartlar-ve-Limitler.md", "pyproject.toml"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -47,8 +47,8 @@
       "title_en": "Tests and evidence before claims",
       "level": "required",
       "purpose": "Davranis degisiklikleri once basarisiz regresyon testiyle baslar; kalite iddialari gercek adapter ve kor hakem protokolune dayanir.",
-      "checks": ["python -m unittest discover -s tests -v", "python evals/run.py --check"],
-      "evidence": ["tests/test_eval_runner.py", "tests/test_real_adapters.py", "evals/README.md"],
+      "checks": ["python -m unittest discover -s tests -v", "coverage run -m unittest discover -s tests", "coverage report --fail-under=64", "python evals/run.py --check"],
+      "evidence": ["tests/test_eval_runner.py", "tests/test_real_adapters.py", "evals/README.md", "pyproject.toml", ".github/workflows/teftis.yml"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -67,8 +67,8 @@
       "title_en": "Reversible lifecycle",
       "level": "required",
       "purpose": "Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.",
-      "checks": ["python -m unittest tests.test_host_install -v"],
-      "evidence": ["scripts/kur-hostlar.py", "scripts/kaldir-codex.ps1", "scripts/kaldir-codex.sh", "tests/test_host_install.py"],
+      "checks": ["python -m unittest tests.test_host_install -v", "python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v"],
+      "evidence": ["scripts/kur-hostlar.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "scripts/kaldir-codex.ps1", "scripts/kaldir-codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {

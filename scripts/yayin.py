@@ -11,11 +11,54 @@ import re
 import stat
 import sys
 import tempfile
+import zlib
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = pathlib.Path("release-manifest.json")
 SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def _png_chunks(payload: bytes) -> list[tuple[bytes, bytes]]:
+    chunks: list[tuple[bytes, bytes]] = []
+    offset = len(PNG_SIGNATURE)
+    while offset < len(payload):
+        if len(payload) - offset < 12:
+            raise ValueError("PNG chunk is truncated")
+        length = int.from_bytes(payload[offset : offset + 4], "big")
+        chunk_end = offset + 12 + length
+        if chunk_end > len(payload):
+            raise ValueError("PNG chunk payload is truncated")
+        kind = payload[offset + 4 : offset + 8]
+        data = payload[offset + 8 : offset + 8 + length]
+        expected_crc = int.from_bytes(payload[offset + 8 + length : chunk_end], "big")
+        actual_crc = zlib.crc32(kind + data) & 0xFFFFFFFF
+        if actual_crc != expected_crc:
+            raise ValueError(f"PNG {kind!r} CRC is invalid")
+        chunks.append((kind, data))
+        offset = chunk_end
+        if kind == b"IEND":
+            if offset != len(payload):
+                raise ValueError("PNG has data after IEND")
+            break
+    return chunks
+
+
+def _png_dimensions(payload: bytes) -> tuple[int, int]:
+    if len(payload) < 8 or payload[:8] != PNG_SIGNATURE:
+        raise ValueError("valid PNG signature is missing")
+    chunks = _png_chunks(payload)
+    if not chunks or chunks[0][0] != b"IHDR" or len(chunks[0][1]) != 13:
+        raise ValueError("PNG must begin with one 13-byte IHDR chunk")
+    kinds = [kind for kind, _data in chunks]
+    if kinds.count(b"IHDR") != 1:
+        raise ValueError("PNG must contain exactly one IHDR chunk")
+    if b"IDAT" not in kinds:
+        raise ValueError("PNG IDAT chunk is missing")
+    if not kinds or kinds[-1] != b"IEND" or chunks[-1][1]:
+        raise ValueError("PNG must end with an empty IEND chunk")
+    ihdr = chunks[0][1]
+    return int.from_bytes(ihdr[:4], "big"), int.from_bytes(ihdr[4:8], "big")
 
 
 def _validate_binary_surface(path: pathlib.Path, contract: object) -> None:
@@ -34,12 +77,7 @@ def _validate_binary_surface(path: pathlib.Path, contract: object) -> None:
     payload = path.read_bytes()
     if len(payload) > max_bytes:
         raise ValueError(f"{path}: dosya boyutu {len(payload)} bayt; limit {max_bytes}")
-    if len(payload) < 24 or payload[:8] != PNG_SIGNATURE or payload[12:16] != b"IHDR":
-        raise ValueError(f"{path}: valid PNG IHDR header is missing")
-    actual = (
-        int.from_bytes(payload[16:20], "big"),
-        int.from_bytes(payload[20:24], "big"),
-    )
+    actual = _png_dimensions(payload)
     if actual != (width, height):
         raise ValueError(f"{path}: png boyutlar {actual[0]}x{actual[1]}; expected {width}x{height}")
 

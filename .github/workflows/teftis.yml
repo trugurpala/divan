@@ -31,7 +31,7 @@ jobs:
           python scripts/clean_code.py --check
           mypy scripts evals
           coverage run -m unittest discover -s tests
-          coverage report
+          coverage report --fail-under=64
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
           "$(go env GOPATH)/bin/actionlint"
       - name: Agent Skills resmi dogrulayici

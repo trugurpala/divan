@@ -115,7 +115,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
-- 2026-07-21: v0.13.0 local release candidate prepared after 212 tests (2
+- 2026-07-21: v0.13.0 local release candidate prepared after 223 tests (2
   platform-specific skips), Ruff, mypy, Clean Code, actionlint 1.7.10,
   skills-ref 0.1.1 validation of 41 skills, and Claude Code 2.1.212 validation
   of the marketplace plus five packages. The 1280x640 social preview is

@@ -50,9 +50,12 @@ Temiz kod ratcheti yeni karmasikligi, uzun fonksiyonlari ve buyuk modulleri onle
 
 **Kontroller:**
 - `python scripts/hijyen.py --check`
+- `python scripts/clean_code.py --check`
 
 **Kanıt:**
 - `scripts/hijyen.py`
+- `scripts/clean_code.py`
+- `registry/clean-code-baseline.json`
 - `docs/Standartlar-ve-Limitler.md`
 - `pyproject.toml`
 
@@ -86,12 +89,16 @@ Davranis degisiklikleri once basarisiz regresyon testiyle baslar; kalite iddiala
 
 **Kontroller:**
 - `python -m unittest discover -s tests -v`
+- `coverage run -m unittest discover -s tests`
+- `coverage report --fail-under=64`
 - `python evals/run.py --check`
 
 **Kanıt:**
 - `tests/test_eval_runner.py`
 - `tests/test_real_adapters.py`
 - `evals/README.md`
+- `pyproject.toml`
+- `.github/workflows/teftis.yml`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
 
@@ -123,12 +130,24 @@ Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis D
 
 **Kontroller:**
 - `python -m unittest tests.test_host_install -v`
+- `python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v`
 
 **Kanıt:**
 - `scripts/kur-hostlar.py`
+- `scripts/host_upgrade.py`
+- `scripts/host_transactions.py`
+- `scripts/host_install_journal.py`
+- `scripts/host_journal.py`
+- `scripts/host_journal_scan.py`
+- `scripts/host_journal_transitions.py`
+- `scripts/host_state.py`
 - `scripts/kaldir-codex.ps1`
 - `scripts/kaldir-codex.sh`
 - `tests/test_host_install.py`
+- `tests/test_host_upgrade.py`
+- `tests/test_host_upgrade_security.py`
+- `tests/test_host_upgrade_authority.py`
+- `tests/test_host_upgrade_locking.py`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
 

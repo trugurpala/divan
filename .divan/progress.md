@@ -13,7 +13,7 @@ global Claude+Codex upgrade are deliberately not claimed yet. v1 remains 7/8.
 - v0.13.0 introduced DCS-001..DCS-010 as a machine-readable contract, a Clean
   Code debt ratchet, dual-host doctor/transactional upgrade, SPDX supply-chain
   evidence, and synchronized community/public documentation.
-- Baseline integration passed 212 tests with 2 platform-specific Windows skips;
+- Final local integration passed 223 tests with 2 platform-specific Windows skips;
   Ruff, mypy, Clean Code, actionlint 1.7.10, 41 skills via skills-ref 0.1.1, and
   the Claude marketplace plus five packages via Claude Code 2.1.212 passed.
 - The generated 1280x640 RGB social preview is 908422 bytes and is now checked

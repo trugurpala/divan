@@ -149,10 +149,12 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("mypy==2.3.0", requirements)
         self.assertIn("coverage==7.15.2", requirements)
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+        workflow = (WORKFLOWS / "teftis.yml").read_text(encoding="utf-8")
         self.assertIn("[tool.ruff]", pyproject)
         self.assertIn("[tool.mypy]", pyproject)
         self.assertIn("[tool.coverage.run]", pyproject)
-        self.assertIn("fail_under = 60", pyproject)
+        self.assertIn("fail_under = 64", pyproject)
+        self.assertIn("coverage report --fail-under=64", workflow)
 
 
 if __name__ == "__main__":
