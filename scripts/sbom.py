@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import json
 import pathlib
 import re
+import subprocess
 from typing import Any
 
 DOCUMENT_ID = "SPDXRef-DOCUMENT"
@@ -90,16 +92,44 @@ def _license_expression(licenses: set[str], package: str) -> str:
 def _source_info(
     repositories: set[str], upstream_heads: dict[str, str]
 ) -> str:
+    missing = sorted(repositories - upstream_heads.keys())
+    if missing:
+        raise ValueError("kanonik pin yok: " + ", ".join(missing))
     pinned = [
         f"{repository}@{upstream_heads[repository]}"
         for repository in sorted(repositories)
-        if repository in upstream_heads
     ]
     origin = ", ".join(pinned) if pinned else "original Divan work"
     return (
         f"Sources: {origin}. Provenance inventory: THIRD_PARTY_LICENSES.md and "
         "registry/upstream-baselines.json."
     )
+
+
+def _commit_created(root: pathlib.Path, source_commit: str) -> str:
+    try:
+        value = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(root),
+                "show",
+                "--no-patch",
+                "--format=%cI",
+                f"{source_commit}^{{commit}}",
+            ],
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            stderr=subprocess.DEVNULL,
+            timeout=15,
+        ).strip()
+        created = datetime.datetime.fromisoformat(value)
+    except (OSError, subprocess.SubprocessError, ValueError) as exc:
+        raise ValueError(f"Git commit bulunamadi veya zamani gecersiz: {source_commit}") from exc
+    if created.tzinfo is None:
+        raise ValueError(f"Git commit zamani UTC ofseti icermiyor: {source_commit}")
+    return created.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _package(
@@ -173,9 +203,9 @@ def build_spdx(root: pathlib.Path, version: str, source_commit: str) -> dict[str
             f"https://spdx.org/spdxdocs/divan-{version}-{source_commit}"
         ),
         "creationInfo": {
-            "created": "1970-01-01T00:00:00Z",
+            "created": _commit_created(root, source_commit),
             "creators": ["Organization: Divan (Mühürdar)"],
-            "comment": "Epoch timestamp keeps this release SBOM byte-reproducible.",
+            "comment": "Timestamp is the immutable source commit time normalized to UTC.",
         },
         "documentDescribes": described,
         "packages": packages,

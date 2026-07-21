@@ -32,10 +32,10 @@ OZGUN = {
     "kural-hazinesi",
     "kaynak-kuratori",
 }
-KURASYON_KAYNAKLARI = {
-    "PatrickJS/awesome-cursorrules": "b044f956f021b6e8877f16781bcfc466a6a120e9",
-    "muratcankoylan/Agent-Skills-for-Context-Engineering": "c578e85e40fe2bda7c1fec91ff64cf5285434934",
-}
+KURASYON_KAYNAKLARI = (
+    "PatrickJS/awesome-cursorrules",
+    "muratcankoylan/Agent-Skills-for-Context-Engineering",
+)
 # Bilincli farklarda upstream dosyasinin bilinen taban imzasi da sabitlenir.
 # Boylece upstream ayni dosyayi degistirirse izin listesi bu degisimi gizlemez.
 YAMALAR = {
@@ -156,6 +156,30 @@ def baseline_errors(root: pathlib.Path = KOK) -> tuple[list[str], list[dict]]:
     return errors, valid_reviews
 
 
+def pinned_sources(root: pathlib.Path = KOK) -> dict[str, str]:
+    """Return pins from the validated canonical machine-readable inventory."""
+    data = json.loads(
+        (root / "registry" / "upstream-baselines.json").read_text(encoding="utf-8")
+    )
+    return {
+        str(source["repository"]): str(source["reviewed_head"])
+        for source in data["sources"]
+    }
+
+
+def curated_drift(temporary: pathlib.Path, source_pins: dict[str, str]) -> list[str]:
+    changes: list[str] = []
+    for order, repository in enumerate(KURASYON_KAYNAKLARI):
+        baseline = source_pins[repository]
+        current = klonla(repository, temporary / f"curated-{order}")
+        if current != baseline:
+            changes.append(
+                f"- **{repository}**: kure edilen kaynak ilerledi "
+                f"({baseline[:12]} -> {current[:12]})"
+            )
+    return changes
+
+
 def klonla(repo: str, hedef: pathlib.Path) -> str:
     subprocess.run(
         ["git", "clone", "-q", "--depth", "1", f"https://github.com/{repo}", str(hedef)],
@@ -177,6 +201,7 @@ def denetle() -> list[str]:
     if baseline_hatalari:
         return [f"- **upstream baseline**: {error}" for error in baseline_hatalari]
     review_map = {review["skill"]: review for review in reviews}
+    source_pins = pinned_sources(KOK)
     with tempfile.TemporaryDirectory(prefix="divan-nobet-") as gecici:
         tmp = pathlib.Path(gecici)
         upstream: dict[str, pathlib.Path] = {}
@@ -190,13 +215,7 @@ def denetle() -> list[str]:
             upstream.update(bulunan)
             upstream_sources.update({name: repo for name in bulunan})
 
-        for sira, (repo, taban_commit) in enumerate(KURASYON_KAYNAKLARI.items()):
-            guncel = klonla(repo, tmp / f"curated-{sira}")
-            if guncel != taban_commit:
-                degisen.append(
-                    f"- **{repo}**: kure edilen kaynak ilerledi "
-                    f"({taban_commit[:12]} -> {guncel[:12]})"
-                )
+        degisen.extend(curated_drift(tmp, source_pins))
 
         for skill_md in sorted(KOK.glob("plugins/*/skills/*/SKILL.md")):
             eslesme = re.search(

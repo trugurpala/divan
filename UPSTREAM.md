@@ -37,6 +37,9 @@ izlenir; lisansı belirsiz içerik alınmaz.
 - Bağlam Muhafızı, MIT kaynak koleksiyonundaki context-optimization fikirlerinin
   Divan'ın defterdar/ordu düzenine uyarlanmış özgün Türkçe iş akışıdır; kaynak
   commit'i kör eşitleme yerine yeniden kürasyon için izlenir.
+- Dağıtılan ve kürasyon girdisi olan bütün upstream commit pinlerinin tek
+  kanonik makine-okunur kaynağı `registry/upstream-baselines.json` dosyasındaki
+  `sources` listesidir; drift denetimi ve SPDX üretimi aynı listeyi kullanır.
 - Anthropic'in proprietary lisanslı docx/pdf/pptx/xlsx skill'leri alınmaz.
 
 ## Bilinçli yamalar
