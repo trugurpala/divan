@@ -209,14 +209,18 @@ def marketplace_evidence(
 
 
 def plugin_fingerprint(
-    host: str, selector: str, row: dict[str, Any], root: pathlib.Path
+    host: str,
+    selector: str,
+    row: dict[str, Any],
+    root: pathlib.Path,
+    source: str | None = None,
 ) -> dict[str, Any]:
     version = row.get("version")
     if not isinstance(version, str) or not version:
         raise StateError(f"{host}: {selector} version cannot be proven")
     package = selector.removesuffix("@divan")
     install_path = host_adapters.native_plugin_install_path(
-        host, row, root, package, version
+        host, row, root, package, version, source
     )
     if install_path is None:
         raise StateError(f"{host}: {selector} install path or version is not native")
@@ -239,13 +243,14 @@ def validate_plugins(
     root: pathlib.Path,
     contract: dict[str, str],
     rows: dict[str, dict[str, Any]],
+    source: str | None = None,
 ) -> dict[str, dict[str, Any]]:
     expected = {f"{package}@divan" for package in PACKAGES}
     owned = {selector: row for selector, row in rows.items() if selector.endswith("@divan")}
     if set(owned) != expected:
         raise StateError(f"{host}: installed Divan package set does not match contract")
     for selector, row in owned.items():
-        fingerprint = plugin_fingerprint(host, selector, row, root)
+        fingerprint = plugin_fingerprint(host, selector, row, root, source)
         package = selector.removesuffix("@divan")
         if fingerprint["version"] != contract[package]:
             raise StateError(f"{host}: {selector} version does not match contract")
@@ -266,7 +271,11 @@ def capture_host(
         raise StateError(f"{host}: divan marketplace is missing")
     evidence = marketplace_evidence(host, marketplace, source, ref, run, normalize)
     plugins = validate_plugins(
-        host, pathlib.Path(evidence["root"]), evidence["contract"], plugin_rows
+        host,
+        pathlib.Path(evidence["root"]),
+        evidence["contract"],
+        plugin_rows,
+        evidence["source"],
     )
     return {**evidence, "marketplace": marketplace, "plugins": plugins}
 
@@ -284,7 +293,7 @@ def marketplace_fingerprint(host: str, evidence: dict[str, Any]) -> dict[str, An
 def plugin_fingerprints(host: str, snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
     root = pathlib.Path(snapshot["root"])
     return {
-        selector: plugin_fingerprint(host, selector, row, root)
+        selector: plugin_fingerprint(host, selector, row, root, snapshot["source"])
         for selector, row in snapshot["plugins"].items()
     }
 

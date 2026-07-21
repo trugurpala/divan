@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -121,9 +122,10 @@ def native_plugin_install_path(
     marketplace_root: pathlib.Path,
     package: str,
     version: str,
+    source: str | None = None,
 ) -> pathlib.Path | None:
     value = plugin_install_path(host, row)
-    return native_install_path(host, value, marketplace_root, package, version)
+    return native_install_path(host, value, marketplace_root, package, version, source)
 
 
 def native_install_path(
@@ -132,17 +134,25 @@ def native_install_path(
     marketplace_root: pathlib.Path,
     package: str,
     version: str,
+    source: str | None = None,
 ) -> pathlib.Path | None:
     if not value:
         return None
     actual = pathlib.Path(value).expanduser().resolve()
     if host == "claude":
         root = marketplace_root.expanduser().resolve()
-        if root.name != "divan" or root.parent.name != "marketplaces":
-            return None
-        plugins_root = root.parent.parent
-        if plugins_root.name != "plugins" or plugins_root.parent.name != ".claude":
-            return None
+        if root.name == "divan" and root.parent.name == "marketplaces":
+            plugins_root = root.parent.parent
+            if plugins_root.name != "plugins" or plugins_root.parent.name != ".claude":
+                return None
+        else:
+            local = pathlib.Path(source).expanduser() if source else None
+            if local is None or not local.exists() or local.resolve() != root:
+                return None
+            config = pathlib.Path(
+                os.environ.get("CLAUDE_CONFIG_DIR", pathlib.Path.home() / ".claude")
+            ).expanduser().resolve()
+            plugins_root = config / "plugins"
         expected = plugins_root / "cache" / "divan" / package / version
         return actual if actual == expected.resolve() else None
     expected = (marketplace_root / "plugins" / package).resolve()

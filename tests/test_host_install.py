@@ -4,6 +4,7 @@ import copy
 import hashlib
 import importlib.util
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -470,6 +471,30 @@ class HostInstallTests(unittest.TestCase):
                 "sadrazam@divan",
                 wrong_scope,
                 pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
+            )
+
+    def test_claude_local_directory_uses_config_cache_as_native_path(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-claude-local-path-") as temporary:
+            root = pathlib.Path(temporary)
+            source = root / "checkout"
+            config = root / ".claude"
+            source.mkdir()
+            install_path = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.9.1"
+            row = {
+                "id": "sadrazam@divan",
+                "version": "0.9.1",
+                "scope": "user",
+                "enabled": True,
+                "installPath": str(install_path),
+            }
+
+            with mock.patch.dict(os.environ, {"CLAUDE_CONFIG_DIR": str(config)}):
+                fingerprint = HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
+                    "claude", "sadrazam@divan", row, source, source=str(source)
+                )
+
+            self.assertEqual(
+                pathlib.Path(fingerprint["install_path"]), install_path.resolve()
             )
 
     def test_dry_run_never_invokes_host_cli(self) -> None:
