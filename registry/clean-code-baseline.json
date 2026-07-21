@@ -21,7 +21,7 @@
     {"kind": "function-lines", "target": "scripts/legacy_state.py:install_legacy", "value": 65},
     {"kind": "function-lines", "target": "scripts/legacy_state.py:recover_legacy", "value": 88},
     {"kind": "function-lines", "target": "scripts/meclis.py:denetle", "value": 51},
-    {"kind": "module-lines", "target": "scripts/kur-hostlar.py", "value": 654},
+    {"kind": "module-lines", "target": "scripts/kur-hostlar.py", "value": 651},
     {"kind": "module-lines", "target": "scripts/legacy_state.py", "value": 507},
     {"kind": "module-lines", "target": "scripts/validate.py", "value": 432}
   ]
