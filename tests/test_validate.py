@@ -34,6 +34,14 @@ class FrontmatterTests(unittest.TestCase):
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_repository_audit_includes_community_standards(self) -> None:
+        with mock.patch.object(
+            VALIDATE, "standards_validate_contract", return_value=["fixture standards issue"]
+        ):
+            errors, _warnings, _packages, _skills = VALIDATE.denetle(ROOT)
+
+        self.assertIn("TOPLULUK STANDARTLARI: fixture standards issue", errors)
+
     def test_repository_audit_includes_source_hygiene(self) -> None:
         with mock.patch.object(
             VALIDATE, "hijyen_source_issues", return_value=["fixture encoding issue"]

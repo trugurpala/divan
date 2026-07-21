@@ -78,12 +78,18 @@ class PublicationTests(unittest.TestCase):
                 "scripts/kur-hostlar.py",
                 "scripts/legacy_state.py",
                 "scripts/hijyen.py",
+                "scripts/standartlar.py",
                 "evals/run.py",
                 "evals/adapters/claude_agent.py",
                 "evals/adapters/codex_judge.py",
                 "NOTICE.md",
                 "registry/upstream-baselines.json",
                 ".github/workflows/uyumluluk.yml",
+                ".github/workflows/teftis.yml",
+                "registry/community-standards.json",
+                "registry/standard-exceptions.json",
+                "docs/Topluluk-Standartlari.md",
+                "scripts/validate.py",
             }.issubset(paths)
         )
         real_evidence = next(

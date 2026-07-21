@@ -50,6 +50,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         for command in (
             "pip install -r requirements-dev.txt",
             "python scripts/hijyen.py --check",
+            "python scripts/standartlar.py --check",
             "ruff check .",
             "mypy scripts",
             "coverage run -m unittest discover -s tests",

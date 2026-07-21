@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "standards": [
+    {
+      "id": "DCS-001",
+      "title_tr": "Bes dakikada ilk basari",
+      "title_en": "Five-minute first success",
+      "level": "required",
+      "purpose": "Yeni kullanici pinlenmis kurulum, salt-okunur onizleme, doctor sonucu ve kurtarma komutuna ulasir.",
+      "checks": ["python scripts/validate.py"],
+      "evidence": ["docs/Kurulum.md", "scripts/kur-hostlar.py", "tests/test_host_install.py"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-002",
+      "title_tr": "Frameworkten bagimsiz cekirdek",
+      "title_en": "Framework-independent core",
+      "level": "required",
+      "purpose": "Host CLI'leri sinirda adapter olarak kalir; cekirdek politika ve islem durumu stdlib JSON sozlesmelerini kullanir.",
+      "checks": ["python scripts/validate.py"],
+      "evidence": ["scripts/kur-hostlar.py", "scripts/legacy_state.py", "tests/test_host_install.py"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-003",
+      "title_tr": "Kucuk ve tutarli kod",
+      "title_en": "Small, cohesive code",
+      "level": "required",
+      "purpose": "Temiz kod ratcheti yeni karmasikligi, uzun fonksiyonlari ve buyuk modulleri onler; eski borc kuculur.",
+      "checks": ["python scripts/hijyen.py --check"],
+      "evidence": ["scripts/hijyen.py", "docs/Standartlar-ve-Limitler.md", "pyproject.toml"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-004",
+      "title_tr": "Acik veri ve hata sozlesmeleri",
+      "title_en": "Explicit data and error contracts",
+      "level": "required",
+      "purpose": "Kamuya acik otomasyon yapilandirilmis cikti, eyleme donuk hata ve sifir olmayan cikis durumu saglar.",
+      "checks": ["python scripts/validate.py"],
+      "evidence": ["scripts/validate.py", "scripts/kur-hostlar.py", "tests/test_validate.py"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-005",
+      "title_tr": "Iddialardan once test ve kanit",
+      "title_en": "Tests and evidence before claims",
+      "level": "required",
+      "purpose": "Davranis degisiklikleri once basarisiz regresyon testiyle baslar; kalite iddialari gercek adapter ve kor hakem protokolune dayanir.",
+      "checks": ["python -m unittest discover -s tests -v", "python evals/run.py --check"],
+      "evidence": ["tests/test_eval_runner.py", "tests/test_real_adapters.py", "evals/README.md"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-006",
+      "title_tr": "Guvenli tedarik zinciri",
+      "title_en": "Secure supply chain",
+      "level": "required",
+      "purpose": "Bagimliliklar ve Actions degismez olarak pinlenir, izinler asgari olur ve yayin artefaktlari kanitlanir.",
+      "checks": ["python -m unittest tests.test_workflows -v"],
+      "evidence": [".github/workflows/teftis.yml", ".github/workflows/codeql.yml", "tests/test_workflows.py"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-007",
+      "title_tr": "Geri alinabilir yasam dongusu",
+      "title_en": "Reversible lifecycle",
+      "level": "required",
+      "purpose": "Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.",
+      "checks": ["python -m unittest tests.test_host_install -v"],
+      "evidence": ["scripts/kur-hostlar.py", "scripts/kaldir-codex.ps1", "scripts/kaldir-codex.sh", "tests/test_host_install.py"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-008",
+      "title_tr": "Kesfedilebilir ve eszamanli belgeler",
+      "title_en": "Discoverable synchronized documentation",
+      "level": "required",
+      "purpose": "Turkce ve Ingilizce kritik yollar, Wiki, Pages ve yayin metaverisi yayin manifestosu ile eszamanli kalir.",
+      "checks": ["python scripts/yayin.py --check", "python scripts/wiki.py --check"],
+      "evidence": ["release-manifest.json", "wiki-pages.json", "docs/Home.md", "README.en.md"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-009",
+      "title_tr": "Katkici ve destek hazirligi",
+      "title_en": "Contributor and support readiness",
+      "level": "required",
+      "purpose": "Kullanicilar soru, hata, guvenlik, skill onerisi ve kabul kanitini ayirir; katkilara tek yerel denetim sirasi sunulur.",
+      "checks": ["python scripts/devral.py --check"],
+      "evidence": ["CONTRIBUTING.md", ".github/ISSUE_TEMPLATE", "scripts/devral.py"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-010",
+      "title_tr": "Erisilebilir, ozel ve kanit odakli isletim",
+      "title_en": "Accessible, private, evidence-led operation",
+      "level": "required",
+      "purpose": "Cekirdek kullanim telemetri gerektirmez; metin ciktilari renksiz calisir, UTF-8/LF korunur ve benimsenme iddialari kamu kanitina dayanir.",
+      "checks": ["python scripts/hijyen.py --check", "python scripts/v1.py --check"],
+      "evidence": ["scripts/hijyen.py", "registry/v1-gates.json", "docs/V1-Hazirlik.md"],
+      "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    }
+  ]
+}
