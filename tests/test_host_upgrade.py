@@ -98,6 +98,7 @@ class UpgradeRunner:
         self.fail_on: tuple[str, ...] | None = None
         self.interrupt_after: tuple[str, ...] | None = None
         self.interrupt_once = False
+        self.status_overrides: dict[pathlib.Path, str] = {}
 
     def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
         argv = tuple(command)
@@ -125,7 +126,7 @@ class UpgradeRunner:
         source = SOURCE if root == ROOT else self.sources[host or "claude"]
         ref = TARGET_REF if root == ROOT else self.refs[host or "claude"]
         if "status" in command:
-            output = ""
+            output = self.status_overrides.get(root, "")
         elif "get-url" in command:
             output = source
         elif "describe" in command or "tag" in command:
@@ -241,6 +242,27 @@ class UpgradeRunner:
 
 
 class HostUpgradeTests(unittest.TestCase):
+    def _codex_metadata(
+        self,
+        runner: UpgradeRunner,
+        changes: dict[str, object] | None = None,
+        *,
+        nested: bool = False,
+    ) -> pathlib.Path:
+        value = json.loads(
+            (ROOT / "tests" / "fixtures" / "host-cli" / "codex-marketplace-install.json")
+            .read_text(encoding="utf-8")
+        )
+        value.update(changes or {})
+        relative = pathlib.Path("nested") if nested else pathlib.Path()
+        path = runner.roots["codex"] / relative / ".codex-marketplace-install.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(value) + "\n", encoding="utf-8")
+        runner.status_overrides[runner.roots["codex"]] = (
+            "?? .codex-marketplace-install.json"
+        )
+        return path
+
     def test_real_codex_marketplace_without_ref_captures_checkout_identity(self) -> None:
         fixture = json.loads(
             (ROOT / "tests" / "fixtures" / "host-cli" / "codex-marketplace-list.json")
@@ -251,6 +273,7 @@ class HostUpgradeTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory(prefix="divan-upgrade-real-codex-") as temporary:
             runner = UpgradeRunner(pathlib.Path(temporary))
+            self._codex_metadata(runner)
             marketplace = fixture["marketplaces"][0]
             marketplace["root"] = str(runner.roots["codex"])
             plugins = json.loads(
@@ -277,6 +300,58 @@ class HostUpgradeTests(unittest.TestCase):
         self.assertEqual(captured["ref"], OLD_REF)
         self.assertEqual(captured["commit"], "a" * 40)
         self.assertEqual(runner.mutations, [])
+
+    def test_codex_native_metadata_tampering_is_rejected_before_mutation(self) -> None:
+        cases = {
+            "source": {"source": "https://example.invalid/foreign.git"},
+            "ref": {"ref_name": "v9.9.9"},
+            "revision": {"revision": "b" * 40},
+            "schema": {"unexpected": True},
+        }
+        for name, changes in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix="divan-codex-metadata-"
+            ) as temporary:
+                runner = UpgradeRunner(pathlib.Path(temporary))
+                self._codex_metadata(runner, changes)
+                io = self._upgrade_io(runner)
+
+                with self.assertRaises(HOSTS.InstallError):
+                    HOSTS._host_upgrade._capture_before("codex", SOURCE, io)
+
+                self.assertEqual(runner.mutations, [])
+
+    def test_codex_native_metadata_path_symlink_and_additional_dirt_are_rejected(self) -> None:
+        modes = ("nested", "symlink", "additional-dirt")
+        for mode in modes:
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory(
+                prefix="divan-codex-metadata-path-"
+            ) as temporary:
+                runner = UpgradeRunner(pathlib.Path(temporary))
+                path = self._codex_metadata(runner, nested=mode == "nested")
+                if mode == "additional-dirt":
+                    runner.status_overrides[runner.roots["codex"]] += "\n?? foreign.txt"
+                io = self._upgrade_io(runner)
+                patcher = mock.patch.object(
+                    pathlib.Path,
+                    "is_symlink",
+                    autospec=True,
+                    side_effect=lambda candidate: mode == "symlink" and candidate == path,
+                )
+
+                with patcher, self.assertRaises(HOSTS.InstallError):
+                    HOSTS._host_upgrade._capture_before("codex", SOURCE, io)
+
+                self.assertEqual(runner.mutations, [])
+
+    def _upgrade_io(self, runner: UpgradeRunner) -> object:
+        return HOSTS._host_upgrade.UpgradeIO(
+            marketplace_rows=lambda host: HOSTS._marketplace_rows(host, runner),
+            plugin_rows=lambda host: HOSTS._plugin_rows(host, runner),
+            run=lambda command: HOSTS._run(runner, command),
+            rollback=lambda _path: {},
+            normalize_source=HOSTS._normalize_source,
+        )
 
     def options(self, state_dir: pathlib.Path, **changes: object) -> object:
         values = {

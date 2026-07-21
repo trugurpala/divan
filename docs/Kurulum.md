@@ -132,6 +132,10 @@ kanıtlanır. Claude yolu kanıtlanmış kullanıcı-scope marketplace yapıland
 tam cache köküyle birebir eşleşmeli ve plugin satırı `scope: user` taşımalıdır.
 Codex marketplace satırı ref bildirmiyorsa önceki değişmez ref ve commit istenen
 hedeften değil, kurulu marketplace Git checkout'undan salt-okunur türetilir.
+Codex'in kökte oluşturduğu `.codex-marketplace-install.json` bu checkout'ta izin
+verilen tek kirli girdidir: normal dosya olmalı; kesin native alanları source,
+ref ve Git HEAD revision kanıtlarıyla birebir uyuşmalıdır. Başka untracked/staged
+değişiklik, symlink/reparse point veya metadata tahrifi işlemi durdurur.
 Eski, parmak izsiz schema-1 günlükleri otomatik silme yapmadan
 fail-closed durur; recovery sırasında dışarıdan değiştirilmiş satırlar korunur.
 Schema-1 recovery, host CLI'dan önce işlem yolu, host kümesi, durum, pending

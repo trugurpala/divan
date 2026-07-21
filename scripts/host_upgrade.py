@@ -251,10 +251,23 @@ def _capture_before(host: str, source: str, io: UpgradeIO) -> dict[str, Any]:
             root = host_adapters.marketplace_root(host, marketplace)
             if root is None:
                 raise host_state.StateError(f"{host}: divan marketplace root is missing")
+            reported_source = host_adapters.marketplace_source(marketplace)
+            if reported_source is not None and not host_state.source_matches(
+                reported_source, source, io.normalize_source
+            ):
+                raise host_state.StateError(
+                    f"{host}: raw marketplace source does not match requested repository"
+                )
             evidence = host_state.checkout_evidence_at_head(
-                pathlib.Path(root), source, io.run, io.normalize_source
+                host, pathlib.Path(root), source, io.run, io.normalize_source
             )
-            ref = evidence["ref"]
+            plugins = host_state.validate_plugins(
+                host,
+                pathlib.Path(evidence["root"]),
+                evidence["contract"],
+                io.plugin_rows(host),
+            )
+            return {**evidence, "marketplace": marketplace, "plugins": plugins}
         return host_state.capture_host(
             host,
             source,

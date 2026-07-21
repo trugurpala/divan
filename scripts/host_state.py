@@ -6,6 +6,7 @@ import hashlib
 import json
 import pathlib
 import re
+import stat
 from collections.abc import Callable
 from typing import Any
 
@@ -56,13 +57,18 @@ def _catalog_row_valid(value: Any) -> bool:
     return normalized == pathlib.PurePosixPath("plugins") / name
 
 
-def _git_head(root: pathlib.Path, run: Run) -> str:
+def _git_status_head(root: pathlib.Path, run: Run) -> tuple[str, str]:
     dirty = run(["git", "-C", str(root), "status", "--porcelain"]).strip()
-    if dirty:
-        raise StateError(f"dirty checkout cannot be used transactionally: {root}")
     commit = run(["git", "-C", str(root), "rev-parse", "HEAD"]).strip()
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise StateError(f"checkout commit cannot be proven: {root}")
+    return dirty, commit
+
+
+def _git_head(root: pathlib.Path, run: Run) -> str:
+    dirty, commit = _git_status_head(root, run)
+    if dirty:
+        raise StateError(f"dirty checkout cannot be used transactionally: {root}")
     return commit
 
 
@@ -77,11 +83,11 @@ def _git_evidence(root: pathlib.Path, ref: str, run: Run) -> tuple[str, str]:
 
 
 def checkout_evidence_at_head(
-    root: pathlib.Path, source: str, run: Run, normalize: Normalize
+    host: str, root: pathlib.Path, source: str, run: Run, normalize: Normalize
 ) -> dict[str, Any]:
     """Prove an installed checkout and derive its immutable exact tag or commit."""
     resolved = root.expanduser().resolve()
-    commit = _git_head(resolved, run)
+    dirty, commit = _git_status_head(resolved, run)
     tags = [
         tag.strip()
         for tag in run(["git", "-C", str(resolved), "tag", "--points-at", "HEAD"])
@@ -90,15 +96,34 @@ def checkout_evidence_at_head(
     ]
     if len(tags) > 1:
         raise StateError(f"checkout has ambiguous exact tags: {resolved}")
-    return checkout_evidence(resolved, source, tags[0] if tags else commit, run, normalize)
+    ref = tags[0] if tags else commit
+    metadata = resolved / ".codex-marketplace-install.json"
+    if dirty:
+        if host != "codex" or dirty != "?? .codex-marketplace-install.json":
+            raise StateError(f"dirty checkout cannot be used transactionally: {resolved}")
+        _validate_codex_metadata(metadata, resolved, source, ref, commit, normalize)
+    elif metadata.exists():
+        raise StateError("Codex marketplace metadata is not an isolated untracked file")
+    return _checkout_payload(resolved, source, ref, commit, run, normalize)
 
 
 def checkout_evidence(
     root: pathlib.Path, source: str, ref: str, run: Run, normalize: Normalize
 ) -> dict[str, Any]:
     resolved = root.expanduser().resolve()
-    local = pathlib.Path(source).expanduser()
     commit, actual_ref = _git_evidence(resolved, ref, run)
+    return _checkout_payload(resolved, source, actual_ref, commit, run, normalize)
+
+
+def _checkout_payload(
+    resolved: pathlib.Path,
+    source: str,
+    actual_ref: str,
+    commit: str,
+    run: Run,
+    normalize: Normalize,
+) -> dict[str, Any]:
+    local = pathlib.Path(source).expanduser()
     if local.exists():
         proven_source = str(local.resolve())
         if resolved != local.resolve():
@@ -118,6 +143,41 @@ def checkout_evidence(
         "catalog_digest": digest,
         "contract": contract,
     }
+
+
+def _validate_codex_metadata(
+    metadata: pathlib.Path,
+    root: pathlib.Path,
+    source: str,
+    ref: str,
+    commit: str,
+    normalize: Normalize,
+) -> None:
+    if metadata.parent != root or metadata.name != ".codex-marketplace-install.json":
+        raise StateError("Codex marketplace metadata path is invalid")
+    try:
+        details = metadata.lstat()
+    except OSError as exc:
+        raise StateError("Codex marketplace metadata is unreadable") from exc
+    reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    attributes = getattr(details, "st_file_attributes", 0)
+    if metadata.is_symlink() or (reparse and attributes & reparse):
+        raise StateError("Codex marketplace metadata cannot be a symlink or reparse point")
+    try:
+        value = json.loads(metadata.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise StateError("Codex marketplace metadata is not valid UTF-8 JSON") from exc
+    expected = {"source_type", "source", "ref_name", "sparse_paths", "revision"}
+    if not isinstance(value, dict) or set(value) != expected:
+        raise StateError("Codex marketplace metadata schema is invalid")
+    if value["source_type"] != "git" or value["sparse_paths"] != []:
+        raise StateError("Codex marketplace metadata schema is unsafe")
+    if not isinstance(value["source"], str) or normalize(value["source"]) != normalize(source):
+        raise StateError("Codex marketplace metadata source is invalid")
+    if value["ref_name"] != ref:
+        raise StateError("Codex marketplace metadata ref is invalid")
+    if value["revision"] != commit or not re.fullmatch(r"[0-9a-f]{40}", value["revision"]):
+        raise StateError("Codex marketplace metadata revision is invalid")
 
 
 def source_matches(reported: str, expected: str, normalize: Normalize) -> bool:
