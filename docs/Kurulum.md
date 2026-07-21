@@ -1,5 +1,21 @@
 # Kurulum
 
+Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. İlk kez
+kullanıyorsanız güncel sabit sürüm için bu sırayı izleyin:
+
+```powershell
+python scripts/kur-hostlar.py --host both --ref v0.12.2
+python scripts/kur-hostlar.py --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+```
+
+Kaldırma için [[Kaldırma|Kaldirma]], soru/hata/güvenlik için
+[SUPPORT.md](../SUPPORT.md), ürün sözleşmesi için
+[[Topluluk Standartları|Topluluk-Standartlari]] sayfasını kullanın.
+
 ## Claude Code/Desktop Code + Codex (önerilen yerel yol)
 
 Kurucu varsayılan olarak yalnız planı gösterir; host durumunu değiştirmez:

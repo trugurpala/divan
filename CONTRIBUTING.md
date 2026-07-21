@@ -1,35 +1,51 @@
 # Divan'a Katkı
 
-Divan kendini toplulukla geliştirir. Yeni bir vezir (skill) kazandırmak için:
+**Türkçe** · [English](CONTRIBUTING.en.md) · [Destek yolları](SUPPORT.md) ·
+[Topluluk standartları](docs/Topluluk-Standartlari.md)
 
-## Yol
-1. **Öneri:** Yeni bir dış kaynak için **Kaynak adayı** formunu; özgün skill
-   fikri için **Yeni Vezir** şablonunu kullan. Kaynak formu gerçek kullanıcı
-   boşluğu, tam lisans kanıtı ve yürütme/yetki yüzeyini zorunlu ister.
-2. **Yaz:** `plugins/<paket>/skills/<skill-adi>/SKILL.md`. Kurallar aşağıda.
-   İpucu: Claude Code'da `sadrazam` kuruluysa "Divan'a yeni vezir yaz" de —
-   `vezir-yetistirme` skill'i seni adım adım yürütür.
-3. **Teftiş:** `python scripts/validate.py` yerelde temiz çıkmalı. Aday defteri
-   değiştiyse `python scripts/meclis.py --check` de geçmeli. Skill değiştiyse
-   `python scripts/katalog.py --render` çalıştırılmalı ve `--check` geçmeli.
-4. **PR aç:** Şablondaki çeklisti doldur.
+Divan yerel bir skill/plugin dağıtımıdır; model veya ajan runtime'ı değildir.
+Katkılar 41 skill'lik kataloğu taşınabilir, lisansı açık, geri alınabilir ve
+kanıta dayalı tutmalıdır.
 
-## Skill standartları (Agent Skills — agentskills.io)
-- Frontmatter zorunlu: `name` (kebab-case, ≤ 64 karakter) ve `description`
-  (≤ 1024 karakter; ne yaptığı + hangi ifadelerde tetikleneceği).
-- Gövde: kısa, prosedürel, tek sorumluluk; 500 satırı geçme.
-- Dil: Türkçe veya İngilizce; tetikleyici ifadeleri her iki dilde düşün.
-- Üçüncü taraf içerik taşıyorsan: lisansı MIT/Apache-2.0/CC0 gibi izinli
-  olmalı ve THIRD_PARTY_LICENSES.md + UPSTREAM.md güncellenmeli.
-- Proprietary içerik kabul edilmez.
+## Doğru yolu seç
 
-## Sürüm ve onay
-Küçük düzeltmeler doğrudan PR; yeni paketler önce issue tartışması ister.
-Her PR CI teftişinden geçmeden birleşmez.
+- Kullanım soruları için [SUPPORT.md](SUPPORT.md) içindeki Q&A yolunu kullan.
+- Tekrar üretilebilir hataları hata formuyla bildir.
+- Güvenlik açıklarını yalnız özel güvenlik bildirimiyle paylaş.
+- Mevcut bir repo/yetenek için kaynak-adayı formunu kullan.
+- Özgün bir Divan yeteneği için yeni-vezir formunu kullan.
+- Bağımsız v1 kanıtını kabul-kanıtı formuyla gönder.
 
-## Aday başka, kurulum başka
+## Katkı yolu
 
-Meclis'e giren repo Divan'a alınmış değildir. Önce Kaynak Küratörü kimlik,
-lisans, köken, script/hook/araç erişimi ve mevcut yetenek çakışmasını inceler.
-`ADOPT` veya `ADAPT` kararı bile uygulama değildir; pin, atıf, eval ve teftiş
-ayrı PR'da tamamlanır. `registry/candidates.json` tek doğru aday kaynağıdır.
+1. Düzenlemeden önce `BLUEPRINT.md`, `UPSTREAM.md`,
+   `THIRD_PARTY_LICENSES.md` ve ilgili paket talimatlarını oku.
+2. En küçük tutarlı birimi değiştir. Kaynak keşfini kuruluma çevirme; lisansı
+   ve kökeni kanıtlanmamış içeriği kopyalama.
+3. Davranış değişikliğine kırmızı testle başla. Host politikasını Claude/Codex
+   adaptörlerinden bağımsız tut ve alakasız kullanıcı eklentilerini koru.
+4. Yerel kapıların tamamını çalıştır:
+
+```bash
+python scripts/hijyen.py --check
+python scripts/validate.py
+python scripts/devral.py --check
+python scripts/katalog.py --check
+python scripts/v1.py --check
+python scripts/yayin.py --check
+python evals/run.py --check
+python -m unittest discover -s tests -v
+git diff --check
+```
+
+5. Tek amaçlı bir pull request aç. Kullanıcı sonucunu, riski, geri alma yolunu
+   ve tam doğrulama kanıtını yaz. Gerçek ajan adaptörü ve kör hakem protokolü
+   olmadan davranış iyileşmesi iddia etme.
+
+Ürünü değiştiren katkı README, katalog, kurulum belgesi, Wiki kaynağı, site,
+yayın manifesti ve lisans/köken kayıtlarını aynı değişiklikte eşitlemelidir.
+`DCS-001` ile `DCS-010` arasındaki on zorunlu kuralı doğrulamak için:
+
+```bash
+python scripts/standartlar.py --check
+```

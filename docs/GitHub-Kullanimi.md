@@ -9,13 +9,18 @@ Vibe coder olarak senin de asgari GitHub aklın bu tablo kadar olsun:
 | **Actions (CI)** | Yerel + Agent Skills + iki host pazarı + Claude Code teftişi; CodeQL, temiz-host matrisi, site/Wiki testi, yayın, upstream nöbeti ve Meclis keşfi | Yeşil tik görmeden birleştirme |
 | **Pages** | https://trugurpala.github.io/divan/ — ücretsiz, login'siz vitrin | docs/ klasörü = anında site |
 | **Releases** | `main` sonrası Pages ve Wiki v0.12.2 olunca CHANGELOG'dan otomatik tag/not üretir | Güncel tag'i Releases sayfasından doğrula; üretimde etikete sabitle |
-| **Issues + etiketler** | yeni-vezir / hata / conduct akışları | Fikrini şablonla aç, etiket yönlendirir |
-| **Discussions** | Serbest sohbet, soru-cevap | Issue'ya değmeyen her şey |
+| **Issues + etiketler** | Tekrar üretilebilir hata, kaynak/skill önerisi ve bağımsız kabul kanıtı | İhtiyacına uygun formu [SUPPORT.md](../SUPPORT.md) üzerinden aç; boş issue kapalıdır |
+| **Discussions** | Kullanım ve kurulum Q&A | Ürün sorusunu Q&A kategorisinde sor |
+| **Private advisories** | Güvenlik açığını herkese açmadan sahibine ulaştırır | Güvenlik raporunu public issue'ya yazma |
 | **Topics** | claude-code, agent-skills, vibe-coding... keşif | Arayanlar seni bulur |
 | **Wiki** | `docs/*.md` kaynaklarından derlenir; `main` sonrası Actions ayrı Wiki Git deposuna yazar ve canlı sürümü okur | Elle Wiki'yi değil kaynak belgeyi değiştir |
 
 Altın kural: **repoya girmeyen bilgi yok hükmündedir.** Ajanla verdiğin her
 kalıcı karar BLUEPRINT.md'ye işlenmeli — akıl orada yaşar.
+
+Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. Zorunlu
+ürün sözleşmesi [[Topluluk Standartları|Topluluk-Standartlari]], destek ve katkı
+yolları ise [SUPPORT.md](../SUPPORT.md) ile iki dilli katkı rehberleridir.
 
 ## Bakım ve güvenlik kapıları
 

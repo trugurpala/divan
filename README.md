@@ -72,6 +72,17 @@ Kurucu Claude Code/Desktop Code ile Codex'in resmî plugin CLI'larını kullanı
 mevcut eklentileri işlem kaydına alır ve alakasız eklentilere dokunmaz. Tek-host,
 elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md).
 
+Beş dakikalık güvenli yaşam döngüsü:
+
+```powershell
+python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+```
+
+Kaldırma komutları ve sahiplik sınırları: [docs/Kaldirma.md](docs/Kaldirma.md).
+
 ## Temiz geliştirme
 
 ```powershell
@@ -194,3 +205,14 @@ Skill metinlerinin yanında açık kaynak doğrulama/kurulum betikleri ve bazı
 > onaylanmış değildir; uyumluluk ifadeleri yalnızca tanımlayıcıdır.
 > Lisans: derleme ve özgün vezirler MIT; üçüncü taraflar kendi
 > lisanslarını korur — [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+## Standartlar ve topluluk
+
+Divan'ın `DCS-001`–`DCS-010` arasındaki on zorunlu ürün kuralı
+[Topluluk Standartları](docs/Topluluk-Standartlari.md) sayfasında ve
+`python scripts/standartlar.py --check` kapısında yaşar. Kullanım sorusu, hata,
+özel güvenlik bildirimi, yetenek önerisi ve bağımsız kabul kanıtı için tek doğru
+yollar [SUPPORT.md](SUPPORT.md) içindedir. Katkı rehberi:
+[Türkçe](CONTRIBUTING.md) · [English](CONTRIBUTING.en.md).
+
+v1 durumu: **7/8** kapı geçti; bağımsız kullanıcı kanıtı hâlâ bekleniyor.

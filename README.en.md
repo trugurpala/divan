@@ -56,6 +56,17 @@ pre-state, and never removes unrelated plugins. See
 [installation options](docs/Kurulum.md) for single-host, manual, legacy
 migration, and removal paths.
 
+The five-minute safe lifecycle continues with:
+
+```powershell
+python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+```
+
+See [docs/Kaldirma.md](docs/Kaldirma.md) for ownership-safe uninstall commands.
+
 ## Clean development
 
 ```powershell
@@ -152,10 +163,14 @@ increase, or “best in the world” status.
 
 ## Contributing and security
 
-- [Contributing](CONTRIBUTING.md)
+- [Contributing in English](CONTRIBUTING.en.md) · [Türkçe](CONTRIBUTING.md)
+- [Support and request routing](SUPPORT.md)
+- [DCS-001–DCS-010 community standards](docs/Topluluk-Standartlari.md)
 - [Security policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [License and third-party notices](THIRD_PARTY_LICENSES.md)
 
 Divan is not affiliated with or endorsed by Anthropic, Claude, OpenAI, or
 Vercel. Product and compatibility names are descriptive only.
+
+The v1 scorecard remains **7/8**: independent-user evidence is still pending.

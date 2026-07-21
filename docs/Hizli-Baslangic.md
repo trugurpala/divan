@@ -1,19 +1,36 @@
 # Hızlı Başlangıç
 
 Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefini
-söyle, sonra Divan'ın kanıt zincirini izle.
+söyle, sonra Divan'ın kanıt zincirini izle. Divan yerel bir skill/plugin
+dağıtımıdır; model veya runtime değildir. Güncel v1 karnesi **7/8** kapının
+geçtiğini, bağımsız kullanıcı kanıtının beklediğini gösterir. Ürün sözleşmesi:
+[[Topluluk Standartları|Topluluk-Standartlari]].
 
-## 1. Çekirdeği kur
+## 1. Beş dakikalık güvenli yolu çalıştır
 
-Claude Code:
+Önce yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
-```text
-/plugin marketplace add trugurpala/divan
-/plugin install sadrazam@divan
-/plugin install core-pack@divan
+```powershell
+python scripts/kur-hostlar.py --host both --ref v0.12.2
+python scripts/kur-hostlar.py --host both --ref v0.12.2 --execute
 ```
 
-Codex, Cursor ve diğer hostlar için [[Kurulum]] sayfasına git.
+Durumu değiştirmeyen doctor ve kontrollü yükseltme:
+
+```powershell
+python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
+```
+
+Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
+
+```powershell
+python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+```
+
+Kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host seçenekleri:
+[[Kurulum]].
 
 ## 2. Niyetini ferman olarak yaz
 
@@ -42,3 +59,6 @@ Kanıtsız “bitti” deme ve sıradaki kesin adımı kaydet.
 5. `main`, release ve canlı durumunun birbirinden doğru ayrılması.
 
 Canlı ferman seçici: https://trugurpala.github.io/divan/#basla
+
+Sorular, tekrar üretilebilir hatalar, güvenlik ve öneriler için yollar:
+[SUPPORT.md](../SUPPORT.md).
