@@ -42,6 +42,33 @@ git diff --check
    rollback path, and exact verification evidence. Do not claim behavioral
    improvement without the real-adapter and blinded-judge protocol.
 
+## Add a new skill
+
+Create an original skill at its real package path:
+
+```text
+plugins/<paket>/skills/<skill-adi>/SKILL.md
+```
+
+The `SKILL.md` YAML frontmatter requires a kebab-case `name` identical to its
+directory (maximum 64 characters) and a `description` that says what it does
+and when it triggers (maximum 1024 characters). Keep the body procedural and
+single-purpose; move detail beyond 500 lines into `references/`. Then render
+and verify the catalog and candidate registry:
+
+```bash
+python scripts/katalog.py --render
+python scripts/katalog.py --check
+python scripts/validate.py
+python scripts/meclis.py --check
+```
+
+Entering the candidate registry is not adoption. An external source first
+receives identity, license, provenance, hook/script/permission, and overlap
+review. Even an `ADOPT` or `ADAPT` decision is not installation: immutable
+pinning, attribution, evals, and inspection require a separate implementation
+change.
+
 Changes to the product must keep README, catalog, installation guide, Wiki
 source, website, release manifest, and licensing/provenance records aligned.
 The ten required rules in `DCS-001` through `DCS-010` are validated with:

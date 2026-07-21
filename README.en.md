@@ -62,10 +62,14 @@ The five-minute safe lifecycle continues with:
 python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
 python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
 python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
-python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
-See [docs/Kaldirma.md](docs/Kaldirma.md) for ownership-safe uninstall commands.
+Replace the example journal with doctor's exact `recovery_command`. Rolling
+back the `install-...json` journal uninstalls only Divan entries created by that
+transaction. See [docs/Kaldirma.md](docs/Kaldirma.md) for host-aware manual
+removal and ownership boundaries.
 
 ## Clean development
 

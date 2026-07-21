@@ -169,7 +169,8 @@ footer p+p{margin-top:10px}
       <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2</code></div></li>
       <li><div><b>Yükseltmeyi önizle</b><code>python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2</code></div></li>
       <li><div><b>Yükseltmeyi uygula</b><code>python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute</code></div></li>
-      <li><div><b>Gerekirse işlem günlüğünden geri al</b><code>python scripts/kur-hostlar.py --rollback-transaction &lt;upgrade-islem.json&gt;</code></div></li>
+      <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
+      <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>
     <p style="margin-top:18px">Tam kaldırma ve sahiplik sınırları: <a href="https://github.com/trugurpala/divan/blob/main/docs/Kaldirma.md">docs/Kaldirma.md</a>.</p>
   </div>

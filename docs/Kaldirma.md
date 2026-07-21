@@ -35,7 +35,7 @@ alanındaki Divan girdilerini hedefle; başka marketplace veya eklentileri silme
 Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 
 ```bash
-python scripts/kur-hostlar.py --rollback-transaction <install-....json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
 `upgrade-*.json` schema-2 kayıtları farklıdır: `before_rows` kanıtlanmış eski
@@ -48,7 +48,7 @@ ve eski iki-host durumunu ters host sırasında yeniden kurar; alakasız satırl
 silmez. `rollback-incomplete` kaydında yazılı kesin komutu kullanın:
 
 ```bash
-python scripts/kur-hostlar.py --rollback-transaction <upgrade-....json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 ```
 
 Recovery tekrar kesilirse aynı komut güvenle yeniden çalıştırılabilir. Journal

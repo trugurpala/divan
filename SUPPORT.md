@@ -1,20 +1,25 @@
-# Divan support
+# Divan destek / support
 
-Divan is a free, local skill/plugin distribution maintained in public. Choose
-the route that matches what you need so questions, defects, security reports,
-and product proposals do not get mixed together.
+**Türkçe:** Divan ücretsiz, yerel ve açık geliştirilen bir skill/plugin
+dağıtımıdır. Sorunu doğru kanala göndermek için aşağıdaki yolu seç.
 
-| Need | Use this route |
+**English:** Divan is a free, local skill/plugin distribution maintained in
+public. Choose the matching route so questions, defects, security reports, and
+product proposals do not get mixed together.
+
+| Türkçe / English | Doğru yol / Route |
 |---|---|
-| Usage or installation question | [Discussions Q&A](https://github.com/trugurpala/divan/discussions/categories/q-a) |
-| Reproducible bug | [Bug report form](https://github.com/trugurpala/divan/issues/new?template=hata.md) |
-| Vulnerability or sensitive security report | [Private security advisory](https://github.com/trugurpala/divan/security/advisories/new) |
-| Existing external capability or repository | [Source candidate form](https://github.com/trugurpala/divan/issues/new?template=kaynak-adayi.yml) |
-| Original Divan skill capability | [New skill form](https://github.com/trugurpala/divan/issues/new?template=yeni-vezir.md) |
-| Independent v1 acceptance evidence | [Acceptance evidence form](https://github.com/trugurpala/divan/issues/new?template=kabul-kaniti.yml) |
+| Kullanım veya kurulum sorusu / Usage or installation question | [Discussions Q&A](https://github.com/trugurpala/divan/discussions/categories/q-a) |
+| Tekrar üretilebilir hata / Reproducible bug | [Hata formu / Bug report](https://github.com/trugurpala/divan/issues/new?template=hata.md) |
+| Güvenlik açığı / Vulnerability | [Özel güvenlik bildirimi / Private advisory](https://github.com/trugurpala/divan/security/advisories/new) |
+| Mevcut dış yetenek veya repo / Existing external capability | [Kaynak adayı / Source candidate](https://github.com/trugurpala/divan/issues/new?template=kaynak-adayi.yml) |
+| Özgün Divan skill'i / Original Divan skill | [Yeni vezir / New skill](https://github.com/trugurpala/divan/issues/new?template=yeni-vezir.md) |
+| Bağımsız v1 kanıtı / Independent v1 evidence | [Kabul kanıtı / Acceptance evidence](https://github.com/trugurpala/divan/issues/new?template=kabul-kaniti.yml) |
 
-Do not place vulnerabilities, credentials, personal data, or private project
-details in a public issue or discussion. Before reporting a bug, run the
-read-only doctor command from [the installation guide](docs/Kurulum.md) and
-include the redacted output, host version, operating system, pinned Divan tag,
-and smallest reproduction.
+Güvenlik açığı, kimlik bilgisi, kişisel veri veya özel proje ayrıntısını public
+issue/discussion'a yazma. / Do not place vulnerabilities, credentials,
+personal data, or private project details in a public issue or discussion.
+Hata bildirmeden önce [kurulum rehberindeki](docs/Kurulum.md) salt-okunur doctor
+komutunu çalıştır; redakte çıktı, host sürümü, işletim sistemi, sabit Divan tag'i
+ve en küçük tekrar üretimi ekle. / Include the redacted doctor output, host
+version, operating system, pinned tag, and smallest reproduction.

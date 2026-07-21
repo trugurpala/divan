@@ -50,6 +50,7 @@
     {"id": "release-provenance", "path": ".github/workflows/release.yml", "marker": "actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373", "replace_version": false},
     {"id": "wiki-home", "path": "docs/Home.md", "marker": "# Divan Wiki · v{version}", "replace_version": true, "version_patterns": ["# Divan Wiki · v{version}", "**Güncel durum:** v{version}"]},
     {"id": "wiki-quick-start", "path": "docs/Hizli-Baslangic.md", "marker": "Beş dakikalık güvenli yolu", "replace_version": true, "version_patterns": ["--ref v{version}"]},
+    {"id": "wiki-uninstall", "path": "docs/Kaldirma.md", "marker": "Kurucunun sahiplik denetimli yolu", "replace_version": false},
     {"id": "wiki-status", "path": "docs/Durum-ve-Yol-Haritasi.md", "marker": "# Durum ve Yol Haritası · v{version}", "replace_version": true, "version_patterns": ["# Durum ve Yol Haritası · v{version}"]},
     {"id": "wiki-install", "path": "docs/Kurulum.md", "marker": "v{version} eski-host fallback", "replace_version": true, "version_patterns": ["v{version} eski-host fallback", "/v{version}/scripts/kur-codex.sh", "DIVAN_REF=v{version}", "--ref v{version}"]},
     {"id": "wiki-github", "path": "docs/GitHub-Kullanimi.md", "marker": "Pages ve Wiki v{version}", "replace_version": true, "version_patterns": ["Pages ve Wiki v{version}"]},

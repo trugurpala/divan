@@ -26,11 +26,18 @@ python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
 
 ```powershell
-python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 ```
 
-Kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host seçenekleri:
-[[Kurulum]].
+Örnek yolu doctor çıktısındaki tam `recovery_command` ile değiştir. Kurulumu
+yalnız bu işlemin oluşturduğu Divan kayıtlarıyla geri almak/kaldırmak için:
+
+```powershell
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
+```
+
+Host'a göre elle kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host
+seçenekleri: [[Kurulum]].
 
 ## 2. Niyetini ferman olarak yaz
 

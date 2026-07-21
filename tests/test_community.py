@@ -14,6 +14,14 @@ CANDIDATE_FORM = f"{REPOSITORY}/issues/new?template=kaynak-adayi.yml"
 SKILL_FORM = f"{REPOSITORY}/issues/new?template=yeni-vezir.md"
 ACCEPTANCE_FORM = f"{REPOSITORY}/issues/new?template=kabul-kaniti.yml"
 PAGES_URL = "https://trugurpala.github.io/divan/"
+ROLLBACK_COMMAND = (
+    'python scripts/kur-hostlar.py --rollback-transaction '
+    '"C:\\Users\\you\\.divan\\transactions\\upgrade-20260721-120000.json"'
+)
+UNINSTALL_COMMAND = (
+    'python scripts/kur-hostlar.py --rollback-transaction '
+    '"C:\\Users\\you\\.divan\\transactions\\install-20260721-120000.json"'
+)
 
 
 def read(relative: str) -> str:
@@ -29,6 +37,14 @@ class CommunityContractTests(unittest.TestCase):
         for guide in (turkish, english):
             self.assertIn("SUPPORT.md", guide)
             self.assertIn("python scripts/validate.py", guide)
+            self.assertIn("plugins/<paket>/skills/<skill-adi>/SKILL.md", guide)
+            self.assertIn("name", guide)
+            self.assertIn("description", guide)
+            self.assertIn("64", guide)
+            self.assertIn("1024", guide)
+            self.assertIn("python scripts/katalog.py --check", guide)
+            self.assertIn("python scripts/meclis.py --check", guide)
+            self.assertRegex(guide, r"ADOPT|adoption")
 
     def test_support_routes_each_request_to_one_exact_destination(self) -> None:
         support = read("SUPPORT.md")
@@ -44,6 +60,8 @@ class CommunityContractTests(unittest.TestCase):
                 self.assertEqual(support.count(route), 1)
         self.assertNotIn("mailto:", support.lower())
         self.assertNotRegex(support.lower(), r"\b(sla|response time|yanıt süresi)\b")
+        self.assertIn("Türkçe", support)
+        self.assertIn("English", support)
 
     def test_blank_issues_are_disabled_and_support_links_are_visible(self) -> None:
         config = read(".github/ISSUE_TEMPLATE/config.yml")
@@ -59,7 +77,8 @@ class CommunityContractTests(unittest.TestCase):
             f"python scripts/kur-hostlar.py --doctor --host both --ref v{version}",
             f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version}",
             f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version} --execute",
-            "python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>",
+            ROLLBACK_COMMAND,
+            UNINSTALL_COMMAND,
         )
         for relative in ("README.md", "README.en.md", "docs/Hizli-Baslangic.md"):
             content = read(relative)
@@ -67,6 +86,7 @@ class CommunityContractTests(unittest.TestCase):
                 for command in commands:
                     self.assertIn(command, content)
                 self.assertIn("docs/Kaldirma.md", content)
+                self.assertNotRegex(content, r"--rollback-transaction\s+<[^>]+>")
 
     def test_public_surfaces_link_standards_and_state_v1_truthfully(self) -> None:
         for relative in ("README.md", "README.en.md", "docs/Home.md", "docs/SSS.md"):
@@ -87,6 +107,7 @@ class CommunityContractTests(unittest.TestCase):
             ".github/ISSUE_TEMPLATE/config.yml",
             "docs/Topluluk-Standartlari.md",
             "docs/Hizli-Baslangic.md",
+            "docs/Kaldirma.md",
             "docs/Standartlar-ve-Limitler.md",
             "docs/SSS.md",
             "wiki-pages.json",
@@ -101,7 +122,8 @@ class CommunityContractTests(unittest.TestCase):
             f"python scripts/kur-hostlar.py --doctor --host both --ref v{version}",
             f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version}",
             f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version} --execute",
-            "python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>",
+            ROLLBACK_COMMAND,
+            UNINSTALL_COMMAND,
         )
         sources = [read(path) for path in ("docs/index.html", "site/index.html")]
         self.assertEqual(sources[0], sources[1])
@@ -113,6 +135,7 @@ class CommunityContractTests(unittest.TestCase):
             self.assertIn("v1: 7/8", html)
             self.assertIn("Topluluk Standartları", html)
             visible = unescape(html)
+            self.assertNotRegex(visible, r"--rollback-transaction\s+<[^>]+>")
             for command in critical:
                 self.assertEqual(
                     len(re.findall(re.escape(command) + r"(?:</code>|\n)", visible)),

@@ -9,10 +9,13 @@ python scripts/kur-hostlar.py --host both --ref v0.12.2 --execute
 python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
 python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
 python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
-python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
-Kaldırma için [[Kaldırma|Kaldirma]], soru/hata/güvenlik için
+Örnek yolu doctor çıktısındaki tam `recovery_command` ile değiştir.
+`install-...json` geri alması yalnız o kurulumun oluşturduğu Divan kayıtlarını
+kaldırır. Host'a göre elle kaldırma için [[Kaldırma|Kaldirma]], soru/hata/güvenlik için
 [SUPPORT.md](../SUPPORT.md), ürün sözleşmesi için
 [[Topluluk Standartları|Topluluk-Standartlari]] sayfasını kullanın.
 
@@ -89,7 +92,7 @@ Otomatik geri alma da kesilirse günlük `rollback-incomplete` kalır ve içinde
 tam `recovery_command` çalıştırılır:
 
 ```powershell
-python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 ```
 
 Aynı recovery komutu idempotenttir; dış komut başarıdan hemen sonra kesilmiş
@@ -121,7 +124,7 @@ Her dış CLI değişikliğinden önce işlem günlüğü atomik yazılır. Kesi
 oluşturduğu girdilerle geri almak için:
 
 ```bash
-python scripts/kur-hostlar.py --rollback-transaction <islem.json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 ```
 
 Eski gevşek-skill göçü de tüm hedeflerin kurulum özetini önce doğrular; değişmiş

@@ -42,6 +42,32 @@ git diff --check
    ve tam doğrulama kanıtını yaz. Gerçek ajan adaptörü ve kör hakem protokolü
    olmadan davranış iyileşmesi iddia etme.
 
+## Yeni skill ekleme
+
+Özgün bir skill'i gerçek paket yolunda oluştur:
+
+```text
+plugins/<paket>/skills/<skill-adi>/SKILL.md
+```
+
+`SKILL.md` YAML frontmatter'ında klasörle birebir aynı, kebab-case `name`
+(en çok 64 karakter) ve ne yaptığıyla ne zaman tetikleneceğini anlatan
+`description` (en çok 1024 karakter) zorunludur. Gövde prosedürel ve tek
+sorumluluklu olmalı; 500 satırı aşan ayrıntıyı `references/` altına böl.
+Sonra katalog ve teftişi eşitle:
+
+```bash
+python scripts/katalog.py --render
+python scripts/katalog.py --check
+python scripts/validate.py
+python scripts/meclis.py --check
+```
+
+Bir dış kaynağın aday defterine girmesi benimsenmesi değildir. Kaynak önce
+kimlik, lisans, köken, hook/script/yetki ve mevcut yetenek çakışması açısından
+incelenir. `ADOPT` veya `ADAPT` kararı bile kurulum sayılmaz; sabit pin, atıf,
+eval ve teftiş ayrı uygulama değişikliğinde tamamlanır.
+
 Ürünü değiştiren katkı README, katalog, kurulum belgesi, Wiki kaynağı, site,
 yayın manifesti ve lisans/köken kayıtlarını aynı değişiklikte eşitlemelidir.
 `DCS-001` ile `DCS-010` arasındaki on zorunlu kuralı doğrulamak için:
