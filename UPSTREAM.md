@@ -79,3 +79,20 @@ Superpowers kayıtları: `brainstorming`, `dispatching-parallel-agents`,
 `verification-before-completion`, `writing-plans` ve `writing-skills`.
 Dosya bazlı gerekçe, değişim listesi ve yerel SHA-256 kanıtı
 `registry/upstream-baselines.json` içindedir.
+
+## GitHub Actions incelemesi (2026-07-21)
+
+Bu Actions kaynakları depoya kopyalanmaz; yalnız aşağıdaki incelenmiş tam commit
+SHA'larıyla GitHub üzerinde çalıştırılır. SHA, kaynak lisansı ve job izinleri
+birlikte incelenmeden pin güncellenmez.
+
+| Kaynak | Tam commit SHA | Amaç | Lisans | Karar ve izin sınırı |
+|---|---|---|---|---|
+| ossf/scorecard-action | `4eaacf0543bb3f2c246792bd56e8cdeffafb205a` | OpenSSF Scorecard SARIF ve doğrulanmış sonuç yayını | Apache-2.0 | KULLAN; yalnız `contents: read`, SARIF için `security-events: write`, sonuç imzası için `id-token: write` |
+| actions/dependency-review-action | `a1d282b36b6f3519aa1f3fc636f609c47dddb294` | Pull request bağımlılık ve lisans farkı kapısı | MIT | KULLAN; yalnız `contents: read`, PR yorumu yazma yok |
+| actions/attest-build-provenance | `0f67c3f4856b2e3261c31976d6725780e5e4c373` | Release ZIP ve SPDX SBOM build provenance | MIT | KULLAN; yalnız publish job'unda `id-token`, `attestations` ve v4 storage record sözleşmesi için `artifact-metadata: write` |
+
+`actions/attest-build-provenance` v4.1.1, aynı sürümdeki `actions/attest`
+eylemini çağıran resmî bir composite wrapper'dır. Yeni kurulumda doğrudan
+`actions/attest` önerilse de onaylı planın immutable wrapper pini korunmuştur;
+v4'ün güncel `artifact-metadata: write` gereksinimi dar job izni olarak eklenmiştir.
