@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import unittest
 from typing import Any
+from unittest import mock
 
 from tests.test_host_install import FakeRunner
 from tests.test_host_upgrade import (
@@ -110,6 +111,43 @@ class LocalRawAliasRunner(UpgradeRunner):
 
 
 class HostUpgradeAuthorityTests(unittest.TestCase):
+    def test_claude_directory_marketplace_uses_local_path_authority(self) -> None:
+        row = {
+            "name": "divan",
+            "source": "directory",
+            "path": str(ROOT),
+            "installLocation": str(ROOT),
+        }
+        checkout = {"root": str(ROOT), "ref": TARGET_REF}
+
+        with mock.patch.object(
+            HOSTS._host_upgrade.host_state, "checkout_evidence", return_value=checkout
+        ) as evidence:
+            self.assertEqual(
+                HOSTS._host_upgrade.host_state.marketplace_evidence(
+                    "claude",
+                    row,
+                    str(ROOT),
+                    TARGET_REF,
+                    lambda _command: "",
+                    HOSTS._normalize_source,
+                ),
+                checkout,
+            )
+            evidence.assert_called_once()
+
+        with mock.patch.object(HOSTS._host_upgrade.host_state, "checkout_evidence") as evidence:
+            with self.assertRaisesRegex(HOSTS._host_upgrade.host_state.StateError, "source"):
+                HOSTS._host_upgrade.host_state.marketplace_evidence(
+                    "claude",
+                    row,
+                    SOURCE,
+                    TARGET_REF,
+                    lambda _command: "",
+                    HOSTS._normalize_source,
+                )
+            evidence.assert_not_called()
+
     def options(self, state_dir: pathlib.Path, **changes: object) -> object:
         values = {
             "host": "codex",

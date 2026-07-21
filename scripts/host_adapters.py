@@ -78,10 +78,16 @@ def marketplace_root(host: str, row: dict[str, Any]) -> str | None:
 
 
 def marketplace_source(row: dict[str, Any]) -> str | None:
-    for key in ("url", "source"):
+    for key in ("url",):
         value = row.get(key)
         if isinstance(value, str) and value:
             return value
+    source = row.get("source")
+    if source == "directory":
+        path = row.get("path")
+        return path if isinstance(path, str) and path else None
+    if isinstance(source, str) and source:
+        return source
     origin = row.get("marketplaceSource")
     if isinstance(origin, dict):
         value = origin.get("source")
