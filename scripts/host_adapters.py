@@ -104,7 +104,35 @@ def plugin_provenance_valid(host: str, row: dict[str, Any]) -> bool:
 def plugin_install_path(host: str, row: dict[str, Any]) -> str | None:
     source = row.get("source")
     value = row.get("installPath") if host == "claude" else source.get("path") if isinstance(source, dict) else None
-    return value if isinstance(value, str) else None
+    return value if isinstance(value, str) and value else None
+
+
+def native_plugin_install_path(
+    host: str,
+    row: dict[str, Any],
+    marketplace_root: pathlib.Path,
+    package: str,
+    version: str,
+) -> pathlib.Path | None:
+    value = plugin_install_path(host, row)
+    return native_install_path(host, value, marketplace_root, package, version)
+
+
+def native_install_path(
+    host: str,
+    value: str | None,
+    marketplace_root: pathlib.Path,
+    package: str,
+    version: str,
+) -> pathlib.Path | None:
+    if not value:
+        return None
+    actual = pathlib.Path(value).expanduser().resolve()
+    if host == "claude":
+        suffix = ("plugins", "cache", "divan", package, version)
+        return actual if actual.parts[-len(suffix) :] == suffix else None
+    expected = (marketplace_root / "plugins" / package).resolve()
+    return actual if actual == expected else None
 
 
 Runner = Callable[[list[str]], Any]

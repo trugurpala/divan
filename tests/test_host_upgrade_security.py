@@ -23,6 +23,8 @@ from tests.test_host_upgrade import (
 CODEX_ADD_SADRAZAM = ("codex", "plugin", "add", "sadrazam@divan", "--json")
 CODEX_ADD_CORE = ("codex", "plugin", "add", "core-pack@divan", "--json")
 CODEX_REMOVE_SADRAZAM = ("codex", "plugin", "remove", "sadrazam@divan", "--json")
+CODEX_REMOVE_CORE = ("codex", "plugin", "remove", "core-pack@divan", "--json")
+CODEX_REMOVE_ZANAAT = ("codex", "plugin", "remove", "zanaat-pack@divan", "--json")
 CODEX_REMOVE_MARKETPLACE = (
     "codex",
     "plugin",
@@ -116,6 +118,31 @@ class TargetWrongPathRunner(UpgradeRunner):
             row["installPath"] = "foreign-root/plugins/sadrazam"
             row["source"] = {"path": "foreign-root/plugins/sadrazam"}
         return row
+
+
+class NextPluginReplacementRunner(UpgradeRunner):
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super().__call__(command)
+        if tuple(command) == CODEX_REMOVE_SADRAZAM:
+            self.plugins["codex"]["core-pack@divan"] = "9.9.9"
+        return result
+
+
+class MarketplaceReplacementBeforeRemoveRunner(UpgradeRunner):
+    def __init__(self, root: pathlib.Path) -> None:
+        super().__init__(root)
+        self.replacement = root / "replacement-old-codex"
+        catalog = self.replacement / ".agents" / "plugins" / "marketplace.json"
+        catalog.parent.mkdir(parents=True)
+        catalog.write_bytes(
+            (self.old_roots["codex"] / ".agents" / "plugins" / "marketplace.json").read_bytes()
+        )
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super().__call__(command)
+        if tuple(command) == CODEX_REMOVE_ZANAAT:
+            self.roots["codex"] = self.replacement
+        return result
 
 
 class RestoreExtraRunner(UpgradeRunner):
@@ -327,6 +354,27 @@ class HostUpgradeSecurityTests(unittest.TestCase):
         self.assertEqual(codex_mutations, [])
         self.assertEqual(runner.refs["claude"], OLD_REF)
         self.assertEqual(runner.plugins["codex"]["sadrazam@divan"], "drifted")
+
+    def test_progressive_remove_refuses_replaced_next_plugin(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-security-") as temporary:
+            runner = NextPluginReplacementRunner(pathlib.Path(temporary))
+
+            with self.assertRaisesRegex(HOSTS.InstallError, "drift|fingerprint|version"):
+                HOSTS.upgrade(self.options(runner.state_dir), runner=runner, root=ROOT)
+
+        self.assertNotIn(CODEX_REMOVE_CORE, runner.mutations)
+        self.assertNotIn(CODEX_REMOVE_MARKETPLACE, runner.mutations)
+        self.assertEqual(runner.plugins["codex"]["core-pack@divan"], "9.9.9")
+
+    def test_progressive_remove_refuses_replaced_marketplace(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-security-") as temporary:
+            runner = MarketplaceReplacementBeforeRemoveRunner(pathlib.Path(temporary))
+
+            with self.assertRaisesRegex(HOSTS.InstallError, "drift|marketplace|fingerprint"):
+                HOSTS.upgrade(self.options(runner.state_dir), runner=runner, root=ROOT)
+
+        self.assertNotIn(CODEX_REMOVE_MARKETPLACE, runner.mutations)
+        self.assertEqual(runner.roots["codex"], runner.replacement)
 
     def test_recovery_refuses_replaced_plugin_with_same_selector(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upgrade-security-") as temporary:

@@ -129,21 +129,25 @@ def marketplace_evidence(
 def plugin_fingerprint(
     host: str, selector: str, row: dict[str, Any], root: pathlib.Path
 ) -> dict[str, Any]:
-    install_path = host_adapters.plugin_install_path(host, row)
-    expected_path = (root / "plugins" / selector.removesuffix("@divan")).resolve()
-    if install_path is None or pathlib.Path(install_path).resolve() != expected_path:
-        raise StateError(f"{host}: {selector} install path is outside its marketplace root")
-    if row.get("enabled") is not True or not host_adapters.plugin_provenance_valid(host, row):
-        raise StateError(f"{host}: {selector} native provenance cannot be proven")
     version = row.get("version")
     if not isinstance(version, str) or not version:
         raise StateError(f"{host}: {selector} version cannot be proven")
+    package = selector.removesuffix("@divan")
+    install_path = host_adapters.native_plugin_install_path(
+        host, row, root, package, version
+    )
+    if install_path is None:
+        raise StateError(f"{host}: {selector} install path or version is not native")
+    if row.get("enabled") is not True:
+        raise StateError(f"{host}: {selector} enabled state cannot be proven")
+    if not host_adapters.plugin_provenance_valid(host, row):
+        raise StateError(f"{host}: {selector} native provenance cannot be proven")
     return {
         "host": host,
         "id": selector,
         "version": version,
         "marketplace_root": str(root.resolve()),
-        "install_path": str(expected_path),
+        "install_path": str(install_path),
         "native_provenance": True,
     }
 

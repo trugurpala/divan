@@ -51,6 +51,8 @@ python scripts/kur-hostlar.py --doctor --json --host both --ref <release-tag>
 Her doctor sonucu bir sonraki kesin komutu yazar; tamamlanmamış işlemde bu,
 ilgili `--rollback-transaction` komutudur. Doctor host CLI'larını veya işlem
 günlüklerini değiştirmez.
+Okunamayan veya bozuk bir işlem günlüğü de `attention` sonucudur; tanı kaydı
+bildirilir, fakat doctor hiçbir recovery ya da host değiştirme komutu çalıştırmaz.
 
 ## Güvenli sürüm yükseltme
 
@@ -77,6 +79,8 @@ Execute modunda schema-2 günlüğü her remove/add/install çağrısından önc
 `pending` niyetini diske yazar; recovery niyetini ayrı `recovery_pending`
 alanında tutar. Önceki marketplace ve paket satırlarını commit, katalog özeti,
 tam kurulum yolu ve native provenance kanıtlarıyla `before_rows` altında saklar.
+Her paket ve marketplace kaldırmasından hemen önce native durum yeniden okunur;
+önceki okumadan sonra değişen bir satır varsa kaldırma çağrısı yapılmadan durulur.
 İki host doğrulanmadan işlem tamamlanmış sayılmaz. Aktif bir yükseltme günlüğü
 veya işlem kilidi varken yeni execute/no-op çağrısı başlamaz.
 Kilit dosyası süreçler arası kernel kilidi taşır: süreç kaybında dosya kalsa da
@@ -118,6 +122,12 @@ eklentisi görürse onun kaynak ve ref bilgisini güvenilir biçimde kanıtlayam
 için durur; mevcut pazarı veya eklentileri değiştirmez. Önce host'un kendi
 listeleme komutlarıyla kayıtları inceleyin ve yalnız size ait olduklarından
 eminseniz elle kaldırıp işlemi yeniden çalıştırın.
+
+Başarılı native kurulum günlüğü oluşturulan her satırın kesin parmak izini taşır.
+Claude paket yolu kendi sürümlü `~/.claude/plugins/cache/divan/<paket>/<sürüm>`
+önbelleğinden, Codex yolu marketplace kökündeki `plugins/<paket>` konumundan
+kanıtlanır. Eski, parmak izsiz schema-1 günlükleri otomatik silme yapmadan
+fail-closed durur; recovery sırasında dışarıdan değiştirilmiş satırlar korunur.
 
 Her dış CLI değişikliğinden önce işlem günlüğü atomik yazılır. Kesinti sonrası
 `in-progress`, `recovering` veya `rollback-incomplete` kaydını yalnız o işlemin

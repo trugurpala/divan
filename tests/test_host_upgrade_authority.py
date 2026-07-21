@@ -246,6 +246,35 @@ class HostUpgradeAuthorityTests(unittest.TestCase):
 
         self.assertEqual(upgraded["status"], "verified")
 
+    def test_fingerprinted_schema1_terminal_allows_later_upgrade(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-authority-") as temporary:
+            fixture_root = pathlib.Path(temporary)
+            state_dir = fixture_root / "state"
+            installed = HOSTS.install(
+                HOSTS.Options(
+                    host="codex",
+                    source=SOURCE,
+                    ref=OLD_REF,
+                    execute=True,
+                    migrate_legacy=False,
+                    state_dir=state_dir,
+                    upgrade=False,
+                ),
+                runner=FakeRunner(),
+                root=ROOT,
+            )
+            self.assertEqual(installed["status"], "verified")
+
+            runner = UpgradeRunner(fixture_root)
+            try:
+                upgraded = HOSTS.upgrade(
+                    self.options(state_dir), runner=runner, root=ROOT
+                )
+            except Exception as exc:
+                self.fail(f"fingerprinted terminal install blocked upgrade: {exc}")
+
+        self.assertEqual(upgraded["status"], "verified")
+
     def test_schema1_terminal_subset_rejects_malformed_or_uncaptured_rows(self) -> None:
         mutators = {
             "extra-before-field": lambda record: record["before"]["claude"].__setitem__(

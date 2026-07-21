@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import host_adapters as _host_adapters
+import host_install_journal as _host_install_journal
 import host_journal as _host_journal
 import host_transactions as _host_transactions
 import host_upgrade as _host_upgrade
@@ -335,46 +336,31 @@ def _recover_recorded_legacy(
     _finish_mutation(transaction_path, record)
 
 
-def _recover_owned_entries(
-    path: pathlib.Path,
-    record: dict[str, Any],
-    owned_plugins: list[dict[str, str]],
-    owned_marketplaces: list[str],
-    runner: Runner,
-) -> None:
-    for plugin in reversed(owned_plugins):
-        if plugin["id"] not in _plugins(plugin["host"], runner):
-            continue
-        _begin_mutation(path, record, {"kind": "recovery-plugin", **plugin})
-        _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
-        _finish_mutation(path, record)
-    for host in reversed(owned_marketplaces):
-        if "divan" not in _marketplaces(host, runner):
-            continue
-        _begin_mutation(path, record, {"kind": "recovery-marketplace", "host": host})
-        _run(runner, _remove_marketplace_command(host))
-        _finish_mutation(path, record)
-
-
 def _rollback_install_transaction(
     transaction_path: pathlib.Path,
     record: dict[str, Any],
     runner: Runner,
 ) -> dict[str, Any]:
+    try:
+        _host_install_journal.validate(record)
+    except _host_install_journal.InstallJournalError as exc:
+        raise InstallError(str(exc)) from exc
     _recover_recorded_legacy(transaction_path, record, runner)
-    plugin_rows, marketplace_hosts = _created_rows(record)
-    owned_plugins = _owned_plugins(plugin_rows, record["before"])
-    owned_marketplaces = _owned_marketplaces(marketplace_hosts, record["before"])
-    record["status"] = "recovering"
-    _persist_record(transaction_path, record)
-    _recover_owned_entries(
-        transaction_path, record, owned_plugins, owned_marketplaces, runner
+    try:
+        return _host_install_journal.recover_native(
+            transaction_path, record, _install_io(runner)
+        )
+    except _host_install_journal.InstallJournalError as exc:
+        raise InstallError(str(exc)) from exc
+
+
+def _install_io(runner: Runner) -> _host_install_journal.InstallIO:
+    return _host_install_journal.InstallIO(
+        marketplace_rows=lambda host: _marketplace_rows(host, runner),
+        plugin_rows=lambda host: _plugin_rows(host, runner),
+        run=lambda command: _run(runner, command),
+        normalize_source=_normalize_source,
     )
-    record["status"] = "recovered"
-    record["pending"] = None
-    record["recovered_at"] = datetime.now(UTC).isoformat()
-    _persist_record(transaction_path, record)
-    return record
 
 
 def rollback_transaction(
@@ -403,6 +389,11 @@ def rollback_transaction(
     return _host_transactions.recover_upgrade(transaction_path, record, io)
 
 
+def _validate_install_options(options: Options) -> None:
+    if options.migrate_legacy and "codex" not in _hosts(options.host):
+        raise InstallError("legacy Codex migration requires --host codex or --host both")
+
+
 def install(
     options: Options,
     *,
@@ -410,23 +401,19 @@ def install(
     root: pathlib.Path | None = None,
 ) -> dict[str, Any]:
     """Plan or execute installation and return the auditable transaction record."""
-    if options.migrate_legacy and "codex" not in _hosts(options.host):
-        raise InstallError("legacy Codex migration requires --host codex or --host both")
+    _validate_install_options(options)
     repository = root or pathlib.Path(__file__).resolve().parent.parent
     expected_packages = _expected_packages(repository)
-    planned = _planned_commands(options)
-    record: dict[str, Any] = {
-        "schema": 1,
-        "status": "dry-run",
-        "source": options.source,
-        "ref": options.ref,
-        "hosts": list(_hosts(options.host)),
-        "planned_commands": planned,
-        "created": {"marketplaces": [], "plugins": []},
-        "verified": {},
-    }
+    record = _host_install_journal.new_record(
+        options.source, options.ref, _hosts(options.host), _planned_commands(options)
+    )
     if not options.execute:
         return record
+    versions = {package: row["version"] for package, row in expected_packages.items()}
+    install_io = _install_io(runner)
+    record["target"] = _host_install_journal.target_evidence(
+        repository, options.source, options.ref, versions, install_io
+    )
 
     options.state_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
@@ -466,7 +453,9 @@ def install(
                 {"kind": "marketplace", "host": host},
             )
             _run(runner, _add_marketplace_command(host, options.source, options.ref))
-            record["created"]["marketplaces"].append(host)
+            record["created"]["marketplaces"].append(
+                _host_install_journal.capture_marketplace(record, host, install_io)
+            )
             _finish_mutation(transaction_path, record)
             for package in PACKAGES:
                 selector = f"{package}@divan"
@@ -478,7 +467,11 @@ def install(
                     {"kind": "plugin", "host": host, "id": selector},
                 )
                 _run(runner, _install_command(host, package))
-                record["created"]["plugins"].append({"host": host, "id": selector})
+                record["created"]["plugins"].append(
+                    _host_install_journal.capture_plugin(
+                        record, host, selector, install_io
+                    )
+                )
                 _finish_mutation(transaction_path, record)
 
             record["verified"][host] = _verify_host(
@@ -555,13 +548,14 @@ def doctor(
     root: pathlib.Path | None = None,
 ) -> dict[str, Any]:
     expected = _expected_packages(root or pathlib.Path(__file__).resolve().parent.parent)
-    return _host_adapters.doctor(
+    result = _host_adapters.doctor(
         options,
         runner=runner,
         expected=expected,
         normalize=_normalize_source,
         hosts=_hosts(options.host),
     )
+    return _host_journal.augment_doctor(result, options.state_dir, _normalize_source)
 
 
 def _parse_options(argv: list[str] | None = None) -> Options:

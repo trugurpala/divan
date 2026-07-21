@@ -159,12 +159,23 @@ class UpgradeRunner:
         }
         if selector.endswith("@divan"):
             package = selector.removesuffix("@divan")
+            install_path = self.roots[host] / "plugins" / package
+            if host == "claude":
+                install_path = (
+                    self.state_dir.parent
+                    / ".claude"
+                    / "plugins"
+                    / "cache"
+                    / "divan"
+                    / package
+                    / self.plugins[host][selector]
+                )
             row.update(
                 {
                     "installed": True,
                     "marketplaceName": "divan",
-                    "installPath": str(self.roots[host] / "plugins" / package),
-                    "source": {"path": str(self.roots[host] / "plugins" / package)},
+                    "installPath": str(install_path),
+                    "source": {"path": str(install_path)},
                     "skills": sorted(
                         path.parent.name
                         for path in (ROOT / "plugins" / package / "skills").glob("*/SKILL.md")

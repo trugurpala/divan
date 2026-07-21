@@ -1,0 +1,15 @@
+{
+  "installed": [
+    {
+      "pluginId": "sadrazam@divan",
+      "version": "0.9.1",
+      "enabled": true,
+      "installed": true,
+      "marketplaceName": "divan",
+      "source": {
+        "source": "local",
+        "path": "fixture-codex/divan/plugins/sadrazam"
+      }
+    }
+  ]
+}

@@ -65,7 +65,13 @@ def _validate_terminal_schema1(path: pathlib.Path, record: dict[str, Any]) -> No
         "install before",
     )
     assert isinstance(before, dict)
-    _require(_schema1_created(record.get("created"), set(before)), "install created")
+    if record.get("fingerprint_schema") == 1:
+        try:
+            __import__("host_install_journal").validate(record)
+        except RuntimeError as exc:
+            raise ScanError(f"invalid terminal transaction journal: {exc}") from exc
+    else:
+        _require(_schema1_created(record.get("created"), set(before)), "install created")
 
 
 def _valid_hosts(value: Any) -> bool:

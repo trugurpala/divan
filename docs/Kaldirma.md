@@ -30,8 +30,10 @@ codex plugin marketplace remove divan
 ```
 
 `~/.divan/transactions/install-*.json` dosyası kurulum öncesi host listelerini
-ve o işlemde oluşturulan kayıtları gösterir. Geri alırken yalnız `created`
-alanındaki Divan girdilerini hedefle; başka marketplace veya eklentileri silme.
+ve o işlemde oluşturulan kayıtların kesin native parmak izlerini gösterir. Geri
+alırken yalnız `created` alanında parmak izi hâlâ birebir eşleşen Divan girdilerini
+hedefle; değiştirilmiş satırı, başka marketplace veya eklentileri silme. Eski,
+parmak izsiz schema-1 günlükleri güvenli biçimde otomatik geri alınamaz.
 Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 
 ```bash

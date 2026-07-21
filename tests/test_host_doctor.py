@@ -105,13 +105,19 @@ class DoctorRunner:
         row: dict[str, object] = {key: plugin, "enabled": True}
         if plugin.endswith("@divan"):
             package = plugin.removesuffix("@divan")
+            version = PACKAGE_VERSIONS[package]
+            install_path = f"fixture-divan-root/plugins/{package}"
+            if host == "claude":
+                install_path = (
+                    f"fixture-home/.claude/plugins/cache/divan/{package}/{version}"
+                )
             row.update(
                 {
-                    "version": PACKAGE_VERSIONS[package],
+                    "version": version,
                     "installed": True,
                     "marketplaceName": "divan",
-                    "installPath": f"fixture-divan-root/plugins/{package}",
-                    "source": {"path": f"fixture-divan-root/plugins/{package}"},
+                    "installPath": install_path,
+                    "source": {"path": install_path},
                 }
             )
         row.update(self.plugin_overrides.get(plugin, {}))
@@ -238,6 +244,40 @@ class HostDoctorTests(unittest.TestCase):
             result["next_command"],
             f"python scripts/kur-hostlar.py --rollback-transaction {transaction}",
         )
+
+    def test_malformed_or_unreadable_transaction_is_recovery_attention(self) -> None:
+        for name, directory in (
+            ("install-malformed.json", False),
+            ("upgrade-unreadable.json", True),
+        ):
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix="divan-host-doctor-"
+            ) as temporary:
+                state_dir = pathlib.Path(temporary)
+                transaction = state_dir / name
+                if directory:
+                    transaction.mkdir()
+                else:
+                    transaction.write_text("{", encoding="utf-8")
+                runner = DoctorRunner()
+
+                result = self.diagnose(runner, self.options(state_dir))
+
+                self.assertEqual(result["status"], "attention")
+                self.assertTrue(
+                    any("transaction journal" in issue for issue in result["issues"])
+                )
+                self.assertEqual(
+                    result["next_command"],
+                    subprocess.list2cmdline(
+                        [
+                            "python",
+                            "scripts/kur-hostlar.py",
+                            "--rollback-transaction",
+                            str(transaction),
+                        ]
+                    ),
+                )
 
     def test_json_cli_writes_only_the_doctor_result(self) -> None:
         payload = {

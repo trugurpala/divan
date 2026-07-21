@@ -1,0 +1,9 @@
+[
+  {
+    "id": "sadrazam@divan",
+    "version": "0.9.1",
+    "enabled": true,
+    "scope": "user",
+    "installPath": "fixture-home/.claude/plugins/cache/divan/sadrazam/0.9.1"
+  }
+]

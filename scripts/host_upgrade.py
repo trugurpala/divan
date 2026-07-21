@@ -85,6 +85,7 @@ def _remove_previous(
 ) -> None:
     for package in packages:
         selector = f"{package}@divan"
+        _assert_progressive_before_removal(host, record, io)
         entry = {"kind": "plugin", "host": host, "id": selector}
         pending = {
             "phase": "forward",
@@ -107,6 +108,7 @@ def _remove_previous(
 def _remove_previous_marketplace(
     path: pathlib.Path, record: dict[str, Any], host: str, io: UpgradeIO
 ) -> None:
+    _assert_progressive_before_removal(host, record, io)
     _mutation(
         path,
         record,
@@ -116,6 +118,42 @@ def _remove_previous_marketplace(
         {"kind": "marketplace", "host": host},
         io,
     )
+
+
+def _assert_progressive_before_removal(
+    host: str, record: dict[str, Any], io: UpgradeIO
+) -> None:
+    before = record["before_rows"][host]
+    marketplace = io.marketplace_rows(host).get("divan")
+    if marketplace is None:
+        raise host_transactions.TransactionError(f"{host}: marketplace drifted during removal")
+    try:
+        evidence = host_state.marketplace_evidence(
+            host, marketplace, before["source"], before["ref"], io.run, io.normalize_source
+        )
+        if host_state.marketplace_fingerprint(host, evidence) != host_state.marketplace_fingerprint(
+            host, before
+        ):
+            raise host_state.StateError(f"{host}: marketplace fingerprint drifted during removal")
+        removed = {
+            row["id"]
+            for row in record["removed"]
+            if row["host"] == host and row["kind"] == "plugin"
+        }
+        expected = {key: value for key, value in before["plugins"].items() if key not in removed}
+        current = {
+            key: value for key, value in io.plugin_rows(host).items() if key.endswith("@divan")
+        }
+        if set(current) != set(expected):
+            raise host_state.StateError(f"{host}: plugin set drifted during removal")
+        root = pathlib.Path(before["root"])
+        for selector, row in current.items():
+            if host_state.plugin_fingerprint(host, selector, row, root) != (
+                host_state.plugin_fingerprint(host, selector, expected[selector], root)
+            ):
+                raise host_state.StateError(f"{host}: {selector} fingerprint drifted during removal")
+    except host_state.StateError as exc:
+        raise host_transactions.TransactionError(str(exc)) from exc
 
 
 def _install_target(

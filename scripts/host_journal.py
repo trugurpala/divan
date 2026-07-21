@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import pathlib
 import re
+import subprocess
 from collections.abc import Callable
 from typing import Any
 
@@ -89,6 +90,30 @@ def assert_no_active(
         )
     except host_journal_scan.ScanError as exc:
         raise JournalError(str(exc)) from exc
+
+
+def augment_doctor(
+    result: dict[str, Any],
+    state_dir: pathlib.Path,
+    normalize: Callable[[str], str],
+) -> dict[str, Any]:
+    try:
+        assert_no_active(state_dir, normalize)
+    except JournalError as exc:
+        detail = str(exc)
+        if "unfinished transaction" not in result["issues"]:
+            result["issues"].append(f"transaction journal: {detail}")
+        if result["status"] == "healthy":
+            result["status"] = "attention"
+        paths = sorted(
+            [*state_dir.glob("install-*.json"), *state_dir.glob("upgrade-*.json")]
+        )
+        transaction = next((path for path in paths if str(path) in detail), None)
+        if transaction is not None:
+            result["next_command"] = subprocess.list2cmdline(
+                ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)]
+            )
+    return result
 
 
 def _require(condition: bool, detail: str) -> None:
@@ -297,9 +322,14 @@ def _created_plugin_matches(
     package = row["id"].removesuffix("@divan")
     if marketplace is None or row["marketplace_root"] != marketplace["root"]:
         return False
-    expected_path = pathlib.Path(marketplace["root"]) / "plugins" / package
     return bool(
-        pathlib.Path(row["install_path"]).resolve() == expected_path.resolve()
+        host_adapters.native_install_path(
+            row["host"],
+            row["install_path"],
+            pathlib.Path(marketplace["root"]),
+            package,
+            row["version"],
+        )
         and row["version"] == target["versions"][package]
     )
 

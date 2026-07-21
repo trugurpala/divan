@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import pathlib
@@ -22,6 +23,63 @@ PACKAGE_VERSIONS = {
     "react-pack": "0.2.1",
     "zanaat-pack": "0.1.1",
 }
+SOURCE = "https://github.com/trugurpala/divan.git"
+REF = "v0.12.0"
+COMMIT = "a" * 40
+CATALOG_DIGEST = hashlib.sha256(
+    (ROOT / ".agents" / "plugins" / "marketplace.json").read_bytes()
+).hexdigest()
+
+
+def _fingerprinted(record: dict[str, object]) -> dict[str, object]:
+    record["fingerprint_schema"] = 1
+    record["target"] = {
+        "source": SOURCE,
+        "ref": REF,
+        "root": str(ROOT.resolve()),
+        "commit": COMMIT,
+        "catalog_digest": CATALOG_DIGEST,
+        "versions": dict(PACKAGE_VERSIONS),
+    }
+    created = record["created"]
+    assert isinstance(created, dict)
+    markets = created["marketplaces"]
+    plugins = created["plugins"]
+    assert isinstance(markets, list) and isinstance(plugins, list)
+    created["marketplaces"] = [
+        {
+            "host": host,
+            "source": SOURCE,
+            "ref": REF,
+            "root": str(ROOT.resolve()),
+            "commit": COMMIT,
+            "catalog_digest": CATALOG_DIGEST,
+        }
+        for host in markets
+    ]
+    created["plugins"] = [_plugin_fingerprint(row) for row in plugins]
+    return record
+
+
+def _plugin_fingerprint(row: object) -> dict[str, object]:
+    assert isinstance(row, dict)
+    host, selector = row["host"], row["id"]
+    assert isinstance(host, str) and isinstance(selector, str)
+    package = selector.removesuffix("@divan")
+    version = PACKAGE_VERSIONS[package]
+    install_path = ROOT / "plugins" / package
+    if host == "claude":
+        install_path = pathlib.Path(
+            f"fixture-home/.claude/plugins/cache/divan/{package}/{version}"
+        )
+    return {
+        "host": host,
+        "id": selector,
+        "version": version,
+        "marketplace_root": str(ROOT.resolve()),
+        "install_path": str(install_path.resolve()),
+        "native_provenance": True,
+    }
 
 
 class FakeRunner:
@@ -46,6 +104,8 @@ class FakeRunner:
 
         host = command[0]
         if host == "git":
+            if "status" in command:
+                return subprocess.CompletedProcess(command, 0, "", "")
             if "get-url" in command:
                 return subprocess.CompletedProcess(
                     command, 0, "https://github.com/trugurpala/divan.git\n", ""
@@ -58,7 +118,7 @@ class FakeRunner:
                 output = [
                     {
                         "name": name,
-                        "installLocation": "fixture-divan-root" if name == "divan" else name,
+                        "installLocation": str(ROOT) if name == "divan" else name,
                     }
                     for name in sorted(self.marketplaces[host])
                 ]
@@ -67,7 +127,7 @@ class FakeRunner:
                     "marketplaces": [
                         {
                             "name": name,
-                            "root": "fixture-divan-root" if name == "divan" else name,
+                            "root": str(ROOT) if name == "divan" else name,
                         }
                         for name in sorted(self.marketplaces[host])
                     ]
@@ -101,6 +161,11 @@ class FakeRunner:
         if plugin.endswith("@divan"):
             name = plugin.removesuffix("@divan")
             version = PACKAGE_VERSIONS[name]
+            install_path = str(ROOT / "plugins" / name)
+            if host == "claude":
+                install_path = (
+                    f"fixture-home/.claude/plugins/cache/divan/{name}/{version}"
+                )
             skills = sorted(
                 path.parent.name
                 for path in (ROOT / "plugins" / name / "skills").glob("*/SKILL.md")
@@ -110,8 +175,8 @@ class FakeRunner:
                     "version": version,
                     "installed": True,
                     "marketplaceName": "divan",
-                    "installPath": f"fixture-divan-root/plugins/{name}",
-                    "source": {"path": f"fixture-divan-root/plugins/{name}"},
+                    "installPath": install_path,
+                    "source": {"path": install_path},
                     "skills": skills,
                 }
             )
@@ -141,6 +206,18 @@ class InterruptAfterMutationRunner(FakeRunner):
     def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
         result = super().__call__(command)
         if command[1:3] == ["plugin", "add"] and command[3] == "sadrazam@divan":
+            raise KeyboardInterrupt
+        return result
+
+
+class PendingReplacementRunner(FakeRunner):
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super().__call__(command)
+        if tuple(command) == ("codex", "plugin", "add", "sadrazam@divan", "--json"):
+            self.plugin_overrides["sadrazam@divan"] = {
+                "version": "9.9.9",
+                "source": {"path": "foreign-root/plugins/sadrazam"},
+            }
             raise KeyboardInterrupt
         return result
 
@@ -287,6 +364,53 @@ class HostInstallTests(unittest.TestCase):
             "codex-package",
         )
 
+    def test_real_host_json_paths_prove_native_versioned_install_fingerprints(self) -> None:
+        fixture_dir = ROOT / "tests" / "fixtures" / "host-cli"
+        cases = {
+            "claude": (
+                "claude-plugin-list.json",
+                pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
+                ("plugins", "cache", "divan", "sadrazam", "0.9.1"),
+            ),
+            "codex": (
+                "codex-plugin-list.json",
+                pathlib.Path("fixture-codex/divan"),
+                ("divan", "plugins", "sadrazam"),
+            ),
+        }
+        for host, (name, root, suffix) in cases.items():
+            with self.subTest(host=host):
+                value = json.loads((fixture_dir / name).read_text(encoding="utf-8"))
+                row = HOST_INSTALL._host_adapters.plugin_rows(host, value)[
+                    "sadrazam@divan"
+                ]
+                try:
+                    fingerprint = HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
+                        host, "sadrazam@divan", row, root
+                    )
+                except HOST_INSTALL._host_upgrade.host_state.StateError as exc:
+                    self.fail(f"real {host} plugin JSON was rejected: {exc}")
+
+                self.assertEqual(fingerprint["version"], "0.9.1")
+                self.assertEqual(
+                    pathlib.Path(fingerprint["install_path"]).parts[-len(suffix) :],
+                    suffix,
+                )
+
+        claude = json.loads(
+            (fixture_dir / "claude-plugin-list.json").read_text(encoding="utf-8")
+        )[0]
+        claude["version"] = "9.9.9"
+        with self.assertRaisesRegex(
+            HOST_INSTALL._host_upgrade.host_state.StateError, "path|version"
+        ):
+            HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
+                "claude",
+                "sadrazam@divan",
+                claude,
+                pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
+            )
+
     def test_dry_run_never_invokes_host_cli(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             runner = FakeRunner()
@@ -331,6 +455,129 @@ class HostInstallTests(unittest.TestCase):
                 self.assertIn(f"{package}@divan", runner.plugins["claude"])
                 self.assertIn(f"{package}@divan", runner.plugins["codex"])
 
+    def test_install_journal_records_exact_created_fingerprints(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            runner = FakeRunner()
+            record = HOST_INSTALL.install(
+                self.options(pathlib.Path(temporary), host="both"), runner=runner
+            )
+
+        self.assertEqual(record.get("fingerprint_schema"), 1)
+        self.assertTrue(
+            all(
+                isinstance(row, dict)
+                and set(row)
+                == {"host", "source", "ref", "root", "commit", "catalog_digest"}
+                for row in record["created"]["marketplaces"]
+            )
+        )
+        self.assertTrue(
+            all(
+                isinstance(row, dict)
+                and set(row)
+                == {
+                    "host",
+                    "id",
+                    "version",
+                    "marketplace_root",
+                    "install_path",
+                    "native_provenance",
+                }
+                for row in record["created"]["plugins"]
+            )
+        )
+        by_host = {
+            (row["host"], row["id"]): row for row in record["created"]["plugins"]
+        }
+        claude = by_host[("claude", "sadrazam@divan")]
+        self.assertEqual(claude["version"], PACKAGE_VERSIONS["sadrazam"])
+        self.assertEqual(
+            pathlib.Path(claude["install_path"]).parts[-5:],
+            ("plugins", "cache", "divan", "sadrazam", "0.9.1"),
+        )
+
+    def test_pending_replacement_is_not_promoted_or_removed(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = PendingReplacementRunner()
+
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.install(
+                    self.options(state_dir, host="codex"), runner=runner
+                )
+            record = json.loads(
+                next(state_dir.glob("install-*.json")).read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(record["status"], "rollback-incomplete")
+        self.assertIn("sadrazam@divan", runner.plugins["codex"])
+        self.assertFalse(
+            any(
+                command[1:3] == ("plugin", "remove")
+                and command[3] == "sadrazam@divan"
+                for command in runner.commands
+            )
+        )
+
+    def test_recorded_replacement_is_preserved_before_any_remove(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            runner = FakeRunner()
+            record = HOST_INSTALL.install(
+                self.options(state_dir, host="codex"), runner=runner
+            )
+            transaction = pathlib.Path(record["transaction_path"])
+            runner.plugin_overrides["zanaat-pack@divan"] = {
+                "version": "9.9.9",
+                "source": {"path": "foreign-root/plugins/zanaat-pack"},
+            }
+            runner.commands.clear()
+
+            with self.assertRaises(HOST_INSTALL.InstallError):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("zanaat-pack@divan", runner.plugins["codex"])
+        self.assertFalse(
+            any(command[1:3] == ("plugin", "remove") for command in runner.commands)
+        )
+
+    def test_fingerprintless_legacy_journal_fails_closed_before_remove(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-legacy.json"
+            transaction.write_text(
+                json.dumps(
+                    {
+                        "schema": 1,
+                        "status": "in-progress",
+                        "before": {
+                            "codex": {"marketplaces": ["personal"], "plugins": []}
+                        },
+                        "created": {
+                            "marketplaces": ["codex"],
+                            "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
+                        },
+                        "pending": None,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+
+            with self.assertRaisesRegex(HOST_INSTALL.InstallError, "fingerprint|legacy"):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("sadrazam@divan", runner.plugins["codex"])
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertFalse(
+            any(
+                command[1:3] in (("plugin", "remove"), ("plugin", "uninstall"))
+                or command[1:4] == ("plugin", "marketplace", "remove")
+                for command in runner.commands
+            )
+        )
+
     def test_journal_is_persisted_before_every_external_mutation(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             state_dir = pathlib.Path(temporary)
@@ -347,7 +594,7 @@ class HostInstallTests(unittest.TestCase):
             transaction = pathlib.Path(temporary) / "install-interrupted.json"
             transaction.write_text(
                 json.dumps(
-                    {
+                    _fingerprinted({
                         "schema": 1,
                         "status": "in-progress",
                         "before": {
@@ -365,7 +612,7 @@ class HostInstallTests(unittest.TestCase):
                             "host": "codex",
                             "id": "core-pack@divan",
                         },
-                    }
+                    })
                 ),
                 encoding="utf-8",
             )
@@ -389,7 +636,7 @@ class HostInstallTests(unittest.TestCase):
             transaction = root / "install-interrupted.json"
             transaction.write_text(
                 json.dumps(
-                    {
+                    _fingerprinted({
                         "schema": 1,
                         "status": "in-progress",
                         "before": {
@@ -407,7 +654,7 @@ class HostInstallTests(unittest.TestCase):
                             "host": "codex",
                             "journal": str(legacy_journal),
                         },
-                    }
+                    })
                 )
                 + "\n",
                 encoding="utf-8",
@@ -435,7 +682,7 @@ class HostInstallTests(unittest.TestCase):
             transaction = root / "install-verified.json"
             transaction.write_text(
                 json.dumps(
-                    {
+                    _fingerprinted({
                         "schema": 1,
                         "status": "verified",
                         "before": {
@@ -452,7 +699,7 @@ class HostInstallTests(unittest.TestCase):
                         "legacy_migration": {
                             "result": {"journal": str(legacy_journal)}
                         },
-                    }
+                    })
                 )
                 + "\n",
                 encoding="utf-8",
@@ -482,7 +729,7 @@ class HostInstallTests(unittest.TestCase):
             missing = root / "missing-legacy.json"
             transaction.write_text(
                 json.dumps(
-                    {
+                    _fingerprinted({
                         "schema": 1,
                         "status": "verified",
                         "before": {
@@ -497,7 +744,7 @@ class HostInstallTests(unittest.TestCase):
                         },
                         "pending": None,
                         "legacy_migration": {"result": {"journal": str(missing)}},
-                    }
+                    })
                 )
                 + "\n",
                 encoding="utf-8",
@@ -571,7 +818,7 @@ class HostInstallTests(unittest.TestCase):
             transaction = pathlib.Path(temporary) / "install-double-interrupt.json"
             transaction.write_text(
                 json.dumps(
-                    {
+                    _fingerprinted({
                         "schema": 1,
                         "status": "in-progress",
                         "transaction_path": str(transaction),
@@ -586,7 +833,7 @@ class HostInstallTests(unittest.TestCase):
                             "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
                         },
                         "pending": None,
-                    }
+                    })
                 ),
                 encoding="utf-8",
             )
@@ -617,7 +864,7 @@ class HostInstallTests(unittest.TestCase):
         self.assertEqual(runner.plugins["claude"], {"unrelated@claude-plugins-official"})
         self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
 
-    def test_wrong_or_disabled_native_package_fails_verification_and_rolls_back(self) -> None:
+    def test_wrong_or_disabled_native_package_fails_closed_without_removing_it(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             runner = FakeRunner()
             runner.plugin_overrides["ui-pack@divan"] = {
@@ -629,8 +876,8 @@ class HostInstallTests(unittest.TestCase):
                     self.options(pathlib.Path(temporary), host="codex"), runner=runner
                 )
 
-        self.assertEqual(runner.marketplaces["codex"], {"personal"})
-        self.assertEqual(runner.plugins["codex"], {"vibe-coder-standard@personal"})
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertIn("ui-pack@divan", runner.plugins["codex"])
 
     def test_preexisting_divan_entries_survive_rollback(self) -> None:
         failure = ("codex", "plugin", "add", "ui-pack@divan", "--json")
