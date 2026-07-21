@@ -164,7 +164,7 @@ def _evaluate_case(
         "case_id": case["case_id"],
         "mapping": mapping,
     }
-    if judge is None:
+    if not judge:
         return public_case, key_case, None
     judgement = _validate_judgement(
         run_adapter(judge, _judge_request(case, candidates), timeout)

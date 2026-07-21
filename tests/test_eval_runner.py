@@ -373,6 +373,27 @@ class EvalRunnerTests(unittest.TestCase):
         self.assertIsNone(result["summary"]["skill_win_rate"])
         self.assertIsNone(result["summary"]["gate_passed"])
 
+    def test_empty_judge_preserves_no_judge_review_semantics(self) -> None:
+        case = EVALS.discover_cases(ROOT, {"arama-ustasi"})[:1]
+        with tempfile.TemporaryDirectory(prefix="divan-eval-adapter-") as temporary:
+            adapter = pathlib.Path(temporary) / "adapter.py"
+            adapter.write_text(
+                "import json, sys; json.load(sys.stdin); "
+                "print(json.dumps({'output':'yanit','events':[],'changed_files':[]}))\n",
+                encoding="utf-8",
+            )
+            try:
+                result, _key = EVALS.run_evaluations(
+                    case,
+                    f"{sys.executable} {adapter}",
+                    judge="",
+                )
+            except EVALS.EvalError as error:
+                self.fail(f"empty judge must preserve no-judge semantics: {error}")
+
+        self.assertEqual(result["status"], "review_required")
+        self.assertEqual(result["judged_count"], 0)
+
     def test_run_retains_valid_public_provenance(self) -> None:
         case = EVALS.discover_cases(ROOT, {"arama-ustasi"})[:1]
         provenance = {
