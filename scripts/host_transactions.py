@@ -60,7 +60,8 @@ def load_recoverable_transaction(
         "verified",
     }:
         raise TransactionError(f"transaction is not recoverable: {record.get('status')}")
-    if record["schema"] == 2:
+    upgrade = record["schema"] == 2 or record.get("operation") == "upgrade"
+    if upgrade or path.name.startswith("upgrade-"):
         if normalize_source is None:
             raise TransactionError("schema-2 recovery requires source normalization")
         try:

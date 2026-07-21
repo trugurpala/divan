@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from typing import Any
 
+from tests.test_host_install import FakeRunner
 from tests.test_host_upgrade import (
     HOSTS,
     OLD_REF,
@@ -159,6 +160,133 @@ class HostUpgradeAuthorityTests(unittest.TestCase):
 
                 self.assertEqual(runner.commands, [])
 
+    def test_verified_snapshot_tampering_is_rejected_before_runner_call(self) -> None:
+        mutators = {
+            "missing-host": lambda record: record.__setitem__("verified", {}),
+            "empty-snapshot": lambda record: record["verified"].__setitem__("codex", {}),
+            "target-evidence": _break_verified_commit,
+            "contract": _break_verified_contract,
+            "plugin-fingerprint": _break_verified_plugin_fingerprint,
+        }
+        for name, mutate in mutators.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix="divan-upgrade-authority-"
+            ) as temporary:
+                runner = UpgradeRunner(pathlib.Path(temporary))
+                path, record = self._successful_record(runner)
+                mutate(record)
+                path.write_text(json.dumps(record), encoding="utf-8")
+                runner.commands.clear()
+
+                with self.assertRaises(HOSTS.InstallError):
+                    HOSTS.rollback_transaction(path, runner=runner)
+
+                self.assertEqual(runner.commands, [])
+
+    def test_schema_tamper_blocks_recovery_and_later_upgrade_before_runner(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-authority-") as temporary:
+            runner = UpgradeRunner(pathlib.Path(temporary))
+            path, record = self._successful_record(runner)
+            record["schema"] = 1
+            record["before"] = {
+                "codex": {"marketplaces": ["community-codex"], "plugins": []}
+            }
+            record["created"] = {"marketplaces": [], "plugins": []}
+            path.write_text(json.dumps(record), encoding="utf-8")
+            runner.commands.clear()
+
+            with self.assertRaises(HOSTS.InstallError):
+                HOSTS.rollback_transaction(path, runner=runner)
+            self.assertEqual(runner.commands, [])
+
+            with self.assertRaises(HOSTS.InstallError):
+                HOSTS.upgrade(self.options(runner.state_dir), runner=runner, root=ROOT)
+            self.assertEqual(runner.commands, [])
+
+    def test_local_source_alias_tamper_is_rejected_before_runner_call(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-authority-") as temporary:
+            runner = UpgradeRunner(pathlib.Path(temporary))
+            path, record = self._successful_record(runner)
+            _make_local_alias_tamper(record)
+            path.write_text(json.dumps(record), encoding="utf-8")
+            runner.commands.clear()
+
+            with self.assertRaises(HOSTS.InstallError):
+                HOSTS.rollback_transaction(path, runner=runner)
+
+            self.assertEqual(runner.commands, [])
+
+    def test_early_safe_schema1_rollback_does_not_block_later_upgrade(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-authority-") as temporary:
+            fixture_root = pathlib.Path(temporary)
+            state_dir = fixture_root / "state"
+            install_runner = FakeRunner(
+                fail_on=("claude", "plugin", "marketplace", "list", "--json")
+            )
+            install_options = HOSTS.Options(
+                host="both",
+                source=SOURCE,
+                ref=OLD_REF,
+                execute=True,
+                migrate_legacy=False,
+                state_dir=state_dir,
+                upgrade=False,
+            )
+            with self.assertRaises(HOSTS.InstallError):
+                HOSTS.install(install_options, runner=install_runner, root=ROOT)
+            install_path = next(state_dir.glob("install-*.json"))
+            install_record = json.loads(install_path.read_text(encoding="utf-8"))
+            self.assertEqual(install_record["status"], "rolled-back")
+            self.assertEqual(install_record["before"], {})
+
+            upgrade_runner = UpgradeRunner(fixture_root)
+            upgraded = HOSTS.upgrade(
+                self.options(state_dir), runner=upgrade_runner, root=ROOT
+            )
+
+        self.assertEqual(upgraded["status"], "verified")
+
+    def test_schema1_terminal_subset_rejects_malformed_or_uncaptured_rows(self) -> None:
+        mutators = {
+            "extra-before-field": lambda record: record["before"]["claude"].__setitem__(
+                "unexpected", []
+            ),
+            "duplicate-before-row": lambda record: record["before"]["claude"][
+                "marketplaces"
+            ].append("community-claude"),
+            "uncaptured-created-host": lambda record: record["created"][
+                "marketplaces"
+            ].append("codex"),
+        }
+        for name, mutate in mutators.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix="divan-upgrade-authority-"
+            ) as temporary:
+                runner = UpgradeRunner(pathlib.Path(temporary))
+                runner.state_dir.mkdir()
+                path = runner.state_dir / "install-safe-rollback.json"
+                record = {
+                    "schema": 1,
+                    "status": "rolled-back",
+                    "transaction_path": str(path.resolve()),
+                    "hosts": ["claude", "codex"],
+                    "pending": None,
+                    "before": {
+                        "claude": {
+                            "marketplaces": ["community-claude"],
+                            "plugins": ["unrelated@claude"],
+                        }
+                    },
+                    "created": {"marketplaces": [], "plugins": []},
+                }
+                mutate(record)
+                path.write_text(json.dumps(record), encoding="utf-8")
+
+                with self.assertRaises(HOSTS.InstallError):
+                    HOSTS.upgrade(self.options(runner.state_dir), runner=runner, root=ROOT)
+
+                self.assertEqual(runner.commands, [])
+
     def test_restore_marketplace_is_verified_before_any_plugin_install(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upgrade-authority-") as temporary:
             runner = RestoreMarketplaceMismatchRunner(pathlib.Path(temporary))
@@ -287,6 +415,33 @@ def _install_without_marketplace(record: dict[str, Any]) -> None:
         "host": "codex",
         "id": "sadrazam@divan",
     }
+
+
+def _break_verified_commit(record: dict[str, Any]) -> None:
+    record["verified"]["codex"]["commit"] = "b" * 40
+
+
+def _break_verified_contract(record: dict[str, Any]) -> None:
+    record["verified"]["codex"]["contract"]["sadrazam"] = "9.9.9"
+
+
+def _break_verified_plugin_fingerprint(record: dict[str, Any]) -> None:
+    row = record["verified"]["codex"]["plugins"]["sadrazam@divan"]
+    row["installPath"] = "foreign-root/plugins/sadrazam"
+    row["source"] = {"path": "foreign-root/plugins/sadrazam"}
+
+
+def _make_local_alias_tamper(record: dict[str, Any]) -> None:
+    local = str(ROOT)
+    alias = local + ".git"
+    record["target"]["source"] = local
+    before = record["before_rows"]["codex"]
+    before["source"] = alias
+    before["marketplace"]["marketplaceSource"]["source"] = alias
+    record["created"]["marketplaces"][0]["source"] = local
+    verified = record["verified"]["codex"]
+    verified["source"] = local
+    verified["marketplace"]["marketplaceSource"]["source"] = local
 
 
 def _remove_unowned_plugin(record: dict[str, Any]) -> None:

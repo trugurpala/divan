@@ -181,17 +181,51 @@ def _before_rows(
 ) -> bool:
     if not isinstance(value, dict) or set(value) != hosts:
         return False
-    expected_selectors = {f"{package}@divan" for package in host_state.PACKAGES}
     for host, row in value.items():
-        if not _evidence(row) or not _versions(row.get("contract")):
+        if not _snapshot(host, row, normalize):
             return False
-        if not isinstance(row.get("plugins"), dict) or set(row["plugins"]) != expected_selectors:
+        if not host_state.source_matches(row["source"], target["source"], normalize):
             return False
-        if not isinstance(row.get("marketplace"), dict):
+    return True
+
+
+def _snapshot(host: str, value: Any, normalize: Callable[[str], str]) -> bool:
+    expected = {
+        "source", "ref", "root", "commit", "catalog_digest", "contract",
+        "marketplace", "plugins",
+    }
+    selectors = {f"{package}@divan" for package in host_state.PACKAGES}
+    return bool(
+        isinstance(value, dict)
+        and set(value) == expected
+        and _evidence(value)
+        and _versions(value.get("contract"))
+        and isinstance(value.get("marketplace"), dict)
+        and isinstance(value.get("plugins"), dict)
+        and set(value["plugins"]) == selectors
+        and _snapshot_rows(host, value, normalize)
+    )
+
+
+def _verified(
+    value: Any,
+    hosts: set[str],
+    target: dict[str, Any],
+    status: str,
+    normalize: Callable[[str], str],
+) -> bool:
+    if not isinstance(value, dict) or not set(value) <= hosts:
+        return False
+    if status == "verified" and set(value) != hosts:
+        return False
+    for host, snapshot in value.items():
+        if not _snapshot(host, snapshot, normalize):
             return False
-        if normalize(row["source"]) != normalize(target["source"]):
+        if not host_state.source_matches(snapshot["source"], target["source"], normalize):
             return False
-        if not _snapshot_rows(host, row, normalize):
+        if snapshot["contract"] != target["versions"]:
+            return False
+        if any(snapshot[key] != target[key] for key in ("ref", "commit", "catalog_digest")):
             return False
     return True
 
@@ -251,7 +285,7 @@ def _created_marketplace_matches(
     row: dict[str, Any], target: dict[str, Any], normalize: Callable[[str], str]
 ) -> bool:
     return bool(
-        normalize(row["source"]) == normalize(target["source"])
+        host_state.source_matches(row["source"], target["source"], normalize)
         and all(row[key] == target[key] for key in ("ref", "commit", "catalog_digest"))
     )
 
@@ -292,6 +326,7 @@ def validate_schema2(
     path: pathlib.Path, record: dict[str, Any], normalize: Callable[[str], str]
 ) -> None:
     resolved = path.expanduser().resolve()
+    _require(record.get("schema") == 2, "schema")
     _require(record.get("operation") == "upgrade", "operation")
     _require(record.get("status") in ALL_STATUSES, "status")
     _require(
@@ -327,11 +362,8 @@ def validate_schema2(
         and all(isinstance(item, str) for item in record["rollback_errors"]),
         "rollback errors",
     )
-    verified = record.get("verified")
     _require(
-        isinstance(verified, dict)
-        and set(verified) <= hosts
-        and all(isinstance(row, dict) for row in verified.values()),
+        _verified(record.get("verified"), hosts, target, record["status"], normalize),
         "verified hosts",
     )
     _require(host_journal_transitions.valid(record), "transition invariants")

@@ -48,7 +48,8 @@ def _read(path: pathlib.Path) -> dict[str, Any]:
 
 def _validate_terminal_schema1(path: pathlib.Path, record: dict[str, Any]) -> None:
     _require(record.get("schema") == 1, "install schema")
-    _require(record.get("status") in {"verified", "recovered", "rolled-back"}, "install status")
+    status = record.get("status")
+    _require(status in {"verified", "recovered", "rolled-back"}, "install status")
     _require(
         isinstance(record.get("transaction_path"), str)
         and pathlib.Path(record["transaction_path"]).expanduser().resolve() == path.resolve(),
@@ -58,8 +59,13 @@ def _validate_terminal_schema1(path: pathlib.Path, record: dict[str, Any]) -> No
     _require(_valid_hosts(hosts), "install hosts")
     assert isinstance(hosts, list)
     _require(record.get("pending") is None, "install pending")
-    _require(_schema1_before(record.get("before"), set(hosts)), "install before")
-    _require(_schema1_created(record.get("created"), set(hosts)), "install created")
+    before = record.get("before")
+    _require(
+        _schema1_before(before, set(hosts), require_full=status == "verified"),
+        "install before",
+    )
+    assert isinstance(before, dict)
+    _require(_schema1_created(record.get("created"), set(before)), "install created")
 
 
 def _valid_hosts(value: Any) -> bool:
@@ -72,15 +78,28 @@ def _valid_hosts(value: Any) -> bool:
     )
 
 
-def _schema1_before(value: Any, hosts: set[str]) -> bool:
-    if not isinstance(value, dict) or set(value) != hosts:
+def _schema1_before(value: Any, hosts: set[str], *, require_full: bool) -> bool:
+    if not isinstance(value, dict):
+        return False
+    captured = set(value)
+    if require_full and captured != hosts:
+        return False
+    if not require_full and not captured <= hosts:
         return False
     return all(
         isinstance(row, dict)
-        and isinstance(row.get("marketplaces"), list)
-        and isinstance(row.get("plugins"), list)
-        and all(isinstance(item, str) for item in [*row["marketplaces"], *row["plugins"]])
+        and set(row) == {"marketplaces", "plugins"}
+        and _string_rows(row["marketplaces"])
+        and _string_rows(row["plugins"])
         for row in value.values()
+    )
+
+
+def _string_rows(value: Any) -> bool:
+    return bool(
+        isinstance(value, list)
+        and all(isinstance(item, str) and item for item in value)
+        and len(value) == len(set(value))
     )
 
 
@@ -90,15 +109,18 @@ def _schema1_created(value: Any, hosts: set[str]) -> bool:
     markets, plugins = value["marketplaces"], value["plugins"]
     if not isinstance(markets, list) or not isinstance(plugins, list):
         return False
-    if not all(host in hosts for host in markets):
+    if not all(host in hosts for host in markets) or len(markets) != len(set(markets)):
         return False
-    return all(
+    valid = all(
         isinstance(row, dict)
         and set(row) == {"host", "id"}
         and row["host"] in hosts
+        and row["host"] in markets
         and _selector(row["id"])
         for row in plugins
     )
+    keys = [(row["host"], row["id"]) for row in plugins if isinstance(row, dict)]
+    return valid and len(keys) == len(set(keys))
 
 
 def _selector(value: Any) -> bool:
