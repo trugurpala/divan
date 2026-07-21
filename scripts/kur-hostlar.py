@@ -16,6 +16,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import host_adapters as _host_adapters
+import host_controller as _host_controller
 import host_install_journal as _host_install_journal
 import host_journal as _host_journal
 import host_transactions as _host_transactions
@@ -295,9 +296,8 @@ def _migrate_legacy(
 
 def _legacy_journal(record: dict[str, Any]) -> tuple[bool, str | None]:
     pending = record.get("pending")
-    recorded = isinstance(pending, dict) and pending.get("kind") in {
-        "legacy-migration",
-        "recovery-legacy",
+    recorded = isinstance(pending, dict) and pending.get("action") in {
+        "legacy-migration", "recover-legacy",
     }
     journal = pending.get("journal") if isinstance(pending, dict) and recorded else None
     completed = record.get("legacy_migration")
@@ -323,7 +323,7 @@ def _recover_recorded_legacy(
     _begin_mutation(
         transaction_path,
         record,
-        {"kind": "recovery-legacy", "host": "codex", "journal": journal_text},
+        _host_install_journal.intent("recovery", "recover-legacy", "codex", journal=journal_text),
     )
     command = [
         sys.executable,
@@ -342,7 +342,7 @@ def _rollback_install_transaction(
     runner: Runner,
 ) -> dict[str, Any]:
     try:
-        _host_install_journal.validate(record)
+        _host_install_journal.validate(record, transaction_path)
     except _host_install_journal.InstallJournalError as exc:
         raise InstallError(str(exc)) from exc
     _recover_recorded_legacy(transaction_path, record, runner)
@@ -403,6 +403,7 @@ def _install_target(
         repository, options.source, options.ref, versions, install_io)
 
 
+@_host_controller.serialized(_normalize_source, InstallError)
 def install(
     options: Options,
     *,
@@ -456,7 +457,7 @@ def install(
             _begin_mutation(
                 transaction_path,
                 record,
-                {"kind": "marketplace", "host": host},
+                _host_install_journal.intent("forward", "add-marketplace", host),
             )
             _run(runner, _add_marketplace_command(host, options.source, options.ref))
             record["created"]["marketplaces"].append(
@@ -470,7 +471,7 @@ def install(
                 _begin_mutation(
                     transaction_path,
                     record,
-                    {"kind": "plugin", "host": host, "id": selector},
+                    _host_install_journal.intent("forward", "install-plugin", host, selector=selector),
                 )
                 _run(runner, _install_command(host, package))
                 record["created"]["plugins"].append(
@@ -491,11 +492,7 @@ def install(
             _begin_mutation(
                 transaction_path,
                 record,
-                {
-                    "kind": "legacy-migration",
-                    "host": "codex",
-                    "journal": str(legacy_journal),
-                },
+                _host_install_journal.intent("forward", "legacy-migration", "codex", journal=str(legacy_journal)),
             )
             record["legacy_migration"] = _migrate_legacy(
                 repository, runner, legacy_journal
@@ -506,7 +503,7 @@ def install(
         return record
     except BaseException as exc:
         try:
-            recovered = rollback_transaction(transaction_path, runner=runner)
+            recovered = rollback_transaction(transaction_path, runner=runner, _locked=True)
         except BaseException as rollback_exc:
             try:
                 current = json.loads(transaction_path.read_text(encoding="utf-8"))

@@ -34,6 +34,8 @@ ve o işlemde oluşturulan kayıtların kesin native parmak izlerini gösterir. 
 alırken yalnız `created` alanında parmak izi hâlâ birebir eşleşen Divan girdilerini
 hedefle; değiştirilmiş satırı, başka marketplace veya eklentileri silme. Eski,
 parmak izsiz schema-1 günlükleri güvenli biçimde otomatik geri alınamaz.
+Schema-1 günlük yolu, host kümesi, pending niyeti veya bağlı legacy günlük
+kimliği doğrulanamazsa hiçbir host ya da legacy recovery komutu çalıştırılmaz.
 Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 
 ```bash

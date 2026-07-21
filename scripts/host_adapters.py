@@ -96,7 +96,9 @@ def marketplace_ref(row: dict[str, Any]) -> str | None:
 
 
 def plugin_provenance_valid(host: str, row: dict[str, Any]) -> bool:
-    return host != "codex" or (
+    if host == "claude":
+        return row.get("scope") == "user"
+    return (
         row.get("installed") is True and row.get("marketplaceName") == "divan"
     )
 
@@ -129,8 +131,14 @@ def native_install_path(
         return None
     actual = pathlib.Path(value).expanduser().resolve()
     if host == "claude":
-        suffix = ("plugins", "cache", "divan", package, version)
-        return actual if actual.parts[-len(suffix) :] == suffix else None
+        root = marketplace_root.expanduser().resolve()
+        if root.name != "divan" or root.parent.name != "marketplaces":
+            return None
+        plugins_root = root.parent.parent
+        if plugins_root.name != "plugins" or plugins_root.parent.name != ".claude":
+            return None
+        expected = plugins_root / "cache" / "divan" / package / version
+        return actual if actual == expected.resolve() else None
     expected = (marketplace_root / "plugins" / package).resolve()
     return actual if actual == expected else None
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import importlib.util
 import json
@@ -29,9 +30,21 @@ COMMIT = "a" * 40
 CATALOG_DIGEST = hashlib.sha256(
     (ROOT / ".agents" / "plugins" / "marketplace.json").read_bytes()
 ).hexdigest()
+CLAUDE_ROOT = (
+    pathlib.Path(tempfile.gettempdir())
+    / "divan-host-fixture-home"
+    / ".claude"
+    / "plugins"
+    / "marketplaces"
+    / "divan"
+)
 
 
 def _fingerprinted(record: dict[str, object]) -> dict[str, object]:
+    record["operation"] = "install"
+    before = record.get("before")
+    assert isinstance(before, dict)
+    record["hosts"] = [host for host in ("claude", "codex") if host in before]
     record["fingerprint_schema"] = 1
     record["target"] = {
         "source": SOURCE,
@@ -51,7 +64,7 @@ def _fingerprinted(record: dict[str, object]) -> dict[str, object]:
             "host": host,
             "source": SOURCE,
             "ref": REF,
-            "root": str(ROOT.resolve()),
+            "root": str((CLAUDE_ROOT if host == "claude" else ROOT).resolve()),
             "commit": COMMIT,
             "catalog_digest": CATALOG_DIGEST,
         }
@@ -68,18 +81,33 @@ def _plugin_fingerprint(row: object) -> dict[str, object]:
     package = selector.removesuffix("@divan")
     version = PACKAGE_VERSIONS[package]
     install_path = ROOT / "plugins" / package
+    marketplace_root = ROOT
     if host == "claude":
-        install_path = pathlib.Path(
-            f"fixture-home/.claude/plugins/cache/divan/{package}/{version}"
-        )
+        marketplace_root = CLAUDE_ROOT
+        install_path = CLAUDE_ROOT.parent.parent / "cache" / "divan" / package / version
     return {
         "host": host,
         "id": selector,
         "version": version,
-        "marketplace_root": str(ROOT.resolve()),
+        "marketplace_root": str(marketplace_root.resolve()),
         "install_path": str(install_path.resolve()),
         "native_provenance": True,
     }
+
+
+def _tamper_legacy_path(record: dict[str, object], transaction: pathlib.Path) -> None:
+    outside = transaction.parent.parent / "foreign-legacy.json"
+    outside.write_text('{"schema": 1}\n', encoding="utf-8")
+    record["legacy_migration"] = {"result": {"journal": str(outside)}}
+
+
+def _tamper_legacy_identity(record: dict[str, object], transaction: pathlib.Path) -> None:
+    journal = transaction.with_name("legacy-foreign.json")
+    journal.write_text(
+        json.dumps({"schema": 1, "kind": "fallback", "journal": str(journal.resolve())}),
+        encoding="utf-8",
+    )
+    record["legacy_migration"] = {"result": {"journal": str(journal.resolve())}}
 
 
 class FakeRunner:
@@ -95,6 +123,9 @@ class FakeRunner:
             "codex": {"vibe-coder-standard@personal"},
         }
         self.plugin_overrides: dict[str, dict[str, object]] = {}
+        catalog = CLAUDE_ROOT / ".agents" / "plugins" / "marketplace.json"
+        catalog.parent.mkdir(parents=True, exist_ok=True)
+        catalog.write_bytes((ROOT / ".agents" / "plugins" / "marketplace.json").read_bytes())
 
     def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
         argv = tuple(command)
@@ -118,7 +149,7 @@ class FakeRunner:
                 output = [
                     {
                         "name": name,
-                        "installLocation": str(ROOT) if name == "divan" else name,
+                        "installLocation": str(CLAUDE_ROOT) if name == "divan" else name,
                     }
                     for name in sorted(self.marketplaces[host])
                 ]
@@ -163,8 +194,8 @@ class FakeRunner:
             version = PACKAGE_VERSIONS[name]
             install_path = str(ROOT / "plugins" / name)
             if host == "claude":
-                install_path = (
-                    f"fixture-home/.claude/plugins/cache/divan/{name}/{version}"
+                install_path = str(
+                    CLAUDE_ROOT.parent.parent / "cache" / "divan" / name / version
                 )
             skills = sorted(
                 path.parent.name
@@ -175,6 +206,7 @@ class FakeRunner:
                     "version": version,
                     "installed": True,
                     "marketplaceName": "divan",
+                    "scope": "user",
                     "installPath": install_path,
                     "source": {"path": install_path},
                     "skills": skills,
@@ -196,7 +228,8 @@ class JournalObservingRunner(FakeRunner):
             if journals:
                 record = json.loads(journals[0].read_text(encoding="utf-8"))
                 self.saw_pending_journal = record.get("pending") == {
-                    "kind": "marketplace",
+                    "phase": "forward",
+                    "action": "add-marketplace",
                     "host": command[0],
                 }
         return super().__call__(command)
@@ -411,6 +444,34 @@ class HostInstallTests(unittest.TestCase):
                 pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
             )
 
+        foreign = dict(claude)
+        foreign["version"] = "0.9.1"
+        foreign["installPath"] = (
+            "foreign-home/.claude/plugins/cache/divan/sadrazam/0.9.1"
+        )
+        with self.assertRaisesRegex(
+            HOST_INSTALL._host_upgrade.host_state.StateError, "path|native"
+        ):
+            HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
+                "claude",
+                "sadrazam@divan",
+                foreign,
+                pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
+            )
+
+        wrong_scope = dict(claude)
+        wrong_scope["version"] = "0.9.1"
+        wrong_scope["scope"] = "project"
+        with self.assertRaisesRegex(
+            HOST_INSTALL._host_upgrade.host_state.StateError, "provenance|scope"
+        ):
+            HOST_INSTALL._host_upgrade.host_state.plugin_fingerprint(
+                "claude",
+                "sadrazam@divan",
+                wrong_scope,
+                pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
+            )
+
     def test_dry_run_never_invokes_host_cli(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             runner = FakeRunner()
@@ -495,6 +556,65 @@ class HostInstallTests(unittest.TestCase):
             pathlib.Path(claude["install_path"]).parts[-5:],
             ("plugins", "cache", "divan", "sadrazam", "0.9.1"),
         )
+
+    def test_schema1_authority_rejects_tampering_before_any_runner_call(self) -> None:
+        cases = {
+            "schema": lambda row, _path: row.update(schema=2),
+            "operation": lambda row, _path: row.update(operation="upgrade"),
+            "status": lambda row, _path: row.update(status="unknown"),
+            "hosts": lambda row, _path: row.update(hosts=["codex", "codex"]),
+            "host-executable": lambda row, _path: row.update(hosts=["python"]),
+            "transaction-path": lambda row, path: row.update(
+                transaction_path=str(path.with_name("install-other.json"))
+            ),
+            "before-shape": lambda row, _path: row["before"]["codex"].update(
+                marketplaces="personal"
+            ),
+            "created-crossfield": lambda row, _path: row["created"]["plugins"][0].update(
+                host="claude"
+            ),
+            "pending-shape": lambda row, _path: row.update(
+                status="in-progress",
+                pending={"phase": "forward", "action": "install-plugin", "host": "codex"},
+            ),
+            "legacy-path": _tamper_legacy_path,
+            "legacy-identity": _tamper_legacy_identity,
+        }
+        for name, tamper in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix="divan-schema1-authority-"
+            ) as temporary:
+                runner = FakeRunner()
+                record = HOST_INSTALL.install(
+                    self.options(pathlib.Path(temporary), host="codex"), runner=runner
+                )
+                transaction = pathlib.Path(record["transaction_path"])
+                changed = copy.deepcopy(record)
+                tamper(changed, transaction)
+                transaction.write_text(json.dumps(changed) + "\n", encoding="utf-8")
+                runner.commands.clear()
+
+                with self.assertRaises(HOST_INSTALL.InstallError):
+                    HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+                self.assertEqual(runner.commands, [])
+
+    def test_execute_install_blocks_on_any_active_transaction_before_runner(self) -> None:
+        for filename in ("install-active.json", "upgrade-active.json"):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory(
+                prefix="divan-install-active-"
+            ) as temporary:
+                state_dir = pathlib.Path(temporary)
+                (state_dir / filename).write_text(
+                    json.dumps({"schema": 1, "status": "in-progress"}),
+                    encoding="utf-8",
+                )
+                runner = FakeRunner()
+
+                with self.assertRaisesRegex(HOST_INSTALL.InstallError, "active|recovery"):
+                    HOST_INSTALL.install(self.options(state_dir), runner=runner)
+
+                self.assertEqual(runner.commands, [])
 
     def test_pending_replacement_is_not_promoted_or_removed(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
@@ -596,6 +716,7 @@ class HostInstallTests(unittest.TestCase):
                 json.dumps(
                     _fingerprinted({
                         "schema": 1,
+                        "transaction_path": str(transaction),
                         "status": "in-progress",
                         "before": {
                             "codex": {
@@ -608,7 +729,8 @@ class HostInstallTests(unittest.TestCase):
                             "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
                         },
                         "pending": {
-                            "kind": "plugin",
+                            "phase": "forward",
+                            "action": "install-plugin",
                             "host": "codex",
                             "id": "core-pack@divan",
                         },
@@ -632,12 +754,20 @@ class HostInstallTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             root = pathlib.Path(temporary)
             legacy_journal = root / "legacy-interrupted.json"
-            legacy_journal.write_text("{}\n", encoding="utf-8")
+            legacy_journal.write_text(
+                json.dumps({
+                    "schema": 1,
+                    "kind": "migration",
+                    "journal": str(legacy_journal.resolve()),
+                }) + "\n",
+                encoding="utf-8",
+            )
             transaction = root / "install-interrupted.json"
             transaction.write_text(
                 json.dumps(
                     _fingerprinted({
                         "schema": 1,
+                        "transaction_path": str(transaction),
                         "status": "in-progress",
                         "before": {
                             "codex": {
@@ -650,7 +780,8 @@ class HostInstallTests(unittest.TestCase):
                             "plugins": [{"host": "codex", "id": "sadrazam@divan"}],
                         },
                         "pending": {
-                            "kind": "legacy-migration",
+                            "phase": "forward",
+                            "action": "legacy-migration",
                             "host": "codex",
                             "journal": str(legacy_journal),
                         },
@@ -678,12 +809,20 @@ class HostInstallTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             root = pathlib.Path(temporary)
             legacy_journal = root / "legacy-completed.json"
-            legacy_journal.write_text("{}\n", encoding="utf-8")
+            legacy_journal.write_text(
+                json.dumps({
+                    "schema": 1,
+                    "kind": "migration",
+                    "journal": str(legacy_journal.resolve()),
+                }) + "\n",
+                encoding="utf-8",
+            )
             transaction = root / "install-verified.json"
             transaction.write_text(
                 json.dumps(
                     _fingerprinted({
                         "schema": 1,
+                        "transaction_path": str(transaction),
                         "status": "verified",
                         "before": {
                             "codex": {
@@ -726,11 +865,12 @@ class HostInstallTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             root = pathlib.Path(temporary)
             transaction = root / "install-verified.json"
-            missing = root / "missing-legacy.json"
+            missing = root / "legacy-missing.json"
             transaction.write_text(
                 json.dumps(
                     _fingerprinted({
                         "schema": 1,
+                        "transaction_path": str(transaction),
                         "status": "verified",
                         "before": {
                             "codex": {
@@ -772,7 +912,14 @@ class HostInstallTests(unittest.TestCase):
                 _runner: HOST_INSTALL.Runner,
                 journal: pathlib.Path,
             ) -> None:
-                journal.write_text("{}\n", encoding="utf-8")
+                journal.write_text(
+                    json.dumps({
+                        "schema": 1,
+                        "kind": "migration",
+                        "journal": str(journal.resolve()),
+                    }) + "\n",
+                    encoding="utf-8",
+                )
                 raise HOST_INSTALL.InstallError("legacy migration returned invalid JSON")
 
             with mock.patch.object(HOST_INSTALL, "_migrate_legacy", fail_after_legacy):

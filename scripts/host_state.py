@@ -56,19 +56,41 @@ def _catalog_row_valid(value: Any) -> bool:
     return normalized == pathlib.PurePosixPath("plugins") / name
 
 
-def _git_evidence(root: pathlib.Path, ref: str, run: Run) -> tuple[str, str]:
+def _git_head(root: pathlib.Path, run: Run) -> str:
     dirty = run(["git", "-C", str(root), "status", "--porcelain"]).strip()
     if dirty:
         raise StateError(f"dirty checkout cannot be used transactionally: {root}")
     commit = run(["git", "-C", str(root), "rev-parse", "HEAD"]).strip()
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise StateError(f"checkout commit cannot be proven: {root}")
+    return commit
+
+
+def _git_evidence(root: pathlib.Path, ref: str, run: Run) -> tuple[str, str]:
+    commit = _git_head(root, run)
     actual = commit
     if not re.fullmatch(r"[0-9a-f]{40}", ref):
         actual = run(["git", "-C", str(root), "describe", "--tags", "--exact-match"]).strip()
     if actual != ref:
         raise StateError(f"checkout ref cannot be proven: {root}")
     return commit, actual
+
+
+def checkout_evidence_at_head(
+    root: pathlib.Path, source: str, run: Run, normalize: Normalize
+) -> dict[str, Any]:
+    """Prove an installed checkout and derive its immutable exact tag or commit."""
+    resolved = root.expanduser().resolve()
+    commit = _git_head(resolved, run)
+    tags = [
+        tag.strip()
+        for tag in run(["git", "-C", str(resolved), "tag", "--points-at", "HEAD"])
+        .splitlines()
+        if tag.strip()
+    ]
+    if len(tags) > 1:
+        raise StateError(f"checkout has ambiguous exact tags: {resolved}")
+    return checkout_evidence(resolved, source, tags[0] if tags else commit, run, normalize)
 
 
 def checkout_evidence(

@@ -10,6 +10,38 @@
         "source": "local",
         "path": "fixture-codex/divan/plugins/sadrazam"
       }
+    },
+    {
+      "pluginId": "core-pack@divan",
+      "version": "0.5.1",
+      "enabled": true,
+      "installed": true,
+      "marketplaceName": "divan",
+      "source": {"source": "local", "path": "fixture-codex/divan/plugins/core-pack"}
+    },
+    {
+      "pluginId": "ui-pack@divan",
+      "version": "0.1.0",
+      "enabled": true,
+      "installed": true,
+      "marketplaceName": "divan",
+      "source": {"source": "local", "path": "fixture-codex/divan/plugins/ui-pack"}
+    },
+    {
+      "pluginId": "react-pack@divan",
+      "version": "0.2.1",
+      "enabled": true,
+      "installed": true,
+      "marketplaceName": "divan",
+      "source": {"source": "local", "path": "fixture-codex/divan/plugins/react-pack"}
+    },
+    {
+      "pluginId": "zanaat-pack@divan",
+      "version": "0.1.1",
+      "enabled": true,
+      "installed": true,
+      "marketplaceName": "divan",
+      "source": {"source": "local", "path": "fixture-codex/divan/plugins/zanaat-pack"}
     }
   ]
 }

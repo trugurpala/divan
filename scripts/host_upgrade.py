@@ -246,9 +246,15 @@ def _capture_before(host: str, source: str, io: UpgradeIO) -> dict[str, Any]:
     if marketplace is None:
         raise host_transactions.TransactionError(f"{host}: divan marketplace is missing")
     ref = host_adapters.marketplace_ref(marketplace)
-    if ref is None:
-        raise host_transactions.TransactionError(f"{host}: marketplace ref is missing")
     try:
+        if ref is None:
+            root = host_adapters.marketplace_root(host, marketplace)
+            if root is None:
+                raise host_state.StateError(f"{host}: divan marketplace root is missing")
+            evidence = host_state.checkout_evidence_at_head(
+                pathlib.Path(root), source, io.run, io.normalize_source
+            )
+            ref = evidence["ref"]
         return host_state.capture_host(
             host,
             source,

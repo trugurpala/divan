@@ -67,7 +67,7 @@ def _validate_terminal_schema1(path: pathlib.Path, record: dict[str, Any]) -> No
     assert isinstance(before, dict)
     if record.get("fingerprint_schema") == 1:
         try:
-            __import__("host_install_journal").validate(record)
+            __import__("host_install_journal").validate(record, path)
         except RuntimeError as exc:
             raise ScanError(f"invalid terminal transaction journal: {exc}") from exc
     else:

@@ -1,0 +1,12 @@
+{
+  "marketplaces": [
+    {
+      "name": "divan",
+      "root": "fixture-codex/divan",
+      "marketplaceSource": {
+        "sourceType": "git",
+        "source": "https://github.com/trugurpala/divan.git"
+      }
+    }
+  ]
+}

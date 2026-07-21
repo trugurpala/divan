@@ -85,6 +85,8 @@ Her paket ve marketplace kaldırmasından hemen önce native durum yeniden okunu
 veya işlem kilidi varken yeni execute/no-op çağrısı başlamaz.
 Kilit dosyası süreçler arası kernel kilidi taşır: süreç kaybında dosya kalsa da
 kilit otomatik serbest kalır; çalışan başka bir süreç ise işlemi kapalı tutar.
+Native `--execute` kurulum ve yükseltme aynı kilidi ve aktif-günlük kapısını
+kullanır; kuru çalıştırmalar kilit veya host CLI çağrısı oluşturmaz.
 `install-*.json` ve `upgrade-*.json` taramasında okunamayan ya da yapısal olarak
 geçersiz günlükler fail-closed reddedilir; yalnız doğrulanmış terminal kayıtlar
 yeni işleme izin verir.
@@ -126,8 +128,15 @@ eminseniz elle kaldırıp işlemi yeniden çalıştırın.
 Başarılı native kurulum günlüğü oluşturulan her satırın kesin parmak izini taşır.
 Claude paket yolu kendi sürümlü `~/.claude/plugins/cache/divan/<paket>/<sürüm>`
 önbelleğinden, Codex yolu marketplace kökündeki `plugins/<paket>` konumundan
-kanıtlanır. Eski, parmak izsiz schema-1 günlükleri otomatik silme yapmadan
+kanıtlanır. Claude yolu kanıtlanmış kullanıcı-scope marketplace yapılandırmasının
+tam cache köküyle birebir eşleşmeli ve plugin satırı `scope: user` taşımalıdır.
+Codex marketplace satırı ref bildirmiyorsa önceki değişmez ref ve commit istenen
+hedeften değil, kurulu marketplace Git checkout'undan salt-okunur türetilir.
+Eski, parmak izsiz schema-1 günlükleri otomatik silme yapmadan
 fail-closed durur; recovery sırasında dışarıdan değiştirilmiş satırlar korunur.
+Schema-1 recovery, host CLI'dan önce işlem yolu, host kümesi, durum, pending
+niyeti, tüm parmak izi çapraz bağları ve varsa aynı state dizinindeki legacy
+günlük kimliğini doğrular.
 
 Her dış CLI değişikliğinden önce işlem günlüğü atomik yazılır. Kesinti sonrası
 `in-progress`, `recovering` veya `rollback-incomplete` kaydını yalnız o işlemin

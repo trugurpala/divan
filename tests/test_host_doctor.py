@@ -120,6 +120,8 @@ class DoctorRunner:
                     "source": {"path": install_path},
                 }
             )
+            if host == "claude":
+                row["scope"] = "user"
         row.update(self.plugin_overrides.get(plugin, {}))
         return row
 

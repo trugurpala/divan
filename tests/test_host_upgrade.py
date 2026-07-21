@@ -61,10 +61,26 @@ class UpgradeRunner:
         defaults = {host: dict(TARGET_VERSIONS) for host in ("claude", "codex")}
         self.old_versions = old_versions or defaults
         self.old_roots = {
-            host: fixture_root / f"old-{host}" for host in ("claude", "codex")
+            "claude": fixture_root / "old-home" / ".claude" / "plugins" / "marketplaces" / "divan",
+            "codex": fixture_root / "old-codex",
+        }
+        self.target_roots = {
+            "claude": fixture_root / "target-home" / ".claude" / "plugins" / "marketplaces" / "divan",
+            "codex": ROOT,
         }
         for host, root in self.old_roots.items():
             _write_catalog(root, self.old_versions[host])
+        target_catalog = (ROOT / ".agents" / "plugins" / "marketplace.json").read_bytes()
+        for root in self.target_roots.values():
+            if root == ROOT:
+                continue
+            path = root / ".agents" / "plugins" / "marketplace.json"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(target_catalog)
+        if current_ref == TARGET_REF:
+            for root in self.old_roots.values():
+                path = root / ".agents" / "plugins" / "marketplace.json"
+                path.write_bytes(target_catalog)
         self.refs = {host: current_ref for host in ("claude", "codex")}
         self.sources = {host: SOURCE for host in ("claude", "codex")}
         self.roots = dict(self.old_roots)
@@ -112,7 +128,7 @@ class UpgradeRunner:
             output = ""
         elif "get-url" in command:
             output = source
-        elif "describe" in command:
+        elif "describe" in command or "tag" in command:
             output = ref
         else:
             output = "a" * 40
@@ -129,9 +145,13 @@ class UpgradeRunner:
     def _marketplace_row(self, host: str) -> dict[str, object] | None:
         if host not in self.refs:
             return None
-        row: dict[str, object] = {"name": "divan", "ref": self.refs[host]}
+        row: dict[str, object] = {"name": "divan"}
         if host == "claude":
-            row.update({"installLocation": str(self.roots[host]), "url": self.sources[host]})
+            row.update({
+                "installLocation": str(self.roots[host]),
+                "url": self.sources[host],
+                "ref": self.refs[host],
+            })
         else:
             row.update(
                 {
@@ -162,14 +182,13 @@ class UpgradeRunner:
             install_path = self.roots[host] / "plugins" / package
             if host == "claude":
                 install_path = (
-                    self.state_dir.parent
-                    / ".claude"
-                    / "plugins"
+                    self.roots[host].parent.parent
                     / "cache"
                     / "divan"
                     / package
                     / self.plugins[host][selector]
                 )
+                row["scope"] = "user"
             row.update(
                 {
                     "installed": True,
@@ -218,10 +237,47 @@ class UpgradeRunner:
             source = command[4]
             ref = command[command.index("--ref") + 1]
         self.sources[host], self.refs[host] = source, ref
-        self.roots[host] = ROOT if ref == TARGET_REF else self.old_roots[host]
+        self.roots[host] = self.target_roots[host] if ref == TARGET_REF else self.old_roots[host]
 
 
 class HostUpgradeTests(unittest.TestCase):
+    def test_real_codex_marketplace_without_ref_captures_checkout_identity(self) -> None:
+        fixture = json.loads(
+            (ROOT / "tests" / "fixtures" / "host-cli" / "codex-marketplace-list.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertNotIn(
+            "ref", HOSTS._host_adapters.marketplace_rows("codex", fixture)["divan"]
+        )
+        with tempfile.TemporaryDirectory(prefix="divan-upgrade-real-codex-") as temporary:
+            runner = UpgradeRunner(pathlib.Path(temporary))
+            marketplace = fixture["marketplaces"][0]
+            marketplace["root"] = str(runner.roots["codex"])
+            plugins = json.loads(
+                (ROOT / "tests" / "fixtures" / "host-cli" / "codex-plugin-list.json")
+                .read_text(encoding="utf-8")
+            )
+            for row in plugins["installed"]:
+                package = row["pluginId"].removesuffix("@divan")
+                row["source"]["path"] = str(runner.roots["codex"] / "plugins" / package)
+            io = HOSTS._host_upgrade.UpgradeIO(
+                marketplace_rows=lambda _host: HOSTS._host_adapters.marketplace_rows(
+                    "codex", fixture
+                ),
+                plugin_rows=lambda _host: HOSTS._host_adapters.plugin_rows(
+                    "codex", plugins
+                ),
+                run=lambda command: HOSTS._run(runner, command),
+                rollback=lambda _path: {},
+                normalize_source=HOSTS._normalize_source,
+            )
+
+            captured = HOSTS._host_upgrade._capture_before("codex", SOURCE, io)
+
+        self.assertEqual(captured["ref"], OLD_REF)
+        self.assertEqual(captured["commit"], "a" * 40)
+        self.assertEqual(runner.mutations, [])
+
     def options(self, state_dir: pathlib.Path, **changes: object) -> object:
         values = {
             "host": "both",
@@ -254,7 +310,7 @@ class HostUpgradeTests(unittest.TestCase):
     def test_same_source_ref_and_versions_are_a_no_op(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-upgrade-") as temporary:
             runner = UpgradeRunner(pathlib.Path(temporary), current_ref=TARGET_REF)
-            runner.roots = {host: ROOT for host in ("claude", "codex")}
+            runner.roots = dict(runner.target_roots)
             record = HOSTS.upgrade(self.options(runner.state_dir), runner=runner, root=ROOT)
 
         self.assertEqual(record["status"], "no-op")

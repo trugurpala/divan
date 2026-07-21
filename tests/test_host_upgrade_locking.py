@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 
+from tests.test_host_install import FakeRunner
 from tests.test_host_upgrade import HOSTS, ROOT, SOURCE, TARGET_REF, UpgradeRunner
 
 CHILD = """
@@ -86,6 +87,31 @@ class HostUpgradeLockingTests(unittest.TestCase):
             try:
                 with self.assertRaisesRegex(HOSTS.InstallError, "lock|active"):
                     HOSTS.rollback_transaction(path, runner=runner)
+            finally:
+                child.terminate()
+                child.communicate(timeout=10)
+
+        self.assertEqual(runner.commands, [])
+
+    def test_live_transaction_lock_blocks_second_install_before_runner(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-install-lock-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            child = self._child(state_dir, live=True)
+            assert child.stdout is not None
+            self.assertEqual(child.stdout.readline().strip(), "ready")
+            runner = FakeRunner()
+            options = HOSTS.Options(
+                host="codex",
+                source=SOURCE,
+                ref=TARGET_REF,
+                execute=True,
+                migrate_legacy=False,
+                state_dir=state_dir,
+                upgrade=False,
+            )
+            try:
+                with self.assertRaisesRegex(HOSTS.InstallError, "lock|active"):
+                    HOSTS.install(options, runner=runner, root=ROOT)
             finally:
                 child.terminate()
                 child.communicate(timeout=10)
