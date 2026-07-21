@@ -300,16 +300,20 @@ class HostUpgradeSecurityTests(unittest.TestCase):
 
         self.assertEqual(runner.commands, [])
 
-    def test_lock_contention_blocks_before_runner_call(self) -> None:
+    def test_unowned_stale_lock_file_does_not_block_upgrade(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upgrade-security-") as temporary:
             runner = UpgradeRunner(pathlib.Path(temporary))
             lock = runner.state_dir.parent / f".{runner.state_dir.name}.upgrade.lock"
             lock.write_text("occupied", encoding="utf-8")
 
-            with self.assertRaisesRegex(HOSTS.InstallError, "lock|active"):
-                HOSTS.upgrade(self.options(runner.state_dir), runner=runner, root=ROOT)
+            try:
+                record = HOSTS.upgrade(
+                    self.options(runner.state_dir), runner=runner, root=ROOT
+                )
+            except HOSTS.InstallError as exc:
+                self.fail(f"stale lock file blocked upgrade: {exc}")
 
-        self.assertEqual(runner.commands, [])
+        self.assertEqual(record["status"], "verified")
 
     def test_between_host_drift_rolls_back_first_host_without_mutating_drifted_host(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upgrade-security-") as temporary:

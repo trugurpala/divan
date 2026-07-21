@@ -28,16 +28,32 @@ def _catalog(root: pathlib.Path) -> tuple[dict[str, str], str]:
         value = json.loads(raw)
     except (OSError, json.JSONDecodeError) as exc:
         raise StateError(f"cannot prove marketplace version contract: {path}") from exc
-    versions = {
-        row["name"]: row["version"]
-        for row in value.get("plugins", [])
-        if isinstance(row, dict)
-        and isinstance(row.get("name"), str)
-        and isinstance(row.get("version"), str)
-    }
+    rows = value.get("plugins") if isinstance(value, dict) else None
+    if not isinstance(rows, list) or len(rows) != len(PACKAGES):
+        raise StateError("marketplace contract does not define the expected five packages")
+    versions: dict[str, str] = {}
+    for row in rows:
+        if not _catalog_row_valid(row) or row["name"] in versions:
+            raise StateError("marketplace contract contains an invalid or duplicate package row")
+        versions[row["name"]] = row["version"]
     if set(versions) != set(PACKAGES):
         raise StateError("marketplace contract does not define the expected five packages")
     return versions, hashlib.sha256(raw).hexdigest()
+
+
+def _catalog_row_valid(value: Any) -> bool:
+    if not isinstance(value, dict):
+        return False
+    name, version, source = value.get("name"), value.get("version"), value.get("source")
+    if name not in PACKAGES or not isinstance(version, str) or not version:
+        return False
+    if not isinstance(source, dict) or source.get("source") != "local":
+        return False
+    relative = source.get("path")
+    if not isinstance(relative, str) or not relative:
+        return False
+    normalized = pathlib.PurePosixPath(relative.replace("\\", "/"))
+    return normalized == pathlib.PurePosixPath("plugins") / name
 
 
 def _git_evidence(root: pathlib.Path, ref: str, run: Run) -> tuple[str, str]:
@@ -82,6 +98,14 @@ def checkout_evidence(
     }
 
 
+def source_matches(reported: str, expected: str, normalize: Normalize) -> bool:
+    expected_path = pathlib.Path(expected).expanduser()
+    if expected_path.exists():
+        reported_path = pathlib.Path(reported).expanduser()
+        return reported_path.exists() and reported_path.resolve() == expected_path.resolve()
+    return normalize(reported) == normalize(expected)
+
+
 def marketplace_evidence(
     host: str,
     row: dict[str, Any],
@@ -93,6 +117,9 @@ def marketplace_evidence(
     root = host_adapters.marketplace_root(host, row)
     if root is None:
         raise StateError(f"{host}: divan marketplace root is missing")
+    reported_source = host_adapters.marketplace_source(row)
+    if reported_source is not None and not source_matches(reported_source, source, normalize):
+        raise StateError(f"{host}: raw marketplace source does not match requested repository")
     reported = host_adapters.marketplace_ref(row)
     if reported is not None and reported != ref:
         raise StateError(f"{host}: marketplace ref cannot be proven")
@@ -205,3 +232,21 @@ def assert_same_ref_reproducible(
     ] == target["ref"]
     if same_identity and not target_matches(snapshot, target, normalize):
         raise StateError("same source/ref has a different contract, commit, or catalog digest; not reproducible")
+
+
+def assert_consistent_snapshot_groups(
+    snapshots: dict[str, dict[str, Any]], normalize: Normalize
+) -> None:
+    groups: dict[tuple[str, str], tuple[Any, ...]] = {}
+    for snapshot in snapshots.values():
+        key = (normalize(snapshot["source"]), snapshot["ref"])
+        evidence = (
+            snapshot["commit"],
+            snapshot["catalog_digest"],
+            snapshot["contract"],
+        )
+        if key in groups and groups[key] != evidence:
+            raise StateError(
+                "same source/ref before snapshots have conflicting commit, digest, or contract"
+            )
+        groups[key] = evidence

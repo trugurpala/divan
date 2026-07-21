@@ -9,6 +9,8 @@ from collections.abc import Callable
 from typing import Any
 
 import host_adapters
+import host_journal_scan
+import host_journal_transitions
 import host_state
 
 
@@ -46,34 +48,47 @@ class UpgradeLock:
     def __enter__(self) -> UpgradeLock:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            self.fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            self.fd = os.open(self.path, os.O_CREAT | os.O_RDWR, 0o600)
+            if os.fstat(self.fd).st_size == 0:
+                os.write(self.fd, b"\0")
+            _advisory_lock(self.fd, acquire=True)
+            os.ftruncate(self.fd, 0)
             os.write(self.fd, str(os.getpid()).encode("ascii"))
-        except FileExistsError as exc:
+        except OSError as exc:
+            if self.fd is not None:
+                os.close(self.fd)
+                self.fd = None
             raise JournalError(f"upgrade lock is already active: {self.path}") from exc
         return self
 
     def __exit__(self, *_: object) -> None:
         if self.fd is not None:
+            _advisory_lock(self.fd, acquire=False)
             os.close(self.fd)
             self.fd = None
-        try:
-            self.path.unlink()
-        except FileNotFoundError:
-            pass
 
 
-def assert_no_active(state_dir: pathlib.Path) -> None:
-    if not state_dir.is_dir():
+def _advisory_lock(fd: int, *, acquire: bool) -> None:
+    os.lseek(fd, 0, os.SEEK_SET)
+    if os.name == "nt":
+        locking = __import__("msvcrt")
+        mode = locking.LK_NBLCK if acquire else locking.LK_UNLCK
+        locking.locking(fd, mode, 1)
         return
-    for path in sorted(state_dir.glob("*.json")):
-        try:
-            import json
+    locking = __import__("fcntl")
+    mode = locking.LOCK_EX | locking.LOCK_NB if acquire else locking.LOCK_UN
+    locking.flock(fd, mode)
 
-            value = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        if isinstance(value, dict) and value.get("status") in ACTIVE_STATUSES:
-            raise JournalError(f"active transaction journal requires recovery: {path}")
+
+def assert_no_active(
+    state_dir: pathlib.Path, normalize: Callable[[str], str]
+) -> None:
+    try:
+        host_journal_scan.assert_no_active(
+            state_dir, normalize, validate_schema2, ACTIVE_STATUSES
+        )
+    except host_journal_scan.ScanError as exc:
+        raise JournalError(str(exc)) from exc
 
 
 def _require(condition: bool, detail: str) -> None:
@@ -85,6 +100,16 @@ def _selector(value: Any) -> bool:
     return isinstance(value, str) and value in {
         f"{package}@divan" for package in host_state.PACKAGES
     }
+
+
+def _valid_hosts(value: Any) -> bool:
+    return bool(
+        isinstance(value, list)
+        and value
+        and all(isinstance(host, str) for host in value)
+        and len(value) == len(set(value))
+        and set(value) <= host_state.HOSTS
+    )
 
 
 def _versions(value: Any) -> bool:
@@ -178,7 +203,9 @@ def _snapshot_rows(host: str, snapshot: dict[str, Any], normalize: Callable[[str
     ref = host_adapters.marketplace_ref(marketplace)
     if root is None or pathlib.Path(root).resolve() != pathlib.Path(snapshot["root"]):
         return False
-    if source is not None and normalize(source) != normalize(snapshot["source"]):
+    if source is not None and not host_state.source_matches(
+        source, snapshot["source"], normalize
+    ):
         return False
     if ref is not None and ref != snapshot["ref"]:
         return False
@@ -269,24 +296,23 @@ def validate_schema2(
     _require(record.get("status") in ALL_STATUSES, "status")
     _require(
         isinstance(record.get("transaction_path"), str)
-        and pathlib.Path(record["transaction_path"]).expanduser().resolve() == resolved,
+        and pathlib.Path(record["transaction_path"]).expanduser() == resolved,
         "transaction path",
     )
     host_list = record.get("hosts")
-    if not isinstance(host_list, list):
+    if not _valid_hosts(host_list):
         raise JournalError("invalid schema-2 transaction journal: hosts")
-    _require(
-        bool(host_list)
-        and len(host_list) == len(set(host_list))
-        and set(host_list) <= host_state.HOSTS,
-        "hosts",
-    )
+    assert isinstance(host_list, list)
     hosts = set(host_list)
     target = record.get("target")
     if not isinstance(target, dict):
         raise JournalError("invalid schema-2 transaction journal: target evidence")
     _require(_evidence(target) and _versions(target.get("versions")), "target evidence")
     _require(_before_rows(record.get("before_rows"), hosts, target, normalize), "before rows")
+    try:
+        host_state.assert_consistent_snapshot_groups(record["before_rows"], normalize)
+    except host_state.StateError as exc:
+        raise JournalError(f"invalid schema-2 transaction journal: {exc}") from exc
     _require(
         _created(record.get("created"), hosts, target, normalize), "created ownership"
     )
@@ -308,3 +334,4 @@ def validate_schema2(
         and all(isinstance(row, dict) for row in verified.values()),
         "verified hosts",
     )
+    _require(host_journal_transitions.valid(record), "transition invariants")

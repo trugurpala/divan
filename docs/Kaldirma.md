@@ -54,6 +54,11 @@ python scripts/kur-hostlar.py --rollback-transaction <upgrade-....json>
 Recovery tekrar kesilirse aynı komut güvenle yeniden çalıştırılabilir. Journal
 kanıtlamadığı bir `@divan` satırını elle silmeyin; önce doctor ve journal
 alanlarıyla sahipliği inceleyin.
+Recovery başlamadan önce journal geçiş sırası da doğrulanır: paket kayıtları
+sabit prefix sırasında olmalı, marketplace oluşturma önceki marketplace
+kaldırma kanıtına dayanmalı ve her recovery intent'i aynı hostun kesin
+`created`/`removed` kaydına bağlanmalıdır. Geçersiz kayıt hiçbir host CLI'ına
+ulaşmaz.
 
 Aynı işlemde `--migrate-legacy` tamamlandıysa rollback önce karantinadaki
 doğrulanmış loose skill'leri ve çakışma yedeklerini işlem öncesi konumlarına

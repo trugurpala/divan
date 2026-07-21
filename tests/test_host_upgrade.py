@@ -275,10 +275,10 @@ class HostUpgradeTests(unittest.TestCase):
         self.assertFalse(runner.state_dir.exists())
 
     def test_one_host_failure_restores_both_prior_versions_and_unrelated_rows(self) -> None:
-        old_versions = {
-            "claude": {package: f"1.0.{index}" for index, package in enumerate(TARGET_VERSIONS)},
-            "codex": {package: f"2.0.{index}" for index, package in enumerate(TARGET_VERSIONS)},
+        shared_versions = {
+            package: f"1.0.{index}" for index, package in enumerate(TARGET_VERSIONS)
         }
+        old_versions = {host: dict(shared_versions) for host in ("claude", "codex")}
         failure = ("codex", "plugin", "add", "ui-pack@divan", "--json")
         with tempfile.TemporaryDirectory(prefix="divan-host-upgrade-") as temporary:
             runner = UpgradeRunner(pathlib.Path(temporary), old_versions=old_versions)

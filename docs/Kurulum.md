@@ -60,6 +60,11 @@ alanında tutar. Önceki marketplace ve paket satırlarını commit, katalog öz
 tam kurulum yolu ve native provenance kanıtlarıyla `before_rows` altında saklar.
 İki host doğrulanmadan işlem tamamlanmış sayılmaz. Aktif bir yükseltme günlüğü
 veya işlem kilidi varken yeni execute/no-op çağrısı başlamaz.
+Kilit dosyası süreçler arası kernel kilidi taşır: süreç kaybında dosya kalsa da
+kilit otomatik serbest kalır; çalışan başka bir süreç ise işlemi kapalı tutar.
+`install-*.json` ve `upgrade-*.json` taramasında okunamayan ya da yapısal olarak
+geçersiz günlükler fail-closed reddedilir; yalnız doğrulanmış terminal kayıtlar
+yeni işleme izin verir.
 Hata veya kesintide yalnız bu işlemin oluşturduğu hedef satırlar kaldırılır;
 kanıtlanmış önceki source/ref/package sürümleri hostların ters sırasında yeniden
 kurulur. Alakasız marketplace ve eklentiler korunur.
@@ -73,6 +78,8 @@ python scripts/kur-hostlar.py --rollback-transaction <upgrade-islem.json>
 
 Aynı recovery komutu idempotenttir; dış komut başarıdan hemen sonra kesilmiş
 olsa bile mevcut durumu yeniden okuyup eksik adımdan güvenle devam eder.
+Eski marketplace geri eklendiğinde source/ref/root/commit/katalog özeti tam
+parmak izi, herhangi bir eski paket kurulmadan önce yeniden doğrulanır.
 
 Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel

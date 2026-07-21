@@ -29,9 +29,7 @@ def persist_record(path: pathlib.Path, record: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
-def begin_mutation(
-    path: pathlib.Path, record: dict[str, Any], pending: dict[str, str]
-) -> None:
+def begin_mutation(path: pathlib.Path, record: dict[str, Any], pending: dict[str, str]) -> None:
     record["pending"] = pending
     persist_record(path, record)
 
@@ -97,9 +95,7 @@ def schema1_created_rows(record: dict[str, Any]) -> tuple[list[Any], list[Any]]:
     return plugin_rows, marketplace_hosts
 
 
-def schema1_owned_plugins(
-    plugin_rows: list[Any], before: dict[str, Any]
-) -> list[dict[str, str]]:
+def schema1_owned_plugins(plugin_rows: list[Any], before: dict[str, Any]) -> list[dict[str, str]]:
     owned: list[dict[str, str]] = []
     for row in plugin_rows:
         if not isinstance(row, dict):
@@ -116,9 +112,7 @@ def schema1_owned_plugins(
     return owned
 
 
-def schema1_owned_marketplaces(
-    marketplace_hosts: list[Any], before: dict[str, Any]
-) -> list[str]:
+def schema1_owned_marketplaces(marketplace_hosts: list[Any], before: dict[str, Any]) -> list[str]:
     owned: list[str] = []
     for host in marketplace_hosts:
         if host not in {"claude", "codex"}:
@@ -145,9 +139,7 @@ class RecoveryIO:
     run: Callable[[list[str]], str]
 
 
-def mark_rollback_incomplete(
-    path: pathlib.Path, record: dict[str, Any], error: BaseException
-) -> None:
+def mark_rollback_incomplete(path: pathlib.Path, record: dict[str, Any], error: BaseException) -> None:
     detail = str(error) or type(error).__name__
     record["status"] = "rollback-incomplete"
     record.setdefault("rollback_errors", []).append(detail)
@@ -287,32 +279,49 @@ def _cleanup_target_host(
 
 
 def _restore_marketplace(
-    path: pathlib.Path,
-    record: dict[str, Any],
-    host: str,
-    io: RecoveryIO,
+    path: pathlib.Path, record: dict[str, Any], host: str, io: RecoveryIO
 ) -> None:
     before = record["before_rows"][host]
     marketplace = io.marketplace_rows(host).get("divan")
     if marketplace is not None:
-        current = _marketplace_fingerprint(host, marketplace, before, io)
-        if current != host_state.marketplace_fingerprint(host, before):
-            raise TransactionError(f"{host}: recovery found a conflicting marketplace")
+        _require_exact_marketplace(host, marketplace, before, io)
+        _clear_restore_intent(path, record, host)
         return
-    _recovery_mutation(
-        path,
-        record,
-        {"phase": "recovery", "action": "restore-marketplace", "host": host},
-        host_adapters.add_marketplace_command(host, before["source"], before["ref"]),
-        io,
-    )
+    record["recovery_pending"] = {
+        "phase": "recovery",
+        "action": "restore-marketplace",
+        "host": host,
+    }
+    persist_record(path, record)
+    io.run(host_adapters.add_marketplace_command(host, before["source"], before["ref"]))
+    marketplace = io.marketplace_rows(host).get("divan")
+    if marketplace is None:
+        raise TransactionError(f"{host}: restored marketplace is missing")
+    _require_exact_marketplace(host, marketplace, before, io)
+    record["recovery_pending"] = None
+    persist_record(path, record)
+
+
+def _require_exact_marketplace(
+    host: str, marketplace: dict[str, Any], before: dict[str, Any], io: RecoveryIO
+) -> None:
+    current = _marketplace_fingerprint(host, marketplace, before, io)
+    if current != host_state.marketplace_fingerprint(host, before):
+        raise TransactionError(f"{host}: recovery found a conflicting marketplace")
+
+
+def _clear_restore_intent(path: pathlib.Path, record: dict[str, Any], host: str) -> None:
+    pending = record.get("recovery_pending")
+    if not isinstance(pending, dict) or pending.get("action") != "restore-marketplace":
+        return
+    if pending.get("host") != host:
+        return
+    record["recovery_pending"] = None
+    persist_record(path, record)
 
 
 def _restore_plugins(
-    path: pathlib.Path,
-    record: dict[str, Any],
-    host: str,
-    io: RecoveryIO,
+    path: pathlib.Path, record: dict[str, Any], host: str, io: RecoveryIO
 ) -> None:
     before_plugins = record["before_rows"][host]["plugins"]
     installed = io.plugin_rows(host)

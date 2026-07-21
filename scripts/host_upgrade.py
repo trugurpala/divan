@@ -77,9 +77,14 @@ def _mutation(
 
 
 def _remove_previous(
-    path: pathlib.Path, record: dict[str, Any], host: str, io: UpgradeIO
+    path: pathlib.Path,
+    record: dict[str, Any],
+    host: str,
+    packages: tuple[str, ...],
+    io: UpgradeIO,
 ) -> None:
-    for selector in record["before_rows"][host]["plugins"]:
+    for package in packages:
+        selector = f"{package}@divan"
         entry = {"kind": "plugin", "host": host, "id": selector}
         pending = {
             "phase": "forward",
@@ -244,7 +249,7 @@ def _apply_host(
 ) -> None:
     if not _matches_target(record["before_rows"][host], record["target"], io):
         _assert_unchanged(host, record["before_rows"][host], io)
-        _remove_previous(path, record, host, io)
+        _remove_previous(path, record, host, packages, io)
         _install_target(path, record, host, options, packages, io)
     record["verified"][host] = _verify_target(host, record, io)
     host_transactions.persist_record(path, record)
@@ -280,7 +285,7 @@ def upgrade(
         return record
     try:
         with host_journal.UpgradeLock(options.state_dir):
-            host_journal.assert_no_active(options.state_dir)
+            host_journal.assert_no_active(options.state_dir, io.normalize_source)
             return _execute(options, packages, versions, io, repository, record)
     except (host_journal.JournalError, host_state.StateError) as exc:
         raise host_transactions.TransactionError(str(exc)) from exc
@@ -304,6 +309,7 @@ def _execute(
     record["before_rows"] = {
         host: _capture_before(host, record["target"]["source"], io) for host in options.hosts
     }
+    host_state.assert_consistent_snapshot_groups(record["before_rows"], io.normalize_source)
     for before in record["before_rows"].values():
         host_state.assert_same_ref_reproducible(before, record["target"], io.normalize_source)
     if all(_matches_target(before, record["target"], io) for before in record["before_rows"].values()):

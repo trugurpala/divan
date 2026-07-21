@@ -15,6 +15,8 @@
     {"id": "host-transactions", "path": "scripts/host_transactions.py", "marker": "recover_upgrade", "replace_version": false},
     {"id": "host-upgrade", "path": "scripts/host_upgrade.py", "marker": "Provenance proof", "replace_version": false},
     {"id": "host-journal", "path": "scripts/host_journal.py", "marker": "Schema-2 journal authority", "replace_version": false},
+    {"id": "host-journal-scan", "path": "scripts/host_journal_scan.py", "marker": "Fail-closed discovery", "replace_version": false},
+    {"id": "host-journal-transitions", "path": "scripts/host_journal_transitions.py", "marker": "Cross-field state-machine", "replace_version": false},
     {"id": "host-state", "path": "scripts/host_state.py", "marker": "Strict, reusable state evidence", "replace_version": false},
     {"id": "legacy-transaction", "path": "scripts/legacy_state.py", "marker": "installed_sha256", "replace_version": false},
     {"id": "repo-hygiene", "path": "scripts/hijyen.py", "marker": "GENERATED_DIRECTORIES", "replace_version": false},
