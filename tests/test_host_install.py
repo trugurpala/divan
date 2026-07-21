@@ -10,6 +10,7 @@ import unittest
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 SPEC = importlib.util.spec_from_file_location("divan_host_install", ROOT / "scripts" / "kur-hostlar.py")
 assert SPEC and SPEC.loader
 HOST_INSTALL = importlib.util.module_from_spec(SPEC)
@@ -181,6 +182,79 @@ class HostInstallTests(unittest.TestCase):
         self.assertEqual(result.stdout, "Türkçe\n")
         self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
         self.assertEqual(run.call_args.kwargs["errors"], "replace")
+
+    def test_host_command_and_json_row_contracts_remain_compatible(self) -> None:
+        runner = FakeRunner()
+
+        claude_marketplaces = HOST_INSTALL._marketplace_rows("claude", runner)
+        codex_marketplaces = HOST_INSTALL._marketplace_rows("codex", runner)
+        claude_plugins = HOST_INSTALL._plugin_rows("claude", runner)
+        codex_plugins = HOST_INSTALL._plugin_rows("codex", runner)
+
+        self.assertEqual(
+            runner.commands,
+            [
+                ("claude", "plugin", "marketplace", "list", "--json"),
+                ("codex", "plugin", "marketplace", "list", "--json"),
+                ("claude", "plugin", "list", "--json"),
+                ("codex", "plugin", "list", "--json"),
+            ],
+        )
+        self.assertIn("claude-plugins-official", claude_marketplaces)
+        self.assertIn("personal", codex_marketplaces)
+        self.assertIn("unrelated@claude-plugins-official", claude_plugins)
+        self.assertIn("vibe-coder-standard@personal", codex_plugins)
+        self.assertEqual(
+            HOST_INSTALL._add_marketplace_command(
+                "claude", "https://github.com/trugurpala/divan.git", "v0.12.0"
+            ),
+            [
+                "claude",
+                "plugin",
+                "marketplace",
+                "add",
+                "https://github.com/trugurpala/divan.git#v0.12.0",
+            ],
+        )
+        self.assertEqual(
+            HOST_INSTALL._add_marketplace_command(
+                "codex", "https://github.com/trugurpala/divan.git", "v0.12.0"
+            ),
+            [
+                "codex",
+                "plugin",
+                "marketplace",
+                "add",
+                "https://github.com/trugurpala/divan.git",
+                "--ref",
+                "v0.12.0",
+                "--json",
+            ],
+        )
+        self.assertEqual(
+            HOST_INSTALL._install_command("claude", "sadrazam"),
+            ["claude", "plugin", "install", "sadrazam@divan", "--scope", "user"],
+        )
+        self.assertEqual(
+            HOST_INSTALL._install_command("codex", "sadrazam"),
+            ["codex", "plugin", "add", "sadrazam@divan", "--json"],
+        )
+        self.assertEqual(
+            HOST_INSTALL._remove_plugin_command("claude", "sadrazam@divan"),
+            [
+                "claude",
+                "plugin",
+                "uninstall",
+                "sadrazam@divan",
+                "--scope",
+                "user",
+                "--yes",
+            ],
+        )
+        self.assertEqual(
+            HOST_INSTALL._remove_plugin_command("codex", "sadrazam@divan"),
+            ["codex", "plugin", "remove", "sadrazam@divan", "--json"],
+        )
 
     def test_dry_run_never_invokes_host_cli(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:

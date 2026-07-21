@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Divan'i Claude ve Codex'e resmi plugin CLI'lariyla islemesel olarak kur."""
-
 from __future__ import annotations
 
 import argparse
@@ -16,12 +14,18 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
+import host_adapters as _host_adapters
+
 PACKAGES = ("sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack")
 Runner = Callable[[list[str]], subprocess.CompletedProcess[str]]
+_add_marketplace_command = _host_adapters.add_marketplace_command
+_install_command = _host_adapters.install_command
+_remove_plugin_command = _host_adapters.remove_plugin_command
+_remove_marketplace_command = _host_adapters.remove_marketplace_command
 
 
 class InstallError(RuntimeError):
-    """Raised after a failed installation has been rolled back."""
+    pass
 
 
 class Options:
@@ -34,6 +38,8 @@ class Options:
         execute: bool,
         migrate_legacy: bool,
         state_dir: pathlib.Path,
+        doctor: bool = False,
+        json_output: bool = False,
     ) -> None:
         self.host = host
         self.source = source
@@ -41,6 +47,7 @@ class Options:
         self.execute = execute
         self.migrate_legacy = migrate_legacy
         self.state_dir = state_dir
+        self.doctor, self.json_output = doctor, json_output
 
 
 def _subprocess_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -81,13 +88,9 @@ def _marketplaces(host: str, runner: Runner) -> set[str]:
 
 
 def _marketplace_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
-    value = _read_json(runner, [host, "plugin", "marketplace", "list", "--json"])
-    rows = value if host == "claude" else value.get("marketplaces", [])
-    return {
-        row["name"]: row
-        for row in rows
-        if isinstance(row, dict) and isinstance(row.get("name"), str)
-    }
+    return _host_adapters.marketplace_rows(
+        host, _read_json(runner, _host_adapters.marketplace_list_command(host))
+    )
 
 
 def _plugins(host: str, runner: Runner) -> set[str]:
@@ -95,14 +98,9 @@ def _plugins(host: str, runner: Runner) -> set[str]:
 
 
 def _plugin_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
-    value = _read_json(runner, [host, "plugin", "list", "--json"])
-    rows = value if host == "claude" else value.get("installed", [])
-    key = "id" if host == "claude" else "pluginId"
-    return {
-        row[key]: row
-        for row in rows
-        if isinstance(row, dict) and isinstance(row.get(key), str)
-    }
+    return _host_adapters.plugin_rows(
+        host, _read_json(runner, _host_adapters.plugin_list_command(host))
+    )
 
 
 def _expected_packages(root: pathlib.Path) -> dict[str, dict[str, Any]]:
@@ -149,8 +147,8 @@ def _verify_marketplace(
     options: Options,
     runner: Runner,
 ) -> None:
-    root_value = row.get("installLocation") if host == "claude" else row.get("root")
-    if not isinstance(root_value, str) or not root_value:
+    root_value = _host_adapters.marketplace_root(host, row)
+    if root_value is None:
         raise InstallError(f"{host}: divan marketplace root is missing")
     if pathlib.Path(options.source).expanduser().exists():
         requested_head = _run(
@@ -238,41 +236,6 @@ def _verify_host(
 
 def _hosts(selection: str) -> tuple[str, ...]:
     return ("claude", "codex") if selection == "both" else (selection,)
-
-
-def _add_marketplace_command(host: str, source: str, ref: str) -> list[str]:
-    local_source = pathlib.Path(source).expanduser().exists()
-    if host == "claude":
-        return [
-            "claude",
-            "plugin",
-            "marketplace",
-            "add",
-            source if local_source else f"{source}#{ref}",
-        ]
-    command = ["codex", "plugin", "marketplace", "add", source]
-    if not local_source:
-        command.extend(["--ref", ref])
-    return [*command, "--json"]
-
-
-def _install_command(host: str, package: str) -> list[str]:
-    selector = f"{package}@divan"
-    if host == "claude":
-        return ["claude", "plugin", "install", selector, "--scope", "user"]
-    return ["codex", "plugin", "add", selector, "--json"]
-
-
-def _remove_plugin_command(host: str, selector: str) -> list[str]:
-    if host == "claude":
-        return ["claude", "plugin", "uninstall", selector, "--scope", "user", "--yes"]
-    return ["codex", "plugin", "remove", selector, "--json"]
-
-
-def _remove_marketplace_command(host: str) -> list[str]:
-    return [host, "plugin", "marketplace", "remove", "divan"] + (
-        ["--json"] if host == "codex" else []
-    )
 
 
 def _planned_commands(options: Options) -> list[list[str]]:
@@ -646,12 +609,31 @@ def install(
         raise InstallError(f"{exc}; transaction: {transaction_path}") from exc
 
 
+def doctor(
+    options: Options,
+    *,
+    runner: Runner = _subprocess_runner,
+    root: pathlib.Path | None = None,
+) -> dict[str, Any]:
+    expected = _expected_packages(root or pathlib.Path(__file__).resolve().parent.parent)
+    return _host_adapters.doctor(
+        options,
+        runner=runner,
+        expected=expected,
+        normalize=_normalize_source,
+        hosts=_hosts(options.host),
+    )
+
+
 def _parse_options(argv: list[str] | None = None) -> Options:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", choices=("claude", "codex", "both"), default="both")
     parser.add_argument("--source", default="https://github.com/trugurpala/divan.git")
     parser.add_argument("--ref", required=True, help="immutable release tag or commit")
-    parser.add_argument("--execute", action="store_true", help="apply the printed plan")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--execute", action="store_true", help="apply the printed plan")
+    mode.add_argument("--doctor", action="store_true", help="inspect host state without changes")
+    parser.add_argument("--json", action="store_true", help="write machine-readable doctor output")
     parser.add_argument("--migrate-legacy", action="store_true")
     parser.add_argument(
         "--state-dir",
@@ -659,6 +641,8 @@ def _parse_options(argv: list[str] | None = None) -> Options:
         default=pathlib.Path.home() / ".divan" / "transactions",
     )
     parsed = parser.parse_args(argv)
+    if parsed.json and not parsed.doctor:
+        parser.error("--json requires --doctor")
     if parsed.migrate_legacy and not parsed.execute:
         parser.error("--migrate-legacy requires --execute")
     if parsed.migrate_legacy and parsed.host == "claude":
@@ -674,7 +658,19 @@ def _parse_options(argv: list[str] | None = None) -> Options:
         execute=parsed.execute,
         migrate_legacy=parsed.migrate_legacy,
         state_dir=parsed.state_dir,
+        doctor=parsed.doctor,
+        json_output=parsed.json,
     )
+
+
+def _print_doctor(record: dict[str, Any], json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(record, ensure_ascii=False))
+        return
+    for host, result in record["hosts"].items():
+        suffix = "" if not result["issues"] else " - " + "; ".join(result["issues"])
+        print(f"{host}: {result['status']}{suffix}")
+    print(f"NEXT: {record['next_command']}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -692,10 +688,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     options = _parse_options(arguments)
     try:
-        record = install(options)
+        record = doctor(options) if options.doctor else install(options)
     except InstallError as exc:
         print(f"HATA: {exc}", file=sys.stderr)
         return 1
+    if options.doctor:
+        _print_doctor(record, options.json_output)
+        return 0
     if record["status"] == "dry-run":
         print("DRY-RUN - no host state changed. Add --execute to apply:")
         for command in record["planned_commands"]:

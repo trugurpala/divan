@@ -14,6 +14,25 @@ python scripts/kur-hostlar.py --host both --ref <release-tag>
 python scripts/kur-hostlar.py --host both --ref <release-tag> --execute
 ```
 
+Kurulumdan önce veya sonra iki hostun durumunu hiçbir şeyi değiştirmeden kontrol
+edin:
+
+```powershell
+python scripts/kur-hostlar.py --doctor --host both --ref <release-tag>
+```
+
+Doctor, CLI erişilebilirliğini, Divan pazarı kaynak/ref bilgisini, beş paketin
+sürümünü ve etkinliğini, pazarsız kalmış paketleri ve tamamlanmamış işlemleri
+raporlar. Otomasyon için yalnız JSON çıktı alın:
+
+```powershell
+python scripts/kur-hostlar.py --doctor --json --host both --ref <release-tag>
+```
+
+Her doctor sonucu bir sonraki kesin komutu yazar; tamamlanmamış işlemde bu,
+ilgili `--rollback-transaction` komutudur. Doctor host CLI'larını veya işlem
+günlüklerini değiştirmez.
+
 Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel
 kaynak olarak verin: `--source <repo-yolu> --ref <40-karakter-SHA>`.
