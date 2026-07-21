@@ -256,6 +256,28 @@ class HostInstallTests(unittest.TestCase):
             ["codex", "plugin", "remove", "sadrazam@divan", "--json"],
         )
 
+    def test_adapter_owns_host_specific_plugin_provenance_and_paths(self) -> None:
+        adapter = HOST_INSTALL._host_adapters
+
+        self.assertTrue(
+            adapter.plugin_provenance_valid(
+                "codex", {"installed": True, "marketplaceName": "divan"}
+            )
+        )
+        self.assertFalse(
+            adapter.plugin_provenance_valid(
+                "codex", {"installed": False, "marketplaceName": "divan"}
+            )
+        )
+        self.assertEqual(
+            adapter.plugin_install_path("claude", {"installPath": "claude-package"}),
+            "claude-package",
+        )
+        self.assertEqual(
+            adapter.plugin_install_path("codex", {"source": {"path": "codex-package"}}),
+            "codex-package",
+        )
+
     def test_dry_run_never_invokes_host_cli(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
             runner = FakeRunner()

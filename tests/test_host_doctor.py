@@ -38,6 +38,7 @@ class DoctorRunner:
         }
         self.marketplace_overrides: dict[str, dict[str, object]] = {}
         self.plugin_overrides: dict[str, dict[str, object]] = {}
+        self.payload_overrides: dict[tuple[str, str], object] = {}
 
     def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
         self.commands.append(tuple(command))
@@ -85,14 +86,18 @@ class DoctorRunner:
                     )
             row.update(self.marketplace_overrides.get(host, {}))
             rows.append(row)
-        output: object = rows if host == "claude" else {"marketplaces": rows}
+        output = self.payload_overrides.get(
+            (host, "marketplaces"), rows if host == "claude" else {"marketplaces": rows}
+        )
         return subprocess.CompletedProcess(command, 0, json.dumps(output), "")
 
     def _plugin_result(
         self, command: list[str], host: str
     ) -> subprocess.CompletedProcess[str]:
         rows = [self._plugin_row(host, plugin) for plugin in sorted(self.plugins[host])]
-        output: object = rows if host == "claude" else {"installed": rows}
+        output = self.payload_overrides.get(
+            (host, "plugins"), rows if host == "claude" else {"installed": rows}
+        )
         return subprocess.CompletedProcess(command, 0, json.dumps(output), "")
 
     def _plugin_row(self, host: str, plugin: str) -> dict[str, object]:
@@ -157,6 +162,30 @@ class HostDoctorTests(unittest.TestCase):
         self.assertEqual(result["issues"], [])
         self.assertEqual(set(result["hosts"]), {"claude", "codex"})
         self.assertTrue(all(host["status"] == "healthy" for host in result["hosts"].values()))
+
+    def test_healthy_local_source_proves_both_checkout_heads_without_url_comparison(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            source = pathlib.Path(temporary) / "source-checkout"
+            source.mkdir()
+            options = self.options(
+                pathlib.Path(temporary) / "state",
+                source=str(source),
+                ref="a" * 40,
+            )
+            result = self.diagnose(DoctorRunner(), options)
+
+        self.assertEqual(result["status"], "healthy")
+        self.assertEqual(result["issues"], [])
+
+    def test_unexpected_codex_json_shapes_are_attention_not_a_crash(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            runner = DoctorRunner()
+            runner.payload_overrides[("codex", "marketplaces")] = []
+            runner.payload_overrides[("codex", "plugins")] = []
+            result = self.diagnose(runner, self.options(pathlib.Path(temporary), host="codex"))
+
+        self.assertEqual(result["status"], "attention")
+        self.assertIn("divan marketplace missing", result["issues"])
 
     def test_version_drift_needs_attention_without_mutation(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
@@ -255,6 +284,49 @@ class HostDoctorTests(unittest.TestCase):
                 "NEXT: python scripts/kur-hostlar.py --host codex --ref v0.12.0",
             ],
         )
+
+    def test_human_cli_prints_an_unfinished_transaction_status(self) -> None:
+        payload = {
+            "status": "attention",
+            "ref": "v0.12.0",
+            "hosts": {"claude": {"status": "healthy", "issues": []}},
+            "issues": ["unfinished transaction"],
+            "next_command": "python scripts/kur-hostlar.py --rollback-transaction C:\\state folder\\run.json",
+        }
+        output = io.StringIO()
+        with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
+            with redirect_stdout(output):
+                self.assertEqual(
+                    HOST_INSTALL.main(["--doctor", "--host", "claude", "--ref", "v0.12.0"]),
+                    0,
+                )
+
+        self.assertEqual(
+            output.getvalue().splitlines(),
+            [
+                "claude: healthy",
+                "STATUS: attention - unfinished transaction",
+                "NEXT: python scripts/kur-hostlar.py --rollback-transaction C:\\state folder\\run.json",
+            ],
+        )
+
+    def test_unfinished_transaction_quotes_a_path_with_spaces(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            state_dir = pathlib.Path(temporary) / "state folder"
+            state_dir.mkdir()
+            transaction = state_dir / "install stuck.json"
+            transaction.write_text('{"schema": 1, "status": "in-progress"}', encoding="utf-8")
+            result = self.diagnose(DoctorRunner(), self.options(state_dir, host="claude"))
+
+        self.assertEqual(
+            result["next_command"],
+            subprocess.list2cmdline(
+                ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)]
+            ),
+        )
+
+    def test_cli_module_description_is_preserved(self) -> None:
+        self.assertIn("Divan", HOST_INSTALL.__doc__ or "")
 
     def test_json_requires_doctor_mode(self) -> None:
         with redirect_stderr(io.StringIO()):

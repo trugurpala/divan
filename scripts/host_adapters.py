@@ -19,13 +19,17 @@ def plugin_list_command(host: str) -> list[str]:
 
 
 def marketplace_rows(host: str, value: Any) -> dict[str, dict[str, Any]]:
-    rows = value if host == "claude" else value.get("marketplaces", [])
-    return _row_index(rows, "name")
+    return _row_index(_host_rows(host, value, "marketplaces"), "name")
 
 
 def plugin_rows(host: str, value: Any) -> dict[str, dict[str, Any]]:
-    rows = value if host == "claude" else value.get("installed", [])
-    return _row_index(rows, "id" if host == "claude" else "pluginId")
+    return _row_index(_host_rows(host, value, "installed"), "id" if host == "claude" else "pluginId")
+
+
+def _host_rows(host: str, value: Any, key: str) -> Any:
+    if host == "claude":
+        return value if isinstance(value, list) else []
+    return value.get(key, []) if isinstance(value, dict) else []
 
 
 def _row_index(rows: Any, key: str) -> dict[str, dict[str, Any]]:
@@ -91,6 +95,18 @@ def marketplace_ref(row: dict[str, Any]) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
+def plugin_provenance_valid(host: str, row: dict[str, Any]) -> bool:
+    return host != "codex" or (
+        row.get("installed") is True and row.get("marketplaceName") == "divan"
+    )
+
+
+def plugin_install_path(host: str, row: dict[str, Any]) -> str | None:
+    source = row.get("source")
+    value = row.get("installPath") if host == "claude" else source.get("path") if isinstance(source, dict) else None
+    return value if isinstance(value, str) else None
+
+
 Runner = Callable[[list[str]], Any]
 Normalizer = Callable[[str], str]
 
@@ -122,11 +138,14 @@ def _marketplace_issues(
 ) -> list[str]:
     issues: list[str] = []
     root = marketplace_root(host, row)
+    if root is None:
+        return ["marketplace root"]
+    local_source = pathlib.Path(options.source).expanduser()
+    if local_source.exists():
+        return _local_marketplace_issues(root, options, runner)
     source = marketplace_source(row)
     if source is None or normalize(source) != normalize(options.source):
         issues.append("marketplace source")
-    if root is None:
-        return [*issues, "marketplace root"]
     remote, remote_error = _doctor_command(
         runner, ["git", "-C", root, "remote", "get-url", "origin"]
     )
@@ -144,6 +163,18 @@ def _marketplace_issues(
     if reference != options.ref:
         issues.append("marketplace ref")
     return issues
+
+
+def _local_marketplace_issues(root: str, options: Any, runner: Runner) -> list[str]:
+    source_head, source_error = _doctor_command(
+        runner, ["git", "-C", options.source, "rev-parse", "HEAD"]
+    )
+    installed_head, installed_error = _doctor_command(
+        runner, ["git", "-C", root, "rev-parse", "HEAD"]
+    )
+    if source_error or installed_error or source_head != options.ref or installed_head != options.ref:
+        return ["marketplace ref"]
+    return []
 
 
 def _plugin_issues(
@@ -167,9 +198,7 @@ def _plugin_issues(
             issues.append(f"{selector} version")
         if row.get("enabled") is not True:
             issues.append(f"{selector} disabled")
-        if host == "codex" and (
-            row.get("installed") is not True or row.get("marketplaceName") != "divan"
-        ):
+        if not plugin_provenance_valid(host, row):
             issues.append(f"{selector} source")
     return issues
 
@@ -253,7 +282,9 @@ def doctor(
     status = "unavailable" if "unavailable" in statuses else "attention" if issues else "healthy"
     next_command = _next_command(options)
     if transaction is not None:
-        next_command = f"python scripts/kur-hostlar.py --rollback-transaction {transaction}"
+        next_command = subprocess.list2cmdline(
+            ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)]
+        )
     return {
         "status": status,
         "ref": options.ref,
@@ -261,3 +292,17 @@ def doctor(
         "issues": issues,
         "next_command": next_command,
     }
+
+
+def print_doctor(record: dict[str, Any], json_output: bool) -> None:
+    if json_output:
+        print(json.dumps(record, ensure_ascii=False))
+        return
+    for host, result in record["hosts"].items():
+        suffix = "" if not result["issues"] else " - " + "; ".join(result["issues"])
+        print(f"{host}: {result['status']}{suffix}")
+    host_issues = {issue for result in record["hosts"].values() for issue in result["issues"]}
+    aggregate = [issue for issue in record["issues"] if issue not in host_issues]
+    if aggregate:
+        print(f"STATUS: {record['status']} - {'; '.join(aggregate)}")
+    print(f"NEXT: {record['next_command']}")

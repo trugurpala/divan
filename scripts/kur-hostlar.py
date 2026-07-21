@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Divan'i Claude ve Codex'e resmi plugin CLI'lariyla islemesel olarak kur."""
 from __future__ import annotations
 
 import argparse
@@ -196,9 +197,7 @@ def _verify_host(
             errors.append(f"{selector} version")
         if row.get("enabled") is not True:
             errors.append(f"{selector} enabled")
-        if host == "codex" and (
-            row.get("installed") is not True or row.get("marketplaceName") != "divan"
-        ):
+        if not _host_adapters.plugin_provenance_valid(host, row):
             errors.append(f"{selector} source")
         supplied_skills = row.get("skills")
         if isinstance(supplied_skills, list) and all(
@@ -206,8 +205,8 @@ def _verify_host(
         ):
             package_skills = set(supplied_skills)
         else:
-            source = row.get("installPath") if host == "claude" else row.get("source", {}).get("path")
-            if not isinstance(source, str):
+            source = _host_adapters.plugin_install_path(host, row)
+            if source is None:
                 errors.append(f"{selector} install path")
                 continue
             package_skills = {
@@ -663,16 +662,6 @@ def _parse_options(argv: list[str] | None = None) -> Options:
     )
 
 
-def _print_doctor(record: dict[str, Any], json_output: bool) -> None:
-    if json_output:
-        print(json.dumps(record, ensure_ascii=False))
-        return
-    for host, result in record["hosts"].items():
-        suffix = "" if not result["issues"] else " - " + "; ".join(result["issues"])
-        print(f"{host}: {result['status']}{suffix}")
-    print(f"NEXT: {record['next_command']}")
-
-
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
     if "--rollback-transaction" in arguments:
@@ -693,7 +682,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"HATA: {exc}", file=sys.stderr)
         return 1
     if options.doctor:
-        _print_doctor(record, options.json_output)
+        _host_adapters.print_doctor(record, options.json_output)
         return 0
     if record["status"] == "dry-run":
         print("DRY-RUN - no host state changed. Add --execute to apply:")
