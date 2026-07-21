@@ -28,7 +28,8 @@ jobs:
           python scripts/v1.py --check
           python scripts/yayin.py --check
           ruff check .
-          mypy scripts
+          python scripts/clean_code.py --check
+          mypy scripts evals
           coverage run -m unittest discover -s tests
           coverage report
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10

@@ -11,7 +11,7 @@ max-complexity = 25
 
 [tool.mypy]
 python_version = "3.11"
-files = ["scripts"]
+files = ["scripts", "evals"]
 check_untyped_defs = true
 ignore_missing_imports = true
 explicit_package_bases = true

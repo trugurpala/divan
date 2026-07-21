@@ -20,6 +20,106 @@ SPEC.loader.exec_module(EVALS)
 
 
 class EvalRunnerTests(unittest.TestCase):
+    def test_read_provenance_characterizes_trimmed_optional_notes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-provenance-") as temporary:
+            path = pathlib.Path(temporary) / "provenance.json"
+            path.write_text(
+                json.dumps(
+                    {
+                        "agent": " Declared runner ",
+                        "agent_version": " 1.2.3 ",
+                        "judge": " Independent judge ",
+                        "judge_version": " 4.5.6 ",
+                        "source_commit": " abcdef ",
+                        "environment": " Windows 11 ",
+                        "notes": " public fixture ",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            provenance = EVALS._read_provenance(path)
+
+        self.assertEqual(
+            provenance,
+            {
+                "agent": "Declared runner",
+                "agent_version": "1.2.3",
+                "judge": "Independent judge",
+                "judge_version": "4.5.6",
+                "source_commit": "abcdef",
+                "environment": "Windows 11",
+                "notes": "public fixture",
+            },
+        )
+
+    def test_bind_provenance_characterizes_non_provider_result(self) -> None:
+        declared = {
+            "agent": "runner",
+            "agent_version": "1",
+            "judge": "judge",
+            "judge_version": "2",
+            "source_commit": "a" * 40,
+            "environment": "declared",
+        }
+        identity = {"source_commit": "a" * 40, "divan_version": "0.12.2"}
+        with (
+            mock.patch.object(EVALS, "_repository_identity", return_value=identity),
+            mock.patch.object(EVALS.platform, "system", return_value="FixtureOS"),
+            mock.patch.object(EVALS.platform, "release", return_value="1"),
+            mock.patch.object(EVALS.platform, "machine", return_value="fixture64"),
+        ):
+            bound = EVALS._bind_provenance(declared, provider_preset=None)
+
+        self.assertEqual(bound["environment"], "FixtureOS; 1; fixture64")
+        self.assertEqual(bound["divan_version"], "0.12.2")
+        self.assertEqual(bound["source_commit"], "a" * 40)
+        self.assertIsNot(bound, declared)
+
+    def test_result_contract_helpers_characterize_public_shapes(self) -> None:
+        sanitized = EVALS._sanitize_public(
+            {"user@example.com": ["token=super-secret", 7, None]}
+        )
+        self.assertEqual(sanitized, {"[REDACTED]": ["[REDACTED]", 7, None]})
+
+        agent = EVALS._validate_agent_result({"output": " answer "})
+        self.assertEqual(agent, {"output": " answer ", "events": [], "changed_files": []})
+
+        judgement = EVALS._validate_judgement(
+            {"winner": "tie", "reasons": ["equal"], "expectation_scores": {"rubric": True}}
+        )
+        self.assertEqual(
+            judgement,
+            {
+                "winner": "tie",
+                "reasons": ["equal"],
+                "expectation_scores": {"rubric": True},
+            },
+        )
+
+        candidate = EVALS._public_candidate(
+            {"output": "answer", "events": ["done"], "changed_files": [], "private": "x"}
+        )
+        self.assertEqual(
+            candidate,
+            {"output": "answer", "events": ["done"], "changed_files": []},
+        )
+
+    def test_write_results_characterizes_public_redaction_and_private_key(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-eval-results-") as temporary:
+            output = pathlib.Path(temporary) / "nested" / "result.json"
+            result = {"output": "token=super-secret"}
+            key = {"mapping": {"A": "skill"}, "secret": "token=private-value"}
+
+            EVALS.write_results(output, result, key)
+
+            public_data = json.loads(output.read_text(encoding="utf-8"))
+            private_data = json.loads(
+                output.with_name("result.key.json").read_text(encoding="utf-8")
+            )
+        self.assertEqual(public_data, {"output": "[REDACTED]"})
+        self.assertEqual(private_data, key)
+
     def test_repository_git_output_is_decoded_as_utf8_not_system_locale(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-eval-encoding-") as temporary:
             root = pathlib.Path(temporary)
