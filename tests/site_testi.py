@@ -27,8 +27,12 @@ with sync_playwright() as p:
         hatalar.append(f"Baslik hatali: {sayfa.title()}")
     if not sayfa.get_by_text("Padişah sensin").is_visible():
         hatalar.append("'Padişah sensin' gorunmuyor")
-    if not sayfa.get_by_text("trugurpala/divan").first.is_visible():
-        hatalar.append("Kurulum komutu gorunmuyor")
+    repo_link = sayfa.get_by_role("link", name="repo", exact=True)
+    if (
+        not repo_link.is_visible()
+        or repo_link.get_attribute("href") != "https://github.com/trugurpala/divan"
+    ):
+        hatalar.append("Gorunur kanonik repo baglantisi yok")
     if not sayfa.get_by_text(f"v{SURUM}").first.is_visible():
         hatalar.append(f"v{SURUM} vitrinde gorunmuyor")
     if sayfa.locator("main#main-content").count() != 1:

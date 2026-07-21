@@ -11,16 +11,16 @@ geçtiğini, bağımsız kullanıcı kanıtının beklediğini gösterir. Ürün
 Önce yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/kur-hostlar.py --host both --ref v0.12.2
-python scripts/kur-hostlar.py --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --host both --ref v0.13.0
+python scripts/kur-hostlar.py --host both --ref v0.13.0 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
-python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
-python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --doctor --host both --ref v0.13.0
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:

@@ -48,6 +48,8 @@
     {"id": "scorecard", "path": ".github/workflows/scorecard.yml", "marker": "ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a", "replace_version": false},
     {"id": "dependency-review", "path": ".github/workflows/dependency-review.yml", "marker": "actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294", "replace_version": false},
     {"id": "release-provenance", "path": ".github/workflows/release.yml", "marker": "actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373", "replace_version": false},
+    {"id": "social-preview", "path": "docs/assets/divan-social-preview.png", "binary": {"format": "png", "width": 1280, "height": 640, "max_bytes": 1000000}},
+    {"id": "v013-local-evidence", "path": ".divan/evidence/teftis-20260721-v013-community-standards.md", "marker": "# v0.13.0 local release-candidate evidence", "replace_version": false},
     {"id": "wiki-home", "path": "docs/Home.md", "marker": "# Divan Wiki · v{version}", "replace_version": true, "version_patterns": ["# Divan Wiki · v{version}", "**Güncel durum:** v{version}"]},
     {"id": "wiki-quick-start", "path": "docs/Hizli-Baslangic.md", "marker": "Beş dakikalık güvenli yolu", "replace_version": true, "version_patterns": ["--ref v{version}"]},
     {"id": "wiki-uninstall", "path": "docs/Kaldirma.md", "marker": "Kurucunun sahiplik denetimli yolu", "replace_version": false},

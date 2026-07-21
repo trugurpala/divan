@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.12.2-1f6feb)
+![version](https://img.shields.io/badge/version-0.13.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
 plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.12.2 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Sürüm:** v0.13.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -60,8 +60,8 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 Önce değişiklik yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
-python scripts/kur-hostlar.py --host both --ref v0.12.2
-python scripts/kur-hostlar.py --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --host both --ref v0.13.0
+python scripts/kur-hostlar.py --host both --ref v0.13.0 --execute
 ```
 
 Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
@@ -75,9 +75,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/kur-hostlar.py --doctor --host both --ref v0.12.2
-python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2
-python scripts/kur-hostlar.py --upgrade --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --doctor --host both --ref v0.13.0
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0 --execute
 python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

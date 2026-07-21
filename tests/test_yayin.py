@@ -15,6 +15,46 @@ SPEC.loader.exec_module(YAYIN)
 
 
 class PublicationTests(unittest.TestCase):
+    def test_social_preview_is_release_tracked_with_exact_png_contract(self) -> None:
+        manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+        surface = next(
+            row
+            for row in manifest["public_surfaces"]
+            if row["id"] == "social-preview"
+        )
+        self.assertEqual(surface["path"], "docs/assets/divan-social-preview.png")
+        self.assertEqual(
+            surface["binary"],
+            {"format": "png", "width": 1280, "height": 640, "max_bytes": 1_000_000},
+        )
+        YAYIN._validate_binary_surface(ROOT / surface["path"], surface["binary"])
+
+    def test_png_contract_rejects_wrong_dimensions_and_oversize(self) -> None:
+        valid_header = (
+            b"\x89PNG\r\n\x1a\n"
+            + b"\x00\x00\x00\rIHDR"
+            + (1280).to_bytes(4, "big")
+            + (640).to_bytes(4, "big")
+            + b"\x08\x02\x00\x00\x00"
+        )
+        with tempfile.TemporaryDirectory(prefix="divan-preview-") as temporary:
+            preview = pathlib.Path(temporary) / "preview.png"
+            preview.write_bytes(valid_header)
+            YAYIN._validate_binary_surface(
+                preview,
+                {"format": "png", "width": 1280, "height": 640, "max_bytes": 100},
+            )
+            with self.assertRaisesRegex(ValueError, "boyutlar"):
+                YAYIN._validate_binary_surface(
+                    preview,
+                    {"format": "png", "width": 1200, "height": 640, "max_bytes": 100},
+                )
+            with self.assertRaisesRegex(ValueError, "dosya boyutu"):
+                YAYIN._validate_binary_surface(
+                    preview,
+                    {"format": "png", "width": 1280, "height": 640, "max_bytes": 10},
+                )
+
     def test_failed_rollback_reports_and_retains_recovery_backup(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-rollback-backup-") as temporary:
             root = pathlib.Path(temporary)
@@ -90,6 +130,7 @@ class PublicationTests(unittest.TestCase):
                 "registry/standard-exceptions.json",
                 "docs/Topluluk-Standartlari.md",
                 "scripts/validate.py",
+                ".divan/evidence/teftis-20260721-v013-community-standards.md",
             }.issubset(paths)
         )
         real_evidence = next(

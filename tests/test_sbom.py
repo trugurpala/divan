@@ -241,7 +241,8 @@ class SbomTests(unittest.TestCase):
             self.assertTrue(payload.endswith(b"\n"))
             self.assertIn("Mühürdar".encode(), payload)
             decoded = json.loads(payload.decode("utf-8"))
-            expected = load_sbom().build_spdx(ROOT, "0.12.2", SOURCE_COMMIT)
+            version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+            expected = load_sbom().build_spdx(ROOT, version, SOURCE_COMMIT)
             self.assertEqual(decoded, expected)
             self.assertEqual(
                 payload,

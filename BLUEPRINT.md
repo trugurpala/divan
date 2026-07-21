@@ -84,6 +84,13 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   yollarını yalnız silme hatası anında ve junction/symlink reddiyle düzelten
   dayanıklı silme ile regresyon testleri.
 
+- **v0.13.0 ✓** product scope ready: ten machine-enforced community standards,
+  read-only dual-host doctor, provenance-gated transactional upgrade, Clean
+  Code debt ratchet, SPDX/Scorecard/dependency-review/attestation controls, and
+  synchronized support/contribution/public surfaces. This check marks local
+  scope completion only; PR/main, repository rules, public release, and global
+  host delivery remain separate pending states.
+
 ### Sıradaki ürün kanıtı — v1 kabulü
 
 1. ✓ v0.12.0 birleştirme/tag/Release/Pages/Wiki ve global kurulum kanıtı.
@@ -108,6 +115,12 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-21: v0.13.0 local release candidate prepared after 212 tests (2
+  platform-specific skips), Ruff, mypy, Clean Code, actionlint 1.7.10,
+  skills-ref 0.1.1 validation of 41 skills, and Claude Code 2.1.212 validation
+  of the marketplace plus five packages. The 1280x640 social preview is
+  release-tracked and under 1 MB. No PR/main/ruleset/tag/Release/global-host
+  claim is made yet; v1 remains 7/8.
 - 2026-07-20: v0.12.1 sonrası yeni worktree'de Windows salt-okunur dizin
   özniteliği `shutil.rmtree` son adımını engelledi. Hata gerçek ortamda
   üretildi. İlk tüm-ağaç yaklaşımının junction üzerinden kök dışına çıkabildiği
@@ -252,7 +265,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Proje sahibi dışındaki bir kullanıcının sabit v0.12.0 release'iyle tekrar
-üretilebilir kurulum ve görev kanıtını
-`.github/ISSUE_TEMPLATE/kabul-kaniti.yml` üzerinden al. Bu bağımsız kanıt
-gelmeden v1.0 etiketi koyma.
+Run an independent whole-branch review, fix every Critical and Important
+finding, then deliver v0.13.0 through a green PR/main/public-release chain.
+Only after main checks are observed may the main ruleset be applied. Keep v1 at
+7/8 until a non-owner submits reproducible acceptance evidence.

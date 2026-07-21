@@ -1,14 +1,23 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-20
+Son güncelleme: 2026-07-21
 
 ## Güncel hedef
 
-v0.12.2 Windows salt-okunur cache düzeltmesi ve global Claude+Codex kurulumu
-tamamlandı. Sıradaki kesin ürün kapısı, v1 için dışarıda bekleyen bağımsız
-kullanıcı kabul kanıtını `registry/v1-gates.json` sözleşmesine uygun toplamaktır.
+v0.13.0 local release candidate is prepared. Product scope and local gates are
+complete, but PR/main, repository settings, public release, attestations, and
+global Claude+Codex upgrade are deliberately not claimed yet. v1 remains 7/8.
 
 ## Yapıldı
+
+- v0.13.0 introduced DCS-001..DCS-010 as a machine-readable contract, a Clean
+  Code debt ratchet, dual-host doctor/transactional upgrade, SPDX supply-chain
+  evidence, and synchronized community/public documentation.
+- Baseline integration passed 212 tests with 2 platform-specific Windows skips;
+  Ruff, mypy, Clean Code, actionlint 1.7.10, 41 skills via skills-ref 0.1.1, and
+  the Claude marketplace plus five packages via Claude Code 2.1.212 passed.
+- The generated 1280x640 RGB social preview is 908422 bytes and is now checked
+  by the release manifest without adding an image runtime dependency.
 
 - PR #21 bütün CI kapılarından geçti ve `c226dccf` ile `main`e birleşti.
   Release workflow `29705195263`; tag/Release, ZIP+SHA-256, Pages, Wiki ve canlı
@@ -215,5 +224,6 @@ kullanıcı kabul kanıtını `registry/v1-gates.json` sözleşmesine uygun topl
 
 ## Sıradaki kesin adım
 
-AGENTS.md'deki tam teftiş zincirini Ruff, mypy ve coverage ile çalıştır; kanıtı
-`.divan/evidence/` altına yazıp bağımsız code review sonrası PR'ı `main`e taşı.
+Obtain a clean independent review of `origin/main..HEAD`, then push a ready PR
+and wait for every workflow. Merge only when green; observe exact main check
+names before applying the recovery-bypass ruleset and continuing public release.

@@ -15,6 +15,33 @@ import tempfile
 KOK = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = pathlib.Path("release-manifest.json")
 SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def _validate_binary_surface(path: pathlib.Path, contract: object) -> None:
+    if not isinstance(contract, dict) or contract.get("format") != "png":
+        raise ValueError(f"{path}: only a png binary contract is supported")
+    width = contract.get("width")
+    height = contract.get("height")
+    max_bytes = contract.get("max_bytes")
+    values = (width, height, max_bytes)
+    if not all(
+        isinstance(value, int) and not isinstance(value, bool) and value > 0
+        for value in values
+    ):
+        raise ValueError(f"{path}: width, height and max_bytes must be positive integers")
+    assert isinstance(width, int) and isinstance(height, int) and isinstance(max_bytes, int)
+    payload = path.read_bytes()
+    if len(payload) > max_bytes:
+        raise ValueError(f"{path}: dosya boyutu {len(payload)} bayt; limit {max_bytes}")
+    if len(payload) < 24 or payload[:8] != PNG_SIGNATURE or payload[12:16] != b"IHDR":
+        raise ValueError(f"{path}: valid PNG IHDR header is missing")
+    actual = (
+        int.from_bytes(payload[16:20], "big"),
+        int.from_bytes(payload[20:24], "big"),
+    )
+    if actual != (width, height):
+        raise ValueError(f"{path}: png boyutlar {actual[0]}x{actual[1]}; expected {width}x{height}")
 
 
 def manifesti_oku(kok: pathlib.Path = KOK) -> dict:
@@ -64,36 +91,52 @@ def release_notu(kok: pathlib.Path = KOK) -> str:
     )
 
 
+def _surface_identity(surface: object, identities: set[str]) -> tuple[str, str]:
+    if not isinstance(surface, dict):
+        raise ValueError("public surface must be an object")
+    identity = surface.get("id")
+    relative = surface.get("path")
+    if not all(isinstance(value, str) and value for value in (identity, relative)):
+        raise ValueError(f"public surface is missing id/path: {surface}")
+    assert isinstance(identity, str) and isinstance(relative, str)
+    if identity in identities:
+        raise ValueError(f"duplicate public surface id: {identity}")
+    identities.add(identity)
+    return identity, relative
+
+
+def _validate_surface_content(
+    root: pathlib.Path, surface: dict, identity: str, relative: str, version: str
+) -> None:
+    path = (root / relative).resolve()
+    if not path.is_relative_to(root.resolve()) or not path.is_file():
+        raise ValueError(f"{identity}: file is missing: {relative}")
+    marker = surface.get("marker")
+    binary = surface.get("binary")
+    if binary is not None:
+        if marker is not None or surface.get("replace_version"):
+            raise ValueError(f"{identity}: binary surface cannot use marker/replace_version")
+        _validate_binary_surface(path, binary)
+        return
+    if not isinstance(marker, str) or not marker:
+        raise ValueError(f"{identity}: marker is missing")
+    expected = marker.format(version=version)
+    if expected not in path.read_text(encoding="utf-8"):
+        raise ValueError(f"{identity}: expected marker is missing: {expected}")
+
+
 def denetle(kok: pathlib.Path = KOK) -> dict:
     veri = manifesti_oku(kok)
     version = surum(kok)
     hatalar: list[str] = []
     kimlikler: set[str] = set()
     for yuzey in veri["public_surfaces"]:
-        if not isinstance(yuzey, dict):
-            hatalar.append("public surface girdisi nesne olmalı")
-            continue
-        kimlik = yuzey.get("id")
-        yol_metni = yuzey.get("path")
-        marker = yuzey.get("marker")
-        if not all(
-            isinstance(x, str) and bool(x) for x in (kimlik, yol_metni, marker)
-        ):
-            hatalar.append(f"eksik public surface alanı: {yuzey}")
-            continue
-        assert isinstance(kimlik, str)
-        assert isinstance(yol_metni, str)
-        assert isinstance(marker, str)
-        if kimlik in kimlikler:
-            hatalar.append(f"yinelenen public surface id: {kimlik}")
-        kimlikler.add(kimlik)
-        yol = (kok / yol_metni).resolve()
-        if not yol.is_relative_to(kok.resolve()) or not yol.is_file():
-            hatalar.append(f"{kimlik}: dosya bulunamadı: {yol_metni}")
-            continue
-        beklenen = marker.format(version=version)
-        if beklenen not in yol.read_text(encoding="utf-8"):
-            hatalar.append(f"{kimlik}: beklenen işaret yok: {beklenen}")
+        try:
+            kimlik, yol_metni = _surface_identity(yuzey, kimlikler)
+            assert isinstance(yuzey, dict)
+            _validate_surface_content(kok, yuzey, kimlik, yol_metni, version)
+        except ValueError as hata:
+            hatalar.append(str(hata))
 
     try:
         changelog_bolumu(kok, version)
