@@ -5,10 +5,10 @@
     "email": "trugurpala@users.noreply.github.com"
   },
   "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam, planlama, TDD, debugging, UI/UX, React ve zanaat paketleri.",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "metadata": {
     "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam (uctan-uca orkestrator) + planlama, TDD, debugging, UI/UX ve React paketleri.",
-    "version": "0.12.2"
+    "version": "0.13.0"
   },
   "plugins": [
     {

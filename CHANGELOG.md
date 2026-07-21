@@ -10,6 +10,51 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.13.0] - 2026-07-21
+
+### Added
+
+- A machine-readable registry for DCS-001..DCS-010, narrow expiring
+  exceptions, deterministic documentation, and a CI enforcement gate.
+- Read-only `--doctor`, dry-run-first `--upgrade`, and ownership-checked
+  interrupted-transaction recovery for Claude Code/Desktop Code and Codex.
+- Deterministic SPDX 2.3 SBOM generation, OpenSSF Scorecard, pull-request
+  dependency review, and release provenance for both ZIP and SBOM assets.
+- Bilingual contribution guidance, request-specific support routes, and a
+  version-controlled 1280x640 Mühürdar social preview under 1 MB.
+
+### Changed
+
+- New code is ratcheted at McCabe 10, 50 lines per function, and 400 lines per
+  module. The enforced branch-coverage floor is the recorded 64% baseline.
+- The legacy-debt registry must exactly match current violations; growth is
+  rejected and shrinkage/removal requires the same reviewed baseline refresh.
+- Host adapters, transaction journals, lock/transition validation, eval
+  provenance, and result contracts moved into smaller stdlib modules.
+- README, Wiki sources, Pages, install, upgrade, rollback, uninstall, and
+  contribution surfaces now share one five-minute first-success path.
+
+### Security
+
+- Upgrade refuses host mutation until it proves a clean pinned source commit,
+  catalog digest, full package fingerprints, and a single active transaction.
+- Durable intent is written before every external mutation. Verification and
+  rollback touch only transaction-owned Divan rows and reject foreign state.
+- GitHub Actions remain full-SHA pinned, narrowly permissioned, and release
+  assets are never overwritten.
+- Social-preview validation traverses every PNG chunk and requires valid CRCs,
+  one exact IHDR, at least one IDAT, and a terminal empty IEND.
+
+### Verified
+
+- Local pre-release integration passed 223 tests (2 platform-specific Windows
+  skips), Ruff, mypy, Clean Code, actionlint 1.7.10, skills-ref 0.1.1 for all
+  41 skills, and Claude Code 2.1.212 for the marketplace and five packages.
+- This is local release-candidate evidence. PR/main, repository rules, Pages,
+  Wiki, tag, GitHub Release, attestations, and global v0.13.0 host upgrade are
+  separate delivery states that remain pending.
+- v1 remains 7/8 because no independent non-owner acceptance evidence exists.
+
 ## [0.12.2] - 2026-07-20
 
 ### Fixed
@@ -315,6 +360,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.13.0]: https://github.com/trugurpala/divan/releases/tag/v0.13.0
 [0.11.0]: https://github.com/trugurpala/divan/releases/tag/v0.11.0
 [0.10.3]: https://github.com/trugurpala/divan/tree/main
 [0.10.2]: https://github.com/trugurpala/divan/tree/main

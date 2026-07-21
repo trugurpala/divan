@@ -6,7 +6,9 @@
     {"repository": "obra/superpowers", "license": "MIT", "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99"},
     {"repository": "anthropics/skills", "license": "Apache-2.0", "reviewed_head": "fa0fa64bdc967915dc8399e803be67759e1e62b8"},
     {"repository": "vercel-labs/agent-skills", "license": "MIT", "reviewed_head": "f8a72b9603728bb92a217a879b7e62e43ad76c81"},
-    {"repository": "nextlevelbuilder/ui-ux-pro-max-skill", "license": "MIT", "reviewed_head": "f8ac5e1266dba8354ea96e19994d9f4345e7ec31"}
+    {"repository": "nextlevelbuilder/ui-ux-pro-max-skill", "license": "MIT", "reviewed_head": "f8ac5e1266dba8354ea96e19994d9f4345e7ec31"},
+    {"repository": "PatrickJS/awesome-cursorrules", "license": "CC0-1.0", "reviewed_head": "b044f956f021b6e8877f16781bcfc466a6a120e9"},
+    {"repository": "muratcankoylan/Agent-Skills-for-Context-Engineering", "license": "MIT", "reviewed_head": "c578e85e40fe2bda7c1fec91ff64cf5285434934"}
   ],
   "reviews": [
     {

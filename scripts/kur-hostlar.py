@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Divan'i Claude ve Codex'e resmi plugin CLI'lariyla islemesel olarak kur."""
-
 from __future__ import annotations
 
 import argparse
@@ -16,12 +15,29 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
+import host_adapters as _host_adapters
+import host_controller as _host_controller
+import host_install_journal as _host_install_journal
+import host_journal as _host_journal
+import host_transactions as _host_transactions
+import host_upgrade as _host_upgrade
+
 PACKAGES = ("sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack")
 Runner = Callable[[list[str]], subprocess.CompletedProcess[str]]
+_add_marketplace_command = _host_adapters.add_marketplace_command
+_install_command = _host_adapters.install_command
+_remove_plugin_command = _host_adapters.remove_plugin_command
+_remove_marketplace_command = _host_adapters.remove_marketplace_command
+_persist_record = _host_transactions.persist_record
+_begin_mutation = _host_transactions.begin_mutation
+_finish_mutation = _host_transactions.finish_mutation
+_load_recoverable_transaction = _host_transactions.load_recoverable_transaction
+_created_rows = _host_transactions.schema1_created_rows
+_owned_plugins = _host_transactions.schema1_owned_plugins
+_owned_marketplaces = _host_transactions.schema1_owned_marketplaces
 
 
-class InstallError(RuntimeError):
-    """Raised after a failed installation has been rolled back."""
+InstallError = _host_transactions.TransactionError
 
 
 class Options:
@@ -34,6 +50,9 @@ class Options:
         execute: bool,
         migrate_legacy: bool,
         state_dir: pathlib.Path,
+        doctor: bool = False,
+        json_output: bool = False,
+        upgrade: bool = False,
     ) -> None:
         self.host = host
         self.source = source
@@ -41,6 +60,9 @@ class Options:
         self.execute = execute
         self.migrate_legacy = migrate_legacy
         self.state_dir = state_dir
+        self.doctor, self.json_output = doctor, json_output
+        self.upgrade = upgrade
+        self.hosts = ("claude", "codex") if host == "both" else (host,)
 
 
 def _subprocess_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
@@ -81,13 +103,9 @@ def _marketplaces(host: str, runner: Runner) -> set[str]:
 
 
 def _marketplace_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
-    value = _read_json(runner, [host, "plugin", "marketplace", "list", "--json"])
-    rows = value if host == "claude" else value.get("marketplaces", [])
-    return {
-        row["name"]: row
-        for row in rows
-        if isinstance(row, dict) and isinstance(row.get("name"), str)
-    }
+    return _host_adapters.marketplace_rows(
+        host, _read_json(runner, _host_adapters.marketplace_list_command(host))
+    )
 
 
 def _plugins(host: str, runner: Runner) -> set[str]:
@@ -95,14 +113,9 @@ def _plugins(host: str, runner: Runner) -> set[str]:
 
 
 def _plugin_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
-    value = _read_json(runner, [host, "plugin", "list", "--json"])
-    rows = value if host == "claude" else value.get("installed", [])
-    key = "id" if host == "claude" else "pluginId"
-    return {
-        row[key]: row
-        for row in rows
-        if isinstance(row, dict) and isinstance(row.get(key), str)
-    }
+    return _host_adapters.plugin_rows(
+        host, _read_json(runner, _host_adapters.plugin_list_command(host))
+    )
 
 
 def _expected_packages(root: pathlib.Path) -> dict[str, dict[str, Any]]:
@@ -149,8 +162,8 @@ def _verify_marketplace(
     options: Options,
     runner: Runner,
 ) -> None:
-    root_value = row.get("installLocation") if host == "claude" else row.get("root")
-    if not isinstance(root_value, str) or not root_value:
+    root_value = _host_adapters.marketplace_root(host, row)
+    if root_value is None:
         raise InstallError(f"{host}: divan marketplace root is missing")
     if pathlib.Path(options.source).expanduser().exists():
         requested_head = _run(
@@ -198,9 +211,7 @@ def _verify_host(
             errors.append(f"{selector} version")
         if row.get("enabled") is not True:
             errors.append(f"{selector} enabled")
-        if host == "codex" and (
-            row.get("installed") is not True or row.get("marketplaceName") != "divan"
-        ):
+        if not _host_adapters.plugin_provenance_valid(host, row):
             errors.append(f"{selector} source")
         supplied_skills = row.get("skills")
         if isinstance(supplied_skills, list) and all(
@@ -208,8 +219,8 @@ def _verify_host(
         ):
             package_skills = set(supplied_skills)
         else:
-            source = row.get("installPath") if host == "claude" else row.get("source", {}).get("path")
-            if not isinstance(source, str):
+            source = _host_adapters.plugin_install_path(host, row)
+            if source is None:
                 errors.append(f"{selector} install path")
                 continue
             package_skills = {
@@ -240,67 +251,12 @@ def _hosts(selection: str) -> tuple[str, ...]:
     return ("claude", "codex") if selection == "both" else (selection,)
 
 
-def _add_marketplace_command(host: str, source: str, ref: str) -> list[str]:
-    local_source = pathlib.Path(source).expanduser().exists()
-    if host == "claude":
-        return [
-            "claude",
-            "plugin",
-            "marketplace",
-            "add",
-            source if local_source else f"{source}#{ref}",
-        ]
-    command = ["codex", "plugin", "marketplace", "add", source]
-    if not local_source:
-        command.extend(["--ref", ref])
-    return [*command, "--json"]
-
-
-def _install_command(host: str, package: str) -> list[str]:
-    selector = f"{package}@divan"
-    if host == "claude":
-        return ["claude", "plugin", "install", selector, "--scope", "user"]
-    return ["codex", "plugin", "add", selector, "--json"]
-
-
-def _remove_plugin_command(host: str, selector: str) -> list[str]:
-    if host == "claude":
-        return ["claude", "plugin", "uninstall", selector, "--scope", "user", "--yes"]
-    return ["codex", "plugin", "remove", selector, "--json"]
-
-
-def _remove_marketplace_command(host: str) -> list[str]:
-    return [host, "plugin", "marketplace", "remove", "divan"] + (
-        ["--json"] if host == "codex" else []
-    )
-
-
 def _planned_commands(options: Options) -> list[list[str]]:
     commands: list[list[str]] = []
     for host in _hosts(options.host):
         commands.append(_add_marketplace_command(host, options.source, options.ref))
         commands.extend(_install_command(host, package) for package in PACKAGES)
     return commands
-
-
-def _persist_record(path: pathlib.Path, record: dict[str, Any]) -> None:
-    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
-    temporary.write_text(
-        json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
-    os.replace(temporary, path)
-
-
-def _begin_mutation(
-    path: pathlib.Path, record: dict[str, Any], pending: dict[str, str]
-) -> None:
-    record["pending"] = pending
-    _persist_record(path, record)
-
-
-def _finish_mutation(path: pathlib.Path, record: dict[str, Any]) -> None:
-    record["pending"] = None
-    _persist_record(path, record)
 
 
 def _migrate_legacy(
@@ -338,56 +294,23 @@ def _migrate_legacy(
     return {"command": command, "result": result}
 
 
-def _load_recoverable_transaction(transaction_path: pathlib.Path) -> dict[str, Any]:
-    try:
-        record = json.loads(transaction_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise InstallError(f"transaction journal is unreadable: {transaction_path}") from exc
-    if not isinstance(record, dict) or record.get("schema") != 1:
-        raise InstallError("unsupported transaction journal schema")
-    if record.get("status") not in {
-        "in-progress",
-        "rollback-incomplete",
-        "recovering",
-        "verified",
-    }:
-        raise InstallError(f"transaction is not recoverable: {record.get('status')}")
-
-    before = record.get("before")
-    created = record.get("created")
-    if not isinstance(before, dict) or not isinstance(created, dict):
-        raise InstallError("transaction journal lacks ownership state")
-    return record
-
-
 def _legacy_journal(record: dict[str, Any]) -> tuple[bool, str | None]:
     pending = record.get("pending")
-    legacy_journal_text: str | None = None
-    legacy_migration_recorded = False
-    if isinstance(pending, dict) and pending.get("kind") in {
-        "legacy-migration",
-        "recovery-legacy",
-    }:
-        legacy_migration_recorded = True
-        pending_journal = pending.get("journal")
-        if isinstance(pending_journal, str):
-            legacy_journal_text = pending_journal
-    if legacy_journal_text is None:
-        completed_migration = record.get("legacy_migration")
-        if isinstance(completed_migration, dict):
-            migration_result = completed_migration.get("result")
-            if isinstance(migration_result, dict):
-                legacy_migration_recorded = True
-                completed_journal = migration_result.get("journal")
-                if isinstance(completed_journal, str):
-                    legacy_journal_text = completed_journal
-    return legacy_migration_recorded, legacy_journal_text
+    recorded = isinstance(pending, dict) and pending.get("action") in {
+        "legacy-migration", "recover-legacy",
+    }
+    journal = pending.get("journal") if isinstance(pending, dict) and recorded else None
+    completed = record.get("legacy_migration")
+    if not isinstance(journal, str) and isinstance(completed, dict):
+        result = completed.get("result")
+        if isinstance(result, dict):
+            recorded = True
+            journal = result.get("journal")
+    return recorded, journal if isinstance(journal, str) else None
 
 
 def _recover_recorded_legacy(
-    transaction_path: pathlib.Path,
-    record: dict[str, Any],
-    runner: Runner,
+    transaction_path: pathlib.Path, record: dict[str, Any], runner: Runner
 ) -> None:
     recorded, journal_text = _legacy_journal(record)
     if not recorded:
@@ -400,126 +323,87 @@ def _recover_recorded_legacy(
     _begin_mutation(
         transaction_path,
         record,
-        {"kind": "recovery-legacy", "host": "codex", "journal": journal_text},
+        _host_install_journal.intent("recovery", "recover-legacy", "codex", journal=journal_text),
     )
-    _run(
-        runner,
-        [
-            sys.executable,
-            str(pathlib.Path(__file__).with_name("legacy_state.py")),
-            "recover",
-            "--journal",
-            journal_text,
-        ],
-    )
+    command = [
+        sys.executable,
+        str(pathlib.Path(__file__).with_name("legacy_state.py")),
+        "recover",
+        "--journal",
+        journal_text,
+    ]
+    _run(runner, command)
     _finish_mutation(transaction_path, record)
 
 
-def _created_rows(record: dict[str, Any]) -> tuple[list[Any], list[Any]]:
-    created = record["created"]
-    plugin_rows = list(created.get("plugins", []))
-    marketplace_hosts = list(created.get("marketplaces", []))
-    pending = record.get("pending")
-    if isinstance(pending, dict) and pending.get("kind") in {
-        "plugin",
-        "rollback-plugin",
-        "recovery-plugin",
-    }:
-        plugin_rows.append({"host": pending.get("host"), "id": pending.get("id")})
-    elif isinstance(pending, dict) and pending.get("kind") in {
-        "marketplace",
-        "rollback-marketplace",
-        "recovery-marketplace",
-    }:
-        marketplace_hosts.append(pending.get("host"))
-    return plugin_rows, marketplace_hosts
-
-
-def _owned_plugins(plugin_rows: list[Any], before: dict[str, Any]) -> list[dict[str, str]]:
-    owned_plugins: list[dict[str, str]] = []
-    for row in plugin_rows:
-        if not isinstance(row, dict):
-            raise InstallError("transaction contains an invalid plugin entry")
-        host, selector = row.get("host"), row.get("id")
-        if host not in {"claude", "codex"} or not isinstance(selector, str):
-            raise InstallError("transaction contains an invalid plugin identity")
-        if not selector.endswith("@divan"):
-            raise InstallError("transaction refuses to remove a non-Divan plugin")
-        host_before = before.get(host, {})
-        if selector in host_before.get("plugins", []):
-            raise InstallError(f"transaction does not own pre-existing plugin: {selector}")
-        if row not in owned_plugins:
-            owned_plugins.append({"host": host, "id": selector})
-    return owned_plugins
-
-
-def _owned_marketplaces(marketplace_hosts: list[Any], before: dict[str, Any]) -> list[str]:
-    owned_marketplaces: list[str] = []
-    for host in marketplace_hosts:
-        if host not in {"claude", "codex"}:
-            raise InstallError("transaction contains an invalid marketplace host")
-        host_before = before.get(host, {})
-        if "divan" in host_before.get("marketplaces", []):
-            raise InstallError(f"transaction does not own pre-existing marketplace: {host}")
-        if host not in owned_marketplaces:
-            owned_marketplaces.append(host)
-    return owned_marketplaces
-
-
-def _recover_owned_entries(
+def _rollback_install_transaction(
     transaction_path: pathlib.Path,
     record: dict[str, Any],
-    owned_plugins: list[dict[str, str]],
-    owned_marketplaces: list[str],
     runner: Runner,
-) -> None:
-    for plugin in reversed(owned_plugins):
-        if plugin["id"] not in _plugins(plugin["host"], runner):
-            continue
-        _begin_mutation(transaction_path, record, {"kind": "recovery-plugin", **plugin})
-        _run(runner, _remove_plugin_command(plugin["host"], plugin["id"]))
-        _finish_mutation(transaction_path, record)
-    for host in reversed(owned_marketplaces):
-        if "divan" not in _marketplaces(host, runner):
-            continue
-        _begin_mutation(
-            transaction_path,
-            record,
-            {"kind": "recovery-marketplace", "host": host},
+) -> dict[str, Any]:
+    try:
+        _host_install_journal.validate(record, transaction_path)
+    except _host_install_journal.InstallJournalError as exc:
+        raise InstallError(str(exc)) from exc
+    _recover_recorded_legacy(transaction_path, record, runner)
+    try:
+        return _host_install_journal.recover_native(
+            transaction_path, record, _install_io(runner)
         )
-        _run(runner, _remove_marketplace_command(host))
-        _finish_mutation(transaction_path, record)
+    except _host_install_journal.InstallJournalError as exc:
+        raise InstallError(str(exc)) from exc
+
+
+def _install_io(runner: Runner) -> _host_install_journal.InstallIO:
+    return _host_install_journal.InstallIO(
+        marketplace_rows=lambda host: _marketplace_rows(host, runner),
+        plugin_rows=lambda host: _plugin_rows(host, runner),
+        run=lambda command: _run(runner, command),
+        normalize_source=_normalize_source,
+    )
 
 
 def rollback_transaction(
     transaction_path: pathlib.Path,
     *,
     runner: Runner = _subprocess_runner,
+    _locked: bool = False,
 ) -> dict[str, Any]:
-    """Recover an interrupted transaction using only entries absent from pre-state."""
-    record = _load_recoverable_transaction(transaction_path)
-    before = record["before"]
-    _recover_recorded_legacy(transaction_path, record, runner)
-    plugin_rows, marketplace_hosts = _created_rows(record)
-    owned_plugins = _owned_plugins(plugin_rows, before)
-    owned_marketplaces = _owned_marketplaces(marketplace_hosts, before)
-
-    record["status"] = "recovering"
-    _persist_record(transaction_path, record)
-    _recover_owned_entries(
-        transaction_path,
-        record,
-        owned_plugins,
-        owned_marketplaces,
-        runner,
+    """Recover an interrupted schema-1 install or schema-2 upgrade."""
+    transaction_path = transaction_path.expanduser().resolve()
+    if not _locked:
+        try:
+            with _host_journal.UpgradeLock(transaction_path.parent):
+                return rollback_transaction(transaction_path, runner=runner, _locked=True)
+        except _host_journal.JournalError as exc:
+            raise InstallError(str(exc)) from exc
+    record = _load_recoverable_transaction(transaction_path, _normalize_source)
+    if record["schema"] == 1:
+        return _rollback_install_transaction(transaction_path, record, runner)
+    io = _host_transactions.RecoveryIO(
+        marketplace_rows=lambda host: _marketplace_rows(host, runner),
+        plugin_rows=lambda host: _plugin_rows(host, runner),
+        normalize_source=_normalize_source,
+        run=lambda command: _run(runner, command),
     )
-    record["status"] = "recovered"
-    record["pending"] = None
-    record["recovered_at"] = datetime.now(UTC).isoformat()
-    _persist_record(transaction_path, record)
-    return record
+    return _host_transactions.recover_upgrade(transaction_path, record, io)
 
 
+def _validate_install_options(options: Options) -> None:
+    if options.migrate_legacy and "codex" not in _hosts(options.host):
+        raise InstallError("legacy Codex migration requires --host codex or --host both")
+
+
+def _install_target(
+    repository: pathlib.Path, expected_packages: dict[str, dict[str, str]], options: Options, runner: Runner
+) -> tuple[_host_install_journal.InstallIO, dict[str, Any]]:
+    install_io = _install_io(runner)
+    versions = {package: row["version"] for package, row in expected_packages.items()}
+    return install_io, _host_install_journal.target_evidence(
+        repository, options.source, options.ref, versions, install_io)
+
+
+@_host_controller.serialized(_normalize_source, InstallError)
 def install(
     options: Options,
     *,
@@ -527,24 +411,17 @@ def install(
     root: pathlib.Path | None = None,
 ) -> dict[str, Any]:
     """Plan or execute installation and return the auditable transaction record."""
-    if options.migrate_legacy and "codex" not in _hosts(options.host):
-        raise InstallError("legacy Codex migration requires --host codex or --host both")
+    _validate_install_options(options)
     repository = root or pathlib.Path(__file__).resolve().parent.parent
     expected_packages = _expected_packages(repository)
-    planned = _planned_commands(options)
-    record: dict[str, Any] = {
-        "schema": 1,
-        "status": "dry-run",
-        "source": options.source,
-        "ref": options.ref,
-        "hosts": list(_hosts(options.host)),
-        "planned_commands": planned,
-        "created": {"marketplaces": [], "plugins": []},
-        "verified": {},
-    }
+    record = _host_install_journal.new_record(
+        options.source, options.ref, _hosts(options.host), _planned_commands(options)
+    )
     if not options.execute:
         return record
-
+    install_io, record["target"] = _install_target(
+        repository, expected_packages, options, runner
+    )
     options.state_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     transaction_path = options.state_dir / f"install-{stamp}-{uuid.uuid4().hex[:8]}.json"
@@ -580,10 +457,12 @@ def install(
             _begin_mutation(
                 transaction_path,
                 record,
-                {"kind": "marketplace", "host": host},
+                _host_install_journal.intent("forward", "add-marketplace", host),
             )
             _run(runner, _add_marketplace_command(host, options.source, options.ref))
-            record["created"]["marketplaces"].append(host)
+            record["created"]["marketplaces"].append(
+                _host_install_journal.capture_marketplace(record, host, install_io)
+            )
             _finish_mutation(transaction_path, record)
             for package in PACKAGES:
                 selector = f"{package}@divan"
@@ -592,10 +471,14 @@ def install(
                 _begin_mutation(
                     transaction_path,
                     record,
-                    {"kind": "plugin", "host": host, "id": selector},
+                    _host_install_journal.intent("forward", "install-plugin", host, selector=selector),
                 )
                 _run(runner, _install_command(host, package))
-                record["created"]["plugins"].append({"host": host, "id": selector})
+                record["created"]["plugins"].append(
+                    _host_install_journal.capture_plugin(
+                        record, host, selector, install_io
+                    )
+                )
                 _finish_mutation(transaction_path, record)
 
             record["verified"][host] = _verify_host(
@@ -609,11 +492,7 @@ def install(
             _begin_mutation(
                 transaction_path,
                 record,
-                {
-                    "kind": "legacy-migration",
-                    "host": "codex",
-                    "journal": str(legacy_journal),
-                },
+                _host_install_journal.intent("forward", "legacy-migration", "codex", journal=str(legacy_journal)),
             )
             record["legacy_migration"] = _migrate_legacy(
                 repository, runner, legacy_journal
@@ -624,7 +503,7 @@ def install(
         return record
     except BaseException as exc:
         try:
-            recovered = rollback_transaction(transaction_path, runner=runner)
+            recovered = rollback_transaction(transaction_path, runner=runner, _locked=True)
         except BaseException as rollback_exc:
             try:
                 current = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -646,12 +525,52 @@ def install(
         raise InstallError(f"{exc}; transaction: {transaction_path}") from exc
 
 
+def upgrade(
+    options: Options,
+    *,
+    runner: Runner = _subprocess_runner,
+    root: pathlib.Path | None = None,
+) -> dict[str, Any]:
+    """Plan or execute a provenance-gated, rollback-safe Divan upgrade."""
+    repository = root or pathlib.Path(__file__).resolve().parent.parent
+    expected = _expected_packages(repository)
+    io = _host_upgrade.UpgradeIO(
+        marketplace_rows=lambda host: _marketplace_rows(host, runner),
+        plugin_rows=lambda host: _plugin_rows(host, runner),
+        run=lambda command: _run(runner, command),
+        rollback=lambda path: rollback_transaction(path, runner=runner, _locked=True),
+        normalize_source=_normalize_source,
+    )
+    return _host_upgrade.upgrade(options, PACKAGES, expected, io, repository)
+
+
+def doctor(
+    options: Options,
+    *,
+    runner: Runner = _subprocess_runner,
+    root: pathlib.Path | None = None,
+) -> dict[str, Any]:
+    expected = _expected_packages(root or pathlib.Path(__file__).resolve().parent.parent)
+    result = _host_adapters.doctor(
+        options,
+        runner=runner,
+        expected=expected,
+        normalize=_normalize_source,
+        hosts=_hosts(options.host),
+    )
+    return _host_journal.augment_doctor(result, options.state_dir, _normalize_source)
+
+
 def _parse_options(argv: list[str] | None = None) -> Options:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", choices=("claude", "codex", "both"), default="both")
     parser.add_argument("--source", default="https://github.com/trugurpala/divan.git")
     parser.add_argument("--ref", required=True, help="immutable release tag or commit")
+    operation = parser.add_mutually_exclusive_group()
+    operation.add_argument("--doctor", action="store_true", help="inspect host state without changes")
+    operation.add_argument("--upgrade", action="store_true", help="replace a proven Divan install")
     parser.add_argument("--execute", action="store_true", help="apply the printed plan")
+    parser.add_argument("--json", action="store_true", help="write machine-readable doctor output")
     parser.add_argument("--migrate-legacy", action="store_true")
     parser.add_argument(
         "--state-dir",
@@ -659,8 +578,14 @@ def _parse_options(argv: list[str] | None = None) -> Options:
         default=pathlib.Path.home() / ".divan" / "transactions",
     )
     parsed = parser.parse_args(argv)
+    if parsed.json and not parsed.doctor:
+        parser.error("--json requires --doctor")
+    if parsed.doctor and parsed.execute:
+        parser.error("--doctor does not allow --execute")
     if parsed.migrate_legacy and not parsed.execute:
         parser.error("--migrate-legacy requires --execute")
+    if parsed.migrate_legacy and parsed.upgrade:
+        parser.error("--migrate-legacy does not allow --upgrade")
     if parsed.migrate_legacy and parsed.host == "claude":
         parser.error("--migrate-legacy requires --host codex or --host both")
     if re.fullmatch(r"[0-9a-f]{40}", parsed.ref) and not pathlib.Path(
@@ -674,12 +599,19 @@ def _parse_options(argv: list[str] | None = None) -> Options:
         execute=parsed.execute,
         migrate_legacy=parsed.migrate_legacy,
         state_dir=parsed.state_dir,
+        doctor=parsed.doctor,
+        json_output=parsed.json,
+        upgrade=parsed.upgrade,
     )
 
 
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
-    if "--rollback-transaction" in arguments:
+    if any(
+        argument == "--rollback-transaction"
+        or argument.startswith("--rollback-transaction=")
+        for argument in arguments
+    ):
         parser = argparse.ArgumentParser(description="Recover an interrupted Divan install")
         parser.add_argument("--rollback-transaction", type=pathlib.Path, required=True)
         recovery = parser.parse_args(arguments)
@@ -692,14 +624,24 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     options = _parse_options(arguments)
     try:
-        record = install(options)
+        if options.doctor:
+            record = doctor(options)
+        elif options.upgrade:
+            record = upgrade(options)
+        else:
+            record = install(options)
     except InstallError as exc:
         print(f"HATA: {exc}", file=sys.stderr)
         return 1
+    if options.doctor:
+        _host_adapters.print_doctor(record, options.json_output)
+        return 0
     if record["status"] == "dry-run":
         print("DRY-RUN - no host state changed. Add --execute to apply:")
         for command in record["planned_commands"]:
             print("  " + subprocess.list2cmdline(command))
+    elif record["status"] == "no-op":
+        print("NO-OP - installed Divan already matches target.")
     else:
         print(f"VERIFIED - transaction: {record['transaction_path']}")
     return 0

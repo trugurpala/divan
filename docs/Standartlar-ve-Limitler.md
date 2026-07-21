@@ -1,5 +1,10 @@
 # Standartlar ve Limitler
 
+Ürün düzeyindeki on zorunlu kuralın tek kaynağı
+[[Topluluk Standartları|Topluluk-Standartlari]] sayfasıdır. Makine-okunur
+sözleşme `registry/community-standards.json`, yerel kapı ise
+`python scripts/standartlar.py --check` komutudur.
+
 Divan, Agent Skills açık standardına (agentskills.io/specification) ve
 Claude Code marketplace şemasına uyar. CI'daki `scripts/validate.py` her
 push'ta şunları denetler:
@@ -49,8 +54,12 @@ doğrulayıcıya bırakılır.
 - `python scripts/hijyen.py --clean`, yalnız `__pycache__`, Ruff/mypy/pytest
   cache'leri, `.coverage` ve `htmlcov` artefaktlarını siler. Yedek, manifest,
   kanıt, worktree veya bilinmeyen dosya allowlist dışındadır.
-- Ruff C90 çekirdek Python fonksiyonlarında McCabe karmaşıklığını en çok 25
-  kabul eder; daha karmaşık akış isimli tek-sorumluluk adımlarına ayrılır.
+- Repo geneli McCabe 25 sert tavanını korur. Yeni/kötüleşen birinci taraf Python
+  kodu `scripts/clean_code.py` ile fonksiyon başına McCabe 10, 50 mantıksal
+  satır ve modül başına 400 fiziksel satır ratchet'ine tabidir.
+- Dal kapsamı en az %64 olmalı. Eski borç yalnız tam path/symbol/değer
+  kaydıyla izlenir; ihlal büyürse de, daralır veya kaybolur da baseline tam
+  mevcut ölçüme yenilenmeden kapı geçmez.
 
 ## Yayın ve v1 kabul sözleşmesi
 

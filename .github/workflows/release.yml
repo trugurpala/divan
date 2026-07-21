@@ -9,6 +9,7 @@ on:
       - 'CHANGELOG.md'
       - 'release-manifest.json'
       - 'scripts/yayin.py'
+      - 'scripts/sbom.py'
       - '.github/workflows/release.yml'
 
 concurrency:
@@ -58,6 +59,9 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
@@ -117,6 +121,7 @@ jobs:
           playwright install chromium --with-deps
           DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py
       - name: Sürüm notunu üret ve etiketi/Release sayfasını eşitle
+        id: release-assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -126,6 +131,7 @@ jobs:
           notes="$RUNNER_TEMP/divan-release-notes.md"
           archive="$RUNNER_TEMP/divan-${tag}.zip"
           checksum="$RUNNER_TEMP/divan-${tag}.sha256"
+          sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"
           python scripts/yayin.py --notes "$notes"
           source_commit="$GITHUB_SHA"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
@@ -137,14 +143,17 @@ jobs:
             }
           fi
           git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
+          python scripts/sbom.py --output "$sbom" --source-commit "$source_commit"
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
-          printf '%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$source_commit" "$tag" > "$checksum"
+          sbom_sha256="$(sha256sum "$sbom" | awk '{print $1}')"
+          printf '%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$source_commit" "$tag" > "$checksum"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             if gh release view "$tag" >/dev/null 2>&1; then
               existing="$RUNNER_TEMP/existing-$tag"
               mkdir -p "$existing"
               gh release download "$tag" --pattern "$(basename "$archive")" --dir "$existing"
               gh release download "$tag" --pattern "$(basename "$checksum")" --dir "$existing"
+              gh release download "$tag" --pattern "$(basename "$sbom")" --dir "$existing"
               cmp --silent "$archive" "$existing/$(basename "$archive")" || {
                 echo "HATA: mevcut immutable archive yeni byte'larla uyusmuyor." >&2
                 exit 1
@@ -153,10 +162,22 @@ jobs:
                 echo "HATA: mevcut immutable checksum yeni kayitla uyusmuyor." >&2
                 exit 1
               }
+              cmp --silent "$sbom" "$existing/$(basename "$sbom")" || {
+                echo "HATA: mevcut immutable SBOM yeni byte'larla uyusmuyor." >&2
+                exit 1
+              }
               echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
             else
-              gh release create "$tag" "$archive" "$checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
+              gh release create "$tag" "$archive" "$checksum" "$sbom" --verify-tag --title "Divan $tag" --notes-file "$notes"
             fi
           else
-            gh release create "$tag" "$archive" "$checksum" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
+            gh release create "$tag" "$archive" "$checksum" "$sbom" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
           fi
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+          echo "sbom=$sbom" >> "$GITHUB_OUTPUT"
+      - name: ZIP ve SBOM build provenance imzala
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            ${{ steps.release-assets.outputs.archive }}
+            ${{ steps.release-assets.outputs.sbom }}

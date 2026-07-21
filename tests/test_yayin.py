@@ -3,8 +3,10 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import struct
 import tempfile
 import unittest
+import zlib
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -14,7 +16,72 @@ YAYIN = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(YAYIN)
 
 
+def png_chunk(kind: bytes, payload: bytes) -> bytes:
+    checksum = zlib.crc32(kind + payload) & 0xFFFFFFFF
+    return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", checksum)
+
+
+def minimal_png(width: int = 1280, height: int = 640) -> bytes:
+    ihdr = struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + png_chunk(b"IHDR", ihdr)
+        + png_chunk(b"IDAT", zlib.compress(b""))
+        + png_chunk(b"IEND", b"")
+    )
+
+
 class PublicationTests(unittest.TestCase):
+    def test_social_preview_is_release_tracked_with_exact_png_contract(self) -> None:
+        manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+        surface = next(
+            row
+            for row in manifest["public_surfaces"]
+            if row["id"] == "social-preview"
+        )
+        self.assertEqual(surface["path"], "docs/assets/divan-social-preview.png")
+        self.assertEqual(
+            surface["binary"],
+            {"format": "png", "width": 1280, "height": 640, "max_bytes": 1_000_000},
+        )
+        YAYIN._validate_binary_surface(ROOT / surface["path"], surface["binary"])
+
+    def test_png_contract_rejects_wrong_dimensions_and_oversize(self) -> None:
+        valid_png = minimal_png()
+        with tempfile.TemporaryDirectory(prefix="divan-preview-") as temporary:
+            preview = pathlib.Path(temporary) / "preview.png"
+            preview.write_bytes(valid_png)
+            YAYIN._validate_binary_surface(
+                preview,
+                {"format": "png", "width": 1280, "height": 640, "max_bytes": 100},
+            )
+            with self.assertRaisesRegex(ValueError, "boyutlar"):
+                YAYIN._validate_binary_surface(
+                    preview,
+                    {"format": "png", "width": 1200, "height": 640, "max_bytes": 100},
+                )
+            with self.assertRaisesRegex(ValueError, "dosya boyutu"):
+                YAYIN._validate_binary_surface(
+                    preview,
+                    {"format": "png", "width": 1280, "height": 640, "max_bytes": 10},
+                )
+
+    def test_png_contract_rejects_truncation_missing_chunks_and_bad_crc(self) -> None:
+        contract = {"format": "png", "width": 1280, "height": 640, "max_bytes": 1000}
+        payload = minimal_png()
+        with tempfile.TemporaryDirectory(prefix="divan-preview-") as temporary:
+            preview = pathlib.Path(temporary) / "preview.png"
+            for invalid in (payload[:-1], payload[:33]):
+                with self.subTest(length=len(invalid)):
+                    preview.write_bytes(invalid)
+                    with self.assertRaisesRegex(ValueError, "chunk|IDAT|IEND"):
+                        YAYIN._validate_binary_surface(preview, contract)
+            corrupt = bytearray(payload)
+            corrupt[29] ^= 0x01
+            preview.write_bytes(corrupt)
+            with self.assertRaisesRegex(ValueError, "CRC"):
+                YAYIN._validate_binary_surface(preview, contract)
+
     def test_failed_rollback_reports_and_retains_recovery_backup(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-rollback-backup-") as temporary:
             root = pathlib.Path(temporary)
@@ -78,12 +145,19 @@ class PublicationTests(unittest.TestCase):
                 "scripts/kur-hostlar.py",
                 "scripts/legacy_state.py",
                 "scripts/hijyen.py",
+                "scripts/standartlar.py",
                 "evals/run.py",
                 "evals/adapters/claude_agent.py",
                 "evals/adapters/codex_judge.py",
                 "NOTICE.md",
                 "registry/upstream-baselines.json",
                 ".github/workflows/uyumluluk.yml",
+                ".github/workflows/teftis.yml",
+                "registry/community-standards.json",
+                "registry/standard-exceptions.json",
+                "docs/Topluluk-Standartlari.md",
+                "scripts/validate.py",
+                ".divan/evidence/teftis-20260721-v013-community-standards.md",
             }.issubset(paths)
         )
         real_evidence = next(

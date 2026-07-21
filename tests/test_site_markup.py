@@ -38,6 +38,28 @@ class SiteMarkupTests(unittest.TestCase):
                 assert coral and night
                 self.assertGreaterEqual(_contrast(coral.group(1), night.group(1)), 4.5)
 
+    def test_controls_have_keyboard_and_touch_accessibility_contract(self) -> None:
+        for relative in ("docs/index.html", "site/index.html"):
+            with self.subTest(relative=relative):
+                html = (ROOT / relative).read_text(encoding="utf-8")
+                self.assertIn("min-height:44px", html)
+                self.assertIn("touch-action:manipulation", html)
+                self.assertIn("@media (prefers-reduced-motion:reduce)", html)
+                self.assertIn("scroll-behavior:auto", html)
+                self.assertNotIn("fonts.googleapis.com", html)
+
+    def test_document_landmarks_and_headings_are_logical(self) -> None:
+        for relative in ("docs/index.html", "site/index.html"):
+            with self.subTest(relative=relative):
+                html = (ROOT / relative).read_text(encoding="utf-8")
+                headings = re.findall(r"<h([1-6])\b", html)
+                self.assertTrue(headings)
+                self.assertEqual(headings[0], "1")
+                self.assertEqual(headings.count("1"), 1)
+                for previous, current in zip(headings, headings[1:]):
+                    self.assertLessEqual(int(current) - int(previous), 1)
+                self.assertEqual(len(re.findall(r"<footer\b", html)), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

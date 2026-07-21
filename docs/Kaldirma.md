@@ -30,13 +30,39 @@ codex plugin marketplace remove divan
 ```
 
 `~/.divan/transactions/install-*.json` dosyası kurulum öncesi host listelerini
-ve o işlemde oluşturulan kayıtları gösterir. Geri alırken yalnız `created`
-alanındaki Divan girdilerini hedefle; başka marketplace veya eklentileri silme.
+ve o işlemde oluşturulan kayıtların kesin native parmak izlerini gösterir. Geri
+alırken yalnız `created` alanında parmak izi hâlâ birebir eşleşen Divan girdilerini
+hedefle; değiştirilmiş satırı, başka marketplace veya eklentileri silme. Eski,
+parmak izsiz schema-1 günlükleri güvenli biçimde otomatik geri alınamaz.
+Schema-1 günlük yolu, host kümesi, pending niyeti veya bağlı legacy günlük
+kimliği doğrulanamazsa hiçbir host ya da legacy recovery komutu çalıştırılmaz.
 Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 
 ```bash
-python scripts/kur-hostlar.py --rollback-transaction <install-....json>
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+`upgrade-*.json` schema-2 kayıtları farklıdır: `before_rows` kanıtlanmış eski
+marketplace source/ref ve paket sürümlerini; `target`, `removed`, `created`,
+`verified`, forward `pending` ve ayrı `recovery_pending` alanları ise yükseltme
+yaşam döngüsünü taşır. `created` girdileri selector ile yetinmez; tam sürüm,
+marketplace kökü, kurulum yolu ve native provenance parmak izini taşır. Başarısız
+yükseltme yalnız işlem tarafından oluşturulmuş hedef Divan satırlarını kaldırır
+ve eski iki-host durumunu ters host sırasında yeniden kurar; alakasız satırları
+silmez. `rollback-incomplete` kaydında yazılı kesin komutu kullanın:
+
+```bash
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
+```
+
+Recovery tekrar kesilirse aynı komut güvenle yeniden çalıştırılabilir. Journal
+kanıtlamadığı bir `@divan` satırını elle silmeyin; önce doctor ve journal
+alanlarıyla sahipliği inceleyin.
+Recovery başlamadan önce journal geçiş sırası da doğrulanır: paket kayıtları
+sabit prefix sırasında olmalı, marketplace oluşturma önceki marketplace
+kaldırma kanıtına dayanmalı ve her recovery intent'i aynı hostun kesin
+`created`/`removed` kaydına bağlanmalıdır. Geçersiz kayıt hiçbir host CLI'ına
+ulaşmaz.
 
 Aynı işlemde `--migrate-legacy` tamamlandıysa rollback önce karantinadaki
 doğrulanmış loose skill'leri ve çakışma yedeklerini işlem öncesi konumlarına

@@ -36,3 +36,15 @@ bulunmayan Karpathy-skills içeriği de yeniden dağıtılmamıştır.
 Bu ürün Anthropic, Claude, OpenAI, Vercel veya Superpowers tarafından
 onaylanmış ya da bu kuruluşlarla bağlantılı değildir. Uyumluluk ifadeleri
 yalnızca tanımlayıcıdır.
+
+## GitHub Actions (çalıştırılan, vendoring yapılmayan)
+
+Aşağıdaki eylemler kaynak olarak bu dağıtıma kopyalanmaz. GitHub Actions
+işlerinde tam commit SHA ile çağrılır; kaynak, amaç ve izin kararı `UPSTREAM.md`
+içinde izlenir.
+
+| Eylem | Kaynak | Lisans | Yerel kullanım |
+|---|---|---|---|
+| ossf/scorecard-action | https://github.com/ossf/scorecard-action | Apache-2.0 | `.github/workflows/scorecard.yml` |
+| actions/dependency-review-action | https://github.com/actions/dependency-review-action | MIT | `.github/workflows/dependency-review.yml` |
+| actions/attest-build-provenance | https://github.com/actions/attest-build-provenance | MIT | `.github/workflows/release.yml` |

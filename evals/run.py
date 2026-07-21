@@ -9,130 +9,50 @@ körleştirir ve isteğe bağlı bir hakem adaptörüyle ölçer. Yalnız stdlib
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import pathlib
-import platform
-import random
-import re
 import secrets
 import shlex
-import shutil
 import subprocess
 import sys
-import time
 from typing import Any
+
+try:
+    from evals import provenance as _provenance
+    from evals import result_contracts as _contracts
+except ModuleNotFoundError:  # Direct ``python evals/run.py`` execution.
+    import provenance as _provenance  # type: ignore[no-redef]
+    import result_contracts as _contracts  # type: ignore[no-redef]
+
+PUBLIC_PATTERNS = _contracts.PUBLIC_PATTERNS
+PROVENANCE_REQUIRED_FIELDS = _provenance.PROVENANCE_REQUIRED_FIELDS
+EvalError = _contracts.EvalError
+_bind_provenance_core = _provenance._bind_provenance
+_public_candidate = _contracts._public_candidate
+_read_json = _provenance._read_json
+_read_provenance = _provenance._read_provenance
+_redact_public_text = _contracts._redact_public_text
+_repository_identity = _provenance._repository_identity
+_run_evaluations_core = _contracts.run_evaluations
+_sanitize_public = _contracts._sanitize_public
+_validate_agent_result = _contracts._validate_agent_result
+_validate_judgement = _contracts._validate_judgement
+_version_for_command = _provenance._version_for_command
+write_results = _contracts.write_results
+
+# Compatibility re-exports for code that imported stdlib modules through this runner.
+hashlib = _provenance.hashlib
+platform = _provenance.platform
+random = _contracts.random
+re = _contracts.re
+shutil = _provenance.shutil
+time = _contracts.time
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / "evals" / "results" / "latest.json"
 MAX_ADAPTER_OUTPUT = 2_000_000
-PUBLIC_PATTERNS = (
-    re.compile(
-        r"(?i)(?:sk-[a-z0-9_-]{8,}|github_pat_[a-z0-9_]{8,}|gh[opusr]_[a-z0-9]{8,}|"
-        r"(?:api[_-]?key|access[_-]?token|token|secret|password|passwd)\s*[=:]\s*[^\s,;]+)"
-    ),
-    re.compile(r"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b"),
-    re.compile(r"(?i)\b[A-Z]:\\Users\\[^\\/\s]+"),
-    re.compile(r"/(?:home|Users)/[^/\s]+"),
-)
-PROVENANCE_REQUIRED_FIELDS = (
-    "agent",
-    "agent_version",
-    "judge",
-    "judge_version",
-    "source_commit",
-    "environment",
-)
 FIRST_PARTY_NON_TOOL_SKILLS = {"baglam-muhafizi"}
-
-
-class EvalError(RuntimeError):
-    """Kullanıcıya gösterilebilir eval sözleşmesi veya koşu hatası."""
-
-
-def _redact_public_text(value: str) -> str:
-    redacted = value
-    for pattern in PUBLIC_PATTERNS:
-        redacted = pattern.sub("[REDACTED]", redacted)
-    return redacted
-
-
-def _sanitize_public(value: Any) -> Any:
-    if isinstance(value, str):
-        return _redact_public_text(value)
-    if isinstance(value, list):
-        return [_sanitize_public(item) for item in value]
-    if isinstance(value, dict):
-        return {
-            _redact_public_text(str(key)): _sanitize_public(item)
-            for key, item in value.items()
-        }
-    return value
-
-
-def _read_json(path: pathlib.Path) -> dict[str, Any]:
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise EvalError(f"{path}: JSON okunamadı: {error}") from error
-    if not isinstance(value, dict):
-        raise EvalError(f"{path}: kök JSON nesne olmalı")
-    return value
-
-
-def _read_provenance(path: pathlib.Path) -> dict[str, str]:
-    """Read redacted runner provenance without accepting secret-like values."""
-    data = _read_json(path)
-    allowed = set(PROVENANCE_REQUIRED_FIELDS) | {"notes"}
-    unexpected = sorted(set(data) - allowed)
-    if unexpected:
-        raise EvalError(f"{path}: bilinmeyen provenance alanı: {', '.join(unexpected)}")
-    provenance: dict[str, str] = {}
-    for field in PROVENANCE_REQUIRED_FIELDS:
-        value = data.get(field)
-        if not isinstance(value, str) or not value.strip():
-            raise EvalError(f"{path}: provenance alanı eksik veya geçersiz: {field}")
-        if _redact_public_text(value) != value:
-            raise EvalError(f"{path}: provenance gizli/kişisel değer içeremez: {field}")
-        provenance[field] = value.strip()
-    if "notes" in data:
-        notes = data["notes"]
-        if not isinstance(notes, str) or not notes.strip():
-            raise EvalError(f"{path}: provenance alanı eksik veya geçersiz: notes")
-        if _redact_public_text(notes) != notes:
-            raise EvalError(f"{path}: provenance gizli/kişisel değer içeremez: notes")
-        provenance["notes"] = notes.strip()
-    return provenance
-
-
-def _repository_identity(root: pathlib.Path = ROOT) -> dict[str, str]:
-    def git(*arguments: str) -> str:
-        completed = subprocess.run(
-            ["git", "-C", str(root), *arguments],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=False,
-        )
-        if completed.returncode:
-            detail = _redact_public_text(completed.stderr.strip()) or "git failed"
-            raise EvalError(f"repository identity cannot be derived: {detail}")
-        return completed.stdout.strip()
-
-    source_commit = git("rev-parse", "HEAD")
-    if not re.fullmatch(r"[0-9a-f]{40}", source_commit):
-        raise EvalError("repository HEAD is not a full Git commit")
-    if git("status", "--porcelain", "--untracked-files=all"):
-        raise EvalError("real eval requires a clean repository worktree")
-    try:
-        version = (root / "VERSION").read_text(encoding="utf-8").strip()
-    except OSError as exc:
-        raise EvalError("repository VERSION cannot be read") from exc
-    if not version:
-        raise EvalError("repository VERSION is empty")
-    return {"source_commit": source_commit, "divan_version": version}
 
 
 def _validate_provider_skill_scope(skills: set[str]) -> None:
@@ -154,42 +74,6 @@ def _select_blind_seed(
     return 0 if declared_seed is None else declared_seed
 
 
-def _version_for_command(variable: str, default: str) -> str:
-    command_text = os.environ.get(variable, default)
-    args = shlex.split(command_text, posix=sys.platform != "win32")
-    if sys.platform == "win32":
-        args = [
-            item[1:-1]
-            if len(item) >= 2 and item[0] == item[-1] and item[0] in {'"', "'"}
-            else item
-            for item in args
-        ]
-    resolved = shutil.which(args[0]) if args else None
-    if resolved is None:
-        raise EvalError(f"provider version executable cannot be found: {variable}")
-    invocation = [resolved, *args[1:], "--version"]
-    if os.name == "nt" and pathlib.Path(resolved).suffix.lower() in {".cmd", ".bat"}:
-        invocation = ["cmd.exe", "/d", "/s", "/c", resolved, *args[1:], "--version"]
-    try:
-        completed = subprocess.run(
-            invocation,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            check=False,
-            timeout=30,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise EvalError(f"provider version cannot be derived: {variable}") from exc
-    version = (completed.stdout or completed.stderr).strip().splitlines()
-    if completed.returncode or not version:
-        raise EvalError(f"provider version cannot be derived: {variable}")
-    value = _redact_public_text(version[0])
-    if value != version[0]:
-        raise EvalError(f"provider version contains private data: {variable}")
-    return value
-
-
 def _bind_provenance(
     provenance: dict[str, str],
     *,
@@ -200,60 +84,17 @@ def _bind_provenance(
     min_skill_win_rate: float | None = None,
     root: pathlib.Path = ROOT,
 ) -> dict[str, str]:
-    identity = _repository_identity(root)
-    if provenance["source_commit"] != identity["source_commit"]:
-        raise EvalError("provenance source_commit does not match clean repository HEAD")
-    bound = dict(provenance)
-    bound.update(identity)
-    bound["environment"] = "; ".join(
-        filter(None, (platform.system(), platform.release(), platform.machine()))
+    return _bind_provenance_core(
+        provenance,
+        provider_preset=provider_preset,
+        seed=seed,
+        selected_skills=selected_skills,
+        timeout=timeout,
+        min_skill_win_rate=min_skill_win_rate,
+        root=root,
+        repository_identity=_repository_identity,
+        version_for_command=_version_for_command,
     )
-    if provider_preset == "claude-codex":
-        models: dict[str, str] = {}
-        for variable, field in (
-            ("DIVAN_CLAUDE_MODEL", "agent_model"),
-            ("DIVAN_CODEX_MODEL", "judge_model"),
-        ):
-            value = os.environ.get(variable, "").strip()
-            if not value:
-                raise EvalError(f"{variable} must pin the provider model for publishable runs")
-            if _redact_public_text(value) != value:
-                raise EvalError(f"{variable} contains private data")
-            models[field] = value
-        if not isinstance(seed, bytes) or len(seed) != 32:
-            raise EvalError("publishable provider runs require a 32-byte runner-generated seed")
-        skills = sorted(selected_skills or [])
-        command = [
-            "python",
-            "evals/run.py",
-            "--run",
-            "--provider-preset",
-            "claude-codex",
-        ]
-        for skill in skills:
-            command.extend(["--skill", skill])
-        command.extend(["--timeout", f"{timeout:g}"])
-        if min_skill_win_rate is not None:
-            command.extend(["--min-skill-win-rate", f"{min_skill_win_rate:g}"])
-        bound.update(
-            {
-                "agent": "Claude Code",
-                "agent_version": _version_for_command("DIVAN_CLAUDE_BIN", "claude"),
-                "judge": "Codex CLI",
-                "judge_version": _version_for_command("DIVAN_CODEX_BIN", "codex"),
-                **models,
-                "blind_seed_sha256": hashlib.sha256(seed).hexdigest(),
-                "blind_seed_entropy_bits": "256",
-                "blinding_method": "secrets.token_bytes(32)",
-                "selected_skills": ",".join(skills),
-                "timeout_seconds": f"{timeout:g}",
-                "minimum_skill_win_rate": (
-                    "none" if min_skill_win_rate is None else f"{min_skill_win_rate:g}"
-                ),
-                "run_command": subprocess.list2cmdline(command),
-            }
-        )
-    return bound
 
 
 def discover_cases(
@@ -366,48 +207,6 @@ def _run_adapter(command: str, payload: dict[str, Any], timeout: float) -> dict[
     return result
 
 
-def _validate_agent_result(result: dict[str, Any]) -> dict[str, Any]:
-    output = result.get("output")
-    events = result.get("events", [])
-    changed_files = result.get("changed_files", [])
-    if not isinstance(output, str) or not output.strip():
-        raise EvalError("ajan adaptörü dolu output döndürmeli")
-    if not isinstance(events, list) or not all(isinstance(item, str) for item in events):
-        raise EvalError("ajan adaptörü events için metin dizisi döndürmeli")
-    if not isinstance(changed_files, list) or not all(
-        isinstance(item, str) for item in changed_files
-    ):
-        raise EvalError("ajan adaptörü changed_files için metin dizisi döndürmeli")
-    return _sanitize_public(
-        {"output": output, "events": events, "changed_files": changed_files}
-    )
-
-
-def _validate_judgement(result: dict[str, Any]) -> dict[str, Any]:
-    winner = result.get("winner")
-    reasons = result.get("reasons")
-    if winner not in {"A", "B", "tie"}:
-        raise EvalError("hakem adaptörü winner için A, B veya tie döndürmeli")
-    if not isinstance(reasons, list) or not reasons or not all(
-        isinstance(item, str) and item.strip() for item in reasons
-    ):
-        raise EvalError("hakem adaptörü en az bir gerekçe döndürmeli")
-    scores = result.get("expectation_scores", {})
-    if not isinstance(scores, dict):
-        raise EvalError("hakem expectation_scores nesne olmalı")
-    return _sanitize_public(
-        {"winner": winner, "reasons": reasons, "expectation_scores": scores}
-    )
-
-
-def _public_candidate(result: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "output": result["output"],
-        "events": result["events"],
-        "changed_files": result["changed_files"],
-    }
-
-
 def run_evaluations(
     cases: list[dict[str, Any]],
     adapter: str,
@@ -419,129 +218,16 @@ def run_evaluations(
     provenance: dict[str, str] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Gerçek adaptör koşularını yap; kamu sonucu ve gizli A/B anahtarını döndür."""
-    if not cases:
-        raise EvalError("sıfır eval vakası başarı sayılamaz")
-    if min_skill_win_rate is not None and judge is None:
-        raise EvalError("min-skill-win-rate için --judge zorunlu")
-    if min_skill_win_rate is not None and not 0 <= min_skill_win_rate <= 1:
-        raise EvalError("min-skill-win-rate 0 ile 1 arasında olmalı")
-
-    rng = random.Random(seed)
-    public_cases: list[dict[str, Any]] = []
-    key_cases: list[dict[str, Any]] = []
-    totals = {"skill": 0, "baseline": 0, "tie": 0}
-
-    for case in cases:
-        outputs: dict[str, dict[str, Any]] = {}
-        for condition in ("baseline", "skill"):
-            request = {
-                "protocol_version": 1,
-                "condition": condition,
-                "skill_name": case["skill_name"],
-                "case_id": case["case_id"],
-                "prompt": case["prompt"],
-                "files": case["files"],
-                "skill_path": case["skill_path"] if condition == "skill" else None,
-            }
-            outputs[condition] = _validate_agent_result(
-                _run_adapter(adapter, request, timeout)
-            )
-
-        labels = ["A", "B"]
-        rng.shuffle(labels)
-        mapping = {labels[0]: "baseline", labels[1]: "skill"}
-        # Public and judge-visible candidate order must be stable and independent
-        # from the randomized baseline/skill mapping. Otherwise dict insertion
-        # order itself reconstructs the supposedly private mapping.
-        candidates = {
-            label: _public_candidate(outputs[mapping[label]]) for label in ("A", "B")
-        }
-        public_case: dict[str, Any] = {
-            "skill_name": case["skill_name"],
-            "case_id": case["case_id"],
-            "prompt": case["prompt"],
-            "expected_output": case["expected_output"],
-            "expectations": case["expectations"],
-            "candidates": candidates,
-        }
-        key_case: dict[str, Any] = {
-            "skill_name": case["skill_name"],
-            "case_id": case["case_id"],
-            "mapping": mapping,
-        }
-
-        if judge:
-            judgement = _validate_judgement(
-                _run_adapter(
-                    judge,
-                    {
-                        "protocol_version": 1,
-                        "skill_name": case["skill_name"],
-                        "case_id": case["case_id"],
-                        "prompt": case["prompt"],
-                        "expected_output": case["expected_output"],
-                        "expectations": case["expectations"],
-                        "candidates": candidates,
-                    },
-                    timeout,
-                )
-            )
-            winner_label = judgement["winner"]
-            winner_condition = "tie" if winner_label == "tie" else mapping[winner_label]
-            totals[winner_condition] += 1
-            public_case["judgement"] = {
-                "expectation_scores": judgement["expectation_scores"],
-            }
-            key_case["reasons"] = judgement["reasons"]
-            key_case["winner_label"] = winner_label
-            key_case["winner_condition"] = winner_condition
-
-        public_cases.append(public_case)
-        key_cases.append(key_case)
-
-    judged_count = sum(totals.values())
-    decisive = totals["skill"] + totals["baseline"]
-    skill_win_rate = totals["skill"] / decisive if decisive else None
-    status = "completed" if judge else "review_required"
-    gate_passed: bool | None = None
-    if min_skill_win_rate is not None:
-        gate_passed = skill_win_rate is not None and skill_win_rate >= min_skill_win_rate
-
-    result = {
-        "schema_version": 1,
-        "status": status,
-        "generated_at": int(time.time()),
-        "case_count": len(public_cases),
-        "judged_count": judged_count,
-        "summary": {
-            "skill_wins": totals["skill"],
-            "baseline_wins": totals["baseline"],
-            "ties": totals["tie"],
-            "skill_win_rate": skill_win_rate,
-            "minimum_skill_win_rate": min_skill_win_rate,
-            "gate_passed": gate_passed,
-        },
-        "cases": public_cases,
-    }
-    if provenance is not None:
-        result["provenance"] = provenance
-    key = {
-        "schema_version": 1,
-        "notice": "Kör inceleme tamamlanmadan bu dosyayı açmayın.",
-        "blind_seed": seed.hex() if isinstance(seed, bytes) else seed,
-        "cases": key_cases,
-    }
-    return result, key
-
-
-def write_results(output: pathlib.Path, result: dict[str, Any], key: dict[str, Any]) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    key_path = output.with_name(output.stem + ".key" + output.suffix)
-    public_result = _sanitize_public(result)
-    output.write_text(
-        json.dumps(public_result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    return _run_evaluations_core(
+        cases,
+        adapter,
+        judge,
+        timeout=timeout,
+        seed=seed,
+        min_skill_win_rate=min_skill_win_rate,
+        provenance=provenance,
+        run_adapter=_run_adapter,
     )
-    key_path.write_text(json.dumps(key, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import pathlib
 import tempfile
 import unittest
@@ -50,6 +51,22 @@ class UpstreamGovernanceTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertEqual(len(reviews), 15)
         self.assertEqual({review["decision"] for review in reviews}, {"KEEP"})
+
+    def test_canonical_source_inventory_includes_curated_distributed_sources(self) -> None:
+        registry = json.loads(
+            (ROOT / "registry/upstream-baselines.json").read_text(encoding="utf-8")
+        )
+        pins = {source["repository"]: source["reviewed_head"] for source in registry["sources"]}
+
+        self.assertEqual(
+            pins["PatrickJS/awesome-cursorrules"],
+            "b044f956f021b6e8877f16781bcfc466a6a120e9",
+        )
+        self.assertEqual(
+            pins["muratcankoylan/Agent-Skills-for-Context-Engineering"],
+            "c578e85e40fe2bda7c1fec91ff64cf5285434934",
+        )
+        self.assertNotIn("b044f956f021b6e8877f16781bcfc466a6a120e9", repr(UPSTREAM.KURASYON_KAYNAKLARI))
 
     def test_unreviewed_or_mutable_baseline_is_rejected(self) -> None:
         invalid = {

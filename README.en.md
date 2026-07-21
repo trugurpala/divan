@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/teftis.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.12.2-1f6feb)
+![version](https://img.shields.io/badge/version-0.13.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
-**Current release:** v0.12.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current release:** v0.13.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Why Divan?
 
@@ -43,8 +43,8 @@ and project memory** to the coding agent you already use.
 Preview the no-write plan, then install the same pinned release into both hosts:
 
 ```powershell
-python scripts/kur-hostlar.py --host both --ref v0.12.2
-python scripts/kur-hostlar.py --host both --ref v0.12.2 --execute
+python scripts/kur-hostlar.py --host both --ref v0.13.0
+python scripts/kur-hostlar.py --host both --ref v0.13.0 --execute
 ```
 
 For safety, the installer never overwrites an existing `divan` marketplace or
@@ -55,6 +55,21 @@ The installer delegates to the official Claude and Codex plugin CLIs, records
 pre-state, and never removes unrelated plugins. See
 [installation options](docs/Kurulum.md) for single-host, manual, legacy
 migration, and removal paths.
+
+The five-minute safe lifecycle continues with:
+
+```powershell
+python scripts/kur-hostlar.py --doctor --host both --ref v0.13.0
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0
+python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0 --execute
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
+python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
+```
+
+Replace the example journal with doctor's exact `recovery_command`. Rolling
+back the `install-...json` journal uninstalls only Divan entries created by that
+transaction. See [docs/Kaldirma.md](docs/Kaldirma.md) for host-aware manual
+removal and ownership boundaries.
 
 ## Clean development
 
@@ -152,10 +167,14 @@ increase, or “best in the world” status.
 
 ## Contributing and security
 
-- [Contributing](CONTRIBUTING.md)
+- [Contributing in English](CONTRIBUTING.en.md) · [Türkçe](CONTRIBUTING.md)
+- [Support and request routing](SUPPORT.md)
+- [DCS-001–DCS-010 community standards](docs/Topluluk-Standartlari.md)
 - [Security policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [License and third-party notices](THIRD_PARTY_LICENSES.md)
 
 Divan is not affiliated with or endorsed by Anthropic, Claude, OpenAI, or
 Vercel. Product and compatibility names are descriptive only.
+
+The v1 scorecard remains **7/8**: independent-user evidence is still pending.

@@ -16,9 +16,11 @@ import sys
 try:
     from hijyen import source_issues as hijyen_source_issues
     from host_marketplaces import check as host_marketplaces_check
+    from standartlar import validate_contract as standards_validate_contract
 except ModuleNotFoundError:  # Imported as scripts.validate in unit tests.
     from scripts.hijyen import source_issues as hijyen_source_issues
     from scripts.host_marketplaces import check as host_marketplaces_check
+    from scripts.standartlar import validate_contract as standards_validate_contract
 
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
@@ -398,6 +400,9 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     hatalar: list[str] = []
     uyarilar: list[str] = []
     hatalar.extend(f"REPO HIJYENI: {issue}" for issue in hijyen_source_issues(kok))
+    hatalar.extend(
+        f"TOPLULUK STANDARTLARI: {issue}" for issue in standards_validate_contract(kok)
+    )
     marketplace, eklentiler = marketplace_denetle(kok, hatalar)
     skiller = skilleri_denetle(kok, hatalar, uyarilar)
     zorunlu_belgeleri_denetle(kok, hatalar)
