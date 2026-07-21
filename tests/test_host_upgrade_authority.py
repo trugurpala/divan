@@ -148,7 +148,7 @@ class HostUpgradeAuthorityTests(unittest.TestCase):
                 )
             evidence.assert_not_called()
 
-    def test_local_claude_schema2_terminal_recovery_and_source_tamper(self) -> None:
+    def test_local_claude_schema2_created_authority_and_source_tamper(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-local-claude-schema2-") as temporary:
             config = pathlib.Path(temporary) / ".claude"
             install = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.9.1"
