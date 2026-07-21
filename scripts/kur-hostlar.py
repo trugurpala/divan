@@ -394,6 +394,15 @@ def _validate_install_options(options: Options) -> None:
         raise InstallError("legacy Codex migration requires --host codex or --host both")
 
 
+def _install_target(
+    repository: pathlib.Path, expected_packages: dict[str, dict[str, str]], options: Options, runner: Runner
+) -> tuple[_host_install_journal.InstallIO, dict[str, Any]]:
+    install_io = _install_io(runner)
+    versions = {package: row["version"] for package, row in expected_packages.items()}
+    return install_io, _host_install_journal.target_evidence(
+        repository, options.source, options.ref, versions, install_io)
+
+
 def install(
     options: Options,
     *,
@@ -409,12 +418,9 @@ def install(
     )
     if not options.execute:
         return record
-    versions = {package: row["version"] for package, row in expected_packages.items()}
-    install_io = _install_io(runner)
-    record["target"] = _host_install_journal.target_evidence(
-        repository, options.source, options.ref, versions, install_io
+    install_io, record["target"] = _install_target(
+        repository, expected_packages, options, runner
     )
-
     options.state_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     transaction_path = options.state_dir / f"install-{stamp}-{uuid.uuid4().hex[:8]}.json"
