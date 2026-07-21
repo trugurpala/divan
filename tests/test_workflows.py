@@ -73,6 +73,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("[tool.ruff]", pyproject)
         self.assertIn("[tool.mypy]", pyproject)
         self.assertIn("[tool.coverage.run]", pyproject)
+        self.assertIn("fail_under = 60", pyproject)
 
 
 if __name__ == "__main__":

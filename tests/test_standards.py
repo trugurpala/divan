@@ -82,6 +82,49 @@ class CommunityStandardsTests(unittest.TestCase):
         self.assertTrue(any("DCS-001.checks" in error for error in errors))
         self.assertTrue(any("DCS-002.evidence" in error for error in errors))
 
+    def test_non_list_standards_returns_validation_errors(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            data = contract()
+            write_fixture(root, data)
+            data["standards"] = None
+            (root / "registry" / "community-standards.json").write_text(
+                json.dumps(data), encoding="utf-8"
+            )
+            errors = STANDARTLAR.validate_contract(root)
+        self.assertIsInstance(errors, list)
+        self.assertTrue(any("community-standards.json.standards" in error for error in errors))
+
+    def test_non_list_checks_returns_validation_errors(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            data = contract()
+            write_fixture(root, data)
+            rows = data["standards"]
+            assert isinstance(rows, list)
+            rows[0]["checks"] = None
+            (root / "registry" / "community-standards.json").write_text(
+                json.dumps(data), encoding="utf-8"
+            )
+            errors = STANDARTLAR.validate_contract(root)
+        self.assertIsInstance(errors, list)
+        self.assertTrue(any("DCS-001.checks" in error for error in errors))
+
+    def test_non_list_evidence_returns_validation_errors(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            data = contract()
+            write_fixture(root, data)
+            rows = data["standards"]
+            assert isinstance(rows, list)
+            rows[0]["evidence"] = None
+            (root / "registry" / "community-standards.json").write_text(
+                json.dumps(data), encoding="utf-8"
+            )
+            errors = STANDARTLAR.validate_contract(root)
+        self.assertIsInstance(errors, list)
+        self.assertTrue(any("DCS-001.evidence" in error for error in errors))
+
     def test_check_referencing_a_missing_script_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
             root = pathlib.Path(temporary)
