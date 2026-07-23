@@ -1,0 +1,49 @@
+name: memory-debug
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: pip install -r requirements-dev.txt
+      - name: Hygiene
+        run: python scripts/hygiene.py --check
+      - name: Naming
+        run: python scripts/naming.py --check
+      - name: Company and standards
+        run: |
+          python scripts/divan.py company-validate
+          python scripts/standards.py --check
+      - name: Memory tests
+        run: python -m unittest tests.test_project_memory -v
+      - name: All tests
+        run: python -m unittest discover -s tests -p 'test_*.py'
+      - name: General validator
+        run: python scripts/validate.py
+      - name: Product gates
+        run: |
+          python evals/run.py --check
+          python scripts/wiki.py --check
+          python scripts/candidate_review.py --check
+          python scripts/catalog.py --check
+          python scripts/v1.py --check
+          python scripts/release.py --check
+      - name: Ruff
+        run: ruff check .
+      - name: Clean code
+        run: python scripts/clean_code.py --check
+      - name: Mypy
+        run: mypy scripts evals
+      - name: Coverage
+        run: |
+          coverage run -m unittest discover -s tests
+          coverage report --fail-under=64
