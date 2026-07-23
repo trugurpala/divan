@@ -76,11 +76,11 @@ h2{font-family:Georgia,'Times New Roman',serif;font-weight:600;font-size:clamp(3
 
 /* Vezirler */
 .vezirler{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
-.vezir{border:1px solid rgba(243,237,221,.16);border-radius:6px;padding:22px 20px;background:rgba(243,237,221,.03)}
+.vezir,.sirket-karti{border:1px solid rgba(243,237,221,.16);border-radius:6px;padding:22px 20px;background:rgba(243,237,221,.03)}
 .vezir.bas{border-color:var(--altin);background:rgba(201,162,39,.07)}
-.vezir h3{font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:600;margin-bottom:8px}
+.vezir h3,.sirket-karti h3{font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:600;margin-bottom:8px}
 .vezir.bas h3{color:var(--altin)}
-.vezir p{font-size:15.5px;color:var(--fildisi-soluk)}
+.vezir p,.sirket-karti p{font-size:15.5px;color:var(--fildisi-soluk)}
 .vezir .lisans{display:block;margin-top:12px;font-family:Consolas,'Liberation Mono',monospace;font-size:11.5px;color:var(--firuze);letter-spacing:.05em}
 
 /* Protokol — gerçek bir sıra olduğu için numaralı */
@@ -168,10 +168,10 @@ footer p+p{margin-top:10px}
       göre en küçük yetkin ekibi kurar. Her değişikliği test, README, Wiki, site
       ve yayın bağımlılıklarına kadar izler.</p>
     <div class="vezirler">
-      <article class="vezir"><h3>Core Pack</h3><p>Plan, TDD, debugging, inceleme ve doğrulama; bütün ürün değişikliklerinin temel disiplini.</p></article>
-      <article class="vezir"><h3>UI Pack</h3><p>Arayüz, UX, erişilebilirlik, responsive davranış ve gerçek tarayıcı kanıtı.</p></article>
-      <article class="vezir"><h3>React Pack</h3><p>Yalnız React, Next.js veya React Native kanıtı varsa etkinleşen framework uzmanlığı.</p></article>
-      <article class="vezir"><h3>Zanaat Pack</h3><p>Yalnız entegrasyon, MCP/API veya özgün yaratıcı üretim gerektiğinde katılan uzmanlık.</p></article>
+      <article class="sirket-karti"><h3>Core Pack</h3><p>Plan, TDD, debugging, inceleme ve doğrulama; bütün ürün değişikliklerinin temel disiplini.</p></article>
+      <article class="sirket-karti"><h3>UI Pack</h3><p>Arayüz, UX, erişilebilirlik, responsive davranış ve gerçek tarayıcı kanıtı.</p></article>
+      <article class="sirket-karti"><h3>React Pack</h3><p>Yalnız React, Next.js veya React Native kanıtı varsa etkinleşen framework uzmanlığı.</p></article>
+      <article class="sirket-karti"><h3>Zanaat Pack</h3><p>Yalnız entegrasyon, MCP/API veya özgün yaratıcı üretim gerektiğinde katılan uzmanlık.</p></article>
     </div>
     <p style="margin-top:18px"><a href="https://github.com/trugurpala/divan/blob/main/docs/Company-OS.tr.md">Company OS sözleşmesini incele</a></p>
   </div>
