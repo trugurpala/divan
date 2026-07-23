@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""English canonical CLI for Divan Company OS and host lifecycle."""
+"""English canonical CLI for Divan Company OS, project memory and host lifecycle."""
 from __future__ import annotations
 
 import argparse
@@ -14,6 +14,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import host_lifecycle  # noqa: E402
+import project_memory  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"
 COMPANY_CLI = ROOT / "plugins" / "sadrazam" / "company" / "cli.py"
@@ -71,6 +72,9 @@ def _parser() -> argparse.ArgumentParser:
     commands.add_parser("company-validate").add_argument(
         "company_args", nargs=argparse.REMAINDER
     )
+    commands.add_parser("memory", help="durable project memory").add_argument(
+        "memory_args", nargs=argparse.REMAINDER
+    )
 
     install = commands.add_parser("install", help="plan or install Divan on hosts")
     _add_host_common(install)
@@ -97,6 +101,8 @@ def main(argv: list[str] | None = None) -> int:
     if arguments and arguments[0] in {"inspect", "plan", "impact", "company-validate"}:
         command = "validate" if arguments[0] == "company-validate" else arguments[0]
         return _load_company_cli().main([command, *arguments[1:]])
+    if arguments and arguments[0] == "memory":
+        return project_memory.main(arguments[1:])
     options = _parser().parse_args(arguments)
     return host_lifecycle.main(_host_arguments(options))
 
