@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.14.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.14.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
-**Current release:** v0.14.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current release:** v0.14.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Why Divan?
 
@@ -55,8 +55,8 @@ Expert shortcuts remain available when explicit control is useful:
 Preview the no-write plan, then install the same pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.14.0
-python scripts/divan.py install --host both --ref v0.14.0 --execute
+python scripts/divan.py install --host both --ref v0.14.1
+python scripts/divan.py install --host both --ref v0.14.1 --execute
 ```
 
 For safety, the installer never overwrites an existing `divan` marketplace or
@@ -71,9 +71,9 @@ migration, and removal paths.
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.14.0
-python scripts/divan.py update --host both --ref v0.14.0
-python scripts/divan.py update --host both --ref v0.14.0 --execute
+python scripts/divan.py doctor --host both --ref v0.14.1
+python scripts/divan.py update --host both --ref v0.14.1
+python scripts/divan.py update --host both --ref v0.14.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

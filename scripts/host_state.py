@@ -205,6 +205,14 @@ def marketplace_evidence(
     reported = host_adapters.marketplace_ref(row)
     if reported is not None and reported != ref:
         raise StateError(f"{host}: marketplace ref cannot be proven")
+    metadata = pathlib.Path(root) / ".codex-marketplace-install.json"
+    if host == "codex" and metadata.exists():
+        evidence = checkout_evidence_at_head(
+            host, pathlib.Path(root), source, run, normalize
+        )
+        if evidence["ref"] != ref:
+            raise StateError(f"{host}: checkout ref cannot be proven")
+        return evidence
     return checkout_evidence(pathlib.Path(root), source, ref, run, normalize)
 
 
