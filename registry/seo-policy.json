@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "applicable_project_types": ["public-web"],
+  "limits": {
+    "max_depth": 4,
+    "max_directories": 64,
+    "max_entries_per_directory": 256,
+    "max_files": 128,
+    "max_file_bytes": 1048576
+  },
+  "profiles": {
+    "standard": {
+      "accessibility": {"minimum": 0.9, "required": true},
+      "best-practices": {"minimum": null, "required": false},
+      "performance": {"minimum": null, "required": false},
+      "seo": {"minimum": 0.9, "required": true}
+    },
+    "strict": {
+      "accessibility": {"minimum": 0.95, "required": true},
+      "best-practices": {"minimum": 0.9, "required": true},
+      "performance": {"minimum": 0.85, "required": true},
+      "seo": {"minimum": 0.95, "required": true}
+    }
+  },
+  "tools": {
+    "lighthouse-ci": {
+      "candidate_id": "googlechrome-lighthouse-ci",
+      "source_commit": "36e629e9c03a2b328f5996c16f256431c5fef1fe",
+      "license": "Apache-2.0",
+      "identity": {
+        "ecosystem": "oci",
+        "package": "patrickhulce/lhci-client",
+        "version": "0.14.0",
+        "integrity": "sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9",
+        "npm_integrity": "sha512-TxOH9pFBnmmN7Jmo2Aimxx5UhE8veqXpHfFJDMWsCVxkwh7mGxcAWchGl84mK139SZbbRmerqZ72c+h2nG9/QQ==",
+        "platform": "linux/amd64",
+        "source_commit": "36e629e9c03a2b328f5996c16f256431c5fef1fe"
+      },
+      "acquisition": {
+        "image": "docker.io/patrickhulce/lhci-client@sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9",
+        "integrity": "sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9",
+        "config_digest": "sha256:2e3042e7c41855a3c6b195c793961eb03645a555a75e940edbd30c70c7979df0",
+        "reviewed_history": [
+          "RUN /bin/sh -c npm install -g @lhci/cli@0.14.0 # buildkit"
+        ],
+        "mode": "pull-by-digest"
+      },
+      "runtime": {
+        "acquisition": [
+          ["docker", "pull", "docker.io/patrickhulce/lhci-client@sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9"]
+        ],
+        "assertions": [
+          {
+            "argv": ["docker", "run", "--rm", "docker.io/patrickhulce/lhci-client@sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9", "lhci", "--version"],
+            "stdout": "0.14.0"
+          }
+        ],
+        "execution": [
+          ["mkdir", "-p", ".divan/evidence/seo", ".lighthouseci"],
+          ["chmod", "0777", ".lighthouseci"],
+          ["docker", "run", "--rm", "--network", "host", "--volume", "${PWD}:/workspace", "--workdir", "/workspace", "docker.io/patrickhulce/lhci-client@sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9", "lhci", "collect", "--url=${EXPECTED_URL}", "--numberOfRuns=1"],
+          ["python", "-c", "import pathlib,shutil; rows=list(pathlib.Path('.lighthouseci').glob('lhr-*.json')); assert len(rows)==1, 'expected exactly one Lighthouse result'; shutil.copyfile(rows[0], '.divan/evidence/seo/lighthouse.json')"]
+        ]
+      },
+      "outputs": [".divan/evidence/seo/lighthouse.json"]
+    },
+    "lychee": {
+      "candidate_id": "lycheeverse-lychee",
+      "source_commit": "af73b4e02731e0ff3a678b56769704d689138279",
+      "license": "Apache-2.0 OR MIT",
+      "identity": {
+        "ecosystem": "github-release",
+        "package": "lychee",
+        "version": "0.24.2",
+        "integrity": "sha256:1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a",
+        "platform": "x86_64-unknown-linux-gnu",
+        "source_commit": "e85aaf5524b2f808e63bae55e594c843220f10f2"
+      },
+      "acquisition": {
+        "url": "https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz",
+        "integrity": "sha256:1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a",
+        "mode": "download-verify-members-extract",
+        "executable": "lychee-x86_64-unknown-linux-gnu/lychee",
+        "members": [
+          {"name": "lychee-x86_64-unknown-linux-gnu", "type": "directory"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/README.md", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/docs", "type": "directory"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/docs/lychee.1", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/docs/TROUBLESHOOTING.md", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/docs/PRE_COMMIT.md", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/complete", "type": "directory"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/complete/_lychee.ps1", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/complete/lychee.elv", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/complete/lychee.fish", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/complete/lychee.bash", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/complete/_lychee", "type": "file"},
+          {"name": "lychee-x86_64-unknown-linux-gnu/lychee", "type": "file"}
+        ]
+      },
+      "runtime": {
+        "acquisition": [
+          ["curl", "--fail", "--location", "--silent", "--show-error", "https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz", "--output", "/tmp/lychee.tar.gz"],
+          ["mkdir", "-p", "/tmp/divan-lychee"],
+          ["python", "-c", "import hashlib,json,pathlib,tarfile; source=pathlib.Path('/tmp/lychee.tar.gz'); assert hashlib.sha256(source.read_bytes()).hexdigest()=='1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a', 'archive SHA256 mismatch'; expected=json.loads('[{\"name\":\"lychee-x86_64-unknown-linux-gnu\",\"type\":\"directory\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/README.md\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/docs\",\"type\":\"directory\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/docs/lychee.1\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/docs/TROUBLESHOOTING.md\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/docs/PRE_COMMIT.md\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/complete\",\"type\":\"directory\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/complete/_lychee.ps1\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/complete/lychee.elv\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/complete/lychee.fish\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/complete/lychee.bash\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/complete/_lychee\",\"type\":\"file\"},{\"name\":\"lychee-x86_64-unknown-linux-gnu/lychee\",\"type\":\"file\"}]'); archive=tarfile.open(source); members=archive.getmembers(); observed=[{'name':member.name,'type':'directory' if member.isdir() else 'file' if member.isfile() else 'other'} for member in members]; assert observed==expected, 'archive members do not match reviewed contract'; assert not any(member.issym() or member.islnk() for member in members), 'archive links are forbidden'; assert not any(pathlib.PurePosixPath(member.name).is_absolute() or '..' in pathlib.PurePosixPath(member.name).parts for member in members), 'archive path traversal is forbidden'; archive.extractall('/tmp/divan-lychee', filter='data')"],
+          ["test", "-x", "/tmp/divan-lychee/lychee-x86_64-unknown-linux-gnu/lychee"]
+        ],
+        "assertions": [],
+        "execution": [
+          ["/tmp/divan-lychee/lychee-x86_64-unknown-linux-gnu/lychee", "--format", "json", "--output", ".divan/evidence/seo/lychee.json", "${EXPECTED_URL}"]
+        ]
+      },
+      "outputs": [".divan/evidence/seo/lychee.json"]
+    }
+  },
+  "search_console": {
+    "default": "disabled",
+    "requires": ["explicit_account", "provider_capability", "credential_gate"]
+  }
+}

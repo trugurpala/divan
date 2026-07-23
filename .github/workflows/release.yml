@@ -10,6 +10,9 @@ on:
       - 'release-manifest.json'
       - 'scripts/release.py'
       - 'scripts/sbom.py'
+      - 'scripts/build_project_runner.py'
+      - 'plugins/sadrazam/company/**'
+      - '.github/actions/divan-project/action.yml'
       - '.github/workflows/release.yml'
 
 concurrency:
@@ -55,8 +58,12 @@ jobs:
 
   publish:
     needs: codex-clean-host
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: production-release
     timeout-minutes: 25
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     permissions:
       contents: write
       id-token: write
@@ -122,8 +129,6 @@ jobs:
           DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py
       - name: Sürüm notunu üret ve etiketi/Release sayfasını eşitle
         id: release-assets
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           version="$(cat VERSION)"
@@ -132,21 +137,66 @@ jobs:
           archive="$RUNNER_TEMP/divan-${tag}.zip"
           checksum="$RUNNER_TEMP/divan-${tag}.sha256"
           sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"
+          runner="$RUNNER_TEMP/divan-project.pyz"
+          runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"
           python scripts/release.py --notes "$notes"
           source_commit="$GITHUB_SHA"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             tagged_commit="$(git rev-parse "$tag^{commit}")"
-            test "$source_commit" = "$GITHUB_SHA"
-            test "$tagged_commit" = "$GITHUB_SHA" || {
-              echo "HATA: $tag etiketi $tagged_commit commit'inde; $GITHUB_SHA uzerine tasinmayacak." >&2
+            test "$tagged_commit" = "$source_commit" || {
+              echo "HATA: $tag etiketi $tagged_commit commit'inde; $source_commit uzerine tasinmayacak." >&2
               exit 1
             }
           fi
           git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
-          python scripts/sbom.py --output "$sbom" --source-commit "$source_commit"
+          python scripts/build_project_runner.py --output "$runner" --source-commit "$source_commit"
+          runner_sha256="$(sha256sum "$runner" | awk '{print $1}')"
+          printf '%s  %s\n' "$runner_sha256" "$(basename "$runner")" > "$runner_checksum"
+          runner_checksum_sha256="$(sha256sum "$runner_checksum" | awk '{print $1}')"
+          python scripts/sbom.py --output "$sbom" --source-commit "$source_commit" \
+            --artifact "$(basename "$runner")=$runner_sha256" \
+            --artifact "$(basename "$runner_checksum")=$runner_checksum_sha256"
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
           sbom_sha256="$(sha256sum "$sbom" | awk '{print $1}')"
-          printf '%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$source_commit" "$tag" > "$checksum"
+          printf '%s  %s\n%s  %s\n%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$runner_sha256" "$(basename "$runner")" "$runner_checksum_sha256" "$(basename "$runner_checksum")" "$source_commit" "$tag" > "$checksum"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+          echo "notes=$notes" >> "$GITHUB_OUTPUT"
+          echo "runner=$runner" >> "$GITHUB_OUTPUT"
+          echo "runner_checksum=$runner_checksum" >> "$GITHUB_OUTPUT"
+          echo "sbom=$sbom" >> "$GITHUB_OUTPUT"
+          echo "source_commit=$source_commit" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Attest every release asset before publication
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            ${{ steps.release-assets.outputs.archive }}
+            ${{ steps.release-assets.outputs.sbom }}
+            ${{ steps.release-assets.outputs.runner }}
+            ${{ steps.release-assets.outputs.runner_checksum }}
+            ${{ steps.release-assets.outputs.checksum }}
+      - name: Publish or verify immutable GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ARCHIVE: ${{ steps.release-assets.outputs.archive }}
+          RELEASE_CHECKSUM: ${{ steps.release-assets.outputs.checksum }}
+          RELEASE_NOTES: ${{ steps.release-assets.outputs.notes }}
+          RELEASE_RUNNER: ${{ steps.release-assets.outputs.runner }}
+          RELEASE_RUNNER_CHECKSUM: ${{ steps.release-assets.outputs.runner_checksum }}
+          RELEASE_SBOM: ${{ steps.release-assets.outputs.sbom }}
+          RELEASE_SOURCE_COMMIT: ${{ steps.release-assets.outputs.source_commit }}
+          RELEASE_TAG: ${{ steps.release-assets.outputs.tag }}
+        run: |
+          set -euo pipefail
+          archive="$RELEASE_ARCHIVE"
+          checksum="$RELEASE_CHECKSUM"
+          notes="$RELEASE_NOTES"
+          runner="$RELEASE_RUNNER"
+          runner_checksum="$RELEASE_RUNNER_CHECKSUM"
+          sbom="$RELEASE_SBOM"
+          source_commit="$RELEASE_SOURCE_COMMIT"
+          tag="$RELEASE_TAG"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             if gh release view "$tag" >/dev/null 2>&1; then
               existing="$RUNNER_TEMP/existing-$tag"
@@ -154,30 +204,18 @@ jobs:
               gh release download "$tag" --pattern "$(basename "$archive")" --dir "$existing"
               gh release download "$tag" --pattern "$(basename "$checksum")" --dir "$existing"
               gh release download "$tag" --pattern "$(basename "$sbom")" --dir "$existing"
-              cmp --silent "$archive" "$existing/$(basename "$archive")" || {
-                echo "HATA: mevcut immutable archive yeni byte'larla uyusmuyor." >&2
-                exit 1
-              }
-              cmp --silent "$checksum" "$existing/$(basename "$checksum")" || {
-                echo "HATA: mevcut immutable checksum yeni kayitla uyusmuyor." >&2
-                exit 1
-              }
-              cmp --silent "$sbom" "$existing/$(basename "$sbom")" || {
-                echo "HATA: mevcut immutable SBOM yeni byte'larla uyusmuyor." >&2
-                exit 1
-              }
+              gh release download "$tag" --pattern "$(basename "$runner")" --dir "$existing"
+              gh release download "$tag" --pattern "$(basename "$runner_checksum")" --dir "$existing"
+              cmp --silent "$archive" "$existing/$(basename "$archive")"
+              cmp --silent "$checksum" "$existing/$(basename "$checksum")"
+              cmp --silent "$sbom" "$existing/$(basename "$sbom")"
+              cmp --silent "$runner" "$existing/$(basename "$runner")"
+              cmp --silent "$runner_checksum" "$existing/$(basename "$runner_checksum")"
               echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
             else
-              gh release create "$tag" "$archive" "$checksum" "$sbom" --verify-tag --title "Divan $tag" --notes-file "$notes"
+              gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
             fi
           else
-            gh release create "$tag" "$archive" "$checksum" "$sbom" --target "$GITHUB_SHA" --title "Divan $tag" --notes-file "$notes"
+            test "$source_commit" = "$GITHUB_SHA"
+            gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" --target "$source_commit" --title "Divan $tag" --notes-file "$notes"
           fi
-          echo "archive=$archive" >> "$GITHUB_OUTPUT"
-          echo "sbom=$sbom" >> "$GITHUB_OUTPUT"
-      - name: ZIP ve SBOM build provenance imzala
-        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
-        with:
-          subject-path: |
-            ${{ steps.release-assets.outputs.archive }}
-            ${{ steps.release-assets.outputs.sbom }}

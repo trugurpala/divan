@@ -31,6 +31,10 @@ jobs:
           python scripts/catalog.py --check
           python scripts/v1.py --check
           python scripts/release.py --check
+          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-a.pyz" --source-commit "${{ github.sha }}"
+          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-b.pyz" --source-commit "${{ github.sha }}"
+          cmp "$RUNNER_TEMP/divan-project-a.pyz" "$RUNNER_TEMP/divan-project-b.pyz"
+          python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
           ruff check .
           python scripts/clean_code.py --check
           mypy scripts evals

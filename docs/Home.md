@@ -1,4 +1,4 @@
-# Divan Wiki · v0.14.1
+# Divan Wiki · v0.15.0
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -10,7 +10,7 @@ davranış eval'i ve yayın teftişi aynı çatıdadır.
 Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. v1
 durumu **7/8** kapıdır: bağımsız kullanıcı kabul kanıtı hâlâ bekleniyor.
 
-> **Güncel durum:** v0.14.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel durum:** v0.15.0 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

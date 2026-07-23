@@ -53,6 +53,128 @@ def write_fixture(root: pathlib.Path, data: dict[str, object], exceptions: objec
 
 
 class CommunityStandardsTests(unittest.TestCase):
+    def test_dcs_validation_does_not_require_project_registry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            data = {
+                "schema_version": 1,
+                "standards": [standard(number) for number in range(1, 12)],
+            }
+            write_fixture(root, data)
+            self.assertEqual(STANDARTLAR.validate_contract(root), [])
+
+    def test_project_standard_ids_and_applicability_are_exact(self) -> None:
+        data = STANDARTLAR.load_project_contract(ROOT)
+        self.assertEqual(
+            [row["id"] for row in data["standards"]],
+            [f"DPS-{number:03d}" for number in range(1, 13)],
+        )
+        applicable = {
+            project_type
+            for row in data["standards"]
+            for project_type in row["applies_to"]
+        }
+        self.assertEqual(
+            applicable,
+            {
+                "library",
+                "service",
+                "application",
+                "public-web",
+                "documentation",
+                "monorepo",
+            },
+        )
+        self.assertEqual(STANDARTLAR.validate_project_contract(ROOT), [])
+
+    def test_project_waivers_reject_expired_long_and_invalid_records(self) -> None:
+        waivers = {
+            "schema_version": 1,
+            "waivers": [
+                {
+                    "standard_id": "DPS-001",
+                    "target": "README.md",
+                    "reason": "migration",
+                    "owner": "maintainer",
+                    "created_on": "2026-01-01",
+                    "expires_on": "2026-07-01",
+                    "evidence": "README.md",
+                },
+                {
+                    "standard_id": "DPS-999",
+                    "target": "*.md",
+                    "reason": "invalid",
+                    "owner": "maintainer",
+                    "created_on": "not-a-date",
+                    "expires_on": "2027-01-01",
+                    "evidence": "README.md",
+                },
+            ],
+        }
+        errors = STANDARTLAR.validate_waivers(waivers, today=STANDARTLAR.date(2026, 7, 23))
+        self.assertTrue(any("expired" in error for error in errors))
+        self.assertTrue(any("180" in error for error in errors))
+        self.assertTrue(any("unknown" in error for error in errors))
+        self.assertTrue(any("wildcard" in error for error in errors))
+        self.assertTrue(any("YYYY-MM-DD" in error for error in errors))
+        self.assertTrue(any("not declared" in error for error in errors))
+
+    def test_malformed_project_type_registry_returns_errors(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "registry").mkdir()
+            (root / "registry" / "project-standards.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "waiver_max_days": 180,
+                        "project_types": None,
+                        "standards": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            errors = STANDARTLAR.validate_project_contract(root)
+        self.assertIsInstance(errors, list)
+        self.assertTrue(any("project_types" in error for error in errors))
+
+    def test_each_dps_applicability_set_is_exact(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "registry").mkdir()
+            contract = STANDARTLAR.load_project_contract(ROOT)
+            contract["standards"][10]["applies_to"] = ["library"]
+            (root / "registry" / "project-standards.json").write_text(
+                json.dumps(contract), encoding="utf-8"
+            )
+            errors = STANDARTLAR.validate_project_contract(root)
+        self.assertTrue(
+            any("DPS-011.applies_to" in error for error in errors)
+        )
+
+    def test_each_dps_evidence_target_set_is_exact(self) -> None:
+        data = STANDARTLAR.load_project_contract(ROOT)
+        self.assertEqual(
+            {row["id"]: row["evidence"] for row in data["standards"]},
+            {
+                standard_id: list(targets)
+                for standard_id, targets in (
+                    STANDARTLAR.project_contracts.STANDARD_TARGETS.items()
+                )
+            },
+        )
+        with tempfile.TemporaryDirectory(prefix="divan-standards-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / "registry").mkdir()
+            data["standards"][0]["evidence"] = [".divan/config.json"]
+            (root / "registry" / "project-standards.json").write_text(
+                json.dumps(data), encoding="utf-8"
+            )
+            errors = STANDARTLAR.validate_project_contract(root)
+        self.assertTrue(
+            any("DPS-001.evidence must match" in error for error in errors)
+        )
+
     def test_required_ids_and_levels_are_exact(self) -> None:
         data = STANDARTLAR.load_contract(ROOT)
         self.assertEqual(STANDARTLAR.REQUIRED_IDS, tuple(f"DCS-{number:03d}" for number in range(1, 12)))

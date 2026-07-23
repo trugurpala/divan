@@ -4,66 +4,173 @@
     {
       "id": "nextjs",
       "label": {"en": "Next.js", "tr": "Next.js"},
-      "detectors": [
-        {"kind": "package-json-dependency", "path": "package.json", "values": ["next"]}
-      ],
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["next"]}],
       "skills": [
         {"package": "react-pack", "skill": "vercel-react-best-practices"},
         {"package": "react-pack", "skill": "vercel-composition-patterns"},
         {"package": "react-pack", "skill": "web-design-guidelines"}
       ],
-      "checks": ["npm test", "npm run build"]
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
     },
     {
       "id": "react",
       "label": {"en": "React", "tr": "React"},
-      "detectors": [
-        {"kind": "package-json-dependency", "path": "package.json", "values": ["react"]}
-      ],
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["react"]}],
       "skills": [
         {"package": "react-pack", "skill": "vercel-react-best-practices"},
         {"package": "react-pack", "skill": "vercel-composition-patterns"}
       ],
-      "checks": ["npm test"]
+      "checks": ["project-native tests"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "vite",
+      "label": {"en": "Vite", "tr": "Vite"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["vite"]}],
+      "skills": [{"package": "react-pack", "skill": "web-design-guidelines"}],
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "vue",
+      "label": {"en": "Vue", "tr": "Vue"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["vue"]}],
+      "skills": [{"package": "ui-pack", "skill": "frontend-design"}],
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "nuxt",
+      "label": {"en": "Nuxt", "tr": "Nuxt"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["nuxt"]}],
+      "skills": [{"package": "ui-pack", "skill": "frontend-design"}],
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "svelte",
+      "label": {"en": "Svelte", "tr": "Svelte"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["svelte"]}],
+      "skills": [{"package": "ui-pack", "skill": "frontend-design"}],
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "sveltekit",
+      "label": {"en": "SvelteKit", "tr": "SvelteKit"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["@sveltejs/kit"]}],
+      "skills": [{"package": "ui-pack", "skill": "webapp-testing"}],
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "astro",
+      "label": {"en": "Astro", "tr": "Astro"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["astro"]}],
+      "skills": [{"package": "ui-pack", "skill": "frontend-design"}],
+      "checks": ["project-native tests", "project-native build"],
+      "project_types": ["application", "public-web"]
+    },
+    {
+      "id": "expo",
+      "label": {"en": "Expo", "tr": "Expo"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["expo"]}],
+      "skills": [{"package": "react-pack", "skill": "vercel-react-native-skills"}],
+      "checks": ["project-native tests"],
+      "project_types": ["application"]
+    },
+    {
+      "id": "react-native",
+      "label": {"en": "React Native", "tr": "React Native"},
+      "detectors": [{"kind": "package-json-dependency", "path": "package.json", "values": ["react-native"]}],
+      "skills": [{"package": "react-pack", "skill": "vercel-react-native-skills"}],
+      "checks": ["project-native tests"],
+      "project_types": ["application"]
     },
     {
       "id": "python",
       "label": {"en": "Python", "tr": "Python"},
       "detectors": [
-        {"kind": "path-exists", "path": "pyproject.toml"},
-        {"kind": "path-exists", "path": "requirements.txt"},
-        {"kind": "path-exists", "path": "setup.py"}
+        {"kind": "file-exists", "path": "pyproject.toml"},
+        {"kind": "file-exists", "path": "requirements.txt"},
+        {"kind": "file-exists", "path": "setup.py"}
       ],
       "skills": [
         {"package": "core-pack", "skill": "test-driven-development"},
         {"package": "core-pack", "skill": "systematic-debugging"}
       ],
-      "checks": ["python -m unittest discover"]
+      "checks": ["project-native tests"],
+      "project_types": []
+    },
+    {
+      "id": "django",
+      "label": {"en": "Django", "tr": "Django"},
+      "detectors": [
+        {"kind": "python-dependency", "path": "pyproject.toml", "values": ["django"]},
+        {"kind": "python-dependency", "path": "requirements.txt", "values": ["django"]}
+      ],
+      "skills": [{"package": "core-pack", "skill": "test-driven-development"}],
+      "checks": ["project-native tests"],
+      "project_types": ["application", "service"]
+    },
+    {
+      "id": "fastapi",
+      "label": {"en": "FastAPI", "tr": "FastAPI"},
+      "detectors": [
+        {"kind": "python-dependency", "path": "pyproject.toml", "values": ["fastapi"]},
+        {"kind": "python-dependency", "path": "requirements.txt", "values": ["fastapi"]}
+      ],
+      "skills": [{"package": "core-pack", "skill": "test-driven-development"}],
+      "checks": ["project-native tests"],
+      "project_types": ["application", "service"]
+    },
+    {
+      "id": "go",
+      "label": {"en": "Go", "tr": "Go"},
+      "detectors": [{"kind": "file-exists", "path": "go.mod"}],
+      "skills": [
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "systematic-debugging"}
+      ],
+      "checks": ["project-native tests"],
+      "project_types": []
+    },
+    {
+      "id": "rust",
+      "label": {"en": "Rust", "tr": "Rust"},
+      "detectors": [{"kind": "file-exists", "path": "Cargo.toml"}],
+      "skills": [
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "systematic-debugging"}
+      ],
+      "checks": ["project-native tests"],
+      "project_types": []
     },
     {
       "id": "static-web",
       "label": {"en": "Static web", "tr": "Statik web"},
       "detectors": [
-        {"kind": "path-exists", "path": "index.html"},
-        {"kind": "path-exists", "path": "site/index.html"}
+        {"kind": "file-exists", "path": "index.html"},
+        {"kind": "file-exists", "path": "site/index.html"}
       ],
       "skills": [
         {"package": "ui-pack", "skill": "frontend-design"},
         {"package": "ui-pack", "skill": "webapp-testing"}
       ],
-      "checks": ["browser verification"]
+      "checks": ["browser verification"],
+      "project_types": ["public-web"]
     },
     {
       "id": "documentation",
       "label": {"en": "Documentation", "tr": "Dokümantasyon"},
       "detectors": [
-        {"kind": "path-exists", "path": "docs"},
-        {"kind": "path-exists", "path": "README.md"}
+        {"kind": "directory-exists", "path": "docs"},
+        {"kind": "file-exists", "path": "README.md"}
       ],
-      "skills": [
-        {"package": "core-pack", "skill": "writing-skills"}
-      ],
-      "checks": ["link validation"]
+      "skills": [{"package": "core-pack", "skill": "writing-skills"}],
+      "checks": ["link validation"],
+      "project_types": ["documentation"]
     },
     {
       "id": "generic",
@@ -75,7 +182,8 @@
         {"package": "core-pack", "skill": "test-driven-development"},
         {"package": "core-pack", "skill": "verification-before-completion"}
       ],
-      "checks": ["project-native tests"]
+      "checks": ["project-native tests"],
+      "project_types": []
     }
   ]
 }

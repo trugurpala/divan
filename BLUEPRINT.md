@@ -54,6 +54,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Yayımlanan temel
 
+- **v0.15.0 ✓** Local release candidate for the Portable Project OS;
+  `DPS-001..DPS-012` contracts, Unicode intent routing, bounded monorepo
+  discovery, supervised goal/receipt lifecycle, provider-native delivery
+  evidence, reproducible project runner, and public-web SEO/accessibility
+  policy. Local preparation is complete; PR/main/tag/Release/Pages/Wiki and
+  dual-host delivery remain separately evidenced states.
 - **v0.14.1 ✓** Codex'in yerel marketplace metadata dosyasını kaynak/ref/commit
   doğrulamasıyla işlemsel yükseltmeye dahil eden uyumluluk düzeltmesi; diğer
   kirli dosyalar ve metadata tahrifatı fail-closed kalır
@@ -126,6 +132,13 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-24: v0.15.0 release surfaces were prepared only through the canonical
+  `scripts/release.py --prepare 0.15.0` path after an approved whole-branch
+  review. The preflight passed 452 tests (10 platform-specific skips), Ruff,
+  mypy, Clean Code, and 71% branch coverage against the 64% floor. Five
+  packages/41 skills and v1 readiness at 7/8 are unchanged. No PR, merge, tag,
+  GitHub Release, Pages/Wiki publication, or global-host delivery claim is made
+  by this local preparation record.
 - 2026-07-21: v0.13.0 local release candidate prepared after 223 tests (2
   platform-specific skips), Ruff, mypy, Clean Code, actionlint 1.7.10,
   skills-ref 0.1.1 validation of 41 skills, and Claude Code 2.1.212 validation
@@ -276,7 +289,8 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Run an independent whole-branch review, fix every Critical and Important
-finding, then deliver v0.13.0 through a green PR/main/public-release chain.
-Only after main checks are observed may the main ruleset be applied. Keep v1 at
-7/8 until a non-owner submits reproducible acceptance evidence.
+Push `codex/v015-project-os`, open a ready pull request, and wait for every
+required workflow without bypass. Merge only when green, then bind tag,
+GitHub Release, release assets, Pages, Wiki, and dual-host v0.15.0 delivery to
+the immutable `main` commit. Keep v1 at 7/8 until a non-owner submits
+reproducible acceptance evidence.

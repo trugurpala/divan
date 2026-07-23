@@ -99,3 +99,46 @@ birlikte incelenmeden pin güncellenmez.
 eylemini çağıran resmî bir composite wrapper'dır. Yeni kurulumda doğrudan
 `actions/attest` önerilse de onaylı planın immutable wrapper pini korunmuştur;
 v4'ün güncel `artifact-metadata: write` gereksinimi dar job izni olarak eklenmiştir.
+
+## Project OS kaynak kararları (2026-07-23)
+
+Bu inceleme, taşınabilir Project OS için ürün ve araç sınırlarını belirler. Bu
+tablodaki hiçbir kaynak kodu, prompt, şablon veya binary bu görevde depoya
+kopyalanmadı; **kaynak kodu dağıtılmaz**. `ADOPT` veya `ADAPT`, yalnız sonraki
+ayrı işte pin, atıf, lisans, eval ve teftiş ile ele alınabilecek aday kararını
+anlatır; kurulum veya yürütme izni değildir.
+
+| Kaynak | İncelenen commit | Lisans kanıtı | Karar | Sınır / gerekçe |
+|---|---|---|---|---|
+| agentskills/agentskills | `38a2ff82958afee88dadf4831509e6f7e9d8ef4e` | Apache-2.0, commit'teki `LICENSE` | ADOPT | Açık Agent Skills sözleşmesi için aday; runtime veya kod alımı yok |
+| github/spec-kit | `cf0abe28f7ee875448f9e4dbd8cd2b533797a1cb` | MIT, commit'teki `LICENSE` | ADAPT | Specification/plan/task kanıt akışı Divan'ın kendi sözleşmesine uyarlanır |
+| Fission-AI/OpenSpec | `a874d1d6715886db9210c527b1fc3799d9688a76` | MIT, commit'teki `LICENSE` | ADAPT | Değişiklik-spec fikri, Divan receipt ve fail-closed durum modeline uyarlanır |
+| MaxMiksa/Auto-Company | `ebfab9b4bd5f0ab5ad452a1ff85285b3c141acdd` | Ayrı LICENSE/COPYING/NOTICE yok; README MIT rozeti yeterli dağıtım kanıtı sayılmadı | REFERENCE | 24/7 daemon, geniş yetki ve gizli-gerekçe/log riski reddedilir |
+| GoogleChrome/lighthouse-ci | `ebee453dad3f8acacd657a62ccc65e3296afb7d0` | Apache-2.0, commit'teki `LICENSE` | ADOPT | Yalnız uygulanabilir public-web için ayrı, pinli ölçüm/provider işi |
+| lycheeverse/lychee | `af73b4e02731e0ff3a678b56769704d689138279` | Apache-2.0 OR MIT, `lychee-bin/Cargo.toml` | ADOPT | Yalnız ayrı provider sözleşmesiyle opt-in link denetimi |
+
+Auto Company, Padişah/Divan rol metaforuna karşılaştırmalı bir girdi sağladı;
+Divan'ın seçimi supervised autonomy, açık onay, redacted receipts ve
+command-invoked no-daemon modelidir. Lighthouse CI ve Lychee için ağ, token,
+rate-limit veya dış ortam gerektiren bir çalışma provider yoksa `BLOCKED` olur;
+sentetik başarı üretilmez.
+
+SEO çalışma planının yürütülebilir kimlikleri ayrıca
+`registry/seo-policy.json` içinde sabitlenir. Lighthouse CI için
+`patrickhulce/lhci-client` Linux/AMD64 OCI manifest digest'i
+`558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9`
+etiket adına göre değil, image config history ve container içindeki
+`lhci --version` çıktısına göre gerçekte `0.14.0` içerir. Npm integrity değeri
+`sha512-TxOH9pFBnmmN7Jmo2Aimxx5UhE8veqXpHfFJDMWsCVxkwh7mGxcAWchGl84mK139SZbbRmerqZ72c+h2nG9/QQ==`
+ve kaynak `gitHead` değeri
+`36e629e9c03a2b328f5996c16f256431c5fef1fe`; Lychee için
+`lychee@0.24.2` için resmî
+`lychee-x86_64-unknown-linux-gnu.tar.gz` release varlığının SHA-256 değeri
+`1f4e0ef7f6554a6ed33dd7ac144fb2e1bbed98598e7af973042fc5cd43951c9a`
+ve `lychee-v0.24.2` tag commit'i
+`e85aaf5524b2f808e63bae55e594c843220f10f2` kullanılır. Üretilen CI workflow'u
+OCI imajını digest ile çeker ve Lychee arşivini indirir; SHA, tam 13 üyeli arşiv
+listesi, dosya türleri, symlink/hardlink yokluğu ve path containment koşullarını
+doğrular. Yalnız iç içe sabit executable yolunu çalıştırır. Komut planındaki
+acquisition/execution argv ve outputs workflow'un tek yürütme kaynağıdır. Divan
+bu binary'leri kendi release'inde dağıtmaz.

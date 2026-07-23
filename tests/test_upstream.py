@@ -81,6 +81,25 @@ class UpstreamGovernanceTests(unittest.TestCase):
         self.assertTrue(any("decision" in error for error in errors))
         self.assertTrue(any("local_tree_sha256" in error for error in errors))
 
+    def test_project_os_research_is_documented_without_distribution_claim(self) -> None:
+        upstream = (ROOT / "UPSTREAM.md").read_text(encoding="utf-8")
+        licenses = (ROOT / "THIRD_PARTY_LICENSES.md").read_text(encoding="utf-8")
+        sources = {
+            "agentskills/agentskills": "38a2ff82958afee88dadf4831509e6f7e9d8ef4e",
+            "github/spec-kit": "cf0abe28f7ee875448f9e4dbd8cd2b533797a1cb",
+            "Fission-AI/OpenSpec": "a874d1d6715886db9210c527b1fc3799d9688a76",
+            "MaxMiksa/Auto-Company": "ebfab9b4bd5f0ab5ad452a1ff85285b3c141acdd",
+            "GoogleChrome/lighthouse-ci": "ebee453dad3f8acacd657a62ccc65e3296afb7d0",
+            "lycheeverse/lychee": "af73b4e02731e0ff3a678b56769704d689138279",
+        }
+        for repository, pin in sources.items():
+            with self.subTest(repository=repository):
+                self.assertIn(repository, upstream)
+                self.assertIn(pin, upstream)
+                self.assertIn(repository, licenses)
+        self.assertIn("kaynak kodu dağıtılmaz", upstream)
+        self.assertIn("kaynak kodu dağıtılmaz", licenses)
+
 
 if __name__ == "__main__":
     unittest.main()
