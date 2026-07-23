@@ -125,10 +125,10 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Vibe coder'ın vezirler kurulu</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Padişah sensin.</b> Divan, Claude Code ve Codex için <b>Yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.13.0 · 41 vezir · 5 paket · v1: 7/8.</p>
+    <p class="tez"><b>Padişah sensin.</b> Divan, Claude Code ve Codex için <b>Yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.14.0 · 41 vezir · 5 paket · v1: 7/8.</p>
     <div class="ferman">
       <p class="ferman-etiket">İlk mühür · yazmayan önizleme</p>
-      <code>python scripts/kur-hostlar.py --host both --ref v0.13.0</code>
+      <code>python scripts/divan.py install --host both --ref v0.14.0</code>
     </div>
   </div>
 </header>
@@ -160,17 +160,34 @@ footer p+p{margin-top:10px}
   </div>
 </section>
 
+<section class="bab" id="company-os">
+  <div class="wrap">
+    <p class="bab-etiket">Company OS</p>
+    <h2>Tek ferman, doğru ekip, eksiksiz etki</h2>
+    <p class="tez">Divan projeyi kod çalıştırmadan inceler; göreve ve framework'e
+      göre en küçük yetkin ekibi kurar. Her değişikliği test, README, Wiki, site
+      ve yayın bağımlılıklarına kadar izler.</p>
+    <div class="vezirler">
+      <article class="vezir"><h3>Core Pack</h3><p>Plan, TDD, debugging, inceleme ve doğrulama; bütün ürün değişikliklerinin temel disiplini.</p></article>
+      <article class="vezir"><h3>UI Pack</h3><p>Arayüz, UX, erişilebilirlik, responsive davranış ve gerçek tarayıcı kanıtı.</p></article>
+      <article class="vezir"><h3>React Pack</h3><p>Yalnız React, Next.js veya React Native kanıtı varsa etkinleşen framework uzmanlığı.</p></article>
+      <article class="vezir"><h3>Zanaat Pack</h3><p>Yalnız entegrasyon, MCP/API veya özgün yaratıcı üretim gerektiğinde katılan uzmanlık.</p></article>
+    </div>
+    <p style="margin-top:18px"><a href="https://github.com/trugurpala/divan/blob/main/docs/Company-OS.tr.md">Company OS sözleşmesini incele</a></p>
+  </div>
+</section>
+
 <section class="bab" id="kurulum">
   <div class="wrap">
     <p class="bab-etiket">Güvenli yol</p>
     <h2>Beş dakikada ilk başarı</h2>
     <ol class="yasam">
-      <li><div><b>Kurulumu uygula</b><code>python scripts/kur-hostlar.py --host both --ref v0.13.0 --execute</code></div></li>
-      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/kur-hostlar.py --doctor --host both --ref v0.13.0</code></div></li>
-      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0</code></div></li>
-      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0 --execute</code></div></li>
-      <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
-      <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
+      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v0.14.0 --execute</code></div></li>
+      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v0.14.0</code></div></li>
+      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v0.14.0</code></div></li>
+      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v0.14.0 --execute</code></div></li>
+      <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
+      <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>
     <p style="margin-top:18px">Tam kaldırma ve sahiplik sınırları: <a href="https://github.com/trugurpala/divan/blob/main/docs/Kaldirma.md">docs/Kaldirma.md</a>.</p>
   </div>
@@ -215,10 +232,10 @@ footer p+p{margin-top:10px}
     <p class="bab-etiket">Açık kapılar</p>
     <h2>Standart ve destek</h2>
     <div class="rota" aria-label="Topluluk yolları">
-      <a href="https://github.com/trugurpala/divan/blob/main/docs/Topluluk-Standartlari.md">Topluluk Standartları · DCS-001–DCS-010</a>
+      <a href="https://github.com/trugurpala/divan/blob/main/docs/Topluluk-Standartlari.md">Topluluk Standartları · DCS-001–DCS-011</a>
       <a href="https://github.com/trugurpala/divan/blob/main/SUPPORT.md">Soru, hata, güvenlik ve öneri yolları</a>
-      <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.md">Katkı rehberi · Türkçe</a>
-      <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.en.md">Contribution guide · English</a>
+      <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.tr.md">Katkı rehberi · Türkçe</a>
+      <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.md">Contribution guide · English</a>
     </div>
     <p style="margin-top:18px">v1 henüz ilan edilmedi: 8 kapının 7'si geçti; bağımsız kullanıcı kabul kanıtı bekleniyor.</p>
   </div>

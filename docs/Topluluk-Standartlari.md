@@ -2,7 +2,7 @@
 
 > Bu dosya `registry/community-standards.json` kaynagindan uretilir. Elle degistirmeyin.
 
-Dogrulama: `python scripts/standartlar.py --check`
+Dogrulama: `python scripts/standards.py --check`
 
 ## DCS-001 - Bes dakikada ilk basari
 
@@ -17,7 +17,7 @@ Yeni kullanici pinlenmis kurulum, salt-okunur onizleme, doctor sonucu ve kurtarm
 
 **Kanıt:**
 - `docs/Kurulum.md`
-- `scripts/kur-hostlar.py`
+- `scripts/host_lifecycle.py`
 - `tests/test_host_install.py`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
@@ -34,7 +34,7 @@ Host CLI'leri sinirda adapter olarak kalir; cekirdek politika ve islem durumu st
 - `python scripts/validate.py`
 
 **Kanıt:**
-- `scripts/kur-hostlar.py`
+- `scripts/host_lifecycle.py`
 - `scripts/legacy_state.py`
 - `tests/test_host_install.py`
 
@@ -49,11 +49,11 @@ Host CLI'leri sinirda adapter olarak kalir; cekirdek politika ve islem durumu st
 Temiz kod ratcheti yeni karmasikligi, uzun fonksiyonlari ve buyuk modulleri onler; eski borc kuculur.
 
 **Kontroller:**
-- `python scripts/hijyen.py --check`
+- `python scripts/hygiene.py --check`
 - `python scripts/clean_code.py --check`
 
 **Kanıt:**
-- `scripts/hijyen.py`
+- `scripts/hygiene.py`
 - `scripts/clean_code.py`
 - `registry/clean-code-baseline.json`
 - `docs/Standartlar-ve-Limitler.md`
@@ -74,7 +74,7 @@ Kamuya acik otomasyon yapilandirilmis cikti, eyleme donuk hata ve sifir olmayan 
 
 **Kanıt:**
 - `scripts/validate.py`
-- `scripts/kur-hostlar.py`
+- `scripts/host_lifecycle.py`
 - `tests/test_validate.py`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
@@ -98,7 +98,7 @@ Davranis degisiklikleri once basarisiz regresyon testiyle baslar; kalite iddiala
 - `tests/test_real_adapters.py`
 - `evals/README.md`
 - `pyproject.toml`
-- `.github/workflows/teftis.yml`
+- `.github/workflows/quality-gate.yml`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
 
@@ -114,7 +114,7 @@ Bagimliliklar ve Actions degismez olarak pinlenir, izinler asgari olur ve yayin 
 - `python -m unittest tests.test_workflows -v`
 
 **Kanıt:**
-- `.github/workflows/teftis.yml`
+- `.github/workflows/quality-gate.yml`
 - `.github/workflows/codeql.yml`
 - `tests/test_workflows.py`
 
@@ -133,7 +133,7 @@ Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis D
 - `python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v`
 
 **Kanıt:**
-- `scripts/kur-hostlar.py`
+- `scripts/host_lifecycle.py`
 - `scripts/host_upgrade.py`
 - `scripts/host_transactions.py`
 - `scripts/host_install_journal.py`
@@ -141,8 +141,8 @@ Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis D
 - `scripts/host_journal_scan.py`
 - `scripts/host_journal_transitions.py`
 - `scripts/host_state.py`
-- `scripts/kaldir-codex.ps1`
-- `scripts/kaldir-codex.sh`
+- `scripts/uninstall_codex.ps1`
+- `scripts/uninstall_codex.sh`
 - `tests/test_host_install.py`
 - `tests/test_host_upgrade.py`
 - `tests/test_host_upgrade_security.py`
@@ -160,7 +160,7 @@ Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis D
 Turkce ve Ingilizce kritik yollar, Wiki, Pages ve yayin metaverisi yayin manifestosu ile eszamanli kalir.
 
 **Kontroller:**
-- `python scripts/yayin.py --check`
+- `python scripts/release.py --check`
 - `python scripts/wiki.py --check`
 
 **Kanıt:**
@@ -180,12 +180,12 @@ Turkce ve Ingilizce kritik yollar, Wiki, Pages ve yayin metaverisi yayin manifes
 Kullanicilar soru, hata, guvenlik, skill onerisi ve kabul kanitini ayirir; katkilara tek yerel denetim sirasi sunulur.
 
 **Kontroller:**
-- `python scripts/devral.py --check`
+- `python scripts/handoff.py --check`
 
 **Kanıt:**
 - `CONTRIBUTING.md`
 - `.github/ISSUE_TEMPLATE`
-- `scripts/devral.py`
+- `scripts/handoff.py`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
 
@@ -198,12 +198,37 @@ Kullanicilar soru, hata, guvenlik, skill onerisi ve kabul kanitini ayirir; katki
 Cekirdek kullanim telemetri gerektirmez; metin ciktilari renksiz calisir, UTF-8/LF korunur ve benimsenme iddialari kamu kanitina dayanir.
 
 **Kontroller:**
-- `python scripts/hijyen.py --check`
+- `python scripts/hygiene.py --check`
 - `python scripts/v1.py --check`
 
 **Kanıt:**
-- `scripts/hijyen.py`
+- `scripts/hygiene.py`
 - `registry/v1-gates.json`
 - `docs/V1-Hazirlik.md`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
+
+## DCS-011 - Ingilizce teknik cekirdek ve izlenebilir etki
+
+**English:** English technical core and traceable impact
+
+**Duzey:** required
+
+Kanonik teknik girisler Ingilizce adlandirilir; Turkce yerellestirme korunur ve Company OS her degisikligi rol, framework, paket ve gecis etkilerine baglar.
+
+**Kontroller:**
+- `python scripts/naming.py --check`
+- `python scripts/divan.py company-validate`
+
+**Kanıt:**
+- `registry/naming-policy.json`
+- `scripts/naming.py`
+- `scripts/divan.py`
+- `plugins/sadrazam/company/roles.json`
+- `plugins/sadrazam/company/workflows.json`
+- `plugins/sadrazam/company/frameworks.json`
+- `plugins/sadrazam/company/impact-graph.json`
+- `tests/test_company_engine.py`
+- `tests/test_naming.py`
+
+**Istisna politikasi:** Eski Turkce teknik adlar yalniz registry/naming-policy.json icindeki sureli uyumluluk kayitlariyla korunabilir.

@@ -8,7 +8,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "divan_upstream", ROOT / "scripts" / "upstream-denetim.py"
+    "divan_upstream", ROOT / "scripts" / "upstream_watch.py"
 )
 assert SPEC and SPEC.loader
 UPSTREAM = importlib.util.module_from_spec(SPEC)

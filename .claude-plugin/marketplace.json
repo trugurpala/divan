@@ -4,45 +4,45 @@
     "name": "trugurpala",
     "email": "trugurpala@users.noreply.github.com"
   },
-  "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam, planlama, TDD, debugging, UI/UX, React ve zanaat paketleri.",
-  "version": "0.13.0",
+  "description": "Divan Company OS for vibe coders: project intelligence, impact mapping, verified delivery, UI/UX, React, and specialist craft packs.",
+  "version": "0.14.0",
   "metadata": {
-    "description": "Divan: vibe coder'in vezirler kurulu. Sadrazam (uctan-uca orkestrator) + planlama, TDD, debugging, UI/UX ve React paketleri.",
-    "version": "0.13.0"
+    "description": "Divan Company OS: natural-language orchestration, planning, TDD, debugging, UI/UX, React, and specialist delivery.",
+    "version": "0.14.0"
   },
   "plugins": [
     {
       "name": "sadrazam",
       "source": "./plugins/sadrazam",
-      "description": "Bas vezir: her istegi Divan Protokolu ile bastan sona bitmis, dogrulanmis teslimata cevirir",
+      "description": "Company OS orchestrator: discovers the project, selects the qualified team, maps impact, and verifies delivery",
       "version": "0.9.1",
       "strict": true
     },
     {
       "name": "core-pack",
       "source": "./plugins/core-pack",
-      "description": "Cekirdek gelistirme disiplini: beyin firtinasi, plan yazma/yurutme, sistematik debugging, TDD, tamamlama-oncesi dogrulama",
+      "description": "Core engineering discipline: discovery, planning, systematic debugging, TDD, review, and verification",
       "version": "0.5.1",
       "strict": true
     },
     {
       "name": "ui-pack",
       "source": "./plugins/ui-pack",
-      "description": "UI/UX paketi: ozgun frontend tasarim, tarayici testi (Playwright) ve design-system uretici",
+      "description": "UI/UX pack: accessible frontend design, browser testing, and design-system intelligence",
       "version": "0.1.0",
       "strict": true
     },
     {
       "name": "react-pack",
       "source": "./plugins/react-pack",
-      "description": "React paketi: best practices, composition patterns ve web tasarim kurallari",
+      "description": "React pack: performance practices, composition patterns, optimization, and web design guidelines",
       "version": "0.2.1",
       "strict": true
     },
     {
       "name": "zanaat-pack",
       "source": "./plugins/zanaat-pack",
-      "description": "Ehl-i Hiref: sanat/zanaat vezirleri (Anthropic Apache 2.0)",
+      "description": "Specialist craft pack: MCP/API integrations, themes, visual artifacts, and creative production",
       "version": "0.1.1",
       "strict": true
     }

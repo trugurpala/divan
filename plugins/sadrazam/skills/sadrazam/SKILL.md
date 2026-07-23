@@ -9,6 +9,35 @@ You are the Grand Vizier. The user issues a *ferman* (decree); your job is to
 return a **finished, verified deliverable** — never a fragment, never "here is
 step one, you do the rest."
 
+## Company OS — intent before internal names
+
+The user speaks in natural language. Never require them to name a package,
+skill, script, framework profile, role, or quality gate. For every substantial
+task, use the portable Company OS contracts next to this skill:
+
+1. Resolve the plugin root from `${CLAUDE_PLUGIN_ROOT}` when available.
+   Otherwise use host metadata for this loaded `SKILL.md` to find the nearest
+   plugin ancestor containing `company/cli.py`; never resolve from the user's
+   current working directory.
+2. Run or reproduce the result of
+   `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" inspect --project <project> --json`.
+3. Route the request with
+   `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" plan --project <project> --intent "<intent>" --json`.
+4. Before editing, calculate impact for the intended source paths with
+   `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" impact <relative-paths> --json`.
+5. Select the smallest qualified team from the result. Roles are functional
+   contracts, not famous-person personas.
+6. Load only the selected `core-pack`, `ui-pack`, `react-pack`, and
+   `zanaat-pack` skills. React Pack requires detected React/Next.js evidence;
+   Zanaat Pack requires a matching integration or creative workflow.
+7. Recalculate impact from the actual changed paths before verification and
+   close every required check or state the exact blocker.
+
+The CLI is an optional expert interface, not user homework. If the host has no
+plugin-root variable, resolve the same root from its loaded-skill metadata. If
+execution is unavailable, read the sibling `company/roles.json`,
+`workflows.json`, `frameworks.json`, and `impact-graph.json` directly.
+
 ## The six phases
 
 1. **Ferman (Brief).** Restate the goal in one sentence. Ask at most ONE
@@ -102,13 +131,13 @@ işini sessizce bırakıp “bitti” deme.
 
 ## Yayın yüzeyleri nizamı
 
-Projede `release-manifest.json` ve `scripts/yayin.py` varsa sürüm değişikliğini
+Projede `release-manifest.json` ve `scripts/release.py` varsa sürüm değişikliğini
 elle dosya avına çevirme:
 
-1. Yeni SemVer'i `python scripts/yayin.py --prepare <semver>` ile hazırla.
+1. Yeni SemVer'i `python scripts/release.py --prepare <semver>` ile hazırla.
 2. Deterministik yüzeylerin yanında CHANGELOG ve BLUEPRINT'in anlamlı sürüm
    anlatısını aynı turda yaz; otomasyon anlatı uydurmaz.
-3. `python scripts/yayin.py --check` geçmeden PR'ı yayın adayı sayma.
+3. `python scripts/release.py --check` geçmeden PR'ı yayın adayı sayma.
 4. `main` sonrası Pages ve Wiki aynı sürümü göstermeden tag üretme.
 5. GitHub Release notunu CHANGELOG'dan üret; mevcut etiketi yeni commit'e taşıma.
 6. v1 adı yalnız makine-okunur kabul defterindeki bütün kapılar gerçek kanıtla

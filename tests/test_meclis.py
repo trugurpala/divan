@@ -4,7 +4,9 @@ import pathlib
 import unittest
 
 KOK = pathlib.Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("divan_meclis", KOK / "scripts" / "meclis.py")
+SPEC = importlib.util.spec_from_file_location(
+    "divan_candidate_review", KOK / "scripts" / "candidate_review.py"
+)
 MECLIS = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader
 SPEC.loader.exec_module(MECLIS)

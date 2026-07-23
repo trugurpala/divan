@@ -527,7 +527,8 @@ class HostUpgradeSecurityTests(unittest.TestCase):
         command = HOSTS._host_transactions.recovery_command(path)
 
         self.assertIn(str(path.resolve()), command)
-        self.assertIn(str((ROOT / "scripts" / "kur-hostlar.py").resolve()), command)
+        self.assertIn(str((ROOT / "scripts" / "divan.py").resolve()), command)
+        self.assertIn("recover", command)
         self.assertIn(sys.executable, command)
 
     def test_rollback_equals_syntax_uses_the_recovery_parser(self) -> None:

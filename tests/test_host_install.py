@@ -14,7 +14,9 @@ from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-SPEC = importlib.util.spec_from_file_location("divan_host_install", ROOT / "scripts" / "kur-hostlar.py")
+SPEC = importlib.util.spec_from_file_location(
+    "divan_host_install", ROOT / "scripts" / "host_lifecycle.py"
+)
 assert SPEC and SPEC.loader
 HOST_INSTALL = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(HOST_INSTALL)

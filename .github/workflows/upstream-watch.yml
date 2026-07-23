@@ -1,4 +1,4 @@
-name: nobet
+name: upstream-watch
 on:
   workflow_dispatch:
   schedule:
@@ -18,7 +18,7 @@ jobs:
       - id: nobet
         run: |
           set +e
-          python scripts/upstream-denetim.py > rapor.txt 2>&1
+          python scripts/upstream_watch.py > rapor.txt 2>&1
           kod=$?
           set -e
           case "$kod" in

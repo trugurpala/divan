@@ -10,7 +10,7 @@ import zlib
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("divan_yayin", ROOT / "scripts" / "yayin.py")
+SPEC = importlib.util.spec_from_file_location("divan_release", ROOT / "scripts" / "release.py")
 assert SPEC and SPEC.loader
 YAYIN = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(YAYIN)
@@ -122,7 +122,7 @@ class PublicationTests(unittest.TestCase):
         self.assertTrue(notes.startswith(f"# Divan v{current}"))
         self.assertIn("## Sabitlenmiş kurulum", notes)
         self.assertIn(f"--ref v{current}", notes)
-        self.assertIn("scripts/kur-hostlar.py --host both", notes)
+        self.assertIn("scripts/divan.py install --host both", notes)
         self.assertIn(f"divan-v{current}.sha256", notes)
 
     def test_both_native_marketplaces_match_release_version(self) -> None:
@@ -142,17 +142,19 @@ class PublicationTests(unittest.TestCase):
         self.assertTrue(
             {
                 ".agents/plugins/marketplace.json",
-                "scripts/kur-hostlar.py",
+                "scripts/divan.py",
+                "scripts/host_lifecycle.py",
                 "scripts/legacy_state.py",
-                "scripts/hijyen.py",
-                "scripts/standartlar.py",
+                "scripts/hygiene.py",
+                "scripts/standards.py",
+                "scripts/naming.py",
                 "evals/run.py",
                 "evals/adapters/claude_agent.py",
                 "evals/adapters/codex_judge.py",
                 "NOTICE.md",
                 "registry/upstream-baselines.json",
-                ".github/workflows/uyumluluk.yml",
-                ".github/workflows/teftis.yml",
+                ".github/workflows/compatibility.yml",
+                ".github/workflows/quality-gate.yml",
                 "registry/community-standards.json",
                 "registry/standard-exceptions.json",
                 "docs/Topluluk-Standartlari.md",

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "effect_edges": {
+    "catalog": ["documentation"],
+    "documentation": ["public-site", "wiki"],
+    "evaluation": ["release-validation"],
+    "marketplace-validation": ["release-validation"],
+    "public-site": ["release-validation"],
+    "wiki": ["release-validation"],
+    "company-validation": ["documentation"]
+  },
+  "effect_checks": {
+    "catalog": ["python scripts/catalog.py --check"],
+    "evaluation": ["python evals/run.py --check"],
+    "marketplace-validation": ["python scripts/validate.py"],
+    "wiki": ["python scripts/wiki.py --check"],
+    "public-site": ["python -m unittest tests.test_site_markup -v"],
+    "release-validation": ["python scripts/release.py --check"],
+    "accessibility": ["python -m unittest tests.test_site_markup -v"],
+    "browser-testing": ["browser verification"],
+    "company-validation": ["python scripts/divan.py company-validate"]
+  },
+  "rules": [
+    {
+      "id": "skill-contract",
+      "patterns": ["plugins/*/skills/*/SKILL.md"],
+      "effects": ["catalog", "evaluation", "marketplace-validation"],
+      "checks": ["python scripts/validate.py"]
+    },
+    {
+      "id": "plugin-inventory",
+      "patterns": ["plugins/*/.claude-plugin/plugin.json", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
+      "effects": ["catalog", "marketplace-validation"],
+      "checks": ["python scripts/validate.py"]
+    },
+    {
+      "id": "company-contract",
+      "patterns": ["plugins/sadrazam/company/*.json", "plugins/sadrazam/company/*.py"],
+      "effects": ["company-validation"],
+      "checks": ["python -m unittest tests.test_company_engine -v"]
+    },
+    {
+      "id": "user-interface",
+      "patterns": ["site/*.html", "docs/index.html"],
+      "effects": ["accessibility", "browser-testing", "public-site"],
+      "checks": []
+    },
+    {
+      "id": "documentation-source",
+      "patterns": ["README*.md", "docs/*.md", "CONTRIBUTING*.md"],
+      "effects": ["documentation"],
+      "checks": []
+    },
+    {
+      "id": "release-contract",
+      "patterns": ["VERSION", "CHANGELOG.md", "release-manifest.json", "scripts/release.py"],
+      "effects": ["release-validation", "public-site", "wiki"],
+      "checks": []
+    },
+    {
+      "id": "quality-controller",
+      "patterns": ["scripts/validate.py", "scripts/standards.py", "scripts/naming.py", "scripts/clean_code.py", "registry/*.json"],
+      "effects": ["company-validation", "release-validation"],
+      "checks": ["python scripts/validate.py", "python scripts/clean_code.py --check"]
+    },
+    {
+      "id": "host-lifecycle",
+      "patterns": ["scripts/divan.py", "scripts/host_*.py", "scripts/install_codex.*", "scripts/uninstall_codex.*"],
+      "effects": ["marketplace-validation", "release-validation"],
+      "checks": ["python -m unittest tests.test_host_install tests.test_host_upgrade -v"]
+    },
+    {
+      "id": "continuous-integration",
+      "patterns": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+      "effects": ["release-validation"],
+      "checks": ["actionlint", "python -m unittest tests.test_workflows -v"]
+    },
+    {
+      "id": "test-contract",
+      "patterns": ["tests/test_*.py"],
+      "effects": ["release-validation"],
+      "checks": ["python -m unittest discover -s tests -v"]
+    },
+    {
+      "id": "repository-controller",
+      "patterns": ["scripts/*.py"],
+      "effects": ["release-validation"],
+      "checks": ["python scripts/validate.py"]
+    },
+    {
+      "id": "installed-command",
+      "patterns": ["plugins/*/commands/*.md"],
+      "effects": ["documentation", "marketplace-validation"],
+      "checks": ["python scripts/validate.py"]
+    }
+  ]
+}

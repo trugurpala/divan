@@ -12,10 +12,10 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Upstream kökenleri ve yamalar: `UPSTREAM.md`
 - Lisans envanteri: `THIRD_PARTY_LICENSES.md`
 - Yerel teftiş: `scripts/validate.py`
-- Katalog teftişi: `scripts/katalog.py --check`
-- Yayın yüzeyleri: `release-manifest.json` ve `scripts/yayin.py --check`
+- Katalog teftişi: `scripts/catalog.py --check`
+- Yayın yüzeyleri: `release-manifest.json` ve `scripts/release.py --check`
 - v1 kabul defteri: `registry/v1-gates.json` ve `scripts/v1.py --check`
-- Claude Code devralması: `CLAUDE.md` ve `scripts/devral.py --check`
+- Claude Code devralması: `CLAUDE.md` ve `scripts/handoff.py --check`
 
 ## Çalışma kuralları
 
@@ -36,7 +36,7 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Kamusal teslimde taslak PR'ı son durum sayma. Yetki kapsamındaysa CI sonrası
   varsayılan dala birleştir; README/kurulum/canlı sayfayı varsayılan daldan
   yeniden oku. Tag yoksa “release yayımlandı” deme.
-- Her sürümde `/yayin`/`scripts/yayin.py` yolunu kullan; `VERSION`, marketplace,
+- Her sürümde `/yayin`/`scripts/release.py` yolunu kullan; `VERSION`, marketplace,
   `CHANGELOG.md`, README'ler, BLUEPRINT, Wiki, site ve kurulum referansını
   eşitle. `.divan/progress.md` sıradaki kesin adımı taşımalı. `main` sonrası
   Pages/Wiki/tag/Release kanıtını ayrı ayrı doğrula.
@@ -49,12 +49,12 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 Teslimden önce en az şunları çalıştır:
 
 ```bash
-python scripts/hijyen.py --check
+python scripts/hygiene.py --check
 python scripts/validate.py
-python scripts/devral.py --check
-python scripts/katalog.py --check
+python scripts/handoff.py --check
+python scripts/catalog.py --check
 python scripts/v1.py --check
-python scripts/yayin.py --check
+python scripts/release.py --check
 python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check

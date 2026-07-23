@@ -1,77 +1,78 @@
-# Divan'a Katkı
+# Contributing to Divan
 
-**Türkçe** · [English](CONTRIBUTING.en.md) · [Destek yolları](SUPPORT.md) ·
-[Topluluk standartları](docs/Topluluk-Standartlari.md)
+[Türkçe](CONTRIBUTING.tr.md) · **English** · [Support routes](SUPPORT.md) ·
+[Community standards](docs/Topluluk-Standartlari.md)
 
-Divan yerel bir skill/plugin dağıtımıdır; model veya ajan runtime'ı değildir.
-Katkılar 41 skill'lik kataloğu taşınabilir, lisansı açık, geri alınabilir ve
-kanıta dayalı tutmalıdır.
+Divan is a local skill/plugin distribution, not a model or agent runtime. A
+contribution must keep the 41-skill catalog portable, licensed, reversible,
+and evidence-led.
 
-## Doğru yolu seç
+## Choose the right route
 
-- Kullanım soruları için [SUPPORT.md](SUPPORT.md) içindeki Q&A yolunu kullan.
-- Tekrar üretilebilir hataları hata formuyla bildir.
-- Güvenlik açıklarını yalnız özel güvenlik bildirimiyle paylaş.
-- Mevcut bir repo/yetenek için kaynak-adayı formunu kullan.
-- Özgün bir Divan yeteneği için yeni-vezir formunu kullan.
-- Bağımsız v1 kanıtını kabul-kanıtı formuyla gönder.
+- Ask usage questions through the Q&A route in [SUPPORT.md](SUPPORT.md).
+- Report reproducible defects with the bug form.
+- Report vulnerabilities only through a private security advisory.
+- Propose an existing repository through the source-candidate form.
+- Propose an original capability through the new-skill form.
+- Submit independent v1 evidence through the acceptance-evidence form.
 
-## Katkı yolu
+## Contribution path
 
-1. Düzenlemeden önce `BLUEPRINT.md`, `UPSTREAM.md`,
-   `THIRD_PARTY_LICENSES.md` ve ilgili paket talimatlarını oku.
-2. En küçük tutarlı birimi değiştir. Kaynak keşfini kuruluma çevirme; lisansı
-   ve kökeni kanıtlanmamış içeriği kopyalama.
-3. Davranış değişikliğine kırmızı testle başla. Host politikasını Claude/Codex
-   adaptörlerinden bağımsız tut ve alakasız kullanıcı eklentilerini koru.
-4. Yerel kapıların tamamını çalıştır:
+1. Read `BLUEPRINT.md`, `UPSTREAM.md`, `THIRD_PARTY_LICENSES.md`, and the
+   relevant package instructions before editing.
+2. Add or change the smallest coherent unit. Do not turn source discovery into
+   installation, and do not copy content without verified license/provenance.
+3. Start behavior changes with a failing test. Keep host policy independent
+   from Claude/Codex adapters and preserve unrelated user plugins.
+4. Run the complete local gate:
 
 ```bash
-python scripts/hijyen.py --check
+python scripts/hygiene.py --check
 python scripts/validate.py
-python scripts/devral.py --check
-python scripts/katalog.py --check
+python scripts/handoff.py --check
+python scripts/catalog.py --check
 python scripts/v1.py --check
-python scripts/yayin.py --check
+python scripts/release.py --check
 python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check
 ```
 
-5. Tek amaçlı bir pull request aç. Kullanıcı sonucunu, riski, geri alma yolunu
-   ve tam doğrulama kanıtını yaz. Gerçek ajan adaptörü ve kör hakem protokolü
-   olmadan davranış iyileşmesi iddia etme.
+5. Open a focused pull request. Explain the user-visible result, risks,
+   rollback path, and exact verification evidence. Do not claim behavioral
+   improvement without the real-adapter and blinded-judge protocol.
 
-## Yeni skill ekleme
+## Add a new skill
 
-Özgün bir skill'i gerçek paket yolunda oluştur:
+Create an original skill at its real package path:
 
 ```text
 plugins/<paket>/skills/<skill-adi>/SKILL.md
 ```
 
-`SKILL.md` YAML frontmatter'ında klasörle birebir aynı, kebab-case `name`
-(en çok 64 karakter) ve ne yaptığıyla ne zaman tetikleneceğini anlatan
-`description` (en çok 1024 karakter) zorunludur. Gövde prosedürel ve tek
-sorumluluklu olmalı; 500 satırı aşan ayrıntıyı `references/` altına böl.
-Sonra katalog ve teftişi eşitle:
+The `SKILL.md` YAML frontmatter requires a kebab-case `name` identical to its
+directory (maximum 64 characters) and a `description` that says what it does
+and when it triggers (maximum 1024 characters). Keep the body procedural and
+single-purpose; move detail beyond 500 lines into `references/`. Then render
+and verify the catalog and candidate registry:
 
 ```bash
-python scripts/katalog.py --render
-python scripts/katalog.py --check
+python scripts/catalog.py --render
+python scripts/catalog.py --check
 python scripts/validate.py
-python scripts/meclis.py --check
+python scripts/candidate_review.py --check
 ```
 
-Bir dış kaynağın aday defterine girmesi benimsenmesi değildir. Kaynak önce
-kimlik, lisans, köken, hook/script/yetki ve mevcut yetenek çakışması açısından
-incelenir. `ADOPT` veya `ADAPT` kararı bile kurulum sayılmaz; sabit pin, atıf,
-eval ve teftiş ayrı uygulama değişikliğinde tamamlanır.
+Entering the candidate registry is not adoption. An external source first
+receives identity, license, provenance, hook/script/permission, and overlap
+review. Even an `ADOPT` or `ADAPT` decision is not installation: immutable
+pinning, attribution, evals, and inspection require a separate implementation
+change.
 
-Ürünü değiştiren katkı README, katalog, kurulum belgesi, Wiki kaynağı, site,
-yayın manifesti ve lisans/köken kayıtlarını aynı değişiklikte eşitlemelidir.
-`DCS-001` ile `DCS-010` arasındaki on zorunlu kuralı doğrulamak için:
+Changes to the product must keep README, catalog, installation guide, Wiki
+source, website, release manifest, and licensing/provenance records aligned.
+The eleven required rules in `DCS-001` through `DCS-011` are validated with:
 
 ```bash
-python scripts/standartlar.py --check
+python scripts/standards.py --check
 ```

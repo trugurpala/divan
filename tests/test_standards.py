@@ -10,7 +10,9 @@ from contextlib import redirect_stdout
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("divan_standartlar", ROOT / "scripts" / "standartlar.py")
+SPEC = importlib.util.spec_from_file_location(
+    "divan_standards", ROOT / "scripts" / "standards.py"
+)
 assert SPEC and SPEC.loader
 STANDARTLAR = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(STANDARTLAR)
@@ -53,7 +55,7 @@ def write_fixture(root: pathlib.Path, data: dict[str, object], exceptions: objec
 class CommunityStandardsTests(unittest.TestCase):
     def test_required_ids_and_levels_are_exact(self) -> None:
         data = STANDARTLAR.load_contract(ROOT)
-        self.assertEqual(STANDARTLAR.REQUIRED_IDS, tuple(f"DCS-{number:03d}" for number in range(1, 11)))
+        self.assertEqual(STANDARTLAR.REQUIRED_IDS, tuple(f"DCS-{number:03d}" for number in range(1, 12)))
         self.assertEqual([row["id"] for row in data["standards"]], list(STANDARTLAR.REQUIRED_IDS))
         self.assertEqual({row["level"] for row in data["standards"]}, {"required"})
 
@@ -67,7 +69,7 @@ class CommunityStandardsTests(unittest.TestCase):
         )
         self.assertIn("coverage report --fail-under=64", rows["DCS-005"]["checks"])
         self.assertTrue(
-            {"pyproject.toml", ".github/workflows/teftis.yml"}.issubset(
+            {"pyproject.toml", ".github/workflows/quality-gate.yml"}.issubset(
                 rows["DCS-005"]["evidence"]
             )
         )

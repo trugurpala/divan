@@ -7,12 +7,12 @@ argument-hint: "[semver]"
 
 1. `AGENTS.md`, `BLUEPRINT.md`, `.divan/progress.md`, `VERSION` ve
    `release-manifest.json` dosyalarını oku.
-2. Kullanıcı yeni sürüm istediyse `python scripts/yayin.py --prepare <semver>`
+2. Kullanıcı yeni sürüm istediyse `python scripts/release.py --prepare <semver>`
    çalıştır. Bu yalnız deterministik sürüm yüzeylerini değiştirir; CHANGELOG ve
    BLUEPRINT anlatısını yapılan gerçek işe göre aynı turda yaz.
 3. Katalog, Meclis ve v1 sayfası kaynakları değiştiyse kendi `--render`
    komutlarını çalıştır; elle üretilen çıktıyı düzeltme.
-4. `python scripts/yayin.py --check` dahil repo teftişini çalıştır.
+4. `python scripts/release.py --check` dahil repo teftişini çalıştır.
 5. PR → zorunlu CI → `main` → Pages/Wiki → tag/GitHub Release sırasını ayrı
    kanıtlarla tamamla. Workflow başarısızsa son başarılı aşamayı söyle;
    sonrakini olmuş gibi anlatma.

@@ -1,4 +1,4 @@
-name: uyumluluk
+name: compatibility
 
 on:
   workflow_dispatch:
@@ -8,19 +8,23 @@ on:
       - 'plugins/**'
       - 'scripts/kur-codex.*'
       - 'scripts/kaldir-codex.*'
-      - 'scripts/kur-hostlar.py'
+      - 'scripts/install_codex.*'
+      - 'scripts/uninstall_codex.*'
+      - 'scripts/divan.py'
       - '.claude-plugin/**'
       - '.agents/**'
-      - '.github/workflows/uyumluluk.yml'
+      - '.github/workflows/compatibility.yml'
   pull_request:
     paths:
       - 'plugins/**'
       - 'scripts/kur-codex.*'
       - 'scripts/kaldir-codex.*'
-      - 'scripts/kur-hostlar.py'
+      - 'scripts/install_codex.*'
+      - 'scripts/uninstall_codex.*'
+      - 'scripts/divan.py'
       - '.claude-plugin/**'
       - '.agents/**'
-      - '.github/workflows/uyumluluk.yml'
+      - '.github/workflows/compatibility.yml'
 
 permissions:
   contents: read
@@ -68,9 +72,9 @@ jobs:
           CODEX_SKILLS_DIR: ${{ runner.temp }}/codex-skills
           DIVAN_STATE_DIR: ${{ runner.temp }}/codex-state
         run: |
-          bash scripts/kur-codex.sh
+          bash scripts/install_codex.sh
           test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 41
-          bash scripts/kaldir-codex.sh
+          bash scripts/uninstall_codex.sh
           test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 0
       - name: Windows temiz kurulum, keşif ve kaldırma
         if: runner.os == 'Windows'
@@ -80,10 +84,10 @@ jobs:
           CODEX_SKILLS_DIR: ${{ runner.temp }}\codex-skills
           DIVAN_STATE_DIR: ${{ runner.temp }}\codex-state
         run: |
-          & ./scripts/kur-codex.ps1
+          & ./scripts/install_codex.ps1
           $count = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
           if ($count -ne 41) { throw "Beklenen 41 skill, bulunan $count" }
-          & ./scripts/kaldir-codex.ps1
+          & ./scripts/uninstall_codex.ps1
           $remaining = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
           if ($remaining -ne 0) { throw "Kaldirma sonrasi $remaining skill kaldi" }
 
@@ -136,7 +140,8 @@ jobs:
           pathlib.Path(environment["CODEX_HOME"]).mkdir(parents=True, exist_ok=True)
           install = [
               sys.executable,
-              "scripts/kur-hostlar.py",
+              "scripts/divan.py",
+              "install",
               "--host", "both",
               "--source", os.getcwd(),
               "--ref", os.environ["DIVAN_REF"],
@@ -184,7 +189,7 @@ jobs:
                   raise SystemExit(f"{host}: one or more native packages are disabled")
 
           subprocess.run(
-              [sys.executable, "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)],
+              [sys.executable, "scripts/divan.py", "recover", str(transaction)],
               check=True,
               env=environment,
           )

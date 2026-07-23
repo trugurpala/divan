@@ -1,4 +1,4 @@
-# Divan Wiki · v0.13.0
+# Divan Wiki · v0.14.0
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -10,7 +10,7 @@ davranış eval'i ve yayın teftişi aynı çatıdadır.
 Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. v1
 durumu **7/8** kapıdır: bağımsız kullanıcı kabul kanıtı hâlâ bekleniyor.
 
-> **Güncel durum:** v0.13.0 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel durum:** v0.14.0 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -39,7 +39,7 @@ Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 - [[Orkestrasyon Kararı|Orkestrasyon-Karari]] — Ocak, Sefer ve Ordu
 - [[Test ve Teftiş|Test-ve-Teftis]] — yerel, CI, tarayıcı ve yayın kanıtı
 - [[Standartlar ve Limitler|Standartlar-ve-Limitler]] — kabul kapıları
-- [[Topluluk Standartları|Topluluk-Standartlari]] — DCS-001–DCS-010 ürün sözleşmesi
+- [[Topluluk Standartları|Topluluk-Standartlari]] — DCS-001–DCS-011 ürün sözleşmesi
 - [[OpenAI ve Codex Uyumluluğu|OpenAI-ve-Codex-Uyumlulugu]] — runtime/skill sınırı
 - [[GitHub Kullanımı|GitHub-Kullanimi]] — repo, Actions, Pages ve Wiki
 - [[Mühürdar]] — Divan'ın kanıt bekçisi

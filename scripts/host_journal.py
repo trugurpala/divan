@@ -111,7 +111,7 @@ def augment_doctor(
         transaction = next((path for path in paths if str(path) in detail), None)
         if transaction is not None:
             result["next_command"] = subprocess.list2cmdline(
-                ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)]
+                ["python", "scripts/divan.py", "recover", str(transaction)]
             )
     return result
 

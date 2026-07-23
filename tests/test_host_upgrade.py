@@ -14,7 +14,7 @@ from unittest import mock
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 SPEC = importlib.util.spec_from_file_location(
-    "divan_host_upgrade", ROOT / "scripts" / "kur-hostlar.py"
+    "divan_host_upgrade", ROOT / "scripts" / "host_lifecycle.py"
 )
 assert SPEC and SPEC.loader
 HOSTS = importlib.util.module_from_spec(SPEC)
@@ -473,7 +473,7 @@ class HostUpgradeTests(unittest.TestCase):
             journal_path = next(runner.state_dir.glob("upgrade-*.json"))
             first = json.loads(journal_path.read_text("utf-8"))
             self.assertEqual(first["status"], "rollback-incomplete")
-            self.assertIn("--rollback-transaction", first["recovery_command"])
+            self.assertIn("divan.py recover", first["recovery_command"])
 
             runner.fail_on = None
             runner.interrupt_once = False

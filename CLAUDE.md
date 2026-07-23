@@ -17,7 +17,7 @@ Bu depo sohbet geçmişinden bağımsız yürütülür. Bir göreve başlamadan 
 - Kanıt görmeden “bitti”, “main'de”, “canlı” veya “release yayımlandı” deme.
 - v1 için gereken dış kanıtı üretme veya varsayma.
 
-Önce `python scripts/devral.py --check` çalıştır. Teslimden önce `AGENTS.md`
+Önce `python scripts/handoff.py --check` çalıştır. Teslimden önce `AGENTS.md`
 içindeki bütün doğrulama komutlarını çalıştır. Yayında `/yayin` veya
-`python scripts/yayin.py` akışını kullan; PR, `main`, Wiki/Pages, tag ve GitHub
+`python scripts/release.py` akışını kullan; PR, `main`, Wiki/Pages, tag ve GitHub
 Release durumlarını ayrı ayrı doğrula.

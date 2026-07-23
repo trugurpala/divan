@@ -5,7 +5,7 @@ import pathlib
 import unittest
 
 KOK = pathlib.Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("divan_katalog", KOK / "scripts" / "katalog.py")
+SPEC = importlib.util.spec_from_file_location("divan_catalog", KOK / "scripts" / "catalog.py")
 assert SPEC and SPEC.loader
 KATALOG = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(KATALOG)

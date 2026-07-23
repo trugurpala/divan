@@ -44,7 +44,7 @@ class RepositoryTests(unittest.TestCase):
 
     def test_repository_audit_includes_source_hygiene(self) -> None:
         with mock.patch.object(
-            VALIDATE, "hijyen_source_issues", return_value=["fixture encoding issue"]
+            VALIDATE, "hygiene_source_issues", return_value=["fixture encoding issue"]
         ):
             errors, _warnings, _packages, _skills = VALIDATE.denetle(ROOT)
 
@@ -116,7 +116,7 @@ class RepositoryTests(unittest.TestCase):
             self.assertIn("README 'v0.10.0'", "\n".join(errors))
 
     def test_fallback_installers_require_checksum_and_provenance(self) -> None:
-        for name in ("kur-codex.ps1", "kur-codex.sh"):
+        for name in ("install_codex.ps1", "install_codex.sh"):
             text = (ROOT / "scripts" / name).read_text(encoding="utf-8")
             normalized = text.lower().replace("-", "_")
             self.assertNotIn("DIVAN_REF:-main", text)
@@ -146,7 +146,7 @@ class RepositoryTests(unittest.TestCase):
                     "DIVAN_STATE_DIR": str(state_dir),
                 }
             )
-            command = ["bash", str(ROOT / "scripts" / "kur-codex.sh")]
+            command = ["bash", str(ROOT / "scripts" / "install_codex.sh")]
             subprocess.run(command, check=True, env=env, capture_output=True, text=True)
             self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
 
@@ -159,7 +159,7 @@ class RepositoryTests(unittest.TestCase):
             self.assertEqual(backups[0].read_text(encoding="utf-8"), "koru")
 
             subprocess.run(
-                ["bash", str(ROOT / "scripts" / "kaldir-codex.sh")],
+                ["bash", str(ROOT / "scripts" / "uninstall_codex.sh")],
                 check=True,
                 env=env,
                 capture_output=True,
@@ -188,7 +188,7 @@ class RepositoryTests(unittest.TestCase):
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
-                str(ROOT / "scripts" / "kur-codex.ps1"),
+                str(ROOT / "scripts" / "install_codex.ps1"),
             ]
             uninstall = [
                 "powershell.exe",
@@ -196,7 +196,7 @@ class RepositoryTests(unittest.TestCase):
                 "-ExecutionPolicy",
                 "Bypass",
                 "-File",
-                str(ROOT / "scripts" / "kaldir-codex.ps1"),
+                str(ROOT / "scripts" / "uninstall_codex.ps1"),
             ]
             subprocess.run(install, check=True, env=env, capture_output=True, text=True)
             self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
@@ -262,7 +262,7 @@ class RepositoryTests(unittest.TestCase):
                     "-ExecutionPolicy",
                     "Bypass",
                     "-File",
-                    str(ROOT / "scripts" / "kur-codex.ps1"),
+                    str(ROOT / "scripts" / "install_codex.ps1"),
                 ],
                 check=False,
                 env=env,

@@ -15,11 +15,11 @@ SKILL_FORM = f"{REPOSITORY}/issues/new?template=yeni-vezir.md"
 ACCEPTANCE_FORM = f"{REPOSITORY}/issues/new?template=kabul-kaniti.yml"
 PAGES_URL = "https://trugurpala.github.io/divan/"
 ROLLBACK_COMMAND = (
-    'python scripts/kur-hostlar.py --rollback-transaction '
+    'python scripts/divan.py recover '
     '"C:\\Users\\you\\.divan\\transactions\\upgrade-20260721-120000.json"'
 )
 UNINSTALL_COMMAND = (
-    'python scripts/kur-hostlar.py --rollback-transaction '
+    'python scripts/divan.py recover '
     '"C:\\Users\\you\\.divan\\transactions\\install-20260721-120000.json"'
 )
 
@@ -30,10 +30,10 @@ def read(relative: str) -> str:
 
 class CommunityContractTests(unittest.TestCase):
     def test_contribution_guides_are_bilingual_and_link_support(self) -> None:
-        turkish = read("CONTRIBUTING.md")
-        english = read("CONTRIBUTING.en.md")
+        turkish = read("CONTRIBUTING.tr.md")
+        english = read("CONTRIBUTING.md")
         self.assertIn("[English](CONTRIBUTING.en.md)", turkish)
-        self.assertIn("[Türkçe](CONTRIBUTING.md)", english)
+        self.assertIn("[Türkçe](CONTRIBUTING.tr.md)", english)
         for guide in (turkish, english):
             self.assertIn("SUPPORT.md", guide)
             self.assertIn("python scripts/validate.py", guide)
@@ -42,8 +42,8 @@ class CommunityContractTests(unittest.TestCase):
             self.assertIn("description", guide)
             self.assertIn("64", guide)
             self.assertIn("1024", guide)
-            self.assertIn("python scripts/katalog.py --check", guide)
-            self.assertIn("python scripts/meclis.py --check", guide)
+            self.assertIn("python scripts/catalog.py --check", guide)
+            self.assertIn("python scripts/candidate_review.py --check", guide)
             self.assertRegex(guide, r"ADOPT|adoption")
 
     def test_support_routes_each_request_to_one_exact_destination(self) -> None:
@@ -72,11 +72,11 @@ class CommunityContractTests(unittest.TestCase):
     def test_quick_path_has_exact_lifecycle_commands(self) -> None:
         version = read("VERSION").strip()
         commands = (
-            f"python scripts/kur-hostlar.py --host both --ref v{version}",
-            f"python scripts/kur-hostlar.py --host both --ref v{version} --execute",
-            f"python scripts/kur-hostlar.py --doctor --host both --ref v{version}",
-            f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version}",
-            f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version} --execute",
+            f"python scripts/divan.py install --host both --ref v{version}",
+            f"python scripts/divan.py install --host both --ref v{version} --execute",
+            f"python scripts/divan.py doctor --host both --ref v{version}",
+            f"python scripts/divan.py update --host both --ref v{version}",
+            f"python scripts/divan.py update --host both --ref v{version} --execute",
             ROLLBACK_COMMAND,
             UNINSTALL_COMMAND,
         )
@@ -117,11 +117,11 @@ class CommunityContractTests(unittest.TestCase):
     def test_both_html_sources_share_homepage_and_lifecycle_contract(self) -> None:
         version = read("VERSION").strip()
         critical = (
-            f"python scripts/kur-hostlar.py --host both --ref v{version}",
-            f"python scripts/kur-hostlar.py --host both --ref v{version} --execute",
-            f"python scripts/kur-hostlar.py --doctor --host both --ref v{version}",
-            f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version}",
-            f"python scripts/kur-hostlar.py --upgrade --host both --ref v{version} --execute",
+            f"python scripts/divan.py install --host both --ref v{version}",
+            f"python scripts/divan.py install --host both --ref v{version} --execute",
+            f"python scripts/divan.py doctor --host both --ref v{version}",
+            f"python scripts/divan.py update --host both --ref v{version}",
+            f"python scripts/divan.py update --host both --ref v{version} --execute",
             ROLLBACK_COMMAND,
             UNINSTALL_COMMAND,
         )

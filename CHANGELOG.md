@@ -10,6 +10,34 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.14.0] - 2026-07-23
+
+### Added
+
+- Company OS contracts for 12 functional roles, 8 delivery workflows,
+  evidence-based framework detection, and transitive change-impact analysis.
+- A portable `scripts/divan.py` CLI for project inspection, planning, impact
+  analysis, contract validation, install, update, doctor, and recovery.
+- DCS-011 and a machine-readable naming policy enforcing English canonical
+  technical entrypoints with Turkish localization and bounded legacy aliases.
+- English and Turkish Company OS guides plus synchronized Pages and Wiki entry.
+
+### Changed
+
+- Sadrazam now routes natural-language intent through Company OS and selects the
+  smallest justified combination of Core, UI, React, and Zanaat packs.
+- English is the canonical README and contributor surface; Turkish remains
+  first-class through `README.tr.md` and `CONTRIBUTING.tr.md`.
+- Workflows and maintainer scripts use English canonical names. Pre-v1 Turkish
+  script names remain narrow deprecated wrappers to avoid breaking users.
+
+### Security
+
+- Project inspection is bounded, read-only, path-safe, and never executes
+  project code.
+- Framework packs are selected from manifest evidence; integrations and
+  creative tooling are not activated for unrelated tasks.
+
 ## [0.13.0] - 2026-07-21
 
 ### Added
