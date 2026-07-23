@@ -6,6 +6,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -17,9 +19,9 @@ jobs:
       - name: Local quality gates
         run: |
           pip install -r requirements-dev.txt
+          python scripts/hygiene.py --check
           python scripts/naming.py --check
           python scripts/divan.py company-validate
-          python scripts/hygiene.py --check
           python scripts/standards.py --check
           python -m unittest discover -s tests -p 'test_*.py'
           python scripts/validate.py
