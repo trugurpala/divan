@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "memory_directory": ".divan",
+  "required_files": [
+    "project.json",
+    "tasks.json",
+    "current-state.json",
+    "progress.md"
+  ],
+  "required_directories": [
+    "decisions",
+    "evidence",
+    "handoffs",
+    "history",
+    "lessons",
+    "spec"
+  ],
+  "task_statuses": [
+    "pending",
+    "in_progress",
+    "blocked",
+    "completed"
+  ],
+  "single_active_task": true,
+  "completion_requires_evidence": true,
+  "dry_run_first": true,
+  "lifecycle_states": [
+    "CREATED",
+    "BASELINED",
+    "PLANNED",
+    "IMPLEMENTING",
+    "VERIFYING",
+    "REVIEWING",
+    "READY_TO_SHIP",
+    "SHIPPED",
+    "MAINTENANCE"
+  ],
+  "transitions": {
+    "CREATED": ["BASELINED"],
+    "BASELINED": ["PLANNED"],
+    "PLANNED": ["IMPLEMENTING"],
+    "IMPLEMENTING": ["VERIFYING"],
+    "VERIFYING": ["REVIEWING", "IMPLEMENTING"],
+    "REVIEWING": ["READY_TO_SHIP", "IMPLEMENTING"],
+    "READY_TO_SHIP": ["SHIPPED", "IMPLEMENTING"],
+    "SHIPPED": ["MAINTENANCE"],
+    "MAINTENANCE": ["IMPLEMENTING"]
+  }
+}
