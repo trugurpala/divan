@@ -111,6 +111,43 @@ class LocalRawAliasRunner(UpgradeRunner):
 
 
 class HostUpgradeAuthorityTests(unittest.TestCase):
+    def test_codex_marketplace_with_reported_ref_accepts_native_metadata(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-codex-metadata-") as temporary:
+            root = pathlib.Path(temporary)
+            (root / ".codex-marketplace-install.json").write_text("{}", encoding="utf-8")
+            row = {
+                "name": "divan",
+                "source": SOURCE,
+                "ref": TARGET_REF,
+                "root": str(root),
+            }
+            checkout = {"root": str(root), "ref": TARGET_REF}
+
+            with (
+                mock.patch.object(
+                    HOSTS._host_upgrade.host_state,
+                    "checkout_evidence_at_head",
+                    return_value=checkout,
+                ) as evidence_at_head,
+                mock.patch.object(
+                    HOSTS._host_upgrade.host_state, "checkout_evidence"
+                ) as strict_evidence,
+            ):
+                self.assertEqual(
+                    HOSTS._host_upgrade.host_state.marketplace_evidence(
+                        "codex",
+                        row,
+                        SOURCE,
+                        TARGET_REF,
+                        lambda _command: "",
+                        HOSTS._normalize_source,
+                    ),
+                    checkout,
+                )
+
+        evidence_at_head.assert_called_once()
+        strict_evidence.assert_not_called()
+
     def test_claude_directory_marketplace_uses_local_path_authority(self) -> None:
         row = {
             "name": "divan",

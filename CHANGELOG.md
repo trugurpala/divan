@@ -10,6 +10,15 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.14.1] - 2026-07-23
+
+### Fixed
+
+- Codex marketplace snapshots now accept Codex's validated, isolated
+  `.codex-marketplace-install.json` metadata file even when the CLI reports an
+  explicit marketplace ref. Other untracked files, malformed metadata, source
+  drift, and ref drift remain fail-closed.
+
 ## [0.14.0] - 2026-07-23
 
 ### Added

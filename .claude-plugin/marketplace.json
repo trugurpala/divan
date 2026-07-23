@@ -5,10 +5,10 @@
     "email": "trugurpala@users.noreply.github.com"
   },
   "description": "Divan Company OS for vibe coders: project intelligence, impact mapping, verified delivery, UI/UX, React, and specialist craft packs.",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "metadata": {
     "description": "Divan Company OS: natural-language orchestration, planning, TDD, debugging, UI/UX, React, and specialist delivery.",
-    "version": "0.14.0"
+    "version": "0.14.1"
   },
   "plugins": [
     {

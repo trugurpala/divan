@@ -4,14 +4,18 @@ Son güncelleme: 2026-07-23
 
 ## Güncel hedef
 
-v0.14.0 Company OS release candidate is being verified. Product scope includes
-English-canonical technical entrypoints, Turkish localization, role/workflow/
-framework/impact contracts, and automatic Core/UI/React/Zanaat selection.
-PR/main, public release, and global Claude+Codex upgrade are not claimed yet.
-v1 remains 7/8.
+v0.14.1 closes the Codex native marketplace metadata compatibility defect found
+during the real dual-host v0.14.0 upgrade. The patch must pass CI, publish from
+`main`, and then upgrade Claude and Codex transactionally. v1 remains 7/8
+because independent adoption evidence is still outside repository control.
 
 ## Yapıldı
 
+- The failed v0.14.0 dual-host upgrade rolled back automatically and both hosts
+  were re-proven healthy at v0.12.2 before development continued.
+- Codex's isolated native metadata file is now accepted through its existing
+  schema, source, ref, revision, UTF-8, and symlink checks even when Codex also
+  reports the marketplace ref. Additional dirt remains rejected.
 - Company OS now maps natural-language intent to 12 functional roles, 8
   workflows, detected frameworks, the smallest justified pack set, and
   transitive documentation/Wiki/site/release effects.

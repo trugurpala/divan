@@ -54,6 +54,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Yayımlanan temel
 
+- **v0.14.1 ✓** Codex'in yerel marketplace metadata dosyasını kaynak/ref/commit
+  doğrulamasıyla işlemsel yükseltmeye dahil eden uyumluluk düzeltmesi; diğer
+  kirli dosyalar ve metadata tahrifatı fail-closed kalır
 - **v0.14.0 ✓** Company OS; 12 rol, 8 akış, framework kanıtı ve geçişli etki
   grafiği; Core/UI/React/Zanaat paketlerinin gerekçeli seçimi; İngilizce kanonik
   CLI, workflow ve katkı yüzeyleri; süreli Türkçe uyumluluk sarmalayıcıları
