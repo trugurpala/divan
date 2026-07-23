@@ -26,18 +26,23 @@ REQUIRED_DIRECTORIES = (
 )
 REQUIRED_FILES = ("project.json", "tasks.json", "current-state.json", "progress.md")
 
+
 class ProjectMemoryError(RuntimeError):
     """A durable-memory contract or operation failed."""
 
+
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
 
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return slug or "project"
 
+
 def memory_root(project_root: pathlib.Path) -> pathlib.Path:
     return project_root.resolve() / MEMORY_DIR
+
 
 def read_json(path: pathlib.Path) -> dict[str, Any]:
     try:
@@ -47,6 +52,7 @@ def read_json(path: pathlib.Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ProjectMemoryError(f"JSON root must be an object: {path}")
     return value
+
 
 def atomic_write_text(path: pathlib.Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -65,8 +71,10 @@ def atomic_write_text(path: pathlib.Path, content: str) -> None:
     finally:
         temporary.unlink(missing_ok=True)
 
+
 def atomic_write_json(path: pathlib.Path, payload: dict[str, Any]) -> None:
     atomic_write_text(path, json.dumps(payload, indent=2, ensure_ascii=False) + "\n")
+
 
 class MemoryLock(AbstractContextManager["MemoryLock"]):
     """Fail-closed single-writer lock for one project's durable memory."""
@@ -79,20 +87,22 @@ class MemoryLock(AbstractContextManager["MemoryLock"]):
     def __enter__(self) -> "MemoryLock":
         self.path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            self.descriptor = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            descriptor = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
         except FileExistsError as exc:
             raise ProjectMemoryError(
                 f"memory is locked by another writer: {self.path}"
             ) from exc
+        self.descriptor = descriptor
         payload = f"pid={os.getpid()}\ncreated_at={utc_now()}\n".encode()
-        os.write(self.descriptor, payload)
-        os.fsync(self.descriptor)
+        os.write(descriptor, payload)
+        os.fsync(descriptor)
         return self
 
     def __exit__(self, *_: object) -> None:
         if self.descriptor is not None:
             os.close(self.descriptor)
         self.path.unlink(missing_ok=True)
+
 
 def git_snapshot(project_root: pathlib.Path) -> tuple[str | None, str | None]:
     def value(arguments: list[str]) -> str | None:
@@ -113,6 +123,7 @@ def git_snapshot(project_root: pathlib.Path) -> tuple[str | None, str | None]:
 
     return value(["branch", "--show-current"]), value(["rev-parse", "HEAD"])
 
+
 def initial_payloads(
     name: str,
     goal: str,
@@ -122,10 +133,10 @@ def initial_payloads(
     deployment: str | None,
 ) -> dict[str, dict[str, Any]]:
     now = utc_now()
-    source = None
+    source: dict[str, str | None] | None = None
     if source_repository or source_commit:
         source = {"repository": source_repository, "commit": source_commit}
-    project = {
+    project: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "project_id": slugify(name),
         "name": name.strip(),
@@ -137,8 +148,12 @@ def initial_payloads(
         "created_at": now,
         "updated_at": now,
     }
-    tasks = {"schema_version": SCHEMA_VERSION, "next_sequence": 1, "tasks": []}
-    current = {
+    tasks: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "next_sequence": 1,
+        "tasks": [],
+    }
+    current: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "active_task": None,
         "active_branch": None,
@@ -153,12 +168,14 @@ def initial_payloads(
     }
     return {"project.json": project, "tasks.json": tasks, "current-state.json": current}
 
+
 def initialization_plan(project_root: pathlib.Path) -> list[str]:
     base = memory_root(project_root)
     return [
         *(str(base / directory) for directory in REQUIRED_DIRECTORIES),
         *(str(base / filename) for filename in REQUIRED_FILES),
     ]
+
 
 def initialize(
     project_root: pathlib.Path,
@@ -196,7 +213,9 @@ def initialize(
             atomic_write_text(
                 temporary / "progress.md",
                 render_progress(
-                    payloads["project.json"], payloads["tasks.json"], payloads["current-state.json"]
+                    payloads["project.json"],
+                    payloads["tasks.json"],
+                    payloads["current-state.json"],
                 ),
             )
             event = {
@@ -213,6 +232,7 @@ def initialize(
             shutil.rmtree(temporary, ignore_errors=True)
     return {"status": "initialized", "writes": plan}
 
+
 def load_memory(project_root: pathlib.Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     base = memory_root(project_root)
     return (
@@ -221,11 +241,13 @@ def load_memory(project_root: pathlib.Path) -> tuple[dict[str, Any], dict[str, A
         read_json(base / "current-state.json"),
     )
 
+
 def append_event(project_root: pathlib.Path, event: str, details: dict[str, Any]) -> None:
     path = memory_root(project_root) / "history" / "events.jsonl"
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     row = {"at": utc_now(), "event": event, "details": details}
     atomic_write_text(path, existing + json.dumps(row, ensure_ascii=False) + "\n")
+
 
 def _task_groups(tasks: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     rows = tasks.get("tasks")
@@ -263,8 +285,9 @@ def _task_lines(rows: list[dict[str, Any]], include_status: bool = False) -> str
     return "\n".join(lines)
 
 
-def render_progress(project: dict[str, Any], tasks: dict[str, Any],
-                    current: dict[str, Any]) -> str:
+def render_progress(
+    project: dict[str, Any], tasks: dict[str, Any], current: dict[str, Any]
+) -> str:
     completed, remaining = _task_groups(tasks)
     active_text = _active_task_text(tasks, current.get("active_task"))
     return (
