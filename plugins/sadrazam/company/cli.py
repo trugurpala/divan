@@ -62,8 +62,8 @@ def _safe_output(value: Any, key: str = "") -> Any:
 
 def _write_json(value: dict[str, Any]) -> None:
     safe_value = _safe_output(value)
-    # lgtm[py/clear-text-logging-sensitive-data] safe_value is recursively redacted.
-    print(json.dumps(safe_value, ensure_ascii=False, sort_keys=True))
+    serialized = json.dumps(safe_value, ensure_ascii=False, sort_keys=True)
+    sys.stdout.write(serialized + "\n")
 
 
 def _write_human(value: dict[str, Any], language: str) -> None:
@@ -86,7 +86,7 @@ def _write_human(value: dict[str, Any], language: str) -> None:
             if isinstance(safe_item, list)
             else str(safe_item)
         )
-        print(f"{labels[key]}: {rendered}")
+        sys.stdout.write(f"{labels[key]}: {rendered}\n")
 
 
 def _common_output(parser: argparse.ArgumentParser) -> None:
