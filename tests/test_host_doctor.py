@@ -13,7 +13,9 @@ from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-SPEC = importlib.util.spec_from_file_location("divan_host_doctor", ROOT / "scripts" / "kur-hostlar.py")
+SPEC = importlib.util.spec_from_file_location(
+    "divan_host_doctor", ROOT / "scripts" / "host_lifecycle.py"
+)
 assert SPEC and SPEC.loader
 HOST_INSTALL = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(HOST_INSTALL)
@@ -244,7 +246,7 @@ class HostDoctorTests(unittest.TestCase):
         self.assertIn("unfinished transaction", result["issues"])
         self.assertEqual(
             result["next_command"],
-            f"python scripts/kur-hostlar.py --rollback-transaction {transaction}",
+            f"python scripts/divan.py recover {transaction}",
         )
 
     def test_malformed_or_unreadable_transaction_is_recovery_attention(self) -> None:
@@ -274,8 +276,8 @@ class HostDoctorTests(unittest.TestCase):
                     subprocess.list2cmdline(
                         [
                             "python",
-                            "scripts/kur-hostlar.py",
-                            "--rollback-transaction",
+                            "scripts/divan.py",
+                            "recover",
                             str(transaction),
                         ]
                     ),
@@ -287,7 +289,7 @@ class HostDoctorTests(unittest.TestCase):
             "ref": "v0.12.0",
             "hosts": {"claude": {"status": "healthy", "issues": []}},
             "issues": [],
-            "next_command": "python scripts/kur-hostlar.py --doctor --host claude --ref v0.12.0",
+            "next_command": "python scripts/divan.py doctor --host claude --ref v0.12.0",
         }
         output = io.StringIO()
         with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
@@ -308,7 +310,7 @@ class HostDoctorTests(unittest.TestCase):
                 "codex": {"status": "attention", "issues": ["sadrazam@divan version"]},
             },
             "issues": ["sadrazam@divan version"],
-            "next_command": "python scripts/kur-hostlar.py --host codex --ref v0.12.0",
+            "next_command": "python scripts/divan.py install --host codex --ref v0.12.0",
         }
         output = io.StringIO()
         with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
@@ -323,7 +325,7 @@ class HostDoctorTests(unittest.TestCase):
             [
                 "claude: healthy",
                 "codex: attention - sadrazam@divan version",
-                "NEXT: python scripts/kur-hostlar.py --host codex --ref v0.12.0",
+                "NEXT: python scripts/divan.py install --host codex --ref v0.12.0",
             ],
         )
 
@@ -333,7 +335,7 @@ class HostDoctorTests(unittest.TestCase):
             "ref": "v0.12.0",
             "hosts": {"claude": {"status": "healthy", "issues": []}},
             "issues": ["unfinished transaction"],
-            "next_command": "python scripts/kur-hostlar.py --rollback-transaction C:\\state folder\\run.json",
+            "next_command": "python scripts/divan.py recover \"C:\\state folder\\run.json\"",
         }
         output = io.StringIO()
         with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
@@ -348,7 +350,7 @@ class HostDoctorTests(unittest.TestCase):
             [
                 "claude: healthy",
                 "STATUS: attention - unfinished transaction",
-                "NEXT: python scripts/kur-hostlar.py --rollback-transaction C:\\state folder\\run.json",
+                "NEXT: python scripts/divan.py recover \"C:\\state folder\\run.json\"",
             ],
         )
 
@@ -363,7 +365,7 @@ class HostDoctorTests(unittest.TestCase):
         self.assertEqual(
             result["next_command"],
             subprocess.list2cmdline(
-                ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)]
+                ["python", "scripts/divan.py", "recover", str(transaction)]
             ),
         )
 

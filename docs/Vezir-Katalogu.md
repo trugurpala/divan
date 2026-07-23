@@ -1,7 +1,7 @@
 # Vezir Kataloğu
 
 > Tek doğru kaynak: `plugins/*/skills/*/SKILL.md`. Bu sayfa
-> `python scripts/katalog.py --render` ile deterministik üretilir.
+> `python scripts/catalog.py --render` ile deterministik üretilir.
 
 Toplam **41 skill**, **5 paket**.
 

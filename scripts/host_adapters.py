@@ -303,7 +303,8 @@ def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
 def _next_command(options: Any) -> str:
     command = [
         "python",
-        "scripts/kur-hostlar.py",
+        "scripts/divan.py",
+        "install",
         "--host",
         options.host,
         "--source",
@@ -335,7 +336,7 @@ def doctor(
     next_command = _next_command(options)
     if transaction is not None:
         next_command = subprocess.list2cmdline(
-            ["python", "scripts/kur-hostlar.py", "--rollback-transaction", str(transaction)]
+            ["python", "scripts/divan.py", "recover", str(transaction)]
         )
     return {
         "status": status,

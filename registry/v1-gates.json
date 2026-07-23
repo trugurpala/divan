@@ -13,25 +13,25 @@
       "id": "structural-and-eval-ci",
       "title": "Yapısal doğrulama ve davranış eval sözleşmesi yayın kapısı",
       "status": "passed",
-      "evidence": [".github/workflows/teftis.yml", ".github/workflows/codeql.yml", "evals/run.py", "tests/test_eval_runner.py", "tests/test_real_adapters.py"]
+      "evidence": [".github/workflows/quality-gate.yml", ".github/workflows/codeql.yml", "evals/run.py", "tests/test_eval_runner.py", "tests/test_real_adapters.py"]
     },
     {
       "id": "live-documentation",
       "title": "README, Pages ve Wiki canlı yüzey doğrulaması",
       "status": "passed",
-      "evidence": [".github/workflows/site-testi.yml", ".github/workflows/wiki-sync.yml", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/actions/runs/29702535899", "https://github.com/trugurpala/divan/actions/runs/29702535867"]
+      "evidence": [".github/workflows/site-tests.yml", ".github/workflows/wiki-sync.yml", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/actions/runs/29702535899", "https://github.com/trugurpala/divan/actions/runs/29702535867"]
     },
     {
       "id": "native-clean-host-matrix",
       "title": "Claude Code ve Codex native Linux/macOS/Windows temiz-host yaşam döngüsü",
       "status": "passed",
-      "evidence": [".github/workflows/uyumluluk.yml", "scripts/kur-hostlar.py", "tests/test_host_install.py", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/actions/runs/29702535873"]
+      "evidence": [".github/workflows/compatibility.yml", "scripts/host_lifecycle.py", "tests/test_host_install.py", ".divan/evidence/teftis-20260719-v012-release-install.md", "https://github.com/trugurpala/divan/actions/runs/29702535873"]
     },
     {
       "id": "rollback-rehearsal",
       "title": "Kayıtlı kaldırma ve önceki kurulumu geri yükleme tatbikatı",
       "status": "passed",
-      "evidence": ["scripts/kur-hostlar.py", "tests/test_host_install.py", "scripts/kaldir-codex.sh", "scripts/kaldir-codex.ps1", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
+      "evidence": ["scripts/host_lifecycle.py", "tests/test_host_install.py", "scripts/uninstall_codex.sh", "scripts/uninstall_codex.ps1", "https://github.com/trugurpala/divan/actions/runs/29633649098"]
     },
     {
       "id": "tagged-release",

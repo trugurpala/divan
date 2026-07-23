@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "workflows": [
+    {
+      "id": "security-delivery",
+      "label": {"en": "Security delivery", "tr": "Güvenlik teslimi"},
+      "priority": 90,
+      "keywords": ["security", "vulnerability", "threat", "secret", "authentication", "authorization"],
+      "roles": ["security-reviewer", "backend-engineer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "temkin"}],
+      "stages": ["threat model", "regression", "implementation", "security review", "verification"]
+    },
+    {
+      "id": "integration-delivery",
+      "label": {"en": "Integration delivery", "tr": "Entegrasyon teslimi"},
+      "priority": 80,
+      "keywords": ["mcp", "integration", "connector", "webhook", "external api", "tool server"],
+      "roles": ["product-strategist", "integration-engineer", "security-reviewer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "zanaat-pack", "skill": "mcp-builder"}],
+      "stages": ["contract", "threat review", "test-first implementation", "evaluation", "verification"]
+    },
+    {
+      "id": "ui-delivery",
+      "label": {"en": "UI and UX delivery", "tr": "UI ve UX teslimi"},
+      "priority": 70,
+      "keywords": ["ui", "ux", "design", "redesign", "interface", "dashboard", "frontend", "responsive", "accessibility", "onboarding"],
+      "roles": ["ux-designer", "frontend-engineer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "ui-pack", "skill": "ui-ux-pro-max"}],
+      "stages": ["design system", "interaction contract", "test-first implementation", "browser verification", "review"]
+    },
+    {
+      "id": "bugfix-delivery",
+      "label": {"en": "Bug fix delivery", "tr": "Hata düzeltme teslimi"},
+      "priority": 60,
+      "keywords": ["bug", "fix", "error", "crash", "regression", "debug", "broken", "fails"],
+      "roles": ["backend-engineer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "systematic-debugging"}],
+      "stages": ["reproduce", "root cause", "regression test", "minimal fix", "verification"]
+    },
+    {
+      "id": "release-delivery",
+      "label": {"en": "Release delivery", "tr": "Yayın teslimi"},
+      "priority": 50,
+      "keywords": ["release", "publish", "ship", "deploy", "version", "distribution"],
+      "roles": ["release-manager", "platform-engineer", "technical-writer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "finishing-a-development-branch"}],
+      "stages": ["preflight", "public surface sync", "CI", "publication", "live readback"]
+    },
+    {
+      "id": "creative-delivery",
+      "label": {"en": "Creative delivery", "tr": "Yaratıcı teslim"},
+      "priority": 40,
+      "keywords": ["poster", "visual", "brand", "theme", "canvas", "gif", "creative artifact"],
+      "roles": ["product-strategist", "creative-producer", "ux-designer", "independent-reviewer"],
+      "skills": [{"package": "zanaat-pack", "skill": "theme-factory"}],
+      "stages": ["creative direction", "original production", "format validation", "accessibility review"]
+    },
+    {
+      "id": "documentation-delivery",
+      "label": {"en": "Documentation delivery", "tr": "Dokümantasyon teslimi"},
+      "priority": 30,
+      "keywords": ["documentation", "docs", "readme", "wiki", "guide", "translation", "localization"],
+      "roles": ["technical-writer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "writing-skills"}],
+      "stages": ["source audit", "canonical edit", "locale sync", "link validation", "review"]
+    },
+    {
+      "id": "feature-delivery",
+      "label": {"en": "Feature delivery", "tr": "Özellik teslimi"},
+      "priority": 10,
+      "keywords": ["feature", "build", "application", "develop", "implement", "create", "add"],
+      "roles": ["product-strategist", "frontend-engineer", "backend-engineer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "test-driven-development"}],
+      "stages": ["brief", "design", "plan", "test-first implementation", "review", "verification"]
+    }
+  ]
+}

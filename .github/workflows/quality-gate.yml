@@ -1,4 +1,4 @@
-name: teftis
+name: quality-gate
 on: [push, pull_request]
 permissions:
   contents: read
@@ -6,6 +6,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
@@ -14,19 +16,21 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
-      - name: Yerel testler
+      - name: Local quality gates
         run: |
           pip install -r requirements-dev.txt
-          python scripts/hijyen.py --check
-          python scripts/standartlar.py --check
+          python scripts/hygiene.py --check
+          python scripts/naming.py --check
+          python scripts/divan.py company-validate
+          python scripts/standards.py --check
           python -m unittest discover -s tests -p 'test_*.py'
           python scripts/validate.py
           python evals/run.py --check
           python scripts/wiki.py --check
-          python scripts/meclis.py --check
-          python scripts/katalog.py --check
+          python scripts/candidate_review.py --check
+          python scripts/catalog.py --check
           python scripts/v1.py --check
-          python scripts/yayin.py --check
+          python scripts/release.py --check
           ruff check .
           python scripts/clean_code.py --check
           mypy scripts evals

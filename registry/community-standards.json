@@ -8,7 +8,7 @@
       "level": "required",
       "purpose": "Yeni kullanici pinlenmis kurulum, salt-okunur onizleme, doctor sonucu ve kurtarma komutuna ulasir.",
       "checks": ["python scripts/validate.py"],
-      "evidence": ["docs/Kurulum.md", "scripts/kur-hostlar.py", "tests/test_host_install.py"],
+      "evidence": ["docs/Kurulum.md", "scripts/host_lifecycle.py", "tests/test_host_install.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -18,7 +18,7 @@
       "level": "required",
       "purpose": "Host CLI'leri sinirda adapter olarak kalir; cekirdek politika ve islem durumu stdlib JSON sozlesmelerini kullanir.",
       "checks": ["python scripts/validate.py"],
-      "evidence": ["scripts/kur-hostlar.py", "scripts/legacy_state.py", "tests/test_host_install.py"],
+      "evidence": ["scripts/host_lifecycle.py", "scripts/legacy_state.py", "tests/test_host_install.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -27,8 +27,8 @@
       "title_en": "Small, cohesive code",
       "level": "required",
       "purpose": "Temiz kod ratcheti yeni karmasikligi, uzun fonksiyonlari ve buyuk modulleri onler; eski borc kuculur.",
-      "checks": ["python scripts/hijyen.py --check", "python scripts/clean_code.py --check"],
-      "evidence": ["scripts/hijyen.py", "scripts/clean_code.py", "registry/clean-code-baseline.json", "docs/Standartlar-ve-Limitler.md", "pyproject.toml"],
+      "checks": ["python scripts/hygiene.py --check", "python scripts/clean_code.py --check"],
+      "evidence": ["scripts/hygiene.py", "scripts/clean_code.py", "registry/clean-code-baseline.json", "docs/Standartlar-ve-Limitler.md", "pyproject.toml"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -38,7 +38,7 @@
       "level": "required",
       "purpose": "Kamuya acik otomasyon yapilandirilmis cikti, eyleme donuk hata ve sifir olmayan cikis durumu saglar.",
       "checks": ["python scripts/validate.py"],
-      "evidence": ["scripts/validate.py", "scripts/kur-hostlar.py", "tests/test_validate.py"],
+      "evidence": ["scripts/validate.py", "scripts/host_lifecycle.py", "tests/test_validate.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -48,7 +48,7 @@
       "level": "required",
       "purpose": "Davranis degisiklikleri once basarisiz regresyon testiyle baslar; kalite iddialari gercek adapter ve kor hakem protokolune dayanir.",
       "checks": ["python -m unittest discover -s tests -v", "coverage run -m unittest discover -s tests", "coverage report --fail-under=64", "python evals/run.py --check"],
-      "evidence": ["tests/test_eval_runner.py", "tests/test_real_adapters.py", "evals/README.md", "pyproject.toml", ".github/workflows/teftis.yml"],
+      "evidence": ["tests/test_eval_runner.py", "tests/test_real_adapters.py", "evals/README.md", "pyproject.toml", ".github/workflows/quality-gate.yml"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -58,7 +58,7 @@
       "level": "required",
       "purpose": "Bagimliliklar ve Actions degismez olarak pinlenir, izinler asgari olur ve yayin artefaktlari kanitlanir.",
       "checks": ["python -m unittest tests.test_workflows -v"],
-      "evidence": [".github/workflows/teftis.yml", ".github/workflows/codeql.yml", "tests/test_workflows.py"],
+      "evidence": [".github/workflows/quality-gate.yml", ".github/workflows/codeql.yml", "tests/test_workflows.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -68,7 +68,7 @@
       "level": "required",
       "purpose": "Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.",
       "checks": ["python -m unittest tests.test_host_install -v", "python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v"],
-      "evidence": ["scripts/kur-hostlar.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "scripts/kaldir-codex.ps1", "scripts/kaldir-codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py"],
+      "evidence": ["scripts/host_lifecycle.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "scripts/uninstall_codex.ps1", "scripts/uninstall_codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -77,7 +77,7 @@
       "title_en": "Discoverable synchronized documentation",
       "level": "required",
       "purpose": "Turkce ve Ingilizce kritik yollar, Wiki, Pages ve yayin metaverisi yayin manifestosu ile eszamanli kalir.",
-      "checks": ["python scripts/yayin.py --check", "python scripts/wiki.py --check"],
+      "checks": ["python scripts/release.py --check", "python scripts/wiki.py --check"],
       "evidence": ["release-manifest.json", "wiki-pages.json", "docs/Home.md", "README.en.md"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
@@ -87,8 +87,8 @@
       "title_en": "Contributor and support readiness",
       "level": "required",
       "purpose": "Kullanicilar soru, hata, guvenlik, skill onerisi ve kabul kanitini ayirir; katkilara tek yerel denetim sirasi sunulur.",
-      "checks": ["python scripts/devral.py --check"],
-      "evidence": ["CONTRIBUTING.md", ".github/ISSUE_TEMPLATE", "scripts/devral.py"],
+      "checks": ["python scripts/handoff.py --check"],
+      "evidence": ["CONTRIBUTING.md", ".github/ISSUE_TEMPLATE", "scripts/handoff.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -97,9 +97,19 @@
       "title_en": "Accessible, private, evidence-led operation",
       "level": "required",
       "purpose": "Cekirdek kullanim telemetri gerektirmez; metin ciktilari renksiz calisir, UTF-8/LF korunur ve benimsenme iddialari kamu kanitina dayanir.",
-      "checks": ["python scripts/hijyen.py --check", "python scripts/v1.py --check"],
-      "evidence": ["scripts/hijyen.py", "registry/v1-gates.json", "docs/V1-Hazirlik.md"],
+      "checks": ["python scripts/hygiene.py --check", "python scripts/v1.py --check"],
+      "evidence": ["scripts/hygiene.py", "registry/v1-gates.json", "docs/V1-Hazirlik.md"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
+    },
+    {
+      "id": "DCS-011",
+      "title_tr": "Ingilizce teknik cekirdek ve izlenebilir etki",
+      "title_en": "English technical core and traceable impact",
+      "level": "required",
+      "purpose": "Kanonik teknik girisler Ingilizce adlandirilir; Turkce yerellestirme korunur ve Company OS her degisikligi rol, framework, paket ve gecis etkilerine baglar.",
+      "checks": ["python scripts/naming.py --check", "python scripts/divan.py company-validate"],
+      "evidence": ["registry/naming-policy.json", "scripts/naming.py", "scripts/divan.py", "plugins/sadrazam/company/roles.json", "plugins/sadrazam/company/workflows.json", "plugins/sadrazam/company/frameworks.json", "plugins/sadrazam/company/impact-graph.json", "tests/test_company_engine.py", "tests/test_naming.py"],
+      "exception_policy": "Eski Turkce teknik adlar yalniz registry/naming-policy.json icindeki sureli uyumluluk kayitlariyla korunabilir."
     }
   ]
 }

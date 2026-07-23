@@ -13,7 +13,7 @@ adımı taşımak zorundadır. CI bunun ardından
 beş paketi doğrular. Yerelde önce bağımlılıksız teftişi çalıştır:
 ```
 python scripts/validate.py
-python scripts/yayin.py --check
+python scripts/release.py --check
 python scripts/v1.py --check
 python -m unittest discover -s tests -p 'test_*.py'
 ```

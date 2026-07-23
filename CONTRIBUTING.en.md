@@ -1,6 +1,6 @@
 # Contributing to Divan
 
-[Türkçe](CONTRIBUTING.md) · **English** · [Support routes](SUPPORT.md) ·
+[Türkçe](CONTRIBUTING.tr.md) · **English** · [Support routes](SUPPORT.md) ·
 [Community standards](docs/Topluluk-Standartlari.md)
 
 Divan is a local skill/plugin distribution, not a model or agent runtime. A
@@ -27,12 +27,12 @@ and evidence-led.
 4. Run the complete local gate:
 
 ```bash
-python scripts/hijyen.py --check
+python scripts/hygiene.py --check
 python scripts/validate.py
-python scripts/devral.py --check
-python scripts/katalog.py --check
+python scripts/handoff.py --check
+python scripts/catalog.py --check
 python scripts/v1.py --check
-python scripts/yayin.py --check
+python scripts/release.py --check
 python evals/run.py --check
 python -m unittest discover -s tests -v
 git diff --check
@@ -57,10 +57,10 @@ single-purpose; move detail beyond 500 lines into `references/`. Then render
 and verify the catalog and candidate registry:
 
 ```bash
-python scripts/katalog.py --render
-python scripts/katalog.py --check
+python scripts/catalog.py --render
+python scripts/catalog.py --check
 python scripts/validate.py
-python scripts/meclis.py --check
+python scripts/candidate_review.py --check
 ```
 
 Entering the candidate registry is not adoption. An external source first
@@ -71,8 +71,8 @@ change.
 
 Changes to the product must keep README, catalog, installation guide, Wiki
 source, website, release manifest, and licensing/provenance records aligned.
-The ten required rules in `DCS-001` through `DCS-010` are validated with:
+The eleven required rules in `DCS-001` through `DCS-011` are validated with:
 
 ```bash
-python scripts/standartlar.py --check
+python scripts/standards.py --check
 ```

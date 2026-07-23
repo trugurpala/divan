@@ -3,7 +3,7 @@
 Ürün düzeyindeki on zorunlu kuralın tek kaynağı
 [[Topluluk Standartları|Topluluk-Standartlari]] sayfasıdır. Makine-okunur
 sözleşme `registry/community-standards.json`, yerel kapı ise
-`python scripts/standartlar.py --check` komutudur.
+`python scripts/standards.py --check` komutudur.
 
 Divan, Agent Skills açık standardına (agentskills.io/specification) ve
 Claude Code marketplace şemasına uyar. CI'daki `scripts/validate.py` her
@@ -49,9 +49,9 @@ doğrulayıcıya bırakılır.
 
 - `.editorconfig` birinci taraf metni UTF-8/LF; `.gitattributes` metin EOL'unu
   LF olarak sabitler.
-- `python scripts/hijyen.py --check`, UTF-8/BOM/mojibake ve açık
+- `python scripts/hygiene.py --check`, UTF-8/BOM/mojibake ve açık
   `encoding="utf-8"` taşımayan metin subprocess'lerini reddeder.
-- `python scripts/hijyen.py --clean`, yalnız `__pycache__`, Ruff/mypy/pytest
+- `python scripts/hygiene.py --clean`, yalnız `__pycache__`, Ruff/mypy/pytest
   cache'leri, `.coverage` ve `htmlcov` artefaktlarını siler. Yedek, manifest,
   kanıt, worktree veya bilinmeyen dosya allowlist dışındadır.
 - Repo geneli McCabe 25 sert tavanını korur. Yeni/kötüleşen birinci taraf Python
@@ -64,7 +64,7 @@ doğrulayıcıya bırakılır.
 ## Yayın ve v1 kabul sözleşmesi
 
 `VERSION` tek sürüm kaynağıdır; `release-manifest.json` kamusal yüzeyleri,
-`scripts/yayin.py --check` sürüm/not eşliğini denetler. GitHub Release yalnız
+`scripts/release.py --check` sürüm/not eşliğini denetler. GitHub Release yalnız
 CI ve canlı Pages+Wiki eşliğinden sonra oluşur. v1 kapıları
 `registry/v1-gates.json` içinde `passed`, `ready` veya `pending` olarak tutulur;
 Wiki karnesi deterministik üretilir. Otomasyonu yazılmış ama uzak koşusu geçmemiş

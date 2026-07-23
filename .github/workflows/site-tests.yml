@@ -1,4 +1,4 @@
-name: site-testi
+name: site-tests
 on:
   workflow_dispatch:
   push:
@@ -7,14 +7,14 @@ on:
       - 'site/**'
       - 'tests/site_testi.py'
       - 'tests/test_site_markup.py'
-      - '.github/workflows/site-testi.yml'
+      - '.github/workflows/site-tests.yml'
   pull_request:
     paths:
       - 'docs/**'
       - 'site/**'
       - 'tests/site_testi.py'
       - 'tests/test_site_markup.py'
-      - '.github/workflows/site-testi.yml'
+      - '.github/workflows/site-tests.yml'
   schedule:
     - cron: '0 6 * * 1'  # her pazartesi 06:00 UTC
 permissions:

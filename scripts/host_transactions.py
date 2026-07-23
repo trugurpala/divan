@@ -126,9 +126,9 @@ def schema1_owned_marketplaces(marketplace_hosts: list[Any], before: dict[str, A
 
 
 def recovery_command(path: pathlib.Path) -> str:
-    script = pathlib.Path(__file__).resolve().with_name("kur-hostlar.py")
+    script = pathlib.Path(__file__).resolve().with_name("divan.py")
     return subprocess.list2cmdline(
-        [sys.executable, str(script), "--rollback-transaction", str(path.resolve())]
+        [sys.executable, str(script), "recover", str(path.resolve())]
     )
 
 

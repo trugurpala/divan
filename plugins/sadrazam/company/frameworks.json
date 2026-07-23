@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "frameworks": [
+    {
+      "id": "nextjs",
+      "label": {"en": "Next.js", "tr": "Next.js"},
+      "detectors": [
+        {"kind": "package-json-dependency", "path": "package.json", "values": ["next"]}
+      ],
+      "skills": [
+        {"package": "react-pack", "skill": "vercel-react-best-practices"},
+        {"package": "react-pack", "skill": "vercel-composition-patterns"},
+        {"package": "react-pack", "skill": "web-design-guidelines"}
+      ],
+      "checks": ["npm test", "npm run build"]
+    },
+    {
+      "id": "react",
+      "label": {"en": "React", "tr": "React"},
+      "detectors": [
+        {"kind": "package-json-dependency", "path": "package.json", "values": ["react"]}
+      ],
+      "skills": [
+        {"package": "react-pack", "skill": "vercel-react-best-practices"},
+        {"package": "react-pack", "skill": "vercel-composition-patterns"}
+      ],
+      "checks": ["npm test"]
+    },
+    {
+      "id": "python",
+      "label": {"en": "Python", "tr": "Python"},
+      "detectors": [
+        {"kind": "path-exists", "path": "pyproject.toml"},
+        {"kind": "path-exists", "path": "requirements.txt"},
+        {"kind": "path-exists", "path": "setup.py"}
+      ],
+      "skills": [
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "systematic-debugging"}
+      ],
+      "checks": ["python -m unittest discover"]
+    },
+    {
+      "id": "static-web",
+      "label": {"en": "Static web", "tr": "Statik web"},
+      "detectors": [
+        {"kind": "path-exists", "path": "index.html"},
+        {"kind": "path-exists", "path": "site/index.html"}
+      ],
+      "skills": [
+        {"package": "ui-pack", "skill": "frontend-design"},
+        {"package": "ui-pack", "skill": "webapp-testing"}
+      ],
+      "checks": ["browser verification"]
+    },
+    {
+      "id": "documentation",
+      "label": {"en": "Documentation", "tr": "Dokümantasyon"},
+      "detectors": [
+        {"kind": "path-exists", "path": "docs"},
+        {"kind": "path-exists", "path": "README.md"}
+      ],
+      "skills": [
+        {"package": "core-pack", "skill": "writing-skills"}
+      ],
+      "checks": ["link validation"]
+    },
+    {
+      "id": "generic",
+      "label": {"en": "Generic project", "tr": "Genel proje"},
+      "fallback": true,
+      "detectors": [],
+      "skills": [
+        {"package": "core-pack", "skill": "writing-plans"},
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "verification-before-completion"}
+      ],
+      "checks": ["project-native tests"]
+    }
+  ]
+}

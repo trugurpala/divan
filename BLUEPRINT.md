@@ -25,9 +25,13 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 5. **Repo hijyeni:** Üretilmiş dosya temizliği allowlist ve fail-closed çalışır;
    kullanıcı yedeği ile yayın kanıtı çöp sayılmaz. Birinci taraf metin UTF-8/LF,
    çekirdek Python karmaşıklık bütçesi 25'tir. Ayrıntı ADR 0003'tedir.
-6. **Topluluk standartları kod olarak:** DCS-001..DCS-010 makine-okunur tek
+6. **Topluluk standartları kod olarak:** DCS-001..DCS-011 makine-okunur tek
    registry'den doğrulanır; framework/host ayrıntıları adaptör sınırında kalır,
    istisnalar dar ve süreli olur. Ayrıntı ADR 0004'tedir.
+7. **Company OS ve küresel teknik dil:** Kullanıcı hedefi doğal dilde verir;
+   Sadrazam rol, akış, framework, paket ve geçişli etki sözleşmelerinden en küçük
+   yetkin ekibi seçer. Teknik girişler İngilizce kanoniktir, Türkçe yerelleştirme
+   birinci sınıftır. Ayrıntı ADR 0005'tedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -49,6 +53,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ## Yol Haritası
 
 ### Yayımlanan temel
+
+- **v0.14.0 ✓** Company OS; 12 rol, 8 akış, framework kanıtı ve geçişli etki
+  grafiği; Core/UI/React/Zanaat paketlerinin gerekçeli seçimi; İngilizce kanonik
+  CLI, workflow ve katkı yüzeyleri; süreli Türkçe uyumluluk sarmalayıcıları
 
 - **v0.1–v0.7 ✓** 5 paket, 37 skill, landing, CI, hafıza, lisans/köken
   kayıtları, topluluk ve güvenlik dosyaları
@@ -157,7 +165,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   sırasında durum sayfasında kalan eski v0.11.0 SHA'sını yakaladı; gerçek
   v0.11.1 SHA'sıyla düzeltildi ve kanıt `.divan/evidence/` altına işlendi.
 - 2026-07-18l: Claude Code devralma açığı kapatıldı. Kök `CLAUDE.md`, ajanı
-  AGENTS→BLUEPRINT→progress→yayın/v1 kayıtlarına bağladı; `scripts/devral.py`
+  AGENTS→BLUEPRINT→progress→yayın/v1 kayıtlarına bağladı; `scripts/handoff.py`
   ve regresyon testleri eksik zinciri reddeder. SessionStart aynı sözleşmeyi
   gösterir. CODEOWNERS ile Actions Dependabot eklendi; ruleset, secret scanning,
   push protection ve CodeQL'nin GitHub ayarı olduğu dürüstçe açık bırakıldı.
@@ -174,7 +182,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 - 2026-07-18j: Kullanıcının “kitap/Release dahil her yeri her seferinde ben mi
   hatırlatacağım?” itirazı kalıcı ürün gereksinimine çevrildi. GitHub Docs
   üzerinden `GITHUB_TOKEN` en az yetki ve recursion davranışı doğrulandı.
-  `release-manifest.json` + `scripts/yayin.py` tek komutlu sürüm hazırlığı,
+  `release-manifest.json` + `scripts/release.py` tek komutlu sürüm hazırlığı,
   yüzey sapma kapısı ve CHANGELOG kaynaklı release notu kurdu. `release`
   workflow'u `main` sonrası Pages/Wiki sürümünü bekleyip tag/Release oluşturur;
   etiketi asla taşımaz. Claude Code doğrulaması ile Linux/macOS/Windows Codex

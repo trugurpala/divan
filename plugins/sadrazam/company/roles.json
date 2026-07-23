@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "roles": [
+    {
+      "id": "product-strategist",
+      "label": {"en": "Product Strategist", "tr": "Ürün Stratejisti"},
+      "mission": "Turn user intent into a bounded outcome and acceptance criteria.",
+      "inputs": ["user intent", "project evidence"],
+      "outputs": ["brief", "acceptance criteria", "scope decision"],
+      "skills": [
+        {"package": "sadrazam", "skill": "musavir"},
+        {"package": "core-pack", "skill": "brainstorming"},
+        {"package": "core-pack", "skill": "writing-plans"}
+      ],
+      "gates": ["approved design", "testable acceptance criteria"]
+    },
+    {
+      "id": "ux-designer",
+      "label": {"en": "UX Designer", "tr": "UX Tasarımcısı"},
+      "mission": "Design accessible user flows and a coherent visual system.",
+      "inputs": ["brief", "user context", "detected stack"],
+      "outputs": ["interaction flow", "design system", "accessibility criteria"],
+      "skills": [
+        {"package": "ui-pack", "skill": "ui-ux-pro-max"},
+        {"package": "ui-pack", "skill": "frontend-design"}
+      ],
+      "gates": ["WCAG AA", "responsive behavior", "keyboard path"]
+    },
+    {
+      "id": "frontend-engineer",
+      "label": {"en": "Frontend Engineer", "tr": "Frontend Mühendisi"},
+      "mission": "Implement tested, accessible client-facing behavior.",
+      "inputs": ["design system", "acceptance criteria", "framework profile"],
+      "outputs": ["frontend implementation", "component tests"],
+      "skills": [
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "systematic-debugging"},
+        {"package": "ui-pack", "skill": "frontend-design"}
+      ],
+      "gates": ["tests", "accessibility", "responsive verification"]
+    },
+    {
+      "id": "backend-engineer",
+      "label": {"en": "Backend Engineer", "tr": "Backend Mühendisi"},
+      "mission": "Implement reliable domain, data, and service behavior.",
+      "inputs": ["acceptance criteria", "architecture constraints"],
+      "outputs": ["backend implementation", "unit and integration tests"],
+      "skills": [
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "systematic-debugging"},
+        {"package": "core-pack", "skill": "kural-hazinesi"}
+      ],
+      "gates": ["tests", "failure handling", "data contract review"]
+    },
+    {
+      "id": "qa-engineer",
+      "label": {"en": "QA Engineer", "tr": "Kalite Mühendisi"},
+      "mission": "Prove acceptance behavior and discover regressions.",
+      "inputs": ["acceptance criteria", "implementation"],
+      "outputs": ["regression tests", "browser evidence", "defect report"],
+      "skills": [
+        {"package": "core-pack", "skill": "test-driven-development"},
+        {"package": "core-pack", "skill": "verification-before-completion"},
+        {"package": "ui-pack", "skill": "webapp-testing"}
+      ],
+      "gates": ["red-green evidence", "edge cases", "fresh verification"]
+    },
+    {
+      "id": "platform-engineer",
+      "label": {"en": "Platform Engineer", "tr": "Platform Mühendisi"},
+      "mission": "Own CI, deployment, reliability, and recovery paths.",
+      "inputs": ["runtime constraints", "release contract"],
+      "outputs": ["automation", "deployment plan", "recovery procedure"],
+      "skills": [
+        {"package": "core-pack", "skill": "temkin"},
+        {"package": "core-pack", "skill": "systematic-debugging"},
+        {"package": "core-pack", "skill": "verification-before-completion"}
+      ],
+      "gates": ["least privilege", "rollback", "operational verification"]
+    },
+    {
+      "id": "security-reviewer",
+      "label": {"en": "Security Reviewer", "tr": "Güvenlik İncelemecisi"},
+      "mission": "Identify trust boundaries and block unsafe delivery.",
+      "inputs": ["architecture", "change set", "threat context"],
+      "outputs": ["threat review", "security findings", "remediation evidence"],
+      "skills": [
+        {"package": "core-pack", "skill": "temkin"},
+        {"package": "core-pack", "skill": "requesting-code-review"}
+      ],
+      "gates": ["secret safety", "least privilege", "dependency provenance"]
+    },
+    {
+      "id": "release-manager",
+      "label": {"en": "Release Manager", "tr": "Yayın Yöneticisi"},
+      "mission": "Synchronize every public surface and prove delivery state.",
+      "inputs": ["verified change set", "release contract"],
+      "outputs": ["release candidate", "publication evidence", "recovery note"],
+      "skills": [
+        {"package": "core-pack", "skill": "finishing-a-development-branch"},
+        {"package": "core-pack", "skill": "verification-before-completion"},
+        {"package": "sadrazam", "skill": "defterdar"}
+      ],
+      "gates": ["CI", "public surface parity", "live readback"]
+    },
+    {
+      "id": "technical-writer",
+      "label": {"en": "Technical Writer", "tr": "Teknik Yazar"},
+      "mission": "Keep contributor and user guidance accurate and navigable.",
+      "inputs": ["product behavior", "impact report"],
+      "outputs": ["English documentation", "Turkish localization", "migration guide"],
+      "skills": [
+        {"package": "core-pack", "skill": "writing-skills"},
+        {"package": "sadrazam", "skill": "defterdar"}
+      ],
+      "gates": ["English canonical copy", "locale parity", "link validation"]
+    },
+    {
+      "id": "creative-producer",
+      "label": {"en": "Creative Producer", "tr": "Yaratıcı Yapımcı"},
+      "mission": "Produce original visual and branded artifacts.",
+      "inputs": ["creative brief", "brand constraints"],
+      "outputs": ["visual artifact", "theme contract", "usage notes"],
+      "skills": [
+        {"package": "zanaat-pack", "skill": "theme-factory"},
+        {"package": "zanaat-pack", "skill": "canvas-design"},
+        {"package": "zanaat-pack", "skill": "web-artifacts-builder"}
+      ],
+      "gates": ["original work", "format validation", "accessible presentation"]
+    },
+    {
+      "id": "integration-engineer",
+      "label": {"en": "Integration Engineer", "tr": "Entegrasyon Mühendisi"},
+      "mission": "Build safe, well-scoped tool and API integrations.",
+      "inputs": ["external API contract", "authentication boundary"],
+      "outputs": ["integration implementation", "tool schema", "evaluation cases"],
+      "skills": [
+        {"package": "zanaat-pack", "skill": "mcp-builder"},
+        {"package": "zanaat-pack", "skill": "claude-api"},
+        {"package": "core-pack", "skill": "test-driven-development"}
+      ],
+      "gates": ["schema validation", "secret safety", "integration tests"]
+    },
+    {
+      "id": "independent-reviewer",
+      "label": {"en": "Independent Reviewer", "tr": "Bağımsız İncelemeci"},
+      "mission": "Review the delivered change against requirements and evidence.",
+      "inputs": ["plan", "change set", "verification output"],
+      "outputs": ["review findings", "delivery verdict"],
+      "skills": [
+        {"package": "core-pack", "skill": "requesting-code-review"},
+        {"package": "core-pack", "skill": "verification-before-completion"}
+      ],
+      "gates": ["no critical findings", "no important findings", "fresh evidence"]
+    }
+  ]
+}

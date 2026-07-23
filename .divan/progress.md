@@ -1,14 +1,25 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-21
+Son güncelleme: 2026-07-23
 
 ## Güncel hedef
 
-v0.13.0 local release candidate is prepared. Product scope and local gates are
-complete, but PR/main, repository settings, public release, attestations, and
-global Claude+Codex upgrade are deliberately not claimed yet. v1 remains 7/8.
+v0.14.0 Company OS release candidate is being verified. Product scope includes
+English-canonical technical entrypoints, Turkish localization, role/workflow/
+framework/impact contracts, and automatic Core/UI/React/Zanaat selection.
+PR/main, public release, and global Claude+Codex upgrade are not claimed yet.
+v1 remains 7/8.
 
 ## Yapıldı
+
+- Company OS now maps natural-language intent to 12 functional roles, 8
+  workflows, detected frameworks, the smallest justified pack set, and
+  transitive documentation/Wiki/site/release effects.
+- `scripts/divan.py` is the canonical English CLI. Existing Turkish script
+  names are narrow deprecated compatibility aliases until v1.
+- DCS-011, naming policy, English canonical README/contribution surfaces,
+  Turkish locale files, Company OS docs, Pages, Wiki, CI, and release manifest
+  are synchronized.
 
 - v0.13.0 introduced DCS-001..DCS-010 as a machine-readable contract, a Clean
   Code debt ratchet, dual-host doctor/transactional upgrade, SPDX supply-chain

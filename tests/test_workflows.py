@@ -113,11 +113,11 @@ class WorkflowHardeningTests(unittest.TestCase):
             self.assertIn(f'"path": "{path}"', manifest)
 
     def test_compatibility_matrix_runs_both_native_host_clis(self) -> None:
-        text = (WORKFLOWS / "uyumluluk.yml").read_text(encoding="utf-8")
+        text = (WORKFLOWS / "compatibility.yml").read_text(encoding="utf-8")
         self.assertIn("@anthropic-ai/claude-code@2.1.215", text)
         self.assertIn("@openai/codex@0.144.6", text)
         self.assertIn('"--host", "both"', text)
-        self.assertIn('"--rollback-transaction"', text)
+        self.assertIn('"scripts/divan.py", "recover"', text)
         self.assertIn('pathlib.Path(environment["CLAUDE_CONFIG_DIR"]).mkdir', text)
         self.assertIn('pathlib.Path(environment["CODEX_HOME"]).mkdir', text)
         self.assertIn("DIVAN_REF: ${{ github.sha }}", text)
@@ -125,11 +125,11 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn('["cmd.exe", "/d", "/s", "/c", resolved', text)
 
     def test_primary_audit_runs_lint_types_coverage_and_actionlint(self) -> None:
-        text = (WORKFLOWS / "teftis.yml").read_text(encoding="utf-8")
+        text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
         for command in (
             "pip install -r requirements-dev.txt",
-            "python scripts/hijyen.py --check",
-            "python scripts/standartlar.py --check",
+            "python scripts/hygiene.py --check",
+            "python scripts/standards.py --check",
             "ruff check .",
             "mypy scripts",
             "coverage run -m unittest discover -s tests",
@@ -149,7 +149,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("mypy==2.3.0", requirements)
         self.assertIn("coverage==7.15.2", requirements)
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-        workflow = (WORKFLOWS / "teftis.yml").read_text(encoding="utf-8")
+        workflow = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
         self.assertIn("[tool.ruff]", pyproject)
         self.assertIn("[tool.mypy]", pyproject)
         self.assertIn("[tool.coverage.run]", pyproject)

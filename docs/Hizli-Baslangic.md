@@ -11,29 +11,29 @@ geçtiğini, bağımsız kullanıcı kanıtının beklediğini gösterir. Ürün
 Önce yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/kur-hostlar.py --host both --ref v0.13.0
-python scripts/kur-hostlar.py --host both --ref v0.13.0 --execute
+python scripts/divan.py install --host both --ref v0.14.0
+python scripts/divan.py install --host both --ref v0.14.0 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/kur-hostlar.py --doctor --host both --ref v0.13.0
-python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0
-python scripts/kur-hostlar.py --upgrade --host both --ref v0.13.0 --execute
+python scripts/divan.py doctor --host both --ref v0.14.0
+python scripts/divan.py update --host both --ref v0.14.0
+python scripts/divan.py update --host both --ref v0.14.0 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
 
 ```powershell
-python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
+python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 ```
 
 Örnek yolu doctor çıktısındaki tam `recovery_command` ile değiştir. Kurulumu
 yalnız bu işlemin oluşturduğu Divan kayıtlarıyla geri almak/kaldırmak için:
 
 ```powershell
-python scripts/kur-hostlar.py --rollback-transaction "C:\Users\you\.divan\transactions\install-20260721-120000.json"
+python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
 Host'a göre elle kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host

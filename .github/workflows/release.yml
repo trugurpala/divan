@@ -8,7 +8,7 @@ on:
       - 'VERSION'
       - 'CHANGELOG.md'
       - 'release-manifest.json'
-      - 'scripts/yayin.py'
+      - 'scripts/release.py'
       - 'scripts/sbom.py'
       - '.github/workflows/release.yml'
 
@@ -36,9 +36,9 @@ jobs:
           CODEX_SKILLS_DIR: ${{ runner.temp }}/codex-skills
           DIVAN_STATE_DIR: ${{ runner.temp }}/codex-state
         run: |
-          bash scripts/kur-codex.sh
+          bash scripts/install_codex.sh
           test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 41
-          bash scripts/kaldir-codex.sh
+          bash scripts/uninstall_codex.sh
           test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 0
       - name: Windows kur-keşfet-kaldır
         if: runner.os == 'Windows'
@@ -48,9 +48,9 @@ jobs:
           CODEX_SKILLS_DIR: ${{ runner.temp }}\codex-skills
           DIVAN_STATE_DIR: ${{ runner.temp }}\codex-state
         run: |
-          & ./scripts/kur-codex.ps1
+          & ./scripts/install_codex.ps1
           if (@(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count -ne 41) { throw "41 skill bulunamadi" }
-          & ./scripts/kaldir-codex.ps1
+          & ./scripts/uninstall_codex.ps1
           if (@(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count -ne 0) { throw "Kaldirma tamamlanmadi" }
 
   publish:
@@ -76,12 +76,12 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_*.py'
           python scripts/validate.py
-          python scripts/yayin.py --check
+          python scripts/release.py --check
           python scripts/v1.py --check
           python evals/run.py --check
           python scripts/wiki.py --check
-          python scripts/meclis.py --check
-          python scripts/katalog.py --check
+          python scripts/candidate_review.py --check
+          python scripts/catalog.py --check
       - name: Resmî şema doğrulayıcıları
         run: |
           pip install skills-ref==0.1.1
@@ -132,7 +132,7 @@ jobs:
           archive="$RUNNER_TEMP/divan-${tag}.zip"
           checksum="$RUNNER_TEMP/divan-${tag}.sha256"
           sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"
-          python scripts/yayin.py --notes "$notes"
+          python scripts/release.py --notes "$notes"
           source_commit="$GITHUB_SHA"
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
             tagged_commit="$(git rev-parse "$tag^{commit}")"

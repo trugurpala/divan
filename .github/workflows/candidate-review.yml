@@ -1,4 +1,4 @@
-name: meclis
+name: candidate-review
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
   pull_request:
     paths:
       - 'registry/**'
-      - 'scripts/meclis.py'
+      - 'scripts/candidate_review.py'
       - 'tests/test_meclis.py'
       - 'docs/Aday-Meclisi.md'
       - '.github/ISSUE_TEMPLATE/kaynak-adayi.yml'
@@ -18,7 +18,7 @@ on:
     branches: [main]
     paths:
       - 'registry/**'
-      - 'scripts/meclis.py'
+      - 'scripts/candidate_review.py'
       - 'tests/test_meclis.py'
       - 'docs/Aday-Meclisi.md'
       - '.github/ISSUE_TEMPLATE/kaynak-adayi.yml'
@@ -37,7 +37,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: |
-          python scripts/meclis.py --check
+          python scripts/candidate_review.py --check
           python -m unittest tests.test_meclis -v
 
   classify-intake:

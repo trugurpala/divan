@@ -33,7 +33,7 @@ class CleanCodeTests(unittest.TestCase):
         self.assertEqual(configuration["tool"]["coverage"]["report"]["fail_under"], 64)
         self.assertEqual(configuration["tool"]["mypy"]["files"], ["scripts", "evals"])
 
-        workflow = (ROOT / ".github" / "workflows" / "teftis.yml").read_text(
+        workflow = (ROOT / ".github" / "workflows" / "quality-gate.yml").read_text(
             encoding="utf-8"
         )
         self.assertLess(workflow.index("ruff check ."), workflow.index("clean_code.py --check"))
