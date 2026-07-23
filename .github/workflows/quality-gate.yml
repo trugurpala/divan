@@ -28,6 +28,7 @@ jobs:
           python evals/run.py --check
           python scripts/wiki.py --check
           python scripts/candidate_review.py --check
+          python scripts/forge_registry.py
           python scripts/catalog.py --check
           python scripts/v1.py --check
           python scripts/release.py --check
