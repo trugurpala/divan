@@ -34,116 +34,147 @@ ALLOWED_MATERIALIZATION = {
     "template-clone",
     "template-generator",
 }
+MATERIALIZABLE_DECISIONS = {"ALTERNATIVE", "GOLDEN_PATH", "PRODUCT_BASE"}
+REQUIRED_SOURCE_STRINGS = ("id", "name", "repository", "reviewed_head", "kind", "status")
+REQUIRED_LICENSE_STRINGS = ("spdx", "evidence_path", "evidence_blob_sha", "scope_note")
 
 
 def load_registry(path: pathlib.Path = REGISTRY_PATH) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _source_errors(source: object, index: int) -> list[str]:
-    prefix = f"sources[{index}]"
-    if not isinstance(source, dict):
-        return [f"{prefix} must be an object"]
+def _required_string_errors(source: dict[str, Any], prefix: str) -> list[str]:
+    return [
+        f"{prefix}.{field} must be a non-empty string"
+        for field in REQUIRED_SOURCE_STRINGS
+        if not isinstance(source.get(field), str) or not source.get(field, "").strip()
+    ]
 
+
+def _identity_errors(source: dict[str, Any], prefix: str) -> list[str]:
     errors: list[str] = []
-    required_strings = ("id", "name", "repository", "reviewed_head", "kind", "status")
-    for field in required_strings:
-        if not isinstance(source.get(field), str) or not source[field].strip():
-            errors.append(f"{prefix}.{field} must be a non-empty string")
-
     repository = source.get("repository")
+    reviewed_head = source.get("reviewed_head")
     if isinstance(repository, str) and not REPOSITORY_RE.fullmatch(repository):
         errors.append(f"{prefix}.repository must use owner/name form")
-
-    reviewed_head = source.get("reviewed_head")
     if isinstance(reviewed_head, str) and not SHA256_RE.fullmatch(reviewed_head):
         errors.append(f"{prefix}.reviewed_head must be a full lowercase commit SHA")
+    return errors
 
-    if source.get("kind") not in ALLOWED_KINDS:
-        errors.append(f"{prefix}.kind is unsupported")
-    if source.get("status") not in ALLOWED_STATUSES:
-        errors.append(f"{prefix}.status is unsupported")
-    if source.get("decision") not in ALLOWED_DECISIONS:
-        errors.append(f"{prefix}.decision is unsupported")
-    if source.get("materialization") not in ALLOWED_MATERIALIZATION:
-        errors.append(f"{prefix}.materialization is unsupported")
-    if source.get("build_evidence") not in ALLOWED_BUILD_EVIDENCE:
-        errors.append(f"{prefix}.build_evidence is unsupported")
+
+def _enum_errors(source: dict[str, Any], prefix: str) -> list[str]:
+    checks = (
+        ("kind", ALLOWED_KINDS),
+        ("status", ALLOWED_STATUSES),
+        ("decision", ALLOWED_DECISIONS),
+        ("materialization", ALLOWED_MATERIALIZATION),
+        ("build_evidence", ALLOWED_BUILD_EVIDENCE),
+    )
+    return [f"{prefix}.{field} is unsupported" for field, allowed in checks if source.get(field) not in allowed]
+
+
+def _safety_errors(source: dict[str, Any], prefix: str) -> list[str]:
+    errors: list[str] = []
     if source.get("auto_install") is not False:
         errors.append(f"{prefix}.auto_install must remain false")
-
     wave = source.get("wave")
-    if not isinstance(wave, int) or wave < 0 or wave > 3:
+    if not isinstance(wave, int) or isinstance(wave, bool) or not 0 <= wave <= 3:
         errors.append(f"{prefix}.wave must be an integer from 0 to 3")
+    return errors
 
+
+def _license_errors(source: dict[str, Any], prefix: str) -> list[str]:
     license_data = source.get("license")
     if not isinstance(license_data, dict):
-        errors.append(f"{prefix}.license must be an object")
-    else:
-        for field in ("spdx", "evidence_path", "evidence_blob_sha", "scope_note"):
-            value = license_data.get(field)
-            if not isinstance(value, str) or not value.strip():
-                errors.append(f"{prefix}.license.{field} must be a non-empty string")
-        blob_sha = license_data.get("evidence_blob_sha")
-        if isinstance(blob_sha, str) and not SHA256_RE.fullmatch(blob_sha):
-            errors.append(f"{prefix}.license.evidence_blob_sha must be a full blob SHA")
+        return [f"{prefix}.license must be an object"]
+    errors = [
+        f"{prefix}.license.{field} must be a non-empty string"
+        for field in REQUIRED_LICENSE_STRINGS
+        if not isinstance(license_data.get(field), str) or not license_data.get(field, "").strip()
+    ]
+    blob_sha = license_data.get("evidence_blob_sha")
+    if isinstance(blob_sha, str) and not SHA256_RE.fullmatch(blob_sha):
+        errors.append(f"{prefix}.license.evidence_blob_sha must be a full blob SHA")
+    return errors
 
+
+def _decision_errors(source: dict[str, Any], prefix: str) -> list[str]:
+    errors: list[str] = []
     decision = source.get("decision")
     materialization = source.get("materialization")
     profile = source.get("profile")
-    if decision in {"GOLDEN_PATH", "ALTERNATIVE", "PRODUCT_BASE"}:
-        if not isinstance(profile, str) or not profile.strip():
-            errors.append(f"{prefix}.profile is required for materializable sources")
+    if decision in MATERIALIZABLE_DECISIONS and (
+        not isinstance(profile, str) or not profile.strip()
+    ):
+        errors.append(f"{prefix}.profile is required for materializable sources")
     if decision == "REFERENCE" and materialization != "none":
         errors.append(f"{prefix}.reference sources must not materialize")
     if decision == "TOOL" and source.get("kind") != "tool-provider":
         errors.append(f"{prefix}.TOOL decision requires tool-provider kind")
+    return errors
 
+
+def _source_errors(source: object, index: int) -> list[str]:
+    prefix = f"sources[{index}]"
+    if not isinstance(source, dict):
+        return [f"{prefix} must be an object"]
+    return [
+        *_required_string_errors(source, prefix),
+        *_identity_errors(source, prefix),
+        *_enum_errors(source, prefix),
+        *_safety_errors(source, prefix),
+        *_license_errors(source, prefix),
+        *_decision_errors(source, prefix),
+    ]
+
+
+def _policy_errors(data: dict[str, Any]) -> list[str]:
+    policy = data.get("policy")
+    if not isinstance(policy, dict):
+        return ["policy must be an object"]
+    required_false = (
+        "vendor_source_into_divan",
+        "floating_refs_allowed",
+        "unknown_project_mcp_auto_approval",
+    )
+    return [
+        f"policy.{field} must remain false"
+        for field in required_false
+        if policy.get(field) is not False
+    ]
+
+
+def _duplicate_errors(sources: list[object]) -> list[str]:
+    errors: list[str] = []
+    seen: dict[str, set[str]] = {"id": set(), "repository": set()}
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        for field, label in (("id", "source id"), ("repository", "repository")):
+            value = source.get(field)
+            if not isinstance(value, str):
+                continue
+            if value in seen[field]:
+                errors.append(f"duplicate {label}: {value}")
+            seen[field].add(value)
     return errors
 
 
 def registry_errors(data: object) -> list[str]:
     if not isinstance(data, dict):
         return ["registry root must be an object"]
-
     errors: list[str] = []
     if data.get("schema_version") != 1:
         errors.append("schema_version must be 1")
     if data.get("autonomy") != "never-auto-install":
         errors.append("autonomy must remain never-auto-install")
-
-    policy = data.get("policy")
-    if not isinstance(policy, dict):
-        errors.append("policy must be an object")
-    else:
-        if policy.get("vendor_source_into_divan") is not False:
-            errors.append("policy.vendor_source_into_divan must remain false")
-        if policy.get("floating_refs_allowed") is not False:
-            errors.append("policy.floating_refs_allowed must remain false")
-        if policy.get("unknown_project_mcp_auto_approval") is not False:
-            errors.append("policy.unknown_project_mcp_auto_approval must remain false")
-
+    errors.extend(_policy_errors(data))
     sources = data.get("sources")
     if not isinstance(sources, list) or not sources:
         return [*errors, "sources must be a non-empty list"]
-
-    ids: set[str] = set()
-    repositories: set[str] = set()
     for index, source in enumerate(sources):
         errors.extend(_source_errors(source, index))
-        if not isinstance(source, dict):
-            continue
-        source_id = source.get("id")
-        repository = source.get("repository")
-        if isinstance(source_id, str):
-            if source_id in ids:
-                errors.append(f"duplicate source id: {source_id}")
-            ids.add(source_id)
-        if isinstance(repository, str):
-            if repository in repositories:
-                errors.append(f"duplicate repository: {repository}")
-            repositories.add(repository)
-
+    errors.extend(_duplicate_errors(sources))
     return errors
 
 
