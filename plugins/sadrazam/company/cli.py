@@ -39,9 +39,31 @@ TEXT = {
     },
 }
 
+SENSITIVE_OUTPUT_KEYS = ("authorization", "credential", "password", "secret", "token")
+
+
+def _safe_output(value: Any, key: str = "") -> Any:
+    """Return a recursively redacted, JSON-compatible public CLI value."""
+    if any(marker in key.casefold() for marker in SENSITIVE_OUTPUT_KEYS):
+        return "[REDACTED_SECRET]"
+    if isinstance(value, dict):
+        return {
+            str(item_key): _safe_output(item, str(item_key))
+            for item_key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_safe_output(item) for item in value]
+    if isinstance(value, tuple):
+        return [_safe_output(item) for item in value]
+    if isinstance(value, str):
+        return receipts.redact_text(value)
+    return value
+
 
 def _write_json(value: dict[str, Any]) -> None:
-    print(json.dumps(value, ensure_ascii=False, sort_keys=True))
+    safe_value = _safe_output(value)
+    # lgtm[py/clear-text-logging-sensitive-data] safe_value is recursively redacted.
+    print(json.dumps(safe_value, ensure_ascii=False, sort_keys=True))
 
 
 def _write_human(value: dict[str, Any], language: str) -> None:
@@ -58,7 +80,12 @@ def _write_human(value: dict[str, Any], language: str) -> None:
         if key not in value:
             continue
         item = value[key]
-        rendered = ", ".join(item) if isinstance(item, list) else str(item)
+        safe_item = _safe_output(item, key)
+        rendered = (
+            ", ".join(str(part) for part in safe_item)
+            if isinstance(safe_item, list)
+            else str(safe_item)
+        )
         print(f"{labels[key]}: {rendered}")
 
 

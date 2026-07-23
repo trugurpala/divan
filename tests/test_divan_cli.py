@@ -25,6 +25,27 @@ def load_module(name: str, path: pathlib.Path):
 
 
 class PortableCompanyCliTests(unittest.TestCase):
+    def test_json_output_recursively_redacts_secrets_and_sensitive_keys(self) -> None:
+        cli = load_module("divan_company_cli_redaction", COMPANY_CLI)
+        output = io.StringIO()
+        secret = "xox" + "b-123456789012-123456789012-abcdefghijklmnopqrstuvwx"
+        with contextlib.redirect_stdout(output):
+            cli._write_json(
+                {
+                    "status": "blocked",
+                    "reason": f"provider returned {secret}",
+                    "nested": [{"access_token": "plain-value"}],
+                }
+            )
+
+        rendered = output.getvalue()
+        self.assertNotIn(secret, rendered)
+        self.assertNotIn("plain-value", rendered)
+        self.assertEqual(
+            json.loads(rendered)["nested"][0]["access_token"],
+            "[REDACTED_SECRET]",
+        )
+
     def test_release_requires_an_explicit_provider(self) -> None:
         cli = load_module("divan_company_cli_provider", COMPANY_CLI)
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
