@@ -159,14 +159,16 @@ jobs:
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
           sbom_sha256="$(sha256sum "$sbom" | awk '{print $1}')"
           printf '%s  %s\n%s  %s\n%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$runner_sha256" "$(basename "$runner")" "$runner_checksum_sha256" "$(basename "$runner_checksum")" "$source_commit" "$tag" > "$checksum"
-          echo "archive=$archive" >> "$GITHUB_OUTPUT"
-          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
-          echo "notes=$notes" >> "$GITHUB_OUTPUT"
-          echo "runner=$runner" >> "$GITHUB_OUTPUT"
-          echo "runner_checksum=$runner_checksum" >> "$GITHUB_OUTPUT"
-          echo "sbom=$sbom" >> "$GITHUB_OUTPUT"
-          echo "source_commit=$source_commit" >> "$GITHUB_OUTPUT"
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          {
+            echo "archive=$archive"
+            echo "checksum=$checksum"
+            echo "notes=$notes"
+            echo "runner=$runner"
+            echo "runner_checksum=$runner_checksum"
+            echo "sbom=$sbom"
+            echo "source_commit=$source_commit"
+            echo "tag=$tag"
+          } >> "$GITHUB_OUTPUT"
       - name: Attest every release asset before publication
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
