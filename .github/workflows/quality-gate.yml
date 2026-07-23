@@ -18,14 +18,14 @@ jobs:
           node-version: '24'
       - name: Install Python quality dependencies
         run: pip install -r requirements-dev.txt
+      - name: Repository hygiene
+        run: python scripts/hygiene.py --check
       - name: Forge registry gates
         run: |
           python scripts/forge_registry.py
           python -m unittest tests.test_forge_registry -v
           ruff check scripts/forge_registry.py tests/test_forge_registry.py
           mypy scripts/forge_registry.py
-      - name: Repository hygiene
-        run: python scripts/hygiene.py --check
       - name: Repository naming
         run: python scripts/naming.py --check
       - name: Company and standards gates
