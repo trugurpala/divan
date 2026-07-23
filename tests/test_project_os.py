@@ -121,6 +121,19 @@ def append_dps_005_claim(
 
 
 class ProjectBootstrapTests(unittest.TestCase):
+    def test_shallow_runtime_path_does_not_index_a_missing_parent(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-shallow-runtime-") as temporary:
+            project = pathlib.Path(temporary)
+            (project / "index.html").write_text(
+                "<!doctype html><html><head></head><body></body></html>",
+                encoding="utf-8",
+            )
+            with mock.patch.object(project_os, "__file__", "/project_os.py"):
+                with self.assertRaisesRegex(
+                    ValueError, "bundled SEO policy is unavailable"
+                ):
+                    project_os._seo_contract(project, "standard")
+
     def setUp(self) -> None:
         self._state_directory = tempfile.TemporaryDirectory(
             prefix="divan-state-",

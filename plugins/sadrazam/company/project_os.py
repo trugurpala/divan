@@ -486,10 +486,9 @@ def _seo_contract(
     expected_url: str | None = None,
 ) -> tuple[str, str]:
     directory = pathlib.Path(__file__).resolve().parent
-    candidates = (
-        directory / "data" / "seo-policy.json",
-        directory.parents[2] / "registry" / "seo-policy.json",
-    )
+    candidates = [directory / "data" / "seo-policy.json"]
+    if len(directory.parents) > 2:
+        candidates.append(directory.parents[2] / "registry" / "seo-policy.json")
     policy_path = next((path for path in candidates if path.is_file()), None)
     if policy_path is None:
         raise ValueError("bundled SEO policy is unavailable")
