@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "autonomy": "never-auto-install",
+  "policy": {
+    "vendor_source_into_divan": false,
+    "floating_refs_allowed": false,
+    "promotion_requires_local_build": true,
+    "promotion_requires_license_scope_review": true,
+    "promotion_requires_golden_task": true,
+    "unknown_project_mcp_auto_approval": false,
+    "release_or_deploy_requires_explicit_user_action": true
+  },
+  "sources": [
+    {
+      "id": "nextbase-supabase",
+      "name": "NextBase Open Source",
+      "repository": "imbhargav5/nextbase-nextjs-supabase-starter",
+      "reviewed_head": "2371c30a97c4f21ded972db6ef5e6ce036e0ec4d",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 1,
+      "profile": "nextjs-supabase-saas",
+      "materialization": "template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "d7865f7f23ca7304fba062470a916e247cb7287d",
+        "scope_note": "Repository source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "wave-laravel-cpanel",
+      "name": "DevDojo Wave",
+      "repository": "thedevdojo/wave",
+      "reviewed_head": "d5f7ed2f96c809b7b62d1ea61389d933c2265e03",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 1,
+      "profile": "laravel-mysql-cpanel-saas",
+      "materialization": "template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE.md",
+        "evidence_blob_sha": "a6093a511695f7e42086aa8b7f995d470708c3a7",
+        "scope_note": "Repository source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "fastapi-fullstack",
+      "name": "Full Stack FastAPI Template",
+      "repository": "fastapi/full-stack-fastapi-template",
+      "reviewed_head": "5b358ea6f422a09cc0d6f75c4164cf8a36005c4c",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 1,
+      "profile": "fastapi-postgresql-fullstack",
+      "materialization": "copier-or-template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "f11987b50cfa15ae4f99d4c559137458c87d7a69",
+        "scope_note": "Repository source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "dotnet-cleanarchitecture",
+      "name": "Clean Architecture Solution Template",
+      "repository": "jasontaylordev/CleanArchitecture",
+      "reviewed_head": "43831e20374677b81f93bb08923eff3245b7195f",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "dotnet-cleanarchitecture-api",
+      "materialization": "official-template",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "20e161181137c75ff743500b197414ff88f11eba",
+        "scope_note": "Repository source and generated template at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "go-clean-template",
+      "name": "Go Clean Template",
+      "repository": "evrone/go-clean-template",
+      "reviewed_head": "34342a5a3008ed9d95ae73ff1ed7bda7099ade23",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "go-postgresql-service",
+      "materialization": "template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "4104120ccc817da1f4ac14fbb1334203d5c5c46c",
+        "scope_note": "Repository source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "electron-react-boilerplate",
+      "name": "Electron React Boilerplate",
+      "repository": "electron-react-boilerplate/electron-react-boilerplate",
+      "reviewed_head": "484a66bda78ea3ead4b693ab9dca3e96baf4fdcc",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "electron-react-desktop",
+      "materialization": "template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "c2885de682427844aaf0382a124da8de9f14eeb4",
+        "scope_note": "Repository source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "makerkit-supabase-lite",
+      "name": "Makerkit Next.js Supabase SaaS Starter Lite",
+      "repository": "makerkit/nextjs-saas-starter-kit-lite",
+      "reviewed_head": "37def9c20b01a3514cf69b5b3383bef3e5ffbcb9",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "ALTERNATIVE",
+      "wave": 2,
+      "profile": "nextjs-supabase-saas-lite",
+      "materialization": "template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "e349abff0667f78f3c6dd82e5e4bcd63c8586ac7",
+        "scope_note": "Lite repository only; paid Makerkit features are outside this scope."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "ixartz-saas-boilerplate",
+      "name": "Ixartz SaaS Boilerplate",
+      "repository": "ixartz/SaaS-Boilerplate",
+      "reviewed_head": "5d0ce02cbdaa8562c2362bba80022833f2a764f5",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "nextjs-clerk-drizzle-saas",
+      "materialization": "template-clone",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "107075589ecc6b349f48aad649fbc4552ac14b44",
+        "scope_note": "Free repository only; linked Pro and Max products are outside this scope."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "larament-filament",
+      "name": "Larament",
+      "repository": "CodeWithDennis/larament",
+      "reviewed_head": "59e35a4e8cbb9c73735a8f501c03d9f03a15d879",
+      "kind": "application-starter",
+      "status": "CANDIDATE",
+      "decision": "ALTERNATIVE",
+      "wave": 2,
+      "profile": "laravel-filament-admin",
+      "materialization": "composer-project",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "composer.json",
+        "evidence_blob_sha": "dffe1f829d6202403ed4124ab29e71e2fe92cd45",
+        "scope_note": "Composer metadata declares MIT; no standalone canonical license file was found during this review."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "cookiecutter-django",
+      "name": "Cookiecutter Django",
+      "repository": "cookiecutter/cookiecutter-django",
+      "reviewed_head": "755767563e34acc05358d05ad1cb36fef4b8cead",
+      "kind": "application-generator",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "django-postgresql-production",
+      "materialization": "cookiecutter",
+      "license": {
+        "spdx": "BSD-3-Clause",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "a67e4da21a6561110c6216465e0a8fa02b4a7274",
+        "scope_note": "Generator source at the reviewed commit; generated project license is selected during generation."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "create-tauri-app",
+      "name": "Create Tauri App",
+      "repository": "tauri-apps/create-tauri-app",
+      "reviewed_head": "55a9932ffb1e1986382eeb1829e1b4483318dc95",
+      "kind": "application-generator",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "tauri-desktop",
+      "materialization": "official-generator",
+      "license": {
+        "spdx": "MIT OR Apache-2.0",
+        "evidence_path": "LICENSE_MIT",
+        "evidence_blob_sha": "7e54d8e4c28e943a545c1bef79f8dfdb2a2affe2",
+        "scope_note": "Code is MIT or MIT/Apache-2.0 where applicable; logo assets are not adopted."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "obytes-react-native",
+      "name": "React Native Template Obytes",
+      "repository": "obytes/react-native-template-obytes",
+      "reviewed_head": "fd9b358ed11913d2a49fd9ffa6582fe03ba130e7",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "expo-react-native-mobile",
+      "materialization": "template-generator",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "fde3b8df87dc143a4d7c3ccc8098810422cceff4",
+        "scope_note": "Repository source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "roots-sage",
+      "name": "Roots Sage",
+      "repository": "roots/sage",
+      "reviewed_head": "56249ebd4905d0d438e268909bcec55611d26176",
+      "kind": "application-starter",
+      "status": "LOCKED",
+      "decision": "GOLDEN_PATH",
+      "wave": 2,
+      "profile": "wordpress-sage-theme",
+      "materialization": "composer-project",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE.md",
+        "evidence_blob_sha": "9e47289f33763ea494b082c0f22f22719bd0dc30",
+        "scope_note": "Theme starter source at the reviewed commit."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "bagisto-commerce",
+      "name": "Bagisto",
+      "repository": "bagisto/bagisto",
+      "reviewed_head": "fd6be0662c2fb6935c826d1af79e44ff96c42244",
+      "kind": "product-base",
+      "status": "LOCKED",
+      "decision": "PRODUCT_BASE",
+      "wave": 3,
+      "profile": "laravel-ecommerce",
+      "materialization": "product-fork",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "aa358e891824a51cee018218e17165bdc7190441",
+        "scope_note": "Core repository only; commercial extensions and marketplace products are not included."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "chatwoot-support",
+      "name": "Chatwoot",
+      "repository": "chatwoot/chatwoot",
+      "reviewed_head": "2a1dd481e9c4d385193392ef194e81e46f524890",
+      "kind": "product-base",
+      "status": "LOCKED",
+      "decision": "PRODUCT_BASE",
+      "wave": 3,
+      "profile": "customer-support-inbox",
+      "materialization": "product-fork",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "d0425a707ab6f0cf06c9aa3c08e8edf5c64adc61",
+        "scope_note": "MIT applies outside enterprise; enterprise content is excluded unless separately licensed."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "formance-ledger",
+      "name": "Formance Ledger",
+      "repository": "formancehq/ledger",
+      "reviewed_head": "61d5f6b40ce674c1aca44c0c457d475bd3692eb4",
+      "kind": "product-base",
+      "status": "LOCKED",
+      "decision": "PRODUCT_BASE",
+      "wave": 3,
+      "profile": "financial-ledger-core",
+      "materialization": "service-integration-or-product-fork",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "4f864e6f8c4c35ef2e48dc7ed95ea7df2cff9cdf",
+        "scope_note": "Ledger source at the reviewed commit; production deployment has separate operational requirements."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "serena-code-intelligence",
+      "name": "Serena",
+      "repository": "oraios/serena",
+      "reviewed_head": "5e8662b283241910a5062b058b09627288c16f0c",
+      "kind": "tool-provider",
+      "status": "LOCKED",
+      "decision": "TOOL",
+      "wave": 1,
+      "profile": null,
+      "materialization": "official-tool-install",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "d27bba648a59b23cadf39b9e74fd0684ea2e15dd",
+        "scope_note": "Use the official Serena Quick Start; do not vendor it into Divan."
+      },
+      "build_evidence": "not_run",
+      "auto_install": false
+    },
+    {
+      "id": "claude-code-best-practice",
+      "name": "Claude Code Best Practice",
+      "repository": "shanraisshan/claude-code-best-practice",
+      "reviewed_head": "7bb2c9505d9d3223511a134497c889222b22bff4",
+      "kind": "compatibility-reference",
+      "status": "REFERENCE",
+      "decision": "REFERENCE",
+      "wave": 0,
+      "profile": null,
+      "materialization": "none",
+      "license": {
+        "spdx": "MIT",
+        "evidence_path": "LICENSE",
+        "evidence_blob_sha": "a618c28c1b7517ced276c5b509ae57ee7a58e612",
+        "scope_note": "Reference only; broad permissions, demo hooks and personal settings are not copied."
+      },
+      "build_evidence": "not_applicable",
+      "auto_install": false
+    }
+  ]
+}
