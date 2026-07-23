@@ -11,8 +11,8 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from project_memory import main as memory_main
-from project_memory_store import (
+from project_memory import main as memory_main  # noqa: E402
+from project_memory_store import (  # noqa: E402
     LIFECYCLE_STATES,
     REQUIRED_DIRECTORIES,
     REQUIRED_FILES,
@@ -21,8 +21,8 @@ from project_memory_store import (
     ProjectMemoryError,
     initialize,
 )
-from project_memory_validation import validate_memory
-from project_memory_workflow import (
+from project_memory_validation import validate_memory  # noqa: E402
+from project_memory_workflow import (  # noqa: E402
     add_decision,
     add_lesson,
     add_task,
