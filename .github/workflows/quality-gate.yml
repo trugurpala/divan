@@ -24,10 +24,10 @@ jobs:
           python -m unittest tests.test_forge_registry -v
           ruff check scripts/forge_registry.py tests/test_forge_registry.py
           mypy scripts/forge_registry.py
-      - name: Repository hygiene and naming
-        run: |
-          python scripts/hygiene.py --check
-          python scripts/naming.py --check
+      - name: Repository hygiene
+        run: python scripts/hygiene.py --check
+      - name: Repository naming
+        run: python scripts/naming.py --check
       - name: Company and standards gates
         run: |
           python scripts/divan.py company-validate
