@@ -44,13 +44,18 @@ jobs:
           python scripts/catalog.py --check
           python scripts/v1.py --check
           python scripts/release.py --check
-      - name: Static analysis and coverage
+      - name: Ruff and Clean Code
         run: |
           ruff check .
           python scripts/clean_code.py --check
-          mypy scripts evals
+      - name: Mypy
+        run: mypy scripts evals
+      - name: Coverage
+        run: |
           coverage run -m unittest discover -s tests
           coverage report --fail-under=64
+      - name: Actionlint
+        run: |
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
           "$(go env GOPATH)/bin/actionlint"
       - name: Agent Skills resmi dogrulayici
