@@ -1,0 +1,29 @@
+name: memory-ruff-matrix
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file:
+          - scripts/divan.py
+          - scripts/project_memory.py
+          - scripts/project_memory_store.py
+          - scripts/project_memory_validation.py
+          - scripts/project_memory_workflow.py
+          - tests/test_project_memory.py
+        select:
+          - F
+          - I
+          - C90
+          - E4,E7,E9
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - run: pip install ruff==0.15.22
+      - run: ruff check "${{ matrix.file }}" --select "${{ matrix.select }}"
