@@ -4,14 +4,25 @@ Son güncelleme: 2026-07-24
 
 ## Güncel hedef
 
-v0.15.0 turns the Company OS into a portable, supervised Project OS for
-installed repositories. The locally prepared candidate must pass a protected
-PR, publish only from immutable `main`, and then upgrade Claude and Codex
-transactionally. v1 remains 7/8 because independent adoption evidence is still
-outside repository control.
+v0.16.0 completes the installed Project OS lifecycle after first init:
+ownership, drift status, safe schema update, narrow repair, verified goal
+archive, and redacted adoption receipts. The candidate must pass protected PR,
+immutable release, public owner canary, and transactional dual-host delivery.
+v1 remains 7/8 because owner canary evidence is not independent adoption.
 
 ## Yapıldı
 
+- Schema 2 config and install state bind immutable version/ref/commit, project
+  identity, and managed whole-file/marked-block payload hashes.
+- `project status` is read-only; `project update` and `project repair` are
+  dry-run-first and reuse the proven lock, ACL, journal, authority, marker,
+  rollback, and recovery transaction boundary.
+- Verified goals archive with bound hashes and controlled source removal.
+  Adoption export writes redacted JSON/Markdown and distinguishes
+  `valid-owner-canary` from `valid-independent-declaration`.
+- The deterministic project runner, impact graph, DCS-007, README, Project OS,
+  install, Wiki, changelog, blueprint, and publication manifest include the new
+  lifecycle while 5 packages/41 skills and v1 at 7/8 remain unchanged.
 - Whole-branch review approved the Project OS candidate at `1a94b61` after
   provider, SEO, initialization, recovery, and mutation-authority findings were
   closed test-first.
@@ -257,7 +268,8 @@ outside repository control.
 
 ## Sıradaki kesin adım
 
-Push `codex/v015-project-os`, open a ready PR, and wait for every required
-workflow. Merge only when green; publish v0.15.0 from immutable `main`, verify
-tag/Release/assets/Pages/Wiki, then transactionally upgrade and re-prove both
-global hosts without changing unrelated plugins or marketplaces.
+Run every local v0.16.0 gate and code review, push
+`codex/v016-adoption-drift`, then open a ready PR. Merge only when protected
+checks are green; publish from immutable `main`, verify release/canary/Pages/
+Wiki, and transactionally update both global hosts without changing unrelated
+plugins or marketplaces.

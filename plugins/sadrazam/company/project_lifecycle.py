@@ -38,7 +38,10 @@ def _managed_block(path: pathlib.Path) -> tuple[bytes | None, str | None]:
 def _observed_payload(
     root: pathlib.Path, row: dict[str, Any]
 ) -> tuple[str | None, str | None, bool]:
-    path = root / row["path"]
+    try:
+        path = project_os._safe_destination(root, row["path"])
+    except ValueError as path_error:
+        return None, str(path_error), False
     if row["mode"] == "marked-block":
         payload, error = _managed_block(path)
         return (None if payload is None else _digest(payload)), error, False
@@ -95,6 +98,9 @@ def _classify_surfaces(
         target = new.get(path)
         if previous is None:
             classification = "unmanaged"
+            candidate = root / path
+            if candidate.exists() or candidate.is_symlink():
+                errors.append(f"{path}: desired target exists without ownership")
         elif target is None:
             classification = "stale-record"
         elif previous["mode"] != target["mode"]:
@@ -137,6 +143,20 @@ def _overall_status(
 def project_status(project: pathlib.Path | str) -> dict[str, Any]:
     """Return ownership and drift status without writing target or host state."""
     root = pathlib.Path(project).resolve()
+    try:
+        project_os._safe_destination(root, ".divan/config.json")
+        project_os._safe_destination(root, ".divan/install-state.json")
+    except ValueError as error:
+        return {
+            "schema_version": 1,
+            "status": "BLOCKED",
+            "project": root.name,
+            "surfaces": [],
+            "errors": [str(error)],
+            "continuation_command": (
+                "python scripts/divan.py project status --project . --json"
+            ),
+        }
     config, config_errors = project_os._load_config(root)
     recorded, state_errors = project_state.load_install_state(root)
     errors = [*config_errors, *state_errors]

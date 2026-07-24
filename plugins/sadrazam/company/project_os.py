@@ -714,6 +714,25 @@ def _runtime_source_identity() -> dict[str, str]:
         return source
     repository = directory.parents[2]
     try:
+        status = subprocess.check_output(
+            [
+                "git",
+                "-C",
+                str(repository),
+                "status",
+                "--porcelain",
+                "--untracked-files=all",
+            ],
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            stderr=subprocess.DEVNULL,
+            timeout=15,
+        )
+        if status:
+            raise ValueError(
+                "Divan development source identity requires a clean checkout"
+            )
         commit = subprocess.check_output(
             ["git", "-C", str(repository), "rev-parse", "HEAD"],
             text=True,
@@ -934,8 +953,10 @@ def _safe_destination(root: pathlib.Path, relative: Any) -> pathlib.Path:
     cursor = root
     for part in pure.parts:
         cursor = cursor / part
-        if cursor.is_symlink():
-            raise ValueError(f"write path uses a symlink: {relative}")
+        if _is_reparse_or_symlink(cursor):
+            raise ValueError(
+                f"write path uses a symlink or reparse point: {relative}"
+            )
     return destination
 
 

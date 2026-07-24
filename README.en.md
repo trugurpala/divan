@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.15.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.16.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
-**Current release:** v0.15.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current release:** v0.16.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Why Divan?
 
@@ -50,13 +50,43 @@ work. See [Company OS](docs/Company-OS.md).
 Expert shortcuts remain available when explicit control is useful:
 `/ferman`, `/sefer`, `/teftis`, `/defter`, `/vezir`, and `/company`.
 
+Install the same contract into a project with a no-write preview first:
+
+```powershell
+python scripts/divan.py init --project . --profile standard --locale auto
+python scripts/divan.py init --project . --profile standard --locale auto --execute
+python scripts/divan.py audit --project . --format json
+```
+
+The Divan repository follows `DCS-*`; the installed project follows only the
+applicable `DPS-*` rules and records evidence in `.divan/`. See the
+[Project OS contract](docs/Project-OS.md).
+
+After initialization, inspect ownership and drift without writing, then preview
+any repair or project-schema update before execution:
+
+```powershell
+python scripts/divan.py project status --project . --json
+python scripts/divan.py project update --project .
+python scripts/divan.py project update --project . --execute
+python scripts/divan.py project repair --project .
+python scripts/divan.py project repair --project . --execute
+```
+
+Host `update` replaces Divan packages in Claude/Codex. Project `update` migrates
+only Divan-owned surfaces in a target repository. `audit` evaluates DPS quality
+evidence; `project status` compares ownership fingerprints and drift. Verified
+goals can be archived, and a privacy-bounded adoption receipt can be exported
+without exposing usernames, absolute paths, remotes, secrets, or unrelated
+plugins. Owner-canary evidence never closes the independent-adoption gate.
+
 ## Install
 
 Preview the no-write plan, then install the same pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.15.0
-python scripts/divan.py install --host both --ref v0.15.0 --execute
+python scripts/divan.py install --host both --ref v0.16.0
+python scripts/divan.py install --host both --ref v0.16.0 --execute
 ```
 
 For safety, the installer never overwrites an existing `divan` marketplace or
@@ -71,9 +101,9 @@ migration, and removal paths.
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.15.0
-python scripts/divan.py update --host both --ref v0.15.0
-python scripts/divan.py update --host both --ref v0.15.0 --execute
+python scripts/divan.py doctor --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

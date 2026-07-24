@@ -34,6 +34,44 @@ Initialization owns only `.divan/` and marked blocks in `AGENTS.md` or
 `CLAUDE.md`. Existing text is preserved; malformed markers stop the operation.
 A second identical initialization produces no diff.
 
+## Ownership, drift, update, and repair
+
+Initialization writes schema 2 `.divan/config.json` and
+`.divan/install-state.json`. The install state binds the immutable Divan
+version, ref, commit, project identity, and every managed whole-file or marked
+block payload. It contains hashes, not user content.
+
+```powershell
+python scripts/divan.py project status --project . --json
+python scripts/divan.py project update --project .
+python scripts/divan.py project update --project . --execute
+python scripts/divan.py project repair --project .
+python scripts/divan.py project repair --project . --execute
+```
+
+`project status` is a pure ownership and drift read: it creates no lock,
+journal, cache, backup, or network request. It reports `CURRENT`,
+`UPDATE_AVAILABLE`, `DRIFTED`, or `BLOCKED` from per-surface classifications.
+`project update` uses only the immutable Divan code already executing from the
+checkout or verified runner; it never downloads a ref or executes target
+project code. Whole files update only when their observed hash still matches
+the recorded hash. Marked blocks require one valid marker pair and the recorded
+block hash. A stale plan, user edit, symlink/reparse point, unknown schema, or
+unowned destination blocks before writing.
+
+`project repair` is intentionally narrower: it restores only a missing,
+recorded whole Divan file or recovers the canonical transaction. It never
+force-overwrites a changed file, damaged marker block, or unowned path.
+
+Do not confuse host and project lifecycle commands:
+
+| Command | Scope | Meaning |
+|---|---|---|
+| `divan.py update --host ...` | Claude/Codex host | Replace installed Divan plugin packages |
+| `divan.py project update --project ...` | Target repository | Migrate and refresh owned Project OS surfaces |
+| `divan.py audit --project ...` | Applicable DPS standards | Evaluate project-quality evidence |
+| `divan.py project status --project ...` | Ownership and drift | Compare recorded, observed, and desired payloads |
+
 ## Goal and evidence lifecycle
 
 ```text
@@ -45,6 +83,33 @@ DISCOVERED → SPECIFIED → PLANNED → IMPLEMENTING
 workflows, changed relative paths, checks, provider evidence, and timestamps.
 It never stores secrets, hidden reasoning, personal absolute paths, or unrelated
 plugin inventory.
+
+Completed `VERIFIED`, `RELEASED`, or `OBSERVED` goals can leave the active set
+without losing evidence:
+
+```powershell
+python scripts/divan.py goal archive --project . --goal <goal-id>
+python scripts/divan.py goal archive --project . --goal <goal-id> --execute
+```
+
+Divan re-verifies the receipt and every artifact hash, copies them into
+`.divan/archive/YYYY-MM-DD-<goal-id>/`, verifies the archive, then removes only
+the bound sources. Unfinished, failed, changed, unsafe, or colliding goals remain
+`BLOCKED`.
+
+After a verified goal, a maintainer or independent user can export a bounded
+JSON receipt plus Markdown summary:
+
+```powershell
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version>
+python scripts/divan.py adoption verify .divan/evidence/<goal-id>/adoption-receipt.json
+```
+
+The export rejects secrets, email addresses, usernames, absolute paths, remote
+URLs, unrelated plugin inventory, and command-output bodies. Maintainer
+evidence verifies as `valid-owner-canary`; an independent submitter is only a
+`valid-independent-declaration` until a human review accepts it. Divan never
+closes the independent-adoption v1 gate automatically.
 
 For public web projects, the read-only static audit is:
 

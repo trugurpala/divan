@@ -58,6 +58,25 @@
       "checks": ["python scripts/divan.py company-validate"]
     },
     {
+      "id": "adoption-drift-lifecycle",
+      "patterns": [
+        "plugins/sadrazam/company/project_lifecycle.py",
+        "plugins/sadrazam/company/project_state.py",
+        "plugins/sadrazam/company/project_transactions.py",
+        "plugins/sadrazam/company/goal_archive.py",
+        "plugins/sadrazam/company/adoption.py",
+        ".divan/install-state.json",
+        ".divan/archive/**",
+        ".divan/evidence/*/adoption-receipt.*",
+        "canary/**"
+      ],
+      "effects": ["company-validation", "documentation", "release-validation"],
+      "checks": [
+        "python -m unittest tests.test_project_lifecycle tests.test_goal_archive tests.test_adoption -v",
+        "python scripts/release.py --check"
+      ]
+    },
+    {
       "id": "user-interface",
       "patterns": ["site/*.html", "site/robots.txt", "site/sitemap.xml", "docs/index.html", "docs/robots.txt", "docs/sitemap.xml"],
       "effects": ["accessibility", "browser-testing", "public-site"],

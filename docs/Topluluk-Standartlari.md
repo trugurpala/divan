@@ -130,11 +130,12 @@ Bagimliliklar ve Actions degismez olarak pinlenir, izinler asgari olur ve yayin 
 
 **Duzey:** required
 
-Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.
+Host kurulumu, proje guncellemesi, onarim, arsiv, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.
 
 **Kontroller:**
 - `python -m unittest tests.test_host_install -v`
 - `python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v`
+- `python -m unittest tests.test_project_lifecycle tests.test_goal_archive tests.test_adoption -v`
 
 **Kanıt:**
 - `scripts/host_lifecycle.py`
@@ -145,6 +146,11 @@ Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis D
 - `scripts/host_journal_scan.py`
 - `scripts/host_journal_transitions.py`
 - `scripts/host_state.py`
+- `plugins/sadrazam/company/project_state.py`
+- `plugins/sadrazam/company/project_lifecycle.py`
+- `plugins/sadrazam/company/project_transactions.py`
+- `plugins/sadrazam/company/goal_archive.py`
+- `plugins/sadrazam/company/adoption.py`
 - `scripts/uninstall_codex.ps1`
 - `scripts/uninstall_codex.sh`
 - `tests/test_host_install.py`
@@ -152,6 +158,9 @@ Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis D
 - `tests/test_host_upgrade_security.py`
 - `tests/test_host_upgrade_authority.py`
 - `tests/test_host_upgrade_locking.py`
+- `tests/test_project_lifecycle.py`
+- `tests/test_goal_archive.py`
+- `tests/test_adoption.py`
 
 **Istisna politikasi:** Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir.
 

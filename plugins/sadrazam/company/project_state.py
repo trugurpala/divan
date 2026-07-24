@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import pathlib
 import re
+import stat
 from typing import Any
 
 STATE_KEYS = frozenset(
@@ -30,6 +31,16 @@ IMMUTABLE_REF = re.compile(
 )
 WINDOWS_DRIVE = re.compile(r"^[A-Za-z]:")
 SOURCE_REPOSITORY = "https://github.com/trugurpala/divan"
+
+
+def _is_reparse_or_symlink(path: pathlib.Path) -> bool:
+    try:
+        details = path.lstat()
+    except OSError:
+        return False
+    attributes = getattr(details, "st_file_attributes", 0)
+    reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return stat.S_ISLNK(details.st_mode) or bool(attributes & reparse)
 
 
 def _safe_relative_path(value: Any) -> bool:
@@ -128,7 +139,16 @@ def load_install_state(
     """Load a real, bounded ownership-state file without mutation."""
     root = pathlib.Path(project).resolve()
     path = root / ".divan" / "install-state.json"
-    if path.is_symlink() or not path.is_file():
+    cursor = root
+    unsafe = False
+    for part in (".divan", "install-state.json"):
+        cursor = cursor / part
+        unsafe = unsafe or _is_reparse_or_symlink(cursor)
+    try:
+        path.resolve(strict=False).relative_to(root)
+    except ValueError:
+        unsafe = True
+    if unsafe or not path.is_file():
         return None, [".divan/install-state.json is unavailable or unsafe"]
     try:
         if path.stat().st_size > 1024 * 1024:

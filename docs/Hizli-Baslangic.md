@@ -11,16 +11,16 @@ geçtiğini, bağımsız kullanıcı kanıtının beklediğini gösterir. Ürün
 Önce yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.15.0
-python scripts/divan.py install --host both --ref v0.15.0 --execute
+python scripts/divan.py install --host both --ref v0.16.0
+python scripts/divan.py install --host both --ref v0.16.0 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.15.0
-python scripts/divan.py update --host both --ref v0.15.0
-python scripts/divan.py update --host both --ref v0.15.0 --execute
+python scripts/divan.py doctor --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
@@ -39,7 +39,23 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 Host'a göre elle kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host
 seçenekleri: [[Kurulum]].
 
-## 2. Niyetini ferman olarak yaz
+## 2. Hedef projenin sahiplik ve sapmasını denetle
+
+Host güncellemesi Divan eklentilerini; project güncellemesi kurulu Project OS
+yüzeylerini değiştirir. Önce salt-okunur durumu ve dry-run planını gör:
+
+```powershell
+python scripts/divan.py project status --project . --json
+python scripts/divan.py project update --project .
+python scripts/divan.py project repair --project .
+```
+
+Yalnız plan doğruysa `--execute` ekle. `project update` kullanıcı değişikliğini
+ezmez; `project repair` yalnız sahiplik kaydındaki eksik tam Divan dosyasını
+geri getirir. Kalite sözleşmesi için `audit`, sahiplik/sapma için
+`project status` kullanılır. Ayrıntı: [[Project OS|Project-OS]].
+
+## 3. Niyetini ferman olarak yaz
 
 Kopyalayıp doldur:
 
@@ -57,7 +73,7 @@ Kanıtsız “bitti” deme ve sıradaki kesin adımı kaydet.
 - “Landing'i özgün bir görsel yönle yeniden tasarla ve tarayıcıda doğrula.”
 - “Bu repoyu tanı; mimari, risk ve sıradaki işi kalıcı deftere yaz.”
 
-## 3. Teslimde beş kanıtı ara
+## 4. Teslimde beş kanıtı ara
 
 1. Ne istendiği ve hangi varsayımların yapıldığı.
 2. Uygulanan kısa plan.

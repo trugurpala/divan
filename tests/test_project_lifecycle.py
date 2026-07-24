@@ -125,6 +125,14 @@ class ProjectStateInitializationTests(unittest.TestCase):
         "source_commit": "a" * 40,
     }
 
+    def test_development_source_identity_requires_a_clean_checkout(self) -> None:
+        with mock.patch.object(
+            project_os.subprocess,
+            "check_output",
+            side_effect=[" M plugins/sadrazam/company/project_os.py\n"],
+        ), self.assertRaisesRegex(ValueError, "clean checkout"):
+            project_os._runtime_source_identity()
+
     def test_init_plan_writes_schema_2_config_and_ownership_state_last(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-state-init-") as temporary:
             project = pathlib.Path(temporary)
@@ -304,6 +312,37 @@ class ProjectLifecycleStatusTests(unittest.TestCase):
         self.assertEqual(result["status"], "UPDATE_AVAILABLE")
         self.assertEqual(result["desired"]["version"], "0.16.1")
 
+    def test_existing_unowned_desired_target_blocks_before_mutation(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-status-") as temporary:
+            project = pathlib.Path(temporary)
+            self.initialize(project)
+            state_path = project / ".divan" / "install-state.json"
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            state["managed_files"] = [
+                row
+                for row in state["managed_files"]
+                if row["path"] != ".divan/PROJECT_RULES.md"
+            ]
+            state_path.write_bytes(project_state.serialize_install_state(state))
+            before = self.snapshot(project)
+            with mock.patch.object(
+                project_os, "_runtime_source_identity", return_value=self.SOURCE
+            ):
+                result = module.project_status(project)
+                update = module.build_update_plan(project)
+            after = self.snapshot(project)
+
+        row = next(
+            item
+            for item in result["surfaces"]
+            if item["path"] == ".divan/PROJECT_RULES.md"
+        )
+        self.assertEqual(row["classification"], "unmanaged")
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(update["status"], "BLOCKED")
+        self.assertEqual(before, after)
+
 
 class ProjectLifecycleMutationTests(ProjectLifecycleStatusTests):
     def test_update_is_dry_run_then_applies_new_immutable_source(self) -> None:
@@ -410,6 +449,84 @@ class ProjectLifecycleMutationTests(ProjectLifecycleStatusTests):
         self.assertEqual(before, after_plan)
         self.assertEqual(result["status"], "APPLIED")
         self.assertEqual(migrated["schema_version"], 2)
+
+    def test_schema_1_migration_matrix_preserves_unicode_and_crlf_host_text(
+        self,
+    ) -> None:
+        module = self.require_module()
+        fixtures = {
+            "library": {
+                "pyproject.toml": (
+                    "[project]\nname='kitaplik'\n"
+                    "[build-system]\nrequires=['setuptools']\n"
+                )
+            },
+            "public-web": {
+                "index.html": "<!doctype html><title>Divan sample</title>\n"
+            },
+            "monorepo": {
+                "package.json": '{"private":true,"workspaces":["apps/*"]}\n',
+                "apps/web/package.json": '{"name":"web","version":"1.0.0"}\n',
+            },
+        }
+        for name, files in fixtures.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix=f"divan-migrate-{name}-"
+            ) as temporary:
+                project = pathlib.Path(temporary)
+                for relative, content in files.items():
+                    path = project / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(content, encoding="utf-8")
+                (project / "AGENTS.md").write_text(
+                    "# Kullanıcı kuralları\r\n\r\nİçeriği koru.\r\n",
+                    encoding="utf-8",
+                    newline="",
+                )
+                with mock.patch.object(
+                    project_os,
+                    "_runtime_source_identity",
+                    return_value=self.SOURCE,
+                ):
+                    init = project_os.build_init_plan(
+                        project,
+                        "standard",
+                        "tr",
+                        ("agents",),
+                        False,
+                        expected_url=(
+                            "https://example.com/"
+                            if name == "public-web"
+                            else None
+                        ),
+                    )
+                    project_os.apply_init_plan(init)
+                state_path = project / ".divan" / "install-state.json"
+                state_path.unlink()
+                config_path = project / ".divan" / "config.json"
+                config = json.loads(config_path.read_text(encoding="utf-8"))
+                config["schema_version"] = 1
+                config_path.write_bytes(project_os._json_bytes(config))
+                before_host = (project / "AGENTS.md").read_bytes()
+                with mock.patch.object(
+                    project_os,
+                    "_runtime_source_identity",
+                    return_value=self.SOURCE,
+                ):
+                    plan = module.build_update_plan(project)
+                    result = module.apply_update_plan(plan)
+
+                self.assertEqual(plan["migration"], "config-schema-1-to-2")
+                self.assertEqual(result["status"], "APPLIED")
+                self.assertEqual(
+                    (project / "AGENTS.md").read_bytes(), before_host
+                )
+                self.assertEqual(
+                    json.loads(config_path.read_text(encoding="utf-8"))[
+                        "schema_version"
+                    ],
+                    2,
+                )
 
     def test_repair_restores_only_missing_owned_whole_file(self) -> None:
         module = self.require_module()

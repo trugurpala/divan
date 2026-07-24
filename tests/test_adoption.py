@@ -102,6 +102,35 @@ class AdoptionReceiptTests(unittest.TestCase):
             path.write_text(json.dumps(payload), encoding="utf-8")
             self.assertEqual(module.verify_adoption(path)["status"], "invalid")
 
+    def test_recomputed_digest_cannot_hide_schema_or_markdown_privacy_tamper(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-adoption-") as temporary:
+            project = pathlib.Path(temporary)
+            goal_id = self.create_verified_goal(project)
+            exported = module.export_adoption(
+                project, goal_id, "codex", "5.6.0", "maintainer"
+            )
+            json_path = project / exported["json"]
+            markdown_path = project / exported["markdown"]
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+            payload["project"]["workspace_count"] = -1
+            payload["receipt_digest"] = module._digest(payload)
+            json_path.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertEqual(
+                module.verify_adoption(json_path)["status"], "invalid"
+            )
+
+            markdown_path.write_text(
+                markdown_path.read_text(encoding="utf-8")
+                + "\npassword=not-public\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                module.verify_adoption(markdown_path)["status"], "invalid"
+            )
+
     def test_export_rejects_unverified_goal_and_unsafe_host_version(self) -> None:
         module = self.require_module()
         with tempfile.TemporaryDirectory(prefix="divan-adoption-") as temporary:

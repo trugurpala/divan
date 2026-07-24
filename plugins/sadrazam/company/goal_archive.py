@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 from datetime import UTC, datetime
 from typing import Any
 
@@ -15,6 +16,7 @@ import receipts
 ARCHIVABLE_STATES = frozenset({"VERIFIED", "RELEASED", "OBSERVED"})
 MAX_FILES = 200
 MAX_FILE_BYTES = 1024 * 1024
+JOURNAL_KEYS = frozenset({"schema_version", "operation", "status", "plan"})
 
 
 def _sha256(value: bytes) -> str:
@@ -32,6 +34,113 @@ def _plan_digest(value: dict[str, Any]) -> str:
         value, ensure_ascii=False, separators=(",", ":"), sort_keys=True
     ).encode("utf-8")
     return f"sha256:{_sha256(material)}"
+
+
+def _archive_journal_path(
+    root: pathlib.Path, identifier: str
+) -> pathlib.Path:
+    goals._validate_goal_id(identifier)
+    return project_os._safe_destination(
+        root, f".divan/archive/.journal-{identifier}.json"
+    )
+
+
+def _validate_plan(plan: Any, root: pathlib.Path, identifier: str) -> list[str]:
+    if (
+        not isinstance(plan, dict)
+        or plan.get("schema_version") != 1
+        or plan.get("operation") != "goal-archive"
+        or plan.get("status") != "PLANNED"
+        or plan.get("project") != str(root)
+        or plan.get("goal_id") != identifier
+    ):
+        return ["archive journal plan identity is invalid"]
+    unsigned = {key: value for key, value in plan.items() if key != "plan_digest"}
+    if plan.get("plan_digest") != _plan_digest(unsigned):
+        return ["archive journal plan digest does not match"]
+    destination = plan.get("destination")
+    expected_suffix = f"-{identifier}"
+    if (
+        not isinstance(destination, str)
+        or not destination.startswith(".divan/archive/")
+        or not destination.endswith(expected_suffix)
+    ):
+        return ["archive journal destination is invalid"]
+    entries = plan.get("entries")
+    if not isinstance(entries, list) or not entries:
+        return ["archive journal entries are invalid"]
+    errors: list[str] = []
+    allowed_sources = (
+        f".divan/specs/{identifier}/",
+        f".divan/evidence/{identifier}/",
+    )
+    for index, row in enumerate(entries):
+        if not isinstance(row, dict) or set(row) != {
+            "source",
+            "destination",
+            "sha256",
+        }:
+            errors.append(f"archive journal entry {index} is invalid")
+            continue
+        source = row.get("source")
+        target = row.get("destination")
+        digest = row.get("sha256")
+        if not isinstance(source, str) or not source.startswith(allowed_sources):
+            errors.append(f"archive journal source {index} is invalid")
+        if (
+            not isinstance(target, str)
+            or not target.startswith(("specs/", "evidence/"))
+            or ".." in pathlib.PurePosixPath(target).parts
+            or pathlib.PurePosixPath(target).is_absolute()
+        ):
+            errors.append(f"archive journal target {index} is invalid")
+        if (
+            not isinstance(digest, str)
+            or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+        ):
+            errors.append(f"archive journal hash {index} is invalid")
+    return errors
+
+
+def _load_archive_journal(
+    root: pathlib.Path, identifier: str
+) -> tuple[dict[str, Any] | None, list[str]]:
+    path = _archive_journal_path(root, identifier)
+    if not path.exists():
+        return None, []
+    if path.is_symlink() or not path.is_file():
+        return None, ["archive journal is unavailable or unsafe"]
+    try:
+        if path.stat().st_size > MAX_FILE_BYTES:
+            return None, ["archive journal exceeds 1 MiB"]
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        return None, [f"archive journal cannot be read: {error}"]
+    if not isinstance(value, dict) or set(value) != JOURNAL_KEYS:
+        return None, ["archive journal schema is invalid"]
+    if (
+        value.get("schema_version") != 1
+        or value.get("operation") != "goal-archive"
+        or value.get("status") != "in-progress"
+    ):
+        return None, ["archive journal state is invalid"]
+    plan = value.get("plan")
+    errors = _validate_plan(plan, root, identifier)
+    return (plan if isinstance(plan, dict) else None), errors
+
+
+def _write_archive_journal(
+    root: pathlib.Path, plan: dict[str, Any]
+) -> pathlib.Path:
+    path = _archive_journal_path(root, str(plan["goal_id"]))
+    payload = {
+        "schema_version": 1,
+        "operation": "goal-archive",
+        "status": "in-progress",
+        "plan": plan,
+    }
+    project_os._atomic_replace(path, _canonical_bytes(payload))
+    return path
 
 
 def _blocked(
@@ -100,6 +209,11 @@ def build_archive_plan(
         )
     except ValueError as error:
         return _blocked(root, str(identifier), [str(error)])
+    pending, journal_errors = _load_archive_journal(root, identifier)
+    if journal_errors:
+        return _blocked(root, identifier, journal_errors)
+    if pending is not None:
+        return pending
     verification = receipts.verify_receipt(receipt_path)
     if not verification["ok"]:
         return _blocked(root, identifier, list(verification["errors"]))
@@ -185,18 +299,26 @@ def _safe_remove_empty_tree(root: pathlib.Path) -> None:
 
 
 def _remove_known_sources(
-    root: pathlib.Path, entries: list[dict[str, str]], identifier: str
+    root: pathlib.Path,
+    entries: list[dict[str, str]],
+    identifier: str,
+    *,
+    allow_missing: bool = False,
 ) -> None:
     for row in entries:
         path = project_os._safe_destination(root, row["source"])
+        if not path.exists() and allow_missing:
+            continue
         if path.is_symlink() or not path.is_file():
             raise ValueError("archive source changed before removal")
         if _sha256(path.read_bytes()) != row["sha256"]:
             raise ValueError("archive source hash changed before removal")
         path.unlink()
     spec_root, evidence_root, _receipt = goals._goal_paths(root, identifier)
-    _safe_remove_empty_tree(spec_root)
-    _safe_remove_empty_tree(evidence_root)
+    if spec_root.exists():
+        _safe_remove_empty_tree(spec_root)
+    if evidence_root.exists():
+        _safe_remove_empty_tree(evidence_root)
 
 
 def _remove_archive_tree(root: pathlib.Path) -> None:
@@ -209,14 +331,33 @@ def _remove_archive_tree(root: pathlib.Path) -> None:
     _safe_remove_empty_tree(root)
 
 
+def _verify_archive_destination(
+    root: pathlib.Path,
+    destination: pathlib.Path,
+    plan: dict[str, Any],
+) -> None:
+    for row in plan["entries"]:
+        target = project_os._safe_destination(
+            destination, row["destination"]
+        )
+        if not target.is_file() or _sha256(target.read_bytes()) != row["sha256"]:
+            raise ValueError("pending archive payload does not match journal")
+    archive_path = project_os._safe_destination(destination, "archive.json")
+    if (
+        not archive_path.is_file()
+        or archive_path.read_bytes() != _canonical_bytes(plan["archive"])
+    ):
+        raise ValueError("pending archive metadata does not match journal")
+
+
 def apply_archive_plan(plan: dict[str, Any]) -> dict[str, Any]:
     """Revalidate, stage, and move a goal archive with rollback on failure."""
-    if not isinstance(plan, dict) or plan.get("status") != "PLANNED":
+    if not isinstance(plan, dict):
         raise ValueError("goal archive plan is invalid or blocked")
-    unsigned = {key: value for key, value in plan.items() if key != "plan_digest"}
-    if plan.get("plan_digest") != _plan_digest(unsigned):
-        raise ValueError("goal archive plan digest changed")
     root = pathlib.Path(str(plan.get("project"))).resolve()
+    plan_errors = _validate_plan(plan, root, str(plan.get("goal_id")))
+    if plan_errors:
+        raise ValueError("; ".join(plan_errors))
     fresh = build_archive_plan(root, str(plan.get("goal_id")))
     if fresh.get("plan_digest") != plan.get("plan_digest"):
         raise ValueError("goal changed after archive plan")
@@ -225,7 +366,28 @@ def apply_archive_plan(plan: dict[str, Any]) -> dict[str, Any]:
         f".staging-{plan['goal_id']}-{plan['plan_digest'][7:19]}"
     )
     if staging.exists() or staging.is_symlink():
-        raise ValueError("goal archive staging path already exists")
+        pending, errors = _load_archive_journal(root, plan["goal_id"])
+        if errors or pending is None:
+            raise ValueError("goal archive staging path already exists")
+        _remove_archive_tree(staging)
+    journal_path = _write_archive_journal(root, plan)
+    if destination.exists():
+        _verify_archive_destination(root, destination, plan)
+        _remove_known_sources(
+            root,
+            plan["entries"],
+            plan["goal_id"],
+            allow_missing=True,
+        )
+        journal_path.unlink()
+        return {
+            "schema_version": 1,
+            "operation": "goal-archive",
+            "status": "ARCHIVED",
+            "project": root.name,
+            "goal_id": plan["goal_id"],
+            "archive": plan["destination"],
+        }
     staging.mkdir(parents=True)
     try:
         for row in plan["entries"]:
@@ -254,7 +416,10 @@ def apply_archive_plan(plan: dict[str, Any]) -> dict[str, Any]:
     except BaseException:
         if staging.exists() and not staging.is_symlink():
             _remove_archive_tree(staging)
+        if not destination.exists():
+            journal_path.unlink(missing_ok=True)
         raise
+    journal_path.unlink()
     return {
         "schema_version": 1,
         "operation": "goal-archive",

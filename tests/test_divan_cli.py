@@ -59,6 +59,57 @@ class PortableCompanyCliTests(unittest.TestCase):
                 ]
             )
 
+    def test_archive_and_adoption_public_routes_are_forwarded(self) -> None:
+        cli = load_module("divan_company_cli_adoption", COMPANY_CLI)
+        output = io.StringIO()
+        with mock.patch.object(
+            cli.goal_archive,
+            "build_archive_plan",
+            return_value={"status": "PLANNED", "schema_version": 1},
+        ) as archive, contextlib.redirect_stdout(output):
+            result = cli.main(
+                [
+                    "goal",
+                    "archive",
+                    "--project",
+                    str(ROOT),
+                    "--goal",
+                    "goal-0123456789ab",
+                    "--json",
+                ]
+            )
+        self.assertEqual(result, 0)
+        archive.assert_called_once_with(ROOT, "goal-0123456789ab")
+
+        output = io.StringIO()
+        with mock.patch.object(
+            cli.adoption,
+            "export_adoption",
+            return_value={
+                "status": "valid-owner-canary",
+                "schema_version": 1,
+            },
+        ) as export, contextlib.redirect_stdout(output):
+            result = cli.main(
+                [
+                    "adoption",
+                    "export",
+                    "--project",
+                    str(ROOT),
+                    "--goal",
+                    "goal-0123456789ab",
+                    "--host",
+                    "codex",
+                    "--host-version",
+                    "5.6.0",
+                    "--json",
+                ]
+            )
+        self.assertEqual(result, 0)
+        export.assert_called_once_with(
+            ROOT, "goal-0123456789ab", "codex", "5.6.0", "maintainer"
+        )
+
     def test_inspect_writes_stable_utf8_json(self) -> None:
         cli = load_module("divan_company_cli", COMPANY_CLI)
         with tempfile.TemporaryDirectory() as temporary:

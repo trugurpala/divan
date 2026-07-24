@@ -154,3 +154,42 @@ class GoalArchiveTests(unittest.TestCase):
 
             self.assertEqual(before, self.snapshot(project))
             self.assertFalse((project / plan["destination"]).exists())
+
+    def test_pending_journal_resumes_after_process_interruption(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-archive-") as temporary:
+            project = pathlib.Path(temporary)
+            goal_id, _ = self.create_goal(project, verified=True)
+            plan = module.build_archive_plan(project, goal_id)
+            destination = project / plan["destination"]
+            destination.mkdir(parents=True)
+            for row in plan["entries"]:
+                source = project_os._safe_destination(project, row["source"])
+                target = destination / pathlib.PurePosixPath(
+                    row["destination"]
+                )
+                project_os._atomic_replace(target, source.read_bytes())
+            project_os._atomic_replace(
+                destination / "archive.json",
+                module._canonical_bytes(plan["archive"]),
+            )
+            first_source = project_os._safe_destination(
+                project, plan["entries"][0]["source"]
+            )
+            first_source.unlink()
+            module._write_archive_journal(project, plan)
+
+            resumed = module.build_archive_plan(project, goal_id)
+            result = module.apply_archive_plan(resumed)
+
+            self.assertEqual(resumed["plan_digest"], plan["plan_digest"])
+            self.assertEqual(result["status"], "ARCHIVED")
+            self.assertFalse(
+                module._archive_journal_path(project, goal_id).exists()
+            )
+            self.assertFalse(
+                (project / ".divan" / "specs" / goal_id).exists()
+            )
+            self.assertFalse(
+                (project / ".divan" / "evidence" / goal_id).exists()
+            )

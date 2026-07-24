@@ -66,9 +66,9 @@
       "title_tr": "Geri alinabilir yasam dongusu",
       "title_en": "Reversible lifecycle",
       "level": "required",
-      "purpose": "Kurulum, kaldirma, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.",
-      "checks": ["python -m unittest tests.test_host_install -v", "python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v"],
-      "evidence": ["scripts/host_lifecycle.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "scripts/uninstall_codex.ps1", "scripts/uninstall_codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py"],
+      "purpose": "Host kurulumu, proje guncellemesi, onarim, arsiv, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.",
+      "checks": ["python -m unittest tests.test_host_install -v", "python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v", "python -m unittest tests.test_project_lifecycle tests.test_goal_archive tests.test_adoption -v"],
+      "evidence": ["scripts/host_lifecycle.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "plugins/sadrazam/company/project_state.py", "plugins/sadrazam/company/project_lifecycle.py", "plugins/sadrazam/company/project_transactions.py", "plugins/sadrazam/company/goal_archive.py", "plugins/sadrazam/company/adoption.py", "scripts/uninstall_codex.ps1", "scripts/uninstall_codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py", "tests/test_project_lifecycle.py", "tests/test_goal_archive.py", "tests/test_adoption.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {

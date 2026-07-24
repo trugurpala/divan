@@ -35,6 +35,25 @@ RECEIPT_KEYS = frozenset(
         "receipt_digest",
     }
 )
+DIVAN_KEYS = frozenset({"version", "ref", "commit"})
+HOST_KEYS = frozenset({"name", "version"})
+ENVIRONMENT_KEYS = frozenset({"os", "architecture"})
+PROJECT_KEYS = frozenset({"identity_sha256", "types", "workspace_count"})
+GOAL_KEYS = frozenset(
+    {
+        "id",
+        "state",
+        "target",
+        "receipt_sha256",
+        "artifact_sha256",
+        "checks",
+    }
+)
+CHECK_KEYS = frozenset({"status", "evidence_hashes"})
+DECLARATION_KEYS = frozenset({"submitter"})
+PROJECT_TYPES = frozenset(
+    {"application", "documentation", "library", "monorepo", "public-web", "service"}
+)
 
 
 def _json_bytes(value: Any) -> bytes:
@@ -222,42 +241,106 @@ def _read_receipt(path: pathlib.Path) -> dict[str, Any]:
     return value
 
 
+def _schema_errors(value: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    divan = value.get("divan")
+    if not isinstance(divan, dict) or set(divan) != DIVAN_KEYS:
+        errors.append("Divan source keys are invalid")
+    elif (
+        project_state.SEMVER.fullmatch(str(divan.get("version", ""))) is None
+        or project_state.IMMUTABLE_REF.fullmatch(str(divan.get("ref", ""))) is None
+        or HEX_40.fullmatch(str(divan.get("commit", ""))) is None
+    ):
+        errors.append("Divan source identity is invalid")
+    host = value.get("host")
+    if (
+        not isinstance(host, dict)
+        or set(host) != HOST_KEYS
+        or host.get("name") not in HOSTS
+        or SAFE_TOKEN.fullmatch(str(host.get("version", ""))) is None
+    ):
+        errors.append("host declaration is invalid")
+    environment = value.get("environment")
+    if (
+        not isinstance(environment, dict)
+        or set(environment) != ENVIRONMENT_KEYS
+        or environment.get("os") not in {"windows", "linux", "macos", "other"}
+        or environment.get("architecture") not in {"x86_64", "arm64", "other"}
+    ):
+        errors.append("environment summary is invalid")
+    project = value.get("project")
+    if not isinstance(project, dict) or set(project) != PROJECT_KEYS:
+        errors.append("project summary keys are invalid")
+    else:
+        project_types = project.get("types")
+        if (
+            not isinstance(project_types, list)
+            or project_types != sorted(set(project_types))
+            or not all(item in PROJECT_TYPES for item in project_types)
+            or type(project.get("workspace_count")) is not int
+            or project["workspace_count"] < 0
+            or SHA256.fullmatch(str(project.get("identity_sha256", ""))) is None
+        ):
+            errors.append("project summary is invalid")
+    goal = value.get("goal")
+    if not isinstance(goal, dict) or set(goal) != GOAL_KEYS:
+        errors.append("goal evidence keys are invalid")
+    else:
+        hashes = goal.get("artifact_sha256")
+        checks = goal.get("checks")
+        if (
+            goals.GOAL_ID_PATTERN.fullmatch(str(goal.get("id", ""))) is None
+            or goal.get("state") not in VERIFIED_STATES
+            or goal.get("target") not in receipts.TARGETS
+            or SHA256.fullmatch(str(goal.get("receipt_sha256", ""))) is None
+            or not isinstance(hashes, list)
+            or hashes != sorted(hashes)
+            or not hashes
+            or not all(SHA256.fullmatch(str(item)) for item in hashes)
+            or not isinstance(checks, dict)
+        ):
+            errors.append("goal evidence is invalid")
+        elif any(
+            not isinstance(result, dict)
+            or set(result) != CHECK_KEYS
+            or result.get("status") not in receipts.RESULT_STATES
+            or not isinstance(result.get("evidence_hashes"), list)
+            or not all(
+                SHA256.fullmatch(str(item))
+                for item in result.get("evidence_hashes", [])
+            )
+            for result in checks.values()
+        ):
+            errors.append("goal check summary is invalid")
+    declaration = value.get("declaration")
+    if (
+        not isinstance(declaration, dict)
+        or set(declaration) != DECLARATION_KEYS
+        or declaration.get("submitter") not in SUBMITTERS
+    ):
+        errors.append("submitter declaration is invalid")
+    return errors
+
+
 def verify_adoption(path: pathlib.Path | str) -> dict[str, Any]:
     """Verify receipt schema, digest, privacy, and declared independence."""
     errors: list[str] = []
+    receipt_path = pathlib.Path(path)
     try:
-        value = _read_receipt(pathlib.Path(path))
+        raw_text = receipt_path.read_text(encoding="utf-8")
+        value = _read_receipt(receipt_path)
     except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
         return {"schema_version": 1, "status": "invalid", "errors": [str(error)]}
+    errors.extend(_privacy_errors(raw_text, "document"))
     if set(value) != RECEIPT_KEYS:
         errors.append("adoption receipt keys are invalid")
     if value.get("schema_version") != 1 or value.get("product") != "divan-adoption":
         errors.append("adoption receipt identity is invalid")
     if value.get("receipt_digest") != _digest(value):
         errors.append("adoption receipt digest does not match")
-    divan = value.get("divan")
-    if not isinstance(divan, dict) or not HEX_40.fullmatch(
-        str(divan.get("commit", ""))
-    ):
-        errors.append("Divan source identity is invalid")
-    host = value.get("host")
-    if (
-        not isinstance(host, dict)
-        or host.get("name") not in HOSTS
-        or not SAFE_TOKEN.fullmatch(str(host.get("version", "")))
-    ):
-        errors.append("host declaration is invalid")
+    errors.extend(_schema_errors(value))
     declaration = value.get("declaration")
     submitter = declaration.get("submitter") if isinstance(declaration, dict) else None
-    if submitter not in SUBMITTERS:
-        errors.append("submitter declaration is invalid")
-    goal = value.get("goal")
-    if (
-        not isinstance(goal, dict)
-        or goal.get("state") not in VERIFIED_STATES
-        or not SHA256.fullmatch(str(goal.get("receipt_sha256", "")))
-    ):
-        errors.append("goal evidence is invalid")
     errors.extend(_privacy_errors(value))
     return {
         "schema_version": 1,
