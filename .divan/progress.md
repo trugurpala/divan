@@ -8,17 +8,27 @@ Son güncelleme: 2026-07-25
 - Published commit: 5513e73d5faa8657a22d813ecfec763a6089bea0
 - Publication evidence: .divan/evidence/teftis-20260725-v016-publication-handoff.md
 - Release asset evidence: .divan/evidence/teftis-20260725-v016-release-assets.md
+- Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
 v0.16.0 is published from immutable commit `5513e73d`; PR #31 is merged and
 the Release page, five recomputed assets, checksum manifests, SPDX SBOM,
-attestations, Pages, and Wiki are bound to tracked evidence. The remaining v1
-product gate is reproducible adoption evidence from a non-owner. No canary or
-transactional global-host update was reproduced in this review. v1 remains 7/8.
+attestations, Pages, and Wiki are bound to tracked evidence. Post-release
+`main` commits now rebuild from the immutable tag and verify all five Release
+assets byte-for-byte without moving the tag or duplicating attestations. The
+remaining v1 product gate is reproducible adoption evidence from a non-owner.
+No canary or transactional global-host update was reproduced in this review.
+v1 remains 7/8.
 
 ## Yapıldı
 
+- PR #39 merged the issue #38 release-idempotency repair as `da5c2a7c`.
+  Main release run `30131579254` passed all three clean hosts, skipped duplicate
+  attestation, and verified all five v0.16.0 assets byte-for-byte from the
+  immutable tag. The tag, five SHA-256 digests, and two attestations per asset
+  remained unchanged. Evidence is tracked in
+  `.divan/evidence/teftis-20260725-release-idempotency.md`.
 - PR #31 merged v0.16.0 to `main`; tag `v0.16.0` points to
   `5513e73d5faa8657a22d813ecfec763a6089bea0`. The Release page returned HTTP
   200 and live Pages/Wiki readbacks contained v0.16.0. Bounded evidence is

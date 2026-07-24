@@ -50,8 +50,8 @@
 - Modify: `.divan/progress.md`
 - Modify: `BLUEPRINT.md`
 
-- [ ] Record failing run 30130364496 and its exact failed step.
-- [ ] Record focused red/green evidence, complete local gates, PR checks, and the successful post-merge release run.
-- [ ] Reconfirm tag `v0.16.0` and all five asset digests are unchanged.
-- [ ] Recalculate Company OS impact with no unclassified paths.
-- [ ] Keep independent adoption pending and v1 at 7/8.
+- [x] Record failing run 30130364496 and its exact failed step.
+- [x] Record focused red/green evidence, complete local gates, PR checks, and the successful post-merge release run.
+- [x] Reconfirm tag `v0.16.0` and all five asset digests are unchanged.
+- [x] Recalculate Company OS impact with no unclassified paths.
+- [x] Keep independent adoption pending and v1 at 7/8.
