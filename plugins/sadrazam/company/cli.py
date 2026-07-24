@@ -136,6 +136,13 @@ def _parser() -> argparse.ArgumentParser:
         "--project", type=pathlib.Path, default=pathlib.Path.cwd()
     )
     _common_output(project_status)
+    for name in ("update", "repair"):
+        lifecycle_command = project_commands.add_parser(name)
+        lifecycle_command.add_argument(
+            "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+        )
+        lifecycle_command.add_argument("--execute", action="store_true")
+        _common_output(lifecycle_command)
 
     for name in ("audit", "verify"):
         command = commands.add_parser(name)
@@ -204,7 +211,21 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
         )
         return project_os.apply_init_plan(plan) if options.execute else plan
     if options.command == "project":
-        return project_lifecycle.project_status(options.project)
+        if options.project_command == "status":
+            return project_lifecycle.project_status(options.project)
+        if options.project_command == "update":
+            plan = project_lifecycle.build_update_plan(options.project)
+            return (
+                project_lifecycle.apply_update_plan(plan)
+                if options.execute and plan.get("status") == "PLANNED"
+                else plan
+            )
+        plan = project_lifecycle.build_repair_plan(options.project)
+        return (
+            project_lifecycle.apply_repair_plan(plan)
+            if options.execute and plan.get("status") == "PLANNED"
+            else plan
+        )
     if options.command == "audit":
         return project_os.audit_project(options.project)
     if options.command == "verify":

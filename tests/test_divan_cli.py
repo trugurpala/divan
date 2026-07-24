@@ -151,6 +151,56 @@ class RepositoryDivanCliTests(unittest.TestCase):
         self.assertEqual(json.loads(output.getvalue())["status"], "CURRENT")
         self.assertEqual(before, after)
 
+    def test_project_update_and_repair_are_dry_run_first(self) -> None:
+        cli = load_module("repository_divan_mutation_cli", DIVAN_CLI)
+        with tempfile.TemporaryDirectory(prefix="divan-cli-lifecycle-") as temporary:
+            project = pathlib.Path(temporary)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    cli.main(
+                        [
+                            "init",
+                            "--project",
+                            str(project),
+                            "--host",
+                            "agents",
+                            "--execute",
+                            "--json",
+                        ]
+                    ),
+                    0,
+                )
+            rules = project / ".divan" / "PROJECT_RULES.md"
+            expected = rules.read_bytes()
+            rules.unlink()
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(
+                    cli.main(
+                        ["project", "repair", "--project", str(project), "--json"]
+                    ),
+                    0,
+                )
+            self.assertEqual(json.loads(output.getvalue())["status"], "PLANNED")
+            self.assertFalse(rules.exists())
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(
+                    cli.main(
+                        [
+                            "project",
+                            "repair",
+                            "--project",
+                            str(project),
+                            "--execute",
+                            "--json",
+                        ]
+                    ),
+                    0,
+                )
+            self.assertEqual(json.loads(output.getvalue())["status"], "REPAIRED")
+            self.assertEqual(rules.read_bytes(), expected)
+
     def test_project_init_defaults_to_both_hosts_and_dry_run(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-cli-") as temporary:
             project = pathlib.Path(temporary)

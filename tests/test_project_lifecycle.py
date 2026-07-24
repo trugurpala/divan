@@ -303,3 +303,132 @@ class ProjectLifecycleStatusTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "UPDATE_AVAILABLE")
         self.assertEqual(result["desired"]["version"], "0.16.1")
+
+
+class ProjectLifecycleMutationTests(ProjectLifecycleStatusTests):
+    def test_update_is_dry_run_then_applies_new_immutable_source(self) -> None:
+        module = self.require_module()
+        newer = {
+            **self.SOURCE,
+            "version": "0.16.1",
+            "source_ref": "v0.16.1",
+            "source_commit": "e" * 40,
+        }
+        with tempfile.TemporaryDirectory(prefix="divan-update-") as temporary:
+            project = pathlib.Path(temporary)
+            self.initialize(project)
+            before = self.snapshot(project)
+            with mock.patch.object(
+                project_os, "_runtime_source_identity", return_value=newer
+            ):
+                plan = module.build_update_plan(project)
+                after_plan = self.snapshot(project)
+                result = module.apply_update_plan(plan)
+            state = json.loads(
+                (project / ".divan" / "install-state.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+
+        self.assertEqual(plan["status"], "PLANNED")
+        self.assertEqual(before, after_plan)
+        self.assertEqual(result["status"], "APPLIED")
+        self.assertEqual(state["installed"], newer)
+
+    def test_update_blocks_user_modified_file_without_writing(self) -> None:
+        module = self.require_module()
+        newer = {
+            **self.SOURCE,
+            "version": "0.16.1",
+            "source_ref": "v0.16.1",
+        }
+        with tempfile.TemporaryDirectory(prefix="divan-update-") as temporary:
+            project = pathlib.Path(temporary)
+            self.initialize(project)
+            rules = project / ".divan" / "PROJECT_RULES.md"
+            rules.write_text("# Owner text\n", encoding="utf-8")
+            before = self.snapshot(project)
+            with mock.patch.object(
+                project_os, "_runtime_source_identity", return_value=newer
+            ):
+                plan = module.build_update_plan(project)
+            after = self.snapshot(project)
+
+        self.assertEqual(plan["status"], "BLOCKED")
+        self.assertEqual(before, after)
+        self.assertIn(".divan/PROJECT_RULES.md", json.dumps(plan))
+
+    def test_update_rejects_stale_preimage_before_mutation(self) -> None:
+        module = self.require_module()
+        newer = {
+            **self.SOURCE,
+            "version": "0.16.1",
+            "source_ref": "v0.16.1",
+        }
+        with tempfile.TemporaryDirectory(prefix="divan-update-") as temporary:
+            project = pathlib.Path(temporary)
+            self.initialize(project)
+            with mock.patch.object(
+                project_os, "_runtime_source_identity", return_value=newer
+            ):
+                plan = module.build_update_plan(project)
+                rules = project / ".divan" / "PROJECT_RULES.md"
+                rules.write_text("# Changed after plan\n", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "changed"):
+                    module.apply_update_plan(plan)
+            self.assertEqual(
+                rules.read_text(encoding="utf-8"), "# Changed after plan\n"
+            )
+
+    def test_schema_1_project_migrates_only_from_reproducible_state(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-migrate-") as temporary:
+            project = pathlib.Path(temporary)
+            self.initialize(project)
+            (project / ".divan" / "install-state.json").unlink()
+            config_path = project / ".divan" / "config.json"
+            config = json.loads(config_path.read_text(encoding="utf-8"))
+            config["schema_version"] = 1
+            config_path.write_bytes(
+                (
+                    json.dumps(
+                        config, ensure_ascii=False, indent=2, sort_keys=False
+                    )
+                    + "\n"
+                ).encode("utf-8")
+            )
+            before = self.snapshot(project)
+            with mock.patch.object(
+                project_os, "_runtime_source_identity", return_value=self.SOURCE
+            ):
+                plan = module.build_update_plan(project)
+                after_plan = self.snapshot(project)
+                result = module.apply_update_plan(plan)
+            migrated = json.loads(config_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(plan["migration"], "config-schema-1-to-2")
+        self.assertEqual(before, after_plan)
+        self.assertEqual(result["status"], "APPLIED")
+        self.assertEqual(migrated["schema_version"], 2)
+
+    def test_repair_restores_only_missing_owned_whole_file(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-repair-") as temporary:
+            project = pathlib.Path(temporary)
+            self.initialize(project)
+            rules = project / ".divan" / "PROJECT_RULES.md"
+            expected = rules.read_bytes()
+            rules.unlink()
+            before = self.snapshot(project)
+            with mock.patch.object(
+                project_os, "_runtime_source_identity", return_value=self.SOURCE
+            ):
+                plan = module.build_repair_plan(project)
+                after_plan = self.snapshot(project)
+                result = module.apply_repair_plan(plan)
+                repaired = rules.read_bytes()
+
+        self.assertEqual(plan["status"], "PLANNED")
+        self.assertEqual(before, after_plan)
+        self.assertEqual(result["status"], "REPAIRED")
+        self.assertEqual(repaired, expected)

@@ -190,3 +190,227 @@ def project_status(project: pathlib.Path | str) -> dict[str, Any]:
         result["continuation_command"] = command
     return result
 
+
+def _canonical_digest(value: dict[str, Any]) -> str:
+    material = json.dumps(
+        value, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    return _digest(material)
+
+
+def _legacy_config(root: pathlib.Path) -> tuple[dict[str, Any] | None, list[str]]:
+    path = root / ".divan" / "config.json"
+    if path.is_symlink() or not path.is_file():
+        return None, [".divan/config.json is unavailable or unsafe"]
+    try:
+        content = path.read_bytes()
+        value = json.loads(content.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        return None, [f".divan/config.json is invalid: {error}"]
+    if not isinstance(value, dict) or set(value) != set(project_os.CONFIG_KEYS):
+        return None, [".divan/config.json schema 1 keys are invalid"]
+    errors: list[str] = []
+    if value.get("schema_version") != 1:
+        errors.append(".divan/config.json is not schema 1")
+    if content != project_os._json_bytes(value):
+        errors.append(".divan/config.json schema 1 bytes are not canonical")
+    if value.get("profile") not in {"standard", "strict"}:
+        errors.append(".divan/config.json profile is invalid")
+    if value.get("locale") not in {"en", "tr"}:
+        errors.append(".divan/config.json locale is invalid")
+    if value.get("autonomy") != "supervised":
+        errors.append(".divan/config.json autonomy is invalid")
+    for field in (
+        "project_types",
+        "workspaces",
+        "providers",
+        "capabilities",
+        "commands",
+        "standards",
+        "managed_files",
+    ):
+        if not isinstance(value.get(field), list):
+            errors.append(f".divan/config.json {field} must be an array")
+    if not errors:
+        errors.extend(project_os._waiver_errors(root))
+        errors.extend(project_os._managed_file_errors(root, value))
+        errors.extend(project_os._inspection_drift_errors(root, value))
+    return value, errors
+
+
+def _blocked_plan(
+    operation: str, root: pathlib.Path, errors: list[str], surfaces: list[Any]
+) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "operation": operation,
+        "status": "BLOCKED",
+        "project": str(root),
+        "errors": errors,
+        "surfaces": surfaces,
+        "execute_required": True,
+        "continuation_command": (
+            "python scripts/divan.py project status --project . --json"
+        ),
+    }
+
+
+def _bind_plan(value: dict[str, Any]) -> dict[str, Any]:
+    result = dict(value)
+    result["plan_digest"] = _canonical_digest(value)
+    return result
+
+
+def build_update_plan(project: pathlib.Path | str) -> dict[str, Any]:
+    """Plan an ownership-safe update or the sole schema-1 migration."""
+    root = pathlib.Path(project).resolve()
+    config, config_errors = project_os._load_config(root)
+    migration: str | None = None
+    if config is None or config_errors:
+        legacy, legacy_errors = _legacy_config(root)
+        if legacy is None or legacy_errors:
+            return _blocked_plan(
+                "update", root, [*config_errors, *legacy_errors], []
+            )
+        config = legacy
+        migration = "config-schema-1-to-2"
+    init_plan = _desired_plan(root, config)
+    if migration is None:
+        status = project_status(root)
+        if status["status"] in {"BLOCKED", "DRIFTED"}:
+            return _blocked_plan(
+                "update",
+                root,
+                list(status.get("errors", [])),
+                list(status.get("surfaces", [])),
+            )
+        surfaces = status["surfaces"]
+    else:
+        surfaces = [
+            {
+                "path": ".divan/config.json",
+                "classification": "update-available",
+            },
+            {
+                "path": project_os.INSTALL_STATE_PATH,
+                "classification": "unmanaged",
+            },
+        ]
+    value: dict[str, Any] = {
+        "schema_version": 1,
+        "operation": "update",
+        "status": "PLANNED",
+        "project": str(root),
+        "migration": migration,
+        "surfaces": surfaces,
+        "init_plan": init_plan,
+        "execute_required": True,
+    }
+    return _bind_plan(value)
+
+
+def _validate_bound_plan(
+    plan: dict[str, Any], operation: str
+) -> pathlib.Path:
+    if (
+        not isinstance(plan, dict)
+        or plan.get("schema_version") != 1
+        or plan.get("operation") != operation
+        or plan.get("status") != "PLANNED"
+    ):
+        raise ValueError(f"{operation} plan is invalid or blocked")
+    project = plan.get("project")
+    if not isinstance(project, str):
+        raise ValueError(f"{operation} plan project is invalid")
+    unsigned = {key: value for key, value in plan.items() if key != "plan_digest"}
+    if plan.get("plan_digest") != _canonical_digest(unsigned):
+        raise ValueError(f"{operation} plan digest changed")
+    return pathlib.Path(project).resolve()
+
+
+def apply_update_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    """Revalidate and apply an update through the proven init transaction."""
+    root = _validate_bound_plan(plan, "update")
+    fresh = build_update_plan(root)
+    if fresh.get("plan_digest") != plan.get("plan_digest"):
+        raise ValueError("project changed after update plan")
+    result = project_os.apply_init_plan(plan["init_plan"])
+    return {
+        "schema_version": 1,
+        "operation": "update",
+        "status": "APPLIED",
+        "project": root.name,
+        "changed": result["changed"],
+        "migration": plan.get("migration"),
+    }
+
+
+def build_repair_plan(project: pathlib.Path | str) -> dict[str, Any]:
+    """Plan repair of only missing, recorded whole-file payloads."""
+    root = pathlib.Path(project).resolve()
+    status = project_status(root)
+    surfaces = list(status.get("surfaces", []))
+    missing = [
+        row["path"]
+        for row in surfaces
+        if row.get("classification") == "missing"
+    ]
+    unsafe = [
+        row
+        for row in surfaces
+        if row.get("classification") not in {"current", "missing"}
+    ]
+    state, state_errors = project_state.load_install_state(root)
+    if (
+        state is None
+        or state_errors
+        or status.get("installed") != status.get("desired")
+        or unsafe
+        or not missing
+    ):
+        errors = [*list(status.get("errors", [])), *state_errors]
+        if unsafe:
+            errors.append("repair permits only missing owned whole files")
+        if status.get("installed") != status.get("desired"):
+            errors.append("repair requires the currently installed Divan source")
+        if not missing:
+            errors.append("no repairable missing owned whole file was found")
+        return _blocked_plan("repair", root, errors, surfaces)
+    modes = {row["path"]: row["mode"] for row in state["managed_files"]}
+    if any(modes.get(path) != "whole-file" for path in missing):
+        return _blocked_plan(
+            "repair",
+            root,
+            ["missing marked blocks cannot be repaired automatically"],
+            surfaces,
+        )
+    config, config_errors = project_os._load_config(root)
+    if config is None or config_errors:
+        return _blocked_plan("repair", root, config_errors, surfaces)
+    value = {
+        "schema_version": 1,
+        "operation": "repair",
+        "status": "PLANNED",
+        "project": str(root),
+        "surfaces": surfaces,
+        "repair_paths": missing,
+        "init_plan": _desired_plan(root, config),
+        "execute_required": True,
+    }
+    return _bind_plan(value)
+
+
+def apply_repair_plan(plan: dict[str, Any]) -> dict[str, Any]:
+    """Revalidate and repair missing generated files transactionally."""
+    root = _validate_bound_plan(plan, "repair")
+    fresh = build_repair_plan(root)
+    if fresh.get("plan_digest") != plan.get("plan_digest"):
+        raise ValueError("project changed after repair plan")
+    result = project_os.apply_init_plan(plan["init_plan"])
+    return {
+        "schema_version": 1,
+        "operation": "repair",
+        "status": "REPAIRED",
+        "project": root.name,
+        "changed": result["changed"],
+    }
