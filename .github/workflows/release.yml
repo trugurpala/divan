@@ -64,6 +64,7 @@ jobs:
     timeout-minutes: 25
     env:
       PYTHONDONTWRITEBYTECODE: '1'
+      TZ: UTC
     permissions:
       contents: write
       id-token: write
@@ -129,6 +130,8 @@ jobs:
           DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py
       - name: Sürüm notunu üret ve etiketi/Release sayfasını eşitle
         id: release-assets
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           version="$(cat VERSION)"
@@ -139,21 +142,32 @@ jobs:
           sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"
           runner="$RUNNER_TEMP/divan-project.pyz"
           runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"
-          python scripts/release.py --notes "$notes"
           source_commit="$GITHUB_SHA"
+          source_root="$GITHUB_WORKSPACE"
+          published_release=false
           if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
-            tagged_commit="$(git rev-parse "$tag^{commit}")"
-            test "$tagged_commit" = "$source_commit" || {
-              echo "HATA: $tag etiketi $tagged_commit commit'inde; $source_commit uzerine tasinmayacak." >&2
+            source_commit="$(git rev-parse "$tag^{commit}")"
+            git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA" || {
+              echo "HATA: $tag etiketi $source_commit commit'inde ve $GITHUB_SHA soyunda degil." >&2
               exit 1
             }
+            source_root="$RUNNER_TEMP/source-$tag"
+            git worktree add --detach "$source_root" "$source_commit"
+            trap 'git worktree remove --force "$source_root"' EXIT
+            test "$(cat "$source_root/VERSION")" = "$version"
+            if gh release view "$tag" >/dev/null 2>&1; then
+              published_release=true
+            fi
           fi
+          python "$source_root/scripts/release.py" --notes "$notes"
           git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
-          python scripts/build_project_runner.py --output "$runner" --source-commit "$source_commit"
+          python "$source_root/scripts/build_project_runner.py" --root "$source_root" \
+            --output "$runner" --source-commit "$source_commit"
           runner_sha256="$(sha256sum "$runner" | awk '{print $1}')"
           printf '%s  %s\n' "$runner_sha256" "$(basename "$runner")" > "$runner_checksum"
           runner_checksum_sha256="$(sha256sum "$runner_checksum" | awk '{print $1}')"
-          python scripts/sbom.py --output "$sbom" --source-commit "$source_commit" \
+          python "$source_root/scripts/sbom.py" --root "$source_root" \
+            --output "$sbom" --source-commit "$source_commit" \
             --artifact "$(basename "$runner")=$runner_sha256" \
             --artifact "$(basename "$runner_checksum")=$runner_checksum_sha256"
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
@@ -168,8 +182,10 @@ jobs:
             echo "sbom=$sbom"
             echo "source_commit=$source_commit"
             echo "tag=$tag"
+            echo "published_release=$published_release"
           } >> "$GITHUB_OUTPUT"
       - name: Attest every release asset before publication
+        if: steps.release-assets.outputs.published_release != 'true'
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: |

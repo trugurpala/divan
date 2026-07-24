@@ -64,6 +64,43 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn('cmp --silent "$archive"', text)
         self.assertIn('cmp --silent "$checksum"', text)
 
+    def test_existing_release_is_rebuilt_from_tag_without_duplicate_attestation(
+        self,
+    ) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+
+        self.assertIn(
+            'source_commit="$(git rev-parse "$tag^{commit}")"',
+            text,
+        )
+        self.assertIn(
+            'git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA"',
+            text,
+        )
+        self.assertIn(
+            'git worktree add --detach "$source_root" "$source_commit"',
+            text,
+        )
+        self.assertIn(
+            'python "$source_root/scripts/build_project_runner.py" '
+            '--root "$source_root"',
+            text,
+        )
+        self.assertIn(
+            'python "$source_root/scripts/sbom.py" --root "$source_root"',
+            text,
+        )
+        self.assertIn("TZ: UTC", text)
+        self.assertIn("published_release=true", text)
+        self.assertIn(
+            "if: steps.release-assets.outputs.published_release != 'true'",
+            text,
+        )
+        self.assertNotIn(
+            'test "$tagged_commit" = "$source_commit"',
+            text,
+        )
+
     def test_scorecard_is_pinned_and_publishes_sarif_with_narrow_permissions(self) -> None:
         text = (WORKFLOWS / "scorecard.yml").read_text(encoding="utf-8")
         self.assertIn("push:\n    branches: [main]", text)
@@ -99,7 +136,8 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("artifact-metadata: write", text)
         self.assertIn('sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"', text)
         self.assertIn(
-            'python scripts/sbom.py --output "$sbom" --source-commit "$source_commit"', text
+            'python "$source_root/scripts/sbom.py" --root "$source_root"',
+            text,
         )
         self.assertIn('sbom_sha256="$(sha256sum "$sbom"', text)
         self.assertIn('cmp --silent "$sbom"', text)
@@ -113,8 +151,8 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("${{ steps.release-assets.outputs.archive }}", text)
         self.assertIn("${{ steps.release-assets.outputs.sbom }}", text)
         self.assertIn(
-            'python scripts/build_project_runner.py --output "$runner" '
-            '--source-commit "$source_commit"',
+            'python "$source_root/scripts/build_project_runner.py" '
+            '--root "$source_root"',
             text,
         )
         self.assertIn('runner_sha256="$(sha256sum "$runner"', text)
