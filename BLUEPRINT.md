@@ -139,6 +139,14 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-25: PR #39 closed issue #38's immutable-release idempotency
+  regression. Two post-release main runs had failed because the workflow tried
+  to bind the existing v0.16.0 tag to each new `GITHUB_SHA`. The repaired
+  workflow rebuilds from the tagged commit in a detached worktree, fixes ZIP
+  timestamps to UTC, skips duplicate attestations, and compares all five
+  assets byte-for-byte. Main release run `30131579254` passed; tag
+  `5513e73d`, all five SHA-256 digests, and two attestations per asset remained
+  unchanged. v1 remains 7/8.
 - 2026-07-25: Issue #35 post-merge evidence re-downloaded all five v0.16.0
   Release assets and recomputed their SHA-256 values. GitHub asset digests,
   both checksum manifests, SPDX 2.3 SBOM, embedded runner source identity, the
