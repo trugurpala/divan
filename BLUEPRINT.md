@@ -54,12 +54,13 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Yayımlanan temel
 
-- **v0.16.0 ✓** Local release candidate for installed-project adoption and
-  drift control: schema 2 ownership state, read-only lifecycle status,
-  transaction-bound update/repair, verified goal archive, redacted adoption
-  receipts, and a deterministic schema 2 project runner. Owner canary evidence
-  remains distinct from independent adoption; external delivery states require
-  separate post-merge proof.
+- **v0.16.0 ✓** Published installed-project adoption and drift-control release:
+  schema 2 ownership state, read-only lifecycle status, transaction-bound
+  update/repair, verified goal archive, redacted adoption receipts, and a
+  deterministic schema 2 project runner. PR #31, immutable commit/tag, Release
+  reachability, Pages, and Wiki are bound in the handoff evidence. Asset-byte,
+  attestation, canary, global-host, and independent-adoption claims remain
+  separate until reproduced.
 - **v0.15.0 ✓** Local release candidate for the Portable Project OS;
   `DPS-001..DPS-012` contracts, Unicode intent routing, bounded monorepo
   discovery, supervised goal/receipt lifecycle, provider-native delivery
@@ -138,6 +139,14 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-25: Canonical handoff drift was found after v0.16.0 publication.
+  PR #31 was merged and `main` plus tag `v0.16.0` resolved to
+  `5513e73d5faa8657a22d813ecfec763a6089bea0`; the Release page returned HTTP
+  200 and Pages/Wiki exposed v0.16.0. `.divan/progress.md` still instructed the
+  next maintainer to push the merged branch and open its PR. Issue #32 binds the
+  handoff to a tracked publication record and rejects republishing an already
+  published version. Asset bytes, attestations, canary, global-host delivery,
+  and independent adoption were not inferred; v1 remains 7/8.
 - 2026-07-24: v0.16.0 adoption/drift scope was implemented test-first in the
   isolated `codex/v016-adoption-drift` worktree. Existing 5 packages/41 skills
   remain unchanged. Local preparation does not claim PR, merge, release,
@@ -299,8 +308,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Finish the v0.16.0 local quality gates and independent code review, push
-`codex/v016-adoption-drift`, and open a ready PR. Merge only after every
-required check passes without bypass; then bind release assets, canary,
-Pages/Wiki, and dual-host delivery to immutable `main`. Keep v1 at 7/8 until a
-non-owner submits human-reviewed reproducible acceptance evidence.
+Collect and human-review the reproducible non-owner adoption evidence in issue
+#34. Verify its privacy-bounded receipt before changing the machine-backed v1
+scorecard. Owner fixtures or canaries do not qualify; without valid evidence,
+v1 remains 7/8.

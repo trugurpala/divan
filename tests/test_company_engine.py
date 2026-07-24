@@ -1222,6 +1222,27 @@ class ImpactTests(unittest.TestCase):
         self.assertIn("public-site", result["effects"])
         self.assertIn("release-validation", result["effects"])
 
+    def test_project_memory_markdown_has_complete_impact(self) -> None:
+        result = self.engine.calculate_impact(
+            [
+                "AGENTS.md",
+                "CLAUDE.md",
+                "BLUEPRINT.md",
+                ".divan/progress.md",
+                ".divan/evidence/v016.md",
+            ],
+            self.contracts,
+        )
+
+        self.assertEqual(result["unclassified_paths"], [])
+        self.assertIn("project-memory", result["matched_rules"])
+        self.assertTrue(
+            {"company-validation", "documentation", "release-validation"}.issubset(
+                result["effects"]
+            )
+        )
+        self.assertIn("python scripts/handoff.py --check", result["checks"])
+
     def test_validation_and_workflow_changes_have_nonempty_impact(self) -> None:
         for path in ("scripts/validate.py", ".github/workflows/quality-gate.yml"):
             with self.subTest(path=path):
