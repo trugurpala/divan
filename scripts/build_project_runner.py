@@ -13,14 +13,17 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE_PATTERN = re.compile(r"[0-9a-f]{40}")
 FILES = (
     "__init__.py",
+    "adoption.py",
     "cli.py",
     "engine.py",
     "frameworks.json",
+    "goal_archive.py",
     "goals.py",
     "impact-graph.json",
     "project_lifecycle.py",
     "project_os.py",
     "project_state.py",
+    "project_transactions.py",
     "providers.py",
     "receipts.py",
     "roles.json",

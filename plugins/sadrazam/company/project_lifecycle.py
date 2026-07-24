@@ -8,6 +8,7 @@ from typing import Any
 
 import project_os
 import project_state
+import project_transactions
 
 
 def _digest(value: bytes) -> str:
@@ -334,7 +335,7 @@ def apply_update_plan(plan: dict[str, Any]) -> dict[str, Any]:
     fresh = build_update_plan(root)
     if fresh.get("plan_digest") != plan.get("plan_digest"):
         raise ValueError("project changed after update plan")
-    result = project_os.apply_init_plan(plan["init_plan"])
+    result = project_transactions.apply_managed_plan(plan["init_plan"])
     return {
         "schema_version": 1,
         "operation": "update",
@@ -406,7 +407,7 @@ def apply_repair_plan(plan: dict[str, Any]) -> dict[str, Any]:
     fresh = build_repair_plan(root)
     if fresh.get("plan_digest") != plan.get("plan_digest"):
         raise ValueError("project changed after repair plan")
-    result = project_os.apply_init_plan(plan["init_plan"])
+    result = project_transactions.apply_managed_plan(plan["init_plan"])
     return {
         "schema_version": 1,
         "operation": "repair",

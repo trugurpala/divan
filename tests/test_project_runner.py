@@ -29,14 +29,17 @@ class ProjectRunnerTests(unittest.TestCase):
         company.mkdir(parents=True)
         for name in (
             "__init__.py",
+            "adoption.py",
             "cli.py",
             "engine.py",
             "frameworks.json",
+            "goal_archive.py",
             "goals.py",
             "impact-graph.json",
             "project_lifecycle.py",
             "project_os.py",
             "project_state.py",
+            "project_transactions.py",
             "providers.py",
             "receipts.py",
             "roles.json",

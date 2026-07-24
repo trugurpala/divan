@@ -12,7 +12,9 @@ DIRECTORY = pathlib.Path(__file__).resolve().parent
 if str(DIRECTORY) not in sys.path:
     sys.path.insert(0, str(DIRECTORY))
 
+import adoption  # noqa: E402
 import engine  # noqa: E402
+import goal_archive  # noqa: E402
 import goals  # noqa: E402
 import project_lifecycle  # noqa: E402
 import project_os  # noqa: E402
@@ -170,12 +172,44 @@ def _parser() -> argparse.ArgumentParser:
     goal_resume.add_argument("--goal", required=True)
     goal_resume.add_argument("--execute", action="store_true")
     _common_output(goal_resume)
+    archive = goal_commands.add_parser("archive")
+    archive.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    archive.add_argument("--goal", required=True)
+    archive.add_argument("--execute", action="store_true")
+    _common_output(archive)
 
     receipt = commands.add_parser("receipt", help="verify project receipts")
     receipt_commands = receipt.add_subparsers(dest="receipt_command", required=True)
     receipt_verify = receipt_commands.add_parser("verify")
     receipt_verify.add_argument("path", type=pathlib.Path)
     _common_output(receipt_verify)
+
+    adoption_command = commands.add_parser(
+        "adoption", help="export or verify privacy-bounded adoption receipts"
+    )
+    adoption_commands = adoption_command.add_subparsers(
+        dest="adoption_command", required=True
+    )
+    adoption_export = adoption_commands.add_parser("export")
+    adoption_export.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    adoption_export.add_argument("--goal", required=True)
+    adoption_export.add_argument(
+        "--host", choices=tuple(sorted(adoption.HOSTS)), required=True
+    )
+    adoption_export.add_argument("--host-version", required=True)
+    adoption_export.add_argument(
+        "--submitter",
+        choices=tuple(sorted(adoption.SUBMITTERS)),
+        default="maintainer",
+    )
+    _common_output(adoption_export)
+    adoption_verify = adoption_commands.add_parser("verify")
+    adoption_verify.add_argument("path", type=pathlib.Path)
+    _common_output(adoption_verify)
 
     release = commands.add_parser("release", help="plan or record a project release")
     release.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
@@ -237,9 +271,28 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
             )
         if options.goal_command == "status":
             return goals.goal_status(options.project, options.goal)
+        if options.goal_command == "archive":
+            plan = goal_archive.build_archive_plan(
+                options.project, options.goal
+            )
+            return (
+                goal_archive.apply_archive_plan(plan)
+                if options.execute and plan.get("status") == "PLANNED"
+                else plan
+            )
         return goals.resume_goal(options.project, options.goal, options.execute)
     if options.command == "receipt":
         return receipts.verify_receipt(options.path)
+    if options.command == "adoption":
+        if options.adoption_command == "verify":
+            return adoption.verify_adoption(options.path)
+        return adoption.export_adoption(
+            options.project,
+            options.goal,
+            options.host,
+            options.host_version,
+            options.submitter,
+        )
     if options.command == "release":
         return providers.release_project(
             options.project,
