@@ -1,0 +1,15 @@
+[
+  {"name": "lychee-x86_64-unknown-linux-gnu", "type": "directory"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/README.md", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/docs", "type": "directory"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/docs/lychee.1", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/docs/TROUBLESHOOTING.md", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/docs/PRE_COMMIT.md", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/complete", "type": "directory"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/complete/_lychee.ps1", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/complete/lychee.elv", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/complete/lychee.fish", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/complete/lychee.bash", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/complete/_lychee", "type": "file"},
+  {"name": "lychee-x86_64-unknown-linux-gnu/lychee", "type": "file"}
+]

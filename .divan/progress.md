@@ -1,16 +1,34 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-23
+Son güncelleme: 2026-07-24
 
 ## Güncel hedef
 
-v0.14.1 closes the Codex native marketplace metadata compatibility defect found
-during the real dual-host v0.14.0 upgrade. The patch must pass CI, publish from
-`main`, and then upgrade Claude and Codex transactionally. v1 remains 7/8
-because independent adoption evidence is still outside repository control.
+v0.15.0 turns the Company OS into a portable, supervised Project OS for
+installed repositories. The locally prepared candidate must pass a protected
+PR, publish only from immutable `main`, and then upgrade Claude and Codex
+transactionally. v1 remains 7/8 because independent adoption evidence is still
+outside repository control.
 
 ## Yapıldı
 
+- Whole-branch review approved the Project OS candidate at `1a94b61` after
+  provider, SEO, initialization, recovery, and mutation-authority findings were
+  closed test-first.
+- Portable Project OS now provides dry-run-first initialization, deterministic
+  goals/specs/plans/tasks, append-only receipts, `DPS-001..DPS-012`, bounded
+  monorepo discovery, Unicode English/Turkish routing, multi-workflow planning,
+  fail-closed impact classification, and provider-native release evidence.
+- Public-web projects receive scoped SEO/accessibility policy, static metadata
+  checks, pinned Lighthouse CI/Lychee plans, and provider-bound live evidence;
+  irrelevant web standards are not forced on libraries or services.
+- English canonical Project OS, Company OS, Community Standards, README, Wiki,
+  Pages/site, install, workflow, and release surfaces are synchronized with
+  first-class Turkish localization.
+- `python scripts/release.py --prepare 0.15.0` updated only deterministic version
+  surfaces. Preflight passed 452 tests with 10 platform-specific skips, Ruff,
+  mypy, Clean Code, and 71% coverage; five packages/41 skills and v1 at 7/8
+  remain unchanged.
 - The failed v0.14.0 dual-host upgrade rolled back automatically and both hosts
   were re-proven healthy at v0.12.2 before development continued.
 - Codex's isolated native metadata file is now accepted through its existing
@@ -239,6 +257,7 @@ because independent adoption evidence is still outside repository control.
 
 ## Sıradaki kesin adım
 
-Obtain a clean independent review of `origin/main..HEAD`, then push a ready PR
-and wait for every workflow. Merge only when green; observe exact main check
-names before applying the recovery-bypass ruleset and continuing public release.
+Push `codex/v015-project-os`, open a ready PR, and wait for every required
+workflow. Merge only when green; publish v0.15.0 from immutable `main`, verify
+tag/Release/assets/Pages/Wiki, then transactionally upgrade and re-prove both
+global hosts without changing unrelated plugins or marketplaces.

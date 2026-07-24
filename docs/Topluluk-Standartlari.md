@@ -4,6 +4,10 @@
 
 Dogrulama: `python scripts/standards.py --check`
 
+Bu `DCS-*` kurallari Divan repo dagitimini yonetir. Hedef kurulu proje,
+Project OS tarafindan yalniz uygulanabilir `DPS-*` kurallariyla denetlenir.
+Project OS ayrimi ve komutlari: `docs/Project-OS.tr.md`.
+
 ## DCS-001 - Bes dakikada ilk basari
 
 **English:** Five-minute first success

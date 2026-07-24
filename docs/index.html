@@ -6,11 +6,16 @@
 <title>Divan — Vibe coder'ın vezirler kurulu</title>
 <meta name="description" content="Claude Code ve Codex için yerel, açık kaynak ve geri alınabilir 41 skill'lik Divan dağıtımı.">
 <link rel="canonical" href="https://trugurpala.github.io/divan/">
+<link rel="alternate" hreflang="tr" href="https://trugurpala.github.io/divan/">
+<link rel="alternate" hreflang="en" href="https://github.com/trugurpala/divan/blob/main/README.md">
 <meta property="og:title" content="Divan — Vibe coder'ın vezirler kurulu">
 <meta property="og:description" content="Padişah sensin: fermanı ver, Divan işi baştan sona bitirsin.">
+<meta property="og:image" content="https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/divan-social-preview.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://trugurpala.github.io/divan/">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/divan-social-preview.png">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Divan","codeRepository":"https://github.com/trugurpala/divan","license":"https://opensource.org/license/mit","programmingLanguage":"Python","description":"A supervised Project OS and Agent Skills distribution for Claude Code and Codex."}</script>
 <meta name="theme-color" content="#0B1633">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230B1633%27/%3E%3Ctext x=%2750%27 y=%2770%27 text-anchor=%27middle%27 font-family=%27serif%27 font-size=%2764%27 fill=%27%23C9A227%27%3ED%3C/text%3E%3C/svg%3E">
 <style>
@@ -125,10 +130,10 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Vibe coder'ın vezirler kurulu</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Padişah sensin.</b> Divan, Claude Code ve Codex için <b>Yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.14.1 · 41 vezir · 5 paket · v1: 7/8.</p>
+    <p class="tez"><b>Padişah sensin.</b> Divan, Claude Code ve Codex için <b>Yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.15.0 · 41 vezir · 5 paket · v1: 7/8.</p>
     <div class="ferman">
       <p class="ferman-etiket">İlk mühür · yazmayan önizleme</p>
-      <code>python scripts/divan.py install --host both --ref v0.14.1</code>
+      <code>python scripts/divan.py install --host both --ref v0.15.0</code>
     </div>
   </div>
 </header>
@@ -177,15 +182,27 @@ footer p+p{margin-top:10px}
   </div>
 </section>
 
+<section class="bab" id="project-os">
+  <div class="wrap">
+    <p class="bab-etiket">Project OS</p>
+    <h2>Kurulu projede uygulanan sözleşme</h2>
+    <p>Divan repo dağıtımını DCS kurallarıyla, hedef projeyi ise yalnız
+      uygulanabilir DPS kurallarıyla denetler. DPS-001 niyet ve kabul
+      ölçütlerinden başlar; kanıt zinciri preview, release ve canlı geri
+      okumaya kadar sürer.</p>
+    <p style="margin-top:18px"><a href="https://github.com/trugurpala/divan/blob/main/docs/Project-OS.tr.md">Project OS sözleşmesini incele</a></p>
+  </div>
+</section>
+
 <section class="bab" id="kurulum">
   <div class="wrap">
     <p class="bab-etiket">Güvenli yol</p>
     <h2>Beş dakikada ilk başarı</h2>
     <ol class="yasam">
-      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v0.14.1 --execute</code></div></li>
-      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v0.14.1</code></div></li>
-      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v0.14.1</code></div></li>
-      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v0.14.1 --execute</code></div></li>
+      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v0.15.0 --execute</code></div></li>
+      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v0.15.0</code></div></li>
+      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v0.15.0</code></div></li>
+      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v0.15.0 --execute</code></div></li>
       <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
       <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>

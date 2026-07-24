@@ -114,6 +114,52 @@ class CommunityContractTests(unittest.TestCase):
         ):
             self.assertIn(f'"path": "{path}"', manifest)
 
+    def test_public_contract_distinguishes_distribution_and_installed_project(self) -> None:
+        english = read("docs/Project-OS.md")
+        turkish = read("docs/Project-OS.tr.md")
+        standards = read("docs/Topluluk-Standartlari.md")
+        for content in (english, turkish, standards):
+            self.assertIn("DCS-", content)
+            self.assertIn("DPS-", content)
+            self.assertIn("Project OS", content)
+        self.assertIn("repository distribution", english)
+        self.assertIn("kurulu proje", turkish)
+        self.assertIn("supervised", english.lower())
+        self.assertIn("gözetimli", turkish.lower())
+
+    def test_project_os_surfaces_are_synchronized_in_wiki_and_release_manifest(self) -> None:
+        wiki = read("wiki-pages.json")
+        manifest = read("release-manifest.json")
+        self.assertIn('"source": "docs/Project-OS.tr.md"', wiki)
+        self.assertIn('"slug": "Project-OS"', wiki)
+        for path in (
+            "docs/Project-OS.md",
+            "docs/Project-OS.tr.md",
+            "registry/project-standards.json",
+            "registry/seo-policy.json",
+            "scripts/seo.py",
+            "scripts/seo_cli.py",
+            "scripts/seo_provider.py",
+            "docs/robots.txt",
+            "docs/sitemap.xml",
+            "site/robots.txt",
+            "site/sitemap.xml",
+        ):
+            self.assertIn(f'"path": "{path}"', manifest)
+
+    def test_readmes_and_company_guides_explain_the_installed_project_path(self) -> None:
+        for relative in (
+            "README.md",
+            "README.tr.md",
+            "docs/Company-OS.md",
+            "docs/Company-OS.tr.md",
+        ):
+            content = read(relative)
+            with self.subTest(relative=relative):
+                self.assertIn("scripts/divan.py init", content)
+                self.assertIn("scripts/divan.py audit", content)
+                self.assertIn("docs/Project-OS", content)
+
     def test_both_html_sources_share_homepage_and_lifecycle_contract(self) -> None:
         version = read("VERSION").strip()
         critical = (

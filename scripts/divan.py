@@ -17,6 +17,17 @@ import host_lifecycle  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"
 COMPANY_CLI = ROOT / "plugins" / "sadrazam" / "company" / "cli.py"
+COMPANY_COMMANDS = {
+    "inspect",
+    "plan",
+    "impact",
+    "init",
+    "audit",
+    "verify",
+    "goal",
+    "receipt",
+    "release",
+}
 
 
 def _load_company_cli() -> ModuleType:
@@ -94,7 +105,7 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
-    if arguments and arguments[0] in {"inspect", "plan", "impact", "company-validate"}:
+    if arguments and arguments[0] in {*COMPANY_COMMANDS, "company-validate"}:
         command = "validate" if arguments[0] == "company-validate" else arguments[0]
         return _load_company_cli().main([command, *arguments[1:]])
     options = _parser().parse_args(arguments)

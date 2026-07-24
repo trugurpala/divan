@@ -24,5 +24,16 @@ python scripts/divan.py impact README.md plugins/sadrazam/skills/sadrazam/SKILL.
 python scripts/divan.py company-validate
 ```
 
+Project OS bu seçimi kurulu projede kalıcı sözleşmeye dönüştürür:
+
+```powershell
+python scripts/divan.py init --project . --profile standard --locale auto
+python scripts/divan.py audit --project . --format json
+```
+
+Repo düzeyindeki `DCS-*` kuralları Divan'ın bakım sözleşmesidir. Kurulu projede
+yalnız uygulanabilir `DPS-*` kuralları ve kanıt zinciri çalışır:
+[Project OS](../docs/Project-OS.tr.md).
+
 Teknik dosya ve komut adları küresel katkıcılar için İngilizce, kullanıcı
 metinleri Türkçe kalabilir. Ayrıntılar: [English](Company-OS.md).

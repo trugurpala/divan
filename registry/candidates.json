@@ -26,6 +26,150 @@
       "observed_at": "2026-07-18",
       "next_review": "2026-10-18",
       "rationale": "İçeriği topluca almak yerine yapılandırılmış katkı ve otomatik aday teftişi fikri özgün Meclis akışına uyarlandı."
+    },
+    {
+      "id": "agentskills-agentskills",
+      "name": "Agent Skills Specification",
+      "canonical_url": "https://github.com/agentskills/agentskills",
+      "type": "standard-research",
+      "status": "accepted",
+      "decision": "ADOPT",
+      "user_gap": "Taşınabilir SKILL.md sözleşmesinin açık standardı ve doğrulama terminolojisi.",
+      "reviewed_head": "38a2ff82958afee88dadf4831509e6f7e9d8ef4e",
+      "license": {
+        "spdx": "Apache-2.0",
+        "evidence_url": "https://github.com/agentskills/agentskills/blob/38a2ff82958afee88dadf4831509e6f7e9d8ef4e/LICENSE",
+        "scope_note": "Apache-2.0 lisansı incelenen commit'teki kaynak için kanıttır; bu görev kaynak kodu dağıtmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Standart seçimi çalışma zamanı bağımlılığı veya otomatik kurulum yetkisi vermez.",
+      "evidence": [
+        "https://github.com/agentskills/agentskills",
+        "https://github.com/agentskills/agentskills/blob/38a2ff82958afee88dadf4831509e6f7e9d8ef4e/LICENSE"
+      ],
+      "observed_at": "2026-07-23",
+      "next_review": "2026-10-23",
+      "rationale": "ADOPT, yalnız açık Agent Skills sözleşmesinin uygun yüzeyini inceleme/adaptasyon adayı yapar; taşınacak içerik için ayrı pin, atıf, eval ve teftiş gerekir."
+    },
+    {
+      "id": "github-spec-kit",
+      "name": "GitHub Spec Kit",
+      "canonical_url": "https://github.com/github/spec-kit",
+      "type": "standard-research",
+      "status": "adapted",
+      "decision": "ADAPT",
+      "user_gap": "Niyetin specification, plan ve görev artefaktlarına izlenebilir ayrıştırılması.",
+      "reviewed_head": "cf0abe28f7ee875448f9e4dbd8cd2b533797a1cb",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/github/spec-kit/blob/cf0abe28f7ee875448f9e4dbd8cd2b533797a1cb/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; Divan yalnız kendi taşınabilir artefakt sözleşmesini yazar, kaynak kodu dağıtmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "İş akışı fikri alınabilir; upstream komutları, şablonları veya çalışma zamanı varsayılan olarak kurulmaz.",
+      "evidence": [
+        "https://github.com/github/spec-kit",
+        "https://github.com/github/spec-kit/blob/cf0abe28f7ee875448f9e4dbd8cd2b533797a1cb/LICENSE"
+      ],
+      "observed_at": "2026-07-23",
+      "next_review": "2026-10-23",
+      "rationale": "ADAPT: specification-first kanıt zinciri Divan'ın dil, host ve fail-closed sözleşmesine özgün olarak uyarlanacaktır."
+    },
+    {
+      "id": "fission-openspec",
+      "name": "OpenSpec",
+      "canonical_url": "https://github.com/Fission-AI/OpenSpec",
+      "type": "standard-research",
+      "status": "adapted",
+      "decision": "ADAPT",
+      "user_gap": "Değişiklik önerisi ve uygulama kanıtını ayrı, denetlenebilir durumlar olarak tutmak.",
+      "reviewed_head": "a874d1d6715886db9210c527b1fc3799d9688a76",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/Fission-AI/OpenSpec/blob/a874d1d6715886db9210c527b1fc3799d9688a76/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; bu karar kod veya şablon dağıtımı değildir."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Öneri akışı Divan'ın kullanıcı onayı, dry-run ve kanıt gereksinimlerini zayıflatamaz.",
+      "evidence": [
+        "https://github.com/Fission-AI/OpenSpec",
+        "https://github.com/Fission-AI/OpenSpec/blob/a874d1d6715886db9210c527b1fc3799d9688a76/LICENSE"
+      ],
+      "observed_at": "2026-07-23",
+      "next_review": "2026-10-23",
+      "rationale": "ADAPT: değişiklik-spec yaklaşımı, Divan'ın kendi durum makinesi ve receipt sözleşmesine uyarlanacaktır."
+    },
+    {
+      "id": "maxmiksa-auto-company",
+      "name": "Auto Company",
+      "canonical_url": "https://github.com/MaxMiksa/Auto-Company",
+      "type": "app-template",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "Otonom şirket metaforunun risklerini ve insan denetimi sınırlarını karşılaştırmalı değerlendirmek.",
+      "reviewed_head": "ebfab9b4bd5f0ab5ad452a1ff85285b3c141acdd",
+      "license": {
+        "spdx": "UNKNOWN",
+        "evidence_url": "https://github.com/MaxMiksa/Auto-Company/tree/ebfab9b4bd5f0ab5ad452a1ff85285b3c141acdd",
+        "scope_note": "İncelenen commit'te ayrı LICENSE/COPYING/NOTICE dosyası yoktur; README'deki MIT rozeti yeniden dağıtım kanıtı sayılmadı. REFERENCE olarak kalır ve kaynak kodu dağıtılmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "24/7 daemon, geniş yetki ve zincirleme düşünce/log yüzeyi Divan'ın supervised autonomy, no-daemon ve gizli gerekçe saklamama ilkeleriyle uyumsuzdur.",
+      "evidence": [
+        "https://github.com/MaxMiksa/Auto-Company",
+        "https://github.com/MaxMiksa/Auto-Company/tree/ebfab9b4bd5f0ab5ad452a1ff85285b3c141acdd"
+      ],
+      "observed_at": "2026-07-23",
+      "next_review": "2026-10-23",
+      "rationale": "REFERENCE: rol metaforu karşılaştırma girdisidir; lisans belirsizliği ve daemon modeli nedeniyle kod, prompt veya yapılandırma alınmayacaktır."
+    },
+    {
+      "id": "googlechrome-lighthouse-ci",
+      "name": "Lighthouse CI",
+      "canonical_url": "https://github.com/GoogleChrome/lighthouse-ci",
+      "type": "framework-library",
+      "status": "accepted",
+      "decision": "ADOPT",
+      "user_gap": "Public-web için tekrarlanabilir performans, erişilebilirlik ve SEO ölçüm planı.",
+      "reviewed_head": "ebee453dad3f8acacd657a62ccc65e3296afb7d0",
+      "license": {
+        "spdx": "Apache-2.0",
+        "evidence_url": "https://github.com/GoogleChrome/lighthouse-ci/blob/ebee453dad3f8acacd657a62ccc65e3296afb7d0/LICENSE",
+        "scope_note": "Apache-2.0 lisansı incelenen commit'te kanıtlandı; ileride araç kullanımı ayrı provider ve pinli CI işiyle ele alınır, kaynak kodu dağıtılmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Skorlar bağlam ve ortamdan etkilenir; ölçüm yalnız uygulanabilir public-web hedeflerinde kanıt üretir, otomatik yayın yapmaz.",
+      "evidence": [
+        "https://github.com/GoogleChrome/lighthouse-ci",
+        "https://github.com/GoogleChrome/lighthouse-ci/blob/ebee453dad3f8acacd657a62ccc65e3296afb7d0/LICENSE"
+      ],
+      "observed_at": "2026-07-23",
+      "next_review": "2026-10-23",
+      "rationale": "ADOPT: pinli, opt-in SEO/erişilebilirlik kanıtı için adaydır; gerçek çalıştırma ve CI entegrasyonu ayrı bir karardır."
+    },
+    {
+      "id": "lycheeverse-lychee",
+      "name": "Lychee",
+      "canonical_url": "https://github.com/lycheeverse/lychee",
+      "type": "framework-library",
+      "status": "accepted",
+      "decision": "ADOPT",
+      "user_gap": "Dokümantasyon ve public-web link denetimi için pinli, isteğe bağlı araç planı.",
+      "reviewed_head": "af73b4e02731e0ff3a678b56769704d689138279",
+      "license": {
+        "spdx": "Apache-2.0 OR MIT",
+        "evidence_url": "https://github.com/lycheeverse/lychee/blob/af73b4e02731e0ff3a678b56769704d689138279/lychee-bin/Cargo.toml",
+        "scope_note": "İncelenen crate manifesti Apache-2.0 OR MIT bildirir; ileride binary kullanımı ayrı provider/pin işi olur ve kaynak kodu dağıtılmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Ağ erişimi, rate limit ve kimlik bilgileri hedef projenin açık provider sözleşmesine bağlıdır; yokluğunda BLOCKED üretilir.",
+      "evidence": [
+        "https://github.com/lycheeverse/lychee",
+        "https://github.com/lycheeverse/lychee/blob/af73b4e02731e0ff3a678b56769704d689138279/lychee-bin/Cargo.toml"
+      ],
+      "observed_at": "2026-07-23",
+      "next_review": "2026-10-23",
+      "rationale": "ADOPT: isteğe bağlı, pinli link denetimi için adaydır; bu kayıt kurulum veya kaynak dağıtımı değildir."
     }
   ]
 }

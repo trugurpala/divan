@@ -9,6 +9,37 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 
 
 class WorkflowHardeningTests(unittest.TestCase):
+    def test_portable_project_action_is_pinned_read_only_and_input_safe(self) -> None:
+        text = (
+            ROOT / ".github" / "actions" / "divan-project" / "action.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("using: composite", text)
+        self.assertIn(
+            "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6",
+            text,
+        )
+        self.assertIn(
+            "$GITHUB_ACTION_PATH/../../../plugins/sadrazam/company/cli.py",
+            text,
+        )
+        self.assertIn("DIVAN_PROJECT_INPUT: ${{ inputs.project }}", text)
+        self.assertNotIn("build_project_runner.py", text)
+        self.assertNotIn("github.action_ref", text)
+        run_blocks = "\n".join(
+            line for line in text.splitlines() if line.lstrip().startswith("run:")
+        )
+        self.assertNotIn("${{ inputs.", run_blocks)
+        self.assertNotIn("secrets.", text)
+        self.assertNotIn("deploy", text.casefold())
+
+    def test_pull_request_quality_path_is_secret_free_and_read_only(self) -> None:
+        text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
+        self.assertIn("pull_request", text)
+        self.assertNotIn("pull_request_target", text)
+        self.assertIn("permissions:\n  contents: read", text)
+        self.assertNotIn("secrets.", text)
+        self.assertNotIn("environment:", text)
+
     def test_all_actions_are_pinned_to_full_commit_sha(self) -> None:
         mutable: list[str] = []
         for path in sorted(WORKFLOWS.glob("*.yml")):
@@ -81,6 +112,32 @@ class WorkflowHardeningTests(unittest.TestCase):
         )
         self.assertIn("${{ steps.release-assets.outputs.archive }}", text)
         self.assertIn("${{ steps.release-assets.outputs.sbom }}", text)
+        self.assertIn(
+            'python scripts/build_project_runner.py --output "$runner" '
+            '--source-commit "$source_commit"',
+            text,
+        )
+        self.assertIn('runner_sha256="$(sha256sum "$runner"', text)
+        self.assertIn('cmp --silent "$runner"', text)
+        self.assertIn('gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner"', text)
+        self.assertIn("${{ steps.release-assets.outputs.runner }}", text)
+        self.assertIn("${{ steps.release-assets.outputs.checksum }}", text)
+        self.assertIn("environment: production-release", text)
+        self.assertIn("if: github.ref == 'refs/heads/main'", text)
+        attest = text.index("actions/attest-build-provenance@")
+        publish = text.index('gh release create "$tag"')
+        self.assertLess(attest, publish)
+        self.assertIn('runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"', text)
+        self.assertIn('--artifact "$(basename "$runner")=$runner_sha256"', text)
+        self.assertIn(
+            '--artifact "$(basename "$runner_checksum")=$runner_checksum_sha256"',
+            text,
+        )
+
+    def test_non_main_dispatch_cannot_reach_publication(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        publish_job = text[text.index("  publish:") :]
+        self.assertIn("if: github.ref == 'refs/heads/main'", publish_job)
 
     def test_supply_chain_actions_are_attributed_and_release_tracked(self) -> None:
         upstream = (ROOT / "UPSTREAM.md").read_text(encoding="utf-8")
