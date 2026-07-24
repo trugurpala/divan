@@ -23,6 +23,9 @@ v1 remains 7/8 because owner canary evidence is not independent adoption.
 - The deterministic project runner, impact graph, DCS-007, README, Project OS,
   install, Wiki, changelog, blueprint, and publication manifest include the new
   lifecycle while 5 packages/41 skills and v1 at 7/8 remain unchanged.
+- Ruff, mypy, coverage, and Clean Code now measure the first-party Company OS
+  runtime; previously invisible exact module/function/complexity debt is pinned
+  in the ratchet and cannot increase without failing CI.
 - Whole-branch review approved the Project OS candidate at `1a94b61` after
   provider, SEO, initialization, recovery, and mutation-authority findings were
   closed test-first.

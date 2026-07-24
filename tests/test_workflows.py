@@ -188,7 +188,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             "python scripts/hygiene.py --check",
             "python scripts/standards.py --check",
             "ruff check .",
-            "mypy scripts",
+            "mypy scripts evals plugins/sadrazam/company",
             "coverage run -m unittest discover -s tests",
             "coverage report",
             '"$(go env GOPATH)/bin/actionlint"',

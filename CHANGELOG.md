@@ -33,6 +33,9 @@ Versioning while the public API remains in initial development (`0.y.z`).
   lifecycle together. English/Turkish README, Project OS, install, Wiki, and
   publication surfaces distinguish host update, project update, audit, and
   lifecycle status.
+- Ruff, mypy, coverage, and the Clean Code debt ratchet now include the
+  first-party Company OS runtime instead of measuring only `scripts/` and
+  `evals/`. Existing exact-symbol debt is pinned and cannot grow silently.
 
 ### Security
 

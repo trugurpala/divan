@@ -66,6 +66,7 @@
     {"id": "company-impact-graph", "path": "plugins/sadrazam/company/impact-graph.json", "marker": "\"effect_edges\"", "replace_version": false},
     {"id": "clean-code-baseline", "path": "registry/clean-code-baseline.json", "marker": "\"schema_version\": 1", "replace_version": false},
     {"id": "clean-code-controller", "path": "scripts/clean_code.py", "marker": "measure_python", "replace_version": false},
+    {"id": "python-quality-config", "path": "pyproject.toml", "marker": "plugins/sadrazam/company", "replace_version": false},
     {"id": "eval-provenance", "path": "evals/provenance.py", "marker": "_bind_provenance", "replace_version": false},
     {"id": "eval-result-contracts", "path": "evals/result_contracts.py", "marker": "run_evaluations", "replace_version": false},
     {"id": "fallback-windows", "path": "scripts/install_codex.ps1", "marker": "v{version}", "replace_version": true, "version_patterns": ["\"v{version}\""]},
