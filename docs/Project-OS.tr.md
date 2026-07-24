@@ -34,6 +34,43 @@ Kurulum yalnız `.divan/` yüzeyine ve `AGENTS.md` / `CLAUDE.md` içindeki işar
 bloğa sahip olur. Kullanıcı metni korunur; bozuk işaretçi işlemi durdurur. Aynı
 kurulumun ikinci çalışması diff üretmez.
 
+## Sahiplik, sapma, güncelleme ve onarım
+
+Kurulum schema 2 `.divan/config.json` ile `.divan/install-state.json` üretir.
+Kurulum durumu; değişmez Divan sürüm/ref/commit kimliğini, proje kimlik hash'ini
+ve yönetilen her tam dosya veya işaretli blok payload hash'ini bağlar. Kullanıcı
+metnini kaydetmez.
+
+```powershell
+python scripts/divan.py project status --project . --json
+python scripts/divan.py project update --project .
+python scripts/divan.py project update --project . --execute
+python scripts/divan.py project repair --project .
+python scripts/divan.py project repair --project . --execute
+```
+
+`project status` saf sahiplik/sapma okumasıdır; lock, journal, cache, yedek veya
+ağ isteği oluşturmaz. Yüzey sınıflarından `CURRENT`, `UPDATE_AVAILABLE`,
+`DRIFTED` veya `BLOCKED` sonucu üretir. `project update` yalnız çalışan checkout
+ya da doğrulanmış runner içindeki değişmez Divan kodunu kullanır; uzaktan ref
+indirmez ve hedef proje kodunu çalıştırmaz. Tam dosyada gözlenen hash kayıtlı
+hash'e, işaretli blokta ise tek geçerli marker çifti ile blok hash'i kayda
+uymalıdır. Bayat plan, kullanıcı değişikliği, symlink/reparse, bilinmeyen schema
+veya sahipsiz hedef yazmadan durur.
+
+`project repair` daha dardır: yalnız kayıtlı fakat eksik tam Divan dosyasını
+geri getirir veya kanonik transaction'ı kurtarır. Değiştirilmiş dosya, bozuk
+marker bloğu veya sahipsiz yol için force-overwrite yapmaz.
+
+Host ve proje komutları farklıdır:
+
+| Komut | Kapsam | Anlam |
+|---|---|---|
+| `divan.py update --host ...` | Claude/Codex host | Kurulu Divan plugin paketlerini değiştirir |
+| `divan.py project update --project ...` | Hedef repo | Sahip olunan Project OS yüzeylerini taşır ve yeniler |
+| `divan.py audit --project ...` | Uygulanabilir DPS standartları | Proje kalite kanıtını değerlendirir |
+| `divan.py project status --project ...` | Sahiplik ve sapma | Kayıtlı, gözlenen ve istenen payload'ı karşılaştırır |
+
 ## Hedef ve kanıt yaşam döngüsü
 
 ```text
@@ -45,6 +82,43 @@ DISCOVERED → SPECIFIED → PLANNED → IMPLEMENTING
 değişen göreli yolları, kontrolleri, sağlayıcı kanıtını ve zaman damgalarını
 tutar. Secret, gizli muhakeme, kişisel mutlak yol veya alakasız eklenti
 envanteri yazmaz.
+
+`VERIFIED`, `RELEASED` veya `OBSERVED` hedefler kanıt kaybetmeden aktif kümeden
+arşivlenebilir:
+
+```powershell
+python scripts/divan.py goal archive --project . --goal <goal-id>
+python scripts/divan.py goal archive --project . --goal <goal-id> --execute
+```
+
+Divan receipt'i ve bütün artefakt hash'lerini yeniden doğrular,
+`.divan/archive/YYYY-MM-DD-<goal-id>/` altına kopyalar, arşivi doğruladıktan
+sonra yalnız bağlı kaynakları kaldırır. Bitmemiş, başarısız, değişmiş, güvensiz
+veya çakışan hedefler `BLOCKED` kalır.
+
+Eski v0.15 schema-1 makbuzunda imzalı olay tarihi yoktur. Divan yerel saati veya
+dosya metadata'sını tahmin olarak kullanmaz; sahip geçmiş terminal olay tarihini
+açıkça beyan eder ve bu beyan `archive.json` içine bağlanır:
+
+```powershell
+python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD
+python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD --execute
+```
+
+Doğrulanmış hedeften sınırlı JSON makbuzu ve Markdown özeti üretilebilir:
+
+```powershell
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> > adoption-receipt.json
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> --markdown > adoption-receipt.md
+python scripts/divan.py adoption verify adoption-receipt.json
+```
+
+Dışa aktarım salt okunurdur: seçilen taşınabilir belgeyi stdout'a yazar ve
+kullanıcı yönlendirmedikçe projede dosya oluşturmaz. Secret, e-posta, kullanıcı
+adı, mutlak yol, remote URL, alakasız eklenti envanteri ve komut çıktısı
+gövdesini reddeder. Bakımcı kanıtı `valid-owner-canary`, bağımsız beyan
+`valid-independent-declaration` sonucunu verir. İnsan incelemesi olmadan v1
+bağımsız kabul kapısı otomatik kapanmaz.
 
 Public web projesinde salt-okunur denetim:
 

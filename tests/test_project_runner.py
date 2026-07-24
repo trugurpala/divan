@@ -29,18 +29,24 @@ class ProjectRunnerTests(unittest.TestCase):
         company.mkdir(parents=True)
         for name in (
             "__init__.py",
+            "adoption.py",
             "cli.py",
             "engine.py",
             "frameworks.json",
+            "goal_archive.py",
             "goals.py",
             "impact-graph.json",
+            "project_lifecycle.py",
             "project_os.py",
+            "project_state.py",
+            "project_transactions.py",
             "providers.py",
             "receipts.py",
             "roles.json",
             "workflows.json",
         ):
             shutil.copy2(COMPANY / name, company / name)
+        (root / "VERSION").write_text("0.16.0\n", encoding="utf-8")
         registry = root / "registry"
         registry.mkdir()
         shutil.copy2(ROOT / "registry" / "seo-policy.json", registry)
@@ -113,7 +119,17 @@ class ProjectRunnerTests(unittest.TestCase):
                     )
                 )
                 source = json.loads(archive.read("divan-project-source.json"))
-                self.assertEqual(source["source_commit"], source_commit)
+                self.assertEqual(
+                    source,
+                    {
+                        "schema_version": 2,
+                        "source_commit": source_commit,
+                        "source_ref": "v0.16.0",
+                        "source_repository": "https://github.com/trugurpala/divan",
+                        "version": "0.16.0",
+                    },
+                )
+                self.assertIn("project_state.py", names)
 
     def test_dirty_tree_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:

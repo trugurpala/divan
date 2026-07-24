@@ -1265,3 +1265,23 @@ class ImpactTests(unittest.TestCase):
                 "project-os-state",
             }.issubset(result["matched_rules"])
         )
+
+    def test_adoption_drift_and_archive_surfaces_are_classified(self) -> None:
+        result = self.engine.calculate_impact(
+            [
+                "plugins/sadrazam/company/project_lifecycle.py",
+                ".divan/install-state.json",
+                ".divan/archive/2026-07-24-goal-0123456789ab/archive.json",
+                ".divan/evidence/goal-0123456789ab/adoption-receipt.md",
+                "canary/README.md",
+            ],
+            self.contracts,
+        )
+
+        self.assertEqual(result["unclassified_paths"], [])
+        self.assertIn("adoption-drift-lifecycle", result["matched_rules"])
+        self.assertTrue(
+            {"company-validation", "documentation", "release-validation"}.issubset(
+                result["effects"]
+            )
+        )

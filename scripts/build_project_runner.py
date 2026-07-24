@@ -13,12 +13,17 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE_PATTERN = re.compile(r"[0-9a-f]{40}")
 FILES = (
     "__init__.py",
+    "adoption.py",
     "cli.py",
     "engine.py",
     "frameworks.json",
+    "goal_archive.py",
     "goals.py",
     "impact-graph.json",
+    "project_lifecycle.py",
     "project_os.py",
+    "project_state.py",
+    "project_transactions.py",
     "providers.py",
     "receipts.py",
     "roles.json",
@@ -93,6 +98,14 @@ def _verified_head(root: pathlib.Path, source_commit: str) -> None:
 def build(output: pathlib.Path, source_commit: str, root: pathlib.Path = ROOT) -> None:
     root = root.resolve()
     _verified_head(root, source_commit)
+    version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    version_pattern = (
+        r"(?:0|[1-9][0-9]*)\."
+        r"(?:0|[1-9][0-9]*)\."
+        r"(?:0|[1-9][0-9]*)"
+    )
+    if re.fullmatch(version_pattern, version) is None:
+        raise ValueError("VERSION must contain canonical semantic version text")
     company = root / "plugins" / "sadrazam" / "company"
     entries = [_entry(name, (company / name).read_bytes()) for name in FILES]
     entries.extend(
@@ -106,7 +119,13 @@ def build(output: pathlib.Path, source_commit: str, root: pathlib.Path = ROOT) -
                 "divan-project-source.json",
                 (
                     json.dumps(
-                        {"schema_version": 1, "source_commit": source_commit},
+                        {
+                            "schema_version": 2,
+                            "source_commit": source_commit,
+                            "source_ref": f"v{version}",
+                            "source_repository": "https://github.com/trugurpala/divan",
+                            "version": version,
+                        },
                         separators=(",", ":"),
                         sort_keys=True,
                     )

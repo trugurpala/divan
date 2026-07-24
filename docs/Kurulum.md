@@ -4,11 +4,11 @@ Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. İl
 kullanıyorsanız güncel sabit sürüm için bu sırayı izleyin:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.15.0
-python scripts/divan.py install --host both --ref v0.15.0 --execute
-python scripts/divan.py doctor --host both --ref v0.15.0
-python scripts/divan.py update --host both --ref v0.15.0
-python scripts/divan.py update --host both --ref v0.15.0 --execute
+python scripts/divan.py install --host both --ref v0.16.0
+python scripts/divan.py install --host both --ref v0.16.0 --execute
+python scripts/divan.py doctor --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -18,6 +18,27 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 kaldırır. Host'a göre elle kaldırma için [[Kaldırma|Kaldirma]], soru/hata/güvenlik için
 [SUPPORT.md](../SUPPORT.md), ürün sözleşmesi için
 [[Topluluk Standartları|Topluluk-Standartlari]] sayfasını kullanın.
+
+## Host güncellemesi ile proje güncellemesi
+
+Yukarıdaki `update --host` komutu Claude/Codex içindeki global Divan paketlerini
+değiştirir. Divan'ı bir hedef repoya `init --execute` ile kurduktan sonra
+`.divan/config.json` schema ve sahip olunan yüzeyler ayrı proje yaşam döngüsüne
+girer:
+
+```powershell
+python scripts/divan.py project status --project . --json
+python scripts/divan.py project update --project .
+python scripts/divan.py project update --project . --execute
+python scripts/divan.py project repair --project .
+python scripts/divan.py project repair --project . --execute
+```
+
+Project update uzaktan indirme yapmaz; çalışan sabit checkout veya doğrulanmış
+`divan-project.pyz` içindeki payload'a yükseltir. Kullanıcı değişikliği, bozuk
+marker, symlink/reparse veya sahipsiz hedef yazmadan `BLOCKED` olur. Repair force
+seçeneği sunmaz ve yalnız kayıtlı eksik tam Divan dosyasını geri getirir.
+`audit` DPS kalite kanıtını, `project status` sahiplik ve drift'i değerlendirir.
 
 ## Claude Code/Desktop Code + Codex (önerilen yerel yol)
 
@@ -197,11 +218,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.15.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.16.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.15.0/scripts/install_codex.sh | DIVAN_REF=v0.15.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.16.0/scripts/install_codex.sh | DIVAN_REF=v0.16.0 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

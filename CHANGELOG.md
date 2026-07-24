@@ -10,6 +10,54 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.16.0] - 2026-07-24
+
+### Added
+
+- Schema 2 installed-project ownership with immutable Divan source identity,
+  project identity, and hashes for every managed whole file or marked block.
+- Read-only `project status`, dry-run-first transactional `project update`, and
+  intentionally narrow `project repair` commands with fail-closed drift,
+  marker, symlink/reparse, stale-plan, and unowned-path handling.
+- Verified goal archival with receipt/artifact hash binding, collision checks,
+  controlled source removal, and rollback on interrupted application.
+- Privacy-bounded JSON and Markdown adoption receipts with explicit
+  maintainer/independent declarations and offline verification.
+
+### Changed
+
+- `divan-project.pyz` now carries source metadata schema 2 and the complete
+  ownership, lifecycle, archive, and adoption engine while retaining
+  deterministic byte-identical builds.
+- DCS-007 and the impact graph now cover host lifecycle and installed-project
+  lifecycle together. English/Turkish README, Project OS, install, Wiki, and
+  publication surfaces distinguish host update, project update, audit, and
+  lifecycle status.
+- Ruff, mypy, coverage, and the Clean Code debt ratchet now include the
+  first-party Company OS runtime instead of measuring only `scripts/` and
+  `evals/`. Existing exact-symbol debt is pinned and cannot grow silently.
+
+### Security
+
+- Project updates run only from the immutable code already executing; they do
+  not fetch remote refs or execute target-project code. Install state is written
+  last inside the proven locked, journaled, authority-bound transaction.
+- Repair never force-overwrites user changes. Adoption exports reject secrets,
+  email addresses, usernames, absolute paths, remotes, unrelated plugin
+  inventory, and command-output bodies.
+
+### Verified
+
+- The release candidate passed the full local unit suite with 10
+  platform-specific skips plus focused lifecycle, archive, adoption,
+  reproducible-runner, Unicode, and fail-closed impact tests.
+- Five packages and 41 discoverable skills remain unchanged. Owner-operated
+  canary evidence is classified separately and cannot close the independent
+  adoption gate; v1 readiness remains 7/8.
+- This entry records local release preparation only. PR checks, immutable
+  `main`, tag, GitHub Release, assets/attestations, Pages, Wiki, canary readback,
+  and dual-host global update require separate evidence.
+
 ## [0.15.0] - 2026-07-24
 
 ### Added

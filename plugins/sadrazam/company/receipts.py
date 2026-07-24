@@ -8,6 +8,7 @@ import os
 import pathlib
 import re
 import tempfile
+from datetime import UTC, datetime
 from typing import Any
 
 STATES = (
@@ -26,7 +27,7 @@ TARGETS = frozenset({"VERIFIED", "PREVIEWED", "RELEASED", "OBSERVED"})
 RECEIPT_KEYS = frozenset(
     {"schema_version", "goal_id", "intent", "target", "state", "artifacts", "events"}
 )
-EVENT_KEYS = frozenset(
+EVENT_KEYS_V1 = frozenset(
     {
         "sequence",
         "from_state",
@@ -39,6 +40,7 @@ EVENT_KEYS = frozenset(
         "hash",
     }
 )
+EVENT_KEYS_V2 = EVENT_KEYS_V1 | {"recorded_on"}
 RESULT_KEYS = frozenset({"status", "evidence"})
 RESULT_STATES = frozenset({"PASS", "FAIL", "BLOCKED"})
 RECEIPT_RESULT_IDS = frozenset(
@@ -106,6 +108,10 @@ def _event_hash(value: dict[str, Any]) -> str:
     ).hexdigest()
 
 
+def _utc_date() -> str:
+    return datetime.now(UTC).date().isoformat()
+
+
 def _event(
     sequence: int,
     from_state: str | None,
@@ -115,6 +121,8 @@ def _event(
     results: dict[str, dict[str, Any]] | None = None,
     resume_from: str | None = None,
     previous_hash: str | None = None,
+    *,
+    schema_version: int = 2,
 ) -> dict[str, Any]:
     value = {
         "sequence": sequence,
@@ -126,6 +134,8 @@ def _event(
         "resume_from": resume_from,
         "previous_hash": previous_hash,
     }
+    if schema_version == 2:
+        value["recorded_on"] = _utc_date()
     value["hash"] = _event_hash(value)
     return value
 
@@ -146,13 +156,13 @@ def new_receipt(
     if not artifacts:
         raise ValueError("receipt artifacts must be nonempty")
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "goal_id": goal_id,
         "intent": intent,
         "target": target.upper(),
         "state": "DISCOVERED",
         "artifacts": dict(sorted(artifacts.items())),
-        "events": [_event(1, None, "DISCOVERED")],
+        "events": [_event(1, None, "DISCOVERED", schema_version=2)],
     }
 
 
@@ -213,6 +223,7 @@ def append_transition(
             results={} if results is None else results,
             resume_from=resume_from,
             previous_hash=events[-1].get("hash") if events else None,
+            schema_version=int(value.get("schema_version", 1)),
         )
     )
     value["state"] = destination
@@ -423,11 +434,14 @@ def _event_schema_errors(
     index: int,
     artifact_paths: set[str],
     goal_id: str,
+    receipt_schema: int,
 ) -> list[str]:
     label = f"events[{index}]"
-    errors = [] if set(event) == EVENT_KEYS else [
-        f"{label} keys do not match schema 1"
+    expected_keys = EVENT_KEYS_V2 if receipt_schema == 2 else EVENT_KEYS_V1
+    errors = [] if set(event) == expected_keys else [
+        f"{label} keys do not match schema {receipt_schema}"
     ]
+    errors.extend(_event_date_errors(event, label, receipt_schema))
     if type(event.get("sequence")) is not int:
         errors.append(f"{label}.sequence must be an integer")
     for field in ("from_state", "resume_from"):
@@ -469,8 +483,62 @@ def _event_schema_errors(
     return errors
 
 
+def _event_date_errors(
+    event: dict[str, Any], label: str, receipt_schema: int
+) -> list[str]:
+    if receipt_schema != 2:
+        return []
+    recorded_on = event.get("recorded_on")
+    if (
+        not isinstance(recorded_on, str)
+        or re.fullmatch(r"\d{4}-\d{2}-\d{2}", recorded_on) is None
+    ):
+        return [f"{label}.recorded_on must be an ISO date"]
+    try:
+        datetime.strptime(recorded_on, "%Y-%m-%d")
+    except ValueError:
+        return [f"{label}.recorded_on is not a real date"]
+    return []
+
+
+def _next_event_date(
+    event: dict[str, Any],
+    label: str,
+    receipt_schema: int,
+    previous_date: str | None,
+) -> tuple[str | None, list[str]]:
+    recorded_on = event.get("recorded_on")
+    if receipt_schema != 2 or not isinstance(recorded_on, str):
+        return previous_date, []
+    errors = (
+        [f"{label}.recorded_on precedes the prior event"]
+        if previous_date is not None and recorded_on < previous_date
+        else []
+    )
+    return recorded_on, errors
+
+
+def _event_validation(
+    event: dict[str, Any],
+    index: int,
+    artifact_paths: set[str],
+    goal_id: str,
+    receipt_schema: int,
+    previous_date: str | None,
+) -> tuple[list[str], str | None]:
+    label = f"events[{index}]"
+    errors = _event_schema_errors(
+        event, index, artifact_paths, goal_id, receipt_schema
+    )
+    next_date, date_errors = _next_event_date(
+        event, label, receipt_schema, previous_date
+    )
+    return [*errors, *date_errors], next_date
+
+
 def _transition_errors(
-    events: Any, declared_state: Any, artifact_paths: set[str], goal_id: str
+    events: Any, declared_state: Any, artifact_paths: set[str],
+    goal_id: str, receipt_schema: int,
 ) -> list[str]:
     if not isinstance(events, list) or not events:
         return ["receipt.events must be a non-empty array"]
@@ -478,14 +546,16 @@ def _transition_errors(
     current: str | None = None
     blocked_resume: str | None = None
     previous_hash: str | None = None
+    previous_date: str | None = None
     for index, event in enumerate(events, 1):
         label = f"events[{index - 1}]"
         if not isinstance(event, dict):
             errors.append(f"{label} must be an object")
             continue
-        errors.extend(
-            _event_schema_errors(event, index - 1, artifact_paths, goal_id)
-        )
+        event_errors, previous_date = _event_validation(
+            event, index - 1, artifact_paths, goal_id,
+            receipt_schema, previous_date)
+        errors.extend(event_errors)
         if event.get("sequence") != index:
             errors.append(f"{label}.sequence must be {index}")
         if event.get("previous_hash") != previous_hash:
@@ -550,14 +620,21 @@ def _latest_result_data(
     return latest_results, result_phases
 
 
+def _receipt_schema(value: dict[str, Any], errors: list[str]) -> int:
+    schema = value.get("schema_version")
+    if type(schema) is int and schema in {1, 2}:
+        return schema
+    errors.append("receipt.schema_version must be 1 or 2")
+    return 0
+
+
 def verify_receipt_value(
     value: dict[str, Any], receipt_path: pathlib.Path | None = None
 ) -> dict[str, Any]:
     errors = [] if set(value) == RECEIPT_KEYS else [
-        "receipt keys do not match schema 1"
+        "receipt keys do not match schema"
     ]
-    if type(value.get("schema_version")) is not int or value.get("schema_version") != 1:
-        errors.append("receipt.schema_version must be 1")
+    receipt_schema = _receipt_schema(value, errors)
     goal_id = value.get("goal_id")
     if not isinstance(goal_id, str) or not GOAL_ID_PATTERN.fullmatch(goal_id):
         errors.append("receipt.goal_id is invalid")
@@ -631,6 +708,7 @@ def verify_receipt_value(
             value.get("state"),
             artifact_paths,
             goal_id if isinstance(goal_id, str) else "",
+            receipt_schema,
         )
     )
     events = value.get("events")

@@ -54,6 +54,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Yayımlanan temel
 
+- **v0.16.0 ✓** Local release candidate for installed-project adoption and
+  drift control: schema 2 ownership state, read-only lifecycle status,
+  transaction-bound update/repair, verified goal archive, redacted adoption
+  receipts, and a deterministic schema 2 project runner. Owner canary evidence
+  remains distinct from independent adoption; external delivery states require
+  separate post-merge proof.
 - **v0.15.0 ✓** Local release candidate for the Portable Project OS;
   `DPS-001..DPS-012` contracts, Unicode intent routing, bounded monorepo
   discovery, supervised goal/receipt lifecycle, provider-native delivery
@@ -132,6 +138,10 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-24: v0.16.0 adoption/drift scope was implemented test-first in the
+  isolated `codex/v016-adoption-drift` worktree. Existing 5 packages/41 skills
+  remain unchanged. Local preparation does not claim PR, merge, release,
+  canary, Pages/Wiki, provenance, or dual-host delivery, and v1 stays 7/8.
 - 2026-07-24: v0.15.0 release surfaces were prepared only through the canonical
   `scripts/release.py --prepare 0.15.0` path after an approved whole-branch
   review. The preflight passed 452 tests (10 platform-specific skips), Ruff,
@@ -289,8 +299,8 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Push `codex/v015-project-os`, open a ready pull request, and wait for every
-required workflow without bypass. Merge only when green, then bind tag,
-GitHub Release, release assets, Pages, Wiki, and dual-host v0.15.0 delivery to
-the immutable `main` commit. Keep v1 at 7/8 until a non-owner submits
-reproducible acceptance evidence.
+Finish the v0.16.0 local quality gates and independent code review, push
+`codex/v016-adoption-drift`, and open a ready PR. Merge only after every
+required check passes without bypass; then bind release assets, canary,
+Pages/Wiki, and dual-host delivery to immutable `main`. Keep v1 at 7/8 until a
+non-owner submits human-reviewed reproducible acceptance evidence.

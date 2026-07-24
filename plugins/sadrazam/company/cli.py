@@ -12,8 +12,11 @@ DIRECTORY = pathlib.Path(__file__).resolve().parent
 if str(DIRECTORY) not in sys.path:
     sys.path.insert(0, str(DIRECTORY))
 
+import adoption  # noqa: E402
 import engine  # noqa: E402
+import goal_archive  # noqa: E402
 import goals  # noqa: E402
+import project_lifecycle  # noqa: E402
 import project_os  # noqa: E402
 import providers  # noqa: E402
 import receipts  # noqa: E402
@@ -94,10 +97,37 @@ def _common_output(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--lang", choices=("en", "tr"), default="en")
 
 
+def _add_adoption_parser(commands: Any) -> None:
+    command = commands.add_parser(
+        "adoption", help="export or verify privacy-bounded adoption receipts"
+    )
+    subcommands = command.add_subparsers(
+        dest="adoption_command", required=True
+    )
+    export = subcommands.add_parser("export")
+    export.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    export.add_argument("--goal", required=True)
+    export.add_argument(
+        "--host", choices=tuple(sorted(adoption.HOSTS)), required=True
+    )
+    export.add_argument("--host-version", required=True)
+    export.add_argument(
+        "--submitter",
+        choices=tuple(sorted(adoption.SUBMITTERS)),
+        default="maintainer",
+    )
+    export.add_argument("--markdown", action="store_true")
+    _common_output(export)
+    verify = subcommands.add_parser("verify")
+    verify.add_argument("path", type=pathlib.Path)
+    _common_output(verify)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-
     inspect = commands.add_parser("inspect", help="detect project frameworks")
     inspect.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     _common_output(inspect)
@@ -123,6 +153,25 @@ def _parser() -> argparse.ArgumentParser:
     init.add_argument("--expected-url")
     init.add_argument("--execute", action="store_true")
     _common_output(init)
+
+    project = commands.add_parser("project", help="manage Project OS lifecycle")
+    project_commands = project.add_subparsers(
+        dest="project_command", required=True
+    )
+    project_status = project_commands.add_parser(
+        "status", help="inspect ownership and drift without mutation"
+    )
+    project_status.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    _common_output(project_status)
+    for name in ("update", "repair"):
+        lifecycle_command = project_commands.add_parser(name)
+        lifecycle_command.add_argument(
+            "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+        )
+        lifecycle_command.add_argument("--execute", action="store_true")
+        _common_output(lifecycle_command)
 
     for name in ("audit", "verify"):
         command = commands.add_parser(name)
@@ -150,12 +199,22 @@ def _parser() -> argparse.ArgumentParser:
     goal_resume.add_argument("--goal", required=True)
     goal_resume.add_argument("--execute", action="store_true")
     _common_output(goal_resume)
+    archive = goal_commands.add_parser("archive")
+    archive.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    archive.add_argument("--goal", required=True)
+    archive.add_argument("--recorded-on")
+    archive.add_argument("--execute", action="store_true")
+    _common_output(archive)
 
     receipt = commands.add_parser("receipt", help="verify project receipts")
     receipt_commands = receipt.add_subparsers(dest="receipt_command", required=True)
     receipt_verify = receipt_commands.add_parser("verify")
     receipt_verify.add_argument("path", type=pathlib.Path)
     _common_output(receipt_verify)
+
+    _add_adoption_parser(commands)
 
     release = commands.add_parser("release", help="plan or record a project release")
     release.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
@@ -190,6 +249,22 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
             expected_url=options.expected_url,
         )
         return project_os.apply_init_plan(plan) if options.execute else plan
+    if options.command == "project":
+        if options.project_command == "status":
+            return project_lifecycle.project_status(options.project)
+        if options.project_command == "update":
+            plan = project_lifecycle.build_update_plan(options.project)
+            return (
+                project_lifecycle.apply_update_plan(plan)
+                if options.execute and plan.get("status") == "PLANNED"
+                else plan
+            )
+        plan = project_lifecycle.build_repair_plan(options.project)
+        return (
+            project_lifecycle.apply_repair_plan(plan)
+            if options.execute and plan.get("status") == "PLANNED"
+            else plan
+        )
     if options.command == "audit":
         return project_os.audit_project(options.project)
     if options.command == "verify":
@@ -201,9 +276,28 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
             )
         if options.goal_command == "status":
             return goals.goal_status(options.project, options.goal)
+        if options.goal_command == "archive":
+            plan = goal_archive.build_archive_plan(
+                options.project, options.goal, options.recorded_on
+            )
+            return (
+                goal_archive.apply_archive_plan(plan)
+                if options.execute and plan.get("status") == "PLANNED"
+                else plan
+            )
         return goals.resume_goal(options.project, options.goal, options.execute)
     if options.command == "receipt":
         return receipts.verify_receipt(options.path)
+    if options.command == "adoption":
+        if options.adoption_command == "verify":
+            return adoption.verify_adoption(options.path)
+        return adoption.export_adoption(
+            options.project,
+            options.goal,
+            options.host,
+            options.host_version,
+            options.submitter,
+        )
     if options.command == "release":
         return providers.release_project(
             options.project,
@@ -234,6 +328,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"ERROR: {exc}", file=sys.stderr)
         return 1
+    if options.command == "adoption" and options.adoption_command == "export":
+        output_key = "markdown" if options.markdown else "json"
+        sys.stdout.write(str(result[output_key]))
+        return 0
     if options.json:
         _write_json(result)
     else:
@@ -251,6 +349,8 @@ def main(argv: list[str] | None = None) -> int:
             "goal",
             "receipt",
             "release",
+            "project",
+            "adoption",
         }:
             fallback = "valid" if result.get("ok") else "invalid"
             print(f"Status: {result.get('status', fallback)}")

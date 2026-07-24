@@ -519,14 +519,14 @@ def _normalized_distribution(value: str) -> str:
     return re.sub(r"[-_.]+", "-", value).casefold()
 
 
-def _valid_marker(value: str) -> bool:
+def _python_marker_tokens(value: str) -> list[tuple[str, str]] | None:
     tokens: list[tuple[str, str]] = []
     position = 0
     nesting = 0
     while position < len(value):
         match = PYTHON_MARKER_TOKEN.match(value, position)
         if match is None:
-            return False
+            return None
         kind = match.lastgroup
         token = match.group(kind) if kind is not None else ""
         if kind == "word" and token not in {
@@ -534,14 +534,21 @@ def _valid_marker(value: str) -> bool:
             "or",
             *PYTHON_MARKER_VARIABLES,
         }:
-            return False
+            return None
         if kind == "parenthesis":
             nesting += 1 if token == "(" else -1
             if nesting < 0 or nesting > MAX_MARKER_NESTING:
-                return False
+                return None
         tokens.append((kind or "", token))
         position = match.end()
     if nesting != 0:
+        return None
+    return tokens
+
+
+def _valid_marker(value: str) -> bool:
+    tokens = _python_marker_tokens(value)
+    if tokens is None:
         return False
 
     index = 0
@@ -718,11 +725,11 @@ def _pyproject_dependency_names(value: dict[str, Any]) -> set[str]:
             poetry.get("dependencies"),
             poetry.get("dev-dependencies"),
         ]
-        groups = poetry.get("group")
-        if isinstance(groups, dict):
+        poetry_groups = poetry.get("group")
+        if isinstance(poetry_groups, dict):
             tables.extend(
                 group.get("dependencies")
-                for group in groups.values()
+                for group in poetry_groups.values()
                 if isinstance(group, dict)
             )
         for table in tables:
@@ -867,8 +874,9 @@ def _package_manager_resolution(
     lockfile_managers: list[str] = []
     for manager, lockfiles in NODE_LOCKFILES.items():
         if any(
-            (candidate := _contained_marker(root, workspace, lockfile)) is not None
-            and _bounded_file(candidate)
+            (lockfile_path := _contained_marker(root, workspace, lockfile))
+            is not None
+            and _bounded_file(lockfile_path)
             for lockfile in lockfiles
         ):
             lockfile_managers.append(manager)
@@ -1163,7 +1171,11 @@ def inspect_project(project: pathlib.Path, contracts: Contracts) -> dict[str, An
         has_package_manifest = (
             package_path is not None and _bounded_file(package_path)
         )
-        package = _bounded_json(package_path) if has_package_manifest else None
+        package = (
+            _bounded_json(package_path)
+            if package_path is not None and has_package_manifest
+            else None
+        )
         if workspace == root and package and package.get("workspaces"):
             root_declares_workspaces = True
         manager, conflict, has_direct_evidence = _package_manager_resolution(

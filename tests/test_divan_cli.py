@@ -59,6 +59,59 @@ class PortableCompanyCliTests(unittest.TestCase):
                 ]
             )
 
+    def test_archive_and_adoption_public_routes_are_forwarded(self) -> None:
+        cli = load_module("divan_company_cli_adoption", COMPANY_CLI)
+        output = io.StringIO()
+        with mock.patch.object(
+            cli.goal_archive,
+            "build_archive_plan",
+            return_value={"status": "PLANNED", "schema_version": 1},
+        ) as archive, contextlib.redirect_stdout(output):
+            result = cli.main(
+                [
+                    "goal",
+                    "archive",
+                    "--project",
+                    str(ROOT),
+                    "--goal",
+                    "goal-0123456789ab",
+                    "--json",
+                ]
+            )
+        self.assertEqual(result, 0)
+        archive.assert_called_once_with(ROOT, "goal-0123456789ab", None)
+
+        output = io.StringIO()
+        with mock.patch.object(
+            cli.adoption,
+            "export_adoption",
+            return_value={
+                "status": "valid-owner-canary",
+                "schema_version": 1,
+                "json": '{"product":"divan-adoption"}\n',
+                "markdown": "# Divan Adoption Receipt\n",
+            },
+        ) as export, contextlib.redirect_stdout(output):
+            result = cli.main(
+                [
+                    "adoption",
+                    "export",
+                    "--project",
+                    str(ROOT),
+                    "--goal",
+                    "goal-0123456789ab",
+                    "--host",
+                    "codex",
+                    "--host-version",
+                    "5.6.0",
+                ]
+            )
+        self.assertEqual(result, 0)
+        self.assertEqual(output.getvalue(), '{"product":"divan-adoption"}\n')
+        export.assert_called_once_with(
+            ROOT, "goal-0123456789ab", "codex", "5.6.0", "maintainer"
+        )
+
     def test_inspect_writes_stable_utf8_json(self) -> None:
         cli = load_module("divan_company_cli", COMPANY_CLI)
         with tempfile.TemporaryDirectory() as temporary:
@@ -112,6 +165,95 @@ class PortableCompanyCliTests(unittest.TestCase):
 
 
 class RepositoryDivanCliTests(unittest.TestCase):
+    def test_project_status_is_forwarded_and_read_only(self) -> None:
+        cli = load_module("repository_divan_lifecycle_cli", DIVAN_CLI)
+        with tempfile.TemporaryDirectory(prefix="divan-cli-status-") as temporary:
+            project = pathlib.Path(temporary)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    cli.main(
+                        [
+                            "init",
+                            "--project",
+                            str(project),
+                            "--host",
+                            "agents",
+                            "--execute",
+                            "--json",
+                        ]
+                    ),
+                    0,
+                )
+            before = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                result = cli.main(
+                    ["project", "status", "--project", str(project), "--json"]
+                )
+            after = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+
+        self.assertEqual(result, 0)
+        self.assertEqual(json.loads(output.getvalue())["status"], "CURRENT")
+        self.assertEqual(before, after)
+
+    def test_project_update_and_repair_are_dry_run_first(self) -> None:
+        cli = load_module("repository_divan_mutation_cli", DIVAN_CLI)
+        with tempfile.TemporaryDirectory(prefix="divan-cli-lifecycle-") as temporary:
+            project = pathlib.Path(temporary)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    cli.main(
+                        [
+                            "init",
+                            "--project",
+                            str(project),
+                            "--host",
+                            "agents",
+                            "--execute",
+                            "--json",
+                        ]
+                    ),
+                    0,
+                )
+            rules = project / ".divan" / "PROJECT_RULES.md"
+            expected = rules.read_bytes()
+            rules.unlink()
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(
+                    cli.main(
+                        ["project", "repair", "--project", str(project), "--json"]
+                    ),
+                    0,
+                )
+            self.assertEqual(json.loads(output.getvalue())["status"], "PLANNED")
+            self.assertFalse(rules.exists())
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                self.assertEqual(
+                    cli.main(
+                        [
+                            "project",
+                            "repair",
+                            "--project",
+                            str(project),
+                            "--execute",
+                            "--json",
+                        ]
+                    ),
+                    0,
+                )
+            self.assertEqual(json.loads(output.getvalue())["status"], "REPAIRED")
+            self.assertEqual(rules.read_bytes(), expected)
+
     def test_project_init_defaults_to_both_hosts_and_dry_run(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-cli-") as temporary:
             project = pathlib.Path(temporary)
