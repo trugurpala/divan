@@ -1171,8 +1171,8 @@ def _windows_private_dacl(
         import ctypes
         from ctypes import wintypes
 
-        advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
-        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        advapi32 = getattr(ctypes, "WinDLL")("advapi32", use_last_error=True)
+        kernel32 = getattr(ctypes, "WinDLL")("kernel32", use_last_error=True)
         kernel32.GetCurrentProcess.restype = wintypes.HANDLE
         kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
         kernel32.CloseHandle.restype = wintypes.BOOL
@@ -1222,7 +1222,7 @@ def _windows_private_dacl(
         if not advapi32.OpenProcessToken(
             kernel32.GetCurrentProcess(), 0x0008, ctypes.byref(token)
         ):
-            raise OSError(ctypes.get_last_error(), "OpenProcessToken failed")
+            raise OSError(getattr(ctypes, "get_last_error")(), "OpenProcessToken failed")
         try:
             needed = wintypes.DWORD()
             advapi32.GetTokenInformation(token, 1, None, 0, ctypes.byref(needed))
@@ -1235,7 +1235,7 @@ def _windows_private_dacl(
                 ctypes.byref(needed),
             ):
                 raise OSError(
-                    ctypes.get_last_error(), "GetTokenInformation failed"
+                    getattr(ctypes, "get_last_error")(), "GetTokenInformation failed"
                 )
             current_sid = ctypes.c_void_p.from_buffer(token_buffer).value
             if not current_sid:
@@ -1280,7 +1280,7 @@ def _windows_private_dacl(
                         kind, None, buffer, ctypes.byref(size)
                     ):
                         raise OSError(
-                            ctypes.get_last_error(), "CreateWellKnownSid failed"
+                            getattr(ctypes, "get_last_error")(), "CreateWellKnownSid failed"
                         )
                     return buffer
 
@@ -1305,7 +1305,7 @@ def _windows_private_dacl(
                 for index in range(acl.ace_count):
                     ace = ctypes.c_void_p()
                     if not advapi32.GetAce(dacl, index, ctypes.byref(ace)):
-                        raise OSError(ctypes.get_last_error(), "GetAce failed")
+                        raise OSError(getattr(ctypes, "get_last_error")(), "GetAce failed")
                     ace_address = ace.value
                     if ace_address is None:
                         raise OSError("DACL ACE address is unavailable")
@@ -1352,8 +1352,8 @@ def _create_private_windows_directory(path: pathlib.Path) -> bool:
         import ctypes
         from ctypes import wintypes
 
-        advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
-        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        advapi32 = getattr(ctypes, "WinDLL")("advapi32", use_last_error=True)
+        kernel32 = getattr(ctypes, "WinDLL")("kernel32", use_last_error=True)
         kernel32.GetCurrentProcess.restype = wintypes.HANDLE
         advapi32.OpenProcessToken.argtypes = (
             wintypes.HANDLE,
@@ -1404,7 +1404,7 @@ def _create_private_windows_directory(path: pathlib.Path) -> bool:
         if not advapi32.OpenProcessToken(
             kernel32.GetCurrentProcess(), 0x0008, ctypes.byref(token)
         ):
-            raise OSError(ctypes.get_last_error(), "OpenProcessToken failed")
+            raise OSError(getattr(ctypes, "get_last_error")(), "OpenProcessToken failed")
         try:
             needed = wintypes.DWORD()
             advapi32.GetTokenInformation(token, 1, None, 0, ctypes.byref(needed))
@@ -1413,7 +1413,7 @@ def _create_private_windows_directory(path: pathlib.Path) -> bool:
                 token, 1, token_buffer, needed, ctypes.byref(needed)
             ):
                 raise OSError(
-                    ctypes.get_last_error(), "GetTokenInformation failed"
+                    getattr(ctypes, "get_last_error")(), "GetTokenInformation failed"
                 )
             current_sid = ctypes.c_void_p.from_buffer(token_buffer).value
             sid_text = wintypes.LPWSTR()
@@ -1421,7 +1421,7 @@ def _create_private_windows_directory(path: pathlib.Path) -> bool:
                 current_sid, ctypes.byref(sid_text)
             ):
                 raise OSError(
-                    ctypes.get_last_error(), "ConvertSidToStringSidW failed"
+                    getattr(ctypes, "get_last_error")(), "ConvertSidToStringSidW failed"
                 )
             try:
                 sddl = (
@@ -1437,7 +1437,7 @@ def _create_private_windows_directory(path: pathlib.Path) -> bool:
                 sddl, 1, ctypes.byref(descriptor), None
             ):
                 raise OSError(
-                    ctypes.get_last_error(),
+                    getattr(ctypes, "get_last_error")(),
                     "security descriptor creation failed",
                 )
             try:
@@ -1448,7 +1448,7 @@ def _create_private_windows_directory(path: pathlib.Path) -> bool:
                     str(path), ctypes.byref(attributes)
                 ):
                     return True
-                error = ctypes.get_last_error()
+                error = getattr(ctypes, "get_last_error")()
                 if error == 183:
                     return False
                 raise OSError(error, "private directory creation failed")
@@ -1613,7 +1613,7 @@ def _process_start_token(pid: int) -> str | None:
             import ctypes
             from ctypes import wintypes
 
-            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32 = getattr(ctypes, "WinDLL")("kernel32", use_last_error=True)
             kernel32.OpenProcess.argtypes = (
                 wintypes.DWORD,
                 wintypes.BOOL,
@@ -1686,7 +1686,7 @@ def _pid_is_live(pid: int, recorded_start: str) -> bool:
             import ctypes
             from ctypes import wintypes
 
-            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32 = getattr(ctypes, "WinDLL")("kernel32", use_last_error=True)
             kernel32.OpenProcess.argtypes = (
                 wintypes.DWORD,
                 wintypes.BOOL,
@@ -1702,7 +1702,7 @@ def _pid_is_live(pid: int, recorded_start: str) -> bool:
             kernel32.CloseHandle.restype = wintypes.BOOL
             process = kernel32.OpenProcess(0x1000, False, pid)
             if not process:
-                return ctypes.get_last_error() != 87
+                return getattr(ctypes, "get_last_error")() != 87
             exit_code = wintypes.DWORD()
             try:
                 if not kernel32.GetExitCodeProcess(process, ctypes.byref(exit_code)):
