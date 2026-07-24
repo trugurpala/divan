@@ -88,6 +88,8 @@ class PortableCompanyCliTests(unittest.TestCase):
             return_value={
                 "status": "valid-owner-canary",
                 "schema_version": 1,
+                "json": '{"product":"divan-adoption"}\n',
+                "markdown": "# Divan Adoption Receipt\n",
             },
         ) as export, contextlib.redirect_stdout(output):
             result = cli.main(
@@ -102,10 +104,10 @@ class PortableCompanyCliTests(unittest.TestCase):
                     "codex",
                     "--host-version",
                     "5.6.0",
-                    "--json",
                 ]
             )
         self.assertEqual(result, 0)
+        self.assertEqual(output.getvalue(), '{"product":"divan-adoption"}\n')
         export.assert_called_once_with(
             ROOT, "goal-0123456789ab", "codex", "5.6.0", "maintainer"
         )

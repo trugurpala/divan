@@ -64,13 +64,28 @@ class AdoptionReceiptTests(unittest.TestCase):
         ) as temporary:
             project = pathlib.Path(temporary)
             goal_id = self.create_verified_goal(project)
+            before = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
             exported = module.export_adoption(
                 project, goal_id, "codex", "5.6.0", "maintainer"
             )
-            json_path = project / exported["json"]
-            markdown_path = project / exported["markdown"]
-            serialized = json_path.read_text(encoding="utf-8")
+            after = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+            serialized = exported["json"]
+            json_path = project.parent / "redirected-adoption.json"
+            markdown_path = project.parent / "redirected-adoption.md"
+            json_path.write_text(serialized, encoding="utf-8")
+            markdown_path.write_text(exported["markdown"], encoding="utf-8")
 
+            self.assertEqual(before, after)
+            self.assertTrue(serialized.endswith("\n"))
+            self.assertTrue(exported["markdown"].endswith("\n"))
             self.assertNotIn(str(project), serialized)
             self.assertNotIn("Divan User Name", serialized)
             self.assertNotIn("github.com", serialized)
@@ -92,7 +107,8 @@ class AdoptionReceiptTests(unittest.TestCase):
             exported = module.export_adoption(
                 project, goal_id, "codex", "5.6.0", "independent"
             )
-            path = project / exported["json"]
+            path = project.parent / "redirected-independent.json"
+            path.write_text(exported["json"], encoding="utf-8")
             self.assertEqual(
                 module.verify_adoption(path)["status"],
                 "valid-independent-declaration",
@@ -112,8 +128,10 @@ class AdoptionReceiptTests(unittest.TestCase):
             exported = module.export_adoption(
                 project, goal_id, "codex", "5.6.0", "maintainer"
             )
-            json_path = project / exported["json"]
-            markdown_path = project / exported["markdown"]
+            json_path = project.parent / "redirected-tampered.json"
+            markdown_path = project.parent / "redirected-tampered.md"
+            json_path.write_text(exported["json"], encoding="utf-8")
+            markdown_path.write_text(exported["markdown"], encoding="utf-8")
             payload = json.loads(json_path.read_text(encoding="utf-8"))
             payload["project"]["workspace_count"] = -1
             payload["receipt_digest"] = module._digest(payload)

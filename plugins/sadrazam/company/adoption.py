@@ -155,7 +155,7 @@ def export_adoption(
     host_version: str,
     submitter: str = "maintainer",
 ) -> dict[str, Any]:
-    """Write deterministic JSON and Markdown acceptance receipts."""
+    """Build deterministic JSON and Markdown receipts without writing files."""
     root = pathlib.Path(project).resolve()
     if host not in HOSTS:
         raise ValueError("host is unsupported")
@@ -209,11 +209,6 @@ def export_adoption(
     errors = _privacy_errors(value)
     if errors:
         raise ValueError("; ".join(errors))
-    base = root / ".divan" / "evidence" / goal_id
-    json_path = base / "adoption-receipt.json"
-    markdown_path = base / "adoption-receipt.md"
-    goals._atomic_write(json_path, _json_bytes(value))
-    goals._atomic_write(markdown_path, _markdown(value))
     return {
         "schema_version": 1,
         "status": (
@@ -221,8 +216,8 @@ def export_adoption(
             if submitter == "maintainer"
             else "valid-independent-declaration"
         ),
-        "json": json_path.relative_to(root).as_posix(),
-        "markdown": markdown_path.relative_to(root).as_posix(),
+        "json": _json_bytes(value).decode("utf-8"),
+        "markdown": _markdown(value).decode("utf-8"),
         "receipt_digest": value["receipt_digest"],
     }
 

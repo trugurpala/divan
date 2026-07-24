@@ -6,7 +6,6 @@ import json
 import os
 import pathlib
 import re
-from datetime import UTC, datetime
 from typing import Any
 
 import goals
@@ -27,6 +26,23 @@ def _canonical_bytes(value: Any) -> bytes:
     return (
         json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
+
+
+def _terminal_event_date(
+    receipt_path: pathlib.Path,
+) -> tuple[str, list[str]]:
+    value = json.loads(receipt_path.read_text(encoding="utf-8"))
+    events = value.get("events")
+    if not isinstance(events, list) or not events:
+        return "", ["goal receipt has no verified terminal event date"]
+    event = events[-1]
+    recorded_on = event.get("recorded_on") if isinstance(event, dict) else None
+    if isinstance(recorded_on, str):
+        return recorded_on, []
+    return "", [
+        "goal receipt has no verified terminal event date; "
+        "continue the goal with receipt schema 2 before archiving"
+    ]
 
 
 def _plan_digest(value: dict[str, Any]) -> str:
@@ -224,16 +240,15 @@ def build_archive_plan(
         )
     spec_files, spec_errors = _real_files(spec_root)
     evidence_files, evidence_errors = _real_files(evidence_root)
+    archive_date, date_errors = _terminal_event_date(receipt_path)
     errors = [
         *spec_errors,
         *evidence_errors,
+        *date_errors,
         *_receipt_binding_errors(receipt_path, spec_root),
     ]
     if errors:
         return _blocked(root, identifier, errors)
-    archive_date = datetime.fromtimestamp(
-        receipt_path.stat().st_mtime, tz=UTC
-    ).date().isoformat()
     destination = root / ".divan" / "archive" / f"{archive_date}-{identifier}"
     if destination.exists() or destination.is_symlink():
         return _blocked(root, identifier, ["goal archive destination exists"])

@@ -101,13 +101,16 @@ After a verified goal, a maintainer or independent user can export a bounded
 JSON receipt plus Markdown summary:
 
 ```powershell
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version>
-python scripts/divan.py adoption verify .divan/evidence/<goal-id>/adoption-receipt.json
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> > adoption-receipt.json
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> --markdown > adoption-receipt.md
+python scripts/divan.py adoption verify adoption-receipt.json
 ```
 
-The export rejects secrets, email addresses, usernames, absolute paths, remote
-URLs, unrelated plugin inventory, and command-output bodies. Maintainer
-evidence verifies as `valid-owner-canary`; an independent submitter is only a
+Export is read-only: it writes the selected portable document to stdout and
+creates no project file unless the user redirects it. It rejects secrets,
+email addresses, usernames, absolute paths, remote URLs, unrelated plugin
+inventory, and command-output bodies. Maintainer evidence verifies as
+`valid-owner-canary`; an independent submitter is only a
 `valid-independent-declaration` until a human review accepts it. Divan never
 closes the independent-adoption v1 gate automatically.
 

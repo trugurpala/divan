@@ -53,9 +53,11 @@ class GoalArchiveTests(unittest.TestCase):
         )
         receipt = project / result["receipt"]
         if verified:
-            for state in ("SPECIFIED", "PLANNED", "IMPLEMENTING", "VERIFIED"):
-                receipts.append_transition(receipt, state)
-        os.utime(receipt, (1784851200, 1784851200))  # 2026-07-24 UTC
+            with mock.patch.object(
+                receipts, "_utc_date", return_value="2026-07-24", create=True
+            ):
+                for state in ("SPECIFIED", "PLANNED", "IMPLEMENTING", "VERIFIED"):
+                    receipts.append_transition(receipt, state)
         return result["goal_id"], receipt
 
     @staticmethod
@@ -95,6 +97,20 @@ class GoalArchiveTests(unittest.TestCase):
             self.assertTrue(
                 (destination / "evidence" / "receipt.json").is_file()
             )
+
+    def test_archive_destination_uses_terminal_event_not_receipt_mtime(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-archive-") as temporary:
+            project = pathlib.Path(temporary)
+            goal_id, receipt = self.create_goal(project, verified=True)
+            first = module.build_archive_plan(project, goal_id)
+            os.utime(receipt, (1893456000, 1893456000))  # 2030-01-01 UTC
+            second = module.build_archive_plan(project, goal_id)
+
+            self.assertEqual(first["destination"], second["destination"])
+            self.assertIn(f"2026-07-24-{goal_id}", first["destination"])
 
     def test_unfinished_tampered_or_colliding_goal_is_blocked_without_mutation(
         self,

@@ -97,10 +97,37 @@ def _common_output(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--lang", choices=("en", "tr"), default="en")
 
 
+def _add_adoption_parser(commands: Any) -> None:
+    command = commands.add_parser(
+        "adoption", help="export or verify privacy-bounded adoption receipts"
+    )
+    subcommands = command.add_subparsers(
+        dest="adoption_command", required=True
+    )
+    export = subcommands.add_parser("export")
+    export.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    export.add_argument("--goal", required=True)
+    export.add_argument(
+        "--host", choices=tuple(sorted(adoption.HOSTS)), required=True
+    )
+    export.add_argument("--host-version", required=True)
+    export.add_argument(
+        "--submitter",
+        choices=tuple(sorted(adoption.SUBMITTERS)),
+        default="maintainer",
+    )
+    export.add_argument("--markdown", action="store_true")
+    _common_output(export)
+    verify = subcommands.add_parser("verify")
+    verify.add_argument("path", type=pathlib.Path)
+    _common_output(verify)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-
     inspect = commands.add_parser("inspect", help="detect project frameworks")
     inspect.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     _common_output(inspect)
@@ -186,30 +213,7 @@ def _parser() -> argparse.ArgumentParser:
     receipt_verify.add_argument("path", type=pathlib.Path)
     _common_output(receipt_verify)
 
-    adoption_command = commands.add_parser(
-        "adoption", help="export or verify privacy-bounded adoption receipts"
-    )
-    adoption_commands = adoption_command.add_subparsers(
-        dest="adoption_command", required=True
-    )
-    adoption_export = adoption_commands.add_parser("export")
-    adoption_export.add_argument(
-        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
-    )
-    adoption_export.add_argument("--goal", required=True)
-    adoption_export.add_argument(
-        "--host", choices=tuple(sorted(adoption.HOSTS)), required=True
-    )
-    adoption_export.add_argument("--host-version", required=True)
-    adoption_export.add_argument(
-        "--submitter",
-        choices=tuple(sorted(adoption.SUBMITTERS)),
-        default="maintainer",
-    )
-    _common_output(adoption_export)
-    adoption_verify = adoption_commands.add_parser("verify")
-    adoption_verify.add_argument("path", type=pathlib.Path)
-    _common_output(adoption_verify)
+    _add_adoption_parser(commands)
 
     release = commands.add_parser("release", help="plan or record a project release")
     release.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
@@ -323,6 +327,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(f"ERROR: {exc}", file=sys.stderr)
         return 1
+    if options.command == "adoption" and options.adoption_command == "export":
+        output_key = "markdown" if options.markdown else "json"
+        sys.stdout.write(str(result[output_key]))
+        return 0
     if options.json:
         _write_json(result)
     else:

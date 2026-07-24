@@ -99,14 +99,17 @@ veya çakışan hedefler `BLOCKED` kalır.
 Doğrulanmış hedeften sınırlı JSON makbuzu ve Markdown özeti üretilebilir:
 
 ```powershell
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version>
-python scripts/divan.py adoption verify .divan/evidence/<goal-id>/adoption-receipt.json
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> > adoption-receipt.json
+python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> --markdown > adoption-receipt.md
+python scripts/divan.py adoption verify adoption-receipt.json
 ```
 
-Makbuz; secret, e-posta, kullanıcı adı, mutlak yol, remote URL, alakasız eklenti
-envanteri ve komut çıktısı gövdesini reddeder. Bakımcı kanıtı
-`valid-owner-canary`, bağımsız beyan `valid-independent-declaration` sonucunu
-verir. İnsan incelemesi olmadan v1 bağımsız kabul kapısı otomatik kapanmaz.
+Dışa aktarım salt okunurdur: seçilen taşınabilir belgeyi stdout'a yazar ve
+kullanıcı yönlendirmedikçe projede dosya oluşturmaz. Secret, e-posta, kullanıcı
+adı, mutlak yol, remote URL, alakasız eklenti envanteri ve komut çıktısı
+gövdesini reddeder. Bakımcı kanıtı `valid-owner-canary`, bağımsız beyan
+`valid-independent-declaration` sonucunu verir. İnsan incelemesi olmadan v1
+bağımsız kabul kapısı otomatik kapanmaz.
 
 Public web projesinde salt-okunur denetim:
 
