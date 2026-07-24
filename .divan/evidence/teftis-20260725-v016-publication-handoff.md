@@ -19,7 +19,8 @@ Verified on 2026-07-25 while triaging
 ## Verification boundary
 
 This record binds the canonical handoff only to the observations listed above.
-It does not claim that release asset bytes/checksums or attestations were
-recomputed in this review. It also does not claim an owner canary, a
-transactional global-host update, or independent-user adoption. The v1
-scorecard therefore remains 7/8.
+Release asset bytes, checksums, the SPDX SBOM, and attestations were recomputed
+in a separate bounded review recorded at
+`.divan/evidence/teftis-20260725-v016-release-assets.md`. Neither review claims
+an owner canary, a transactional global-host update, or independent-user
+adoption. The v1 scorecard therefore remains 7/8.
