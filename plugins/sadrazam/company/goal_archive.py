@@ -6,6 +6,7 @@ import json
 import os
 import pathlib
 import re
+from datetime import date
 from typing import Any
 
 import goals
@@ -29,20 +30,34 @@ def _canonical_bytes(value: Any) -> bytes:
 
 
 def _terminal_event_date(
-    receipt_path: pathlib.Path,
-) -> tuple[str, list[str]]:
+    receipt_path: pathlib.Path, declared_legacy_date: str | None
+) -> tuple[str, str, list[str]]:
     value = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if value.get("schema_version") == 1:
+        if declared_legacy_date is None:
+            return "", "", [
+                "schema 1 receipt requires an explicitly declared terminal "
+                "event date"
+            ]
+        try:
+            parsed = date.fromisoformat(declared_legacy_date)
+        except ValueError:
+            return "", "", ["declared terminal event date is invalid"]
+        if parsed.isoformat() != declared_legacy_date:
+            return "", "", ["declared terminal event date is not canonical"]
+        return declared_legacy_date, "declared-legacy-terminal-event", []
+    if declared_legacy_date is not None:
+        return "", "", [
+            "--recorded-on is valid only for a legacy schema 1 receipt"
+        ]
     events = value.get("events")
     if not isinstance(events, list) or not events:
-        return "", ["goal receipt has no verified terminal event date"]
+        return "", "", ["goal receipt has no verified terminal event date"]
     event = events[-1]
     recorded_on = event.get("recorded_on") if isinstance(event, dict) else None
     if isinstance(recorded_on, str):
-        return recorded_on, []
-    return "", [
-        "goal receipt has no verified terminal event date; "
-        "continue the goal with receipt schema 2 before archiving"
-    ]
+        return recorded_on, "receipt-terminal-event", []
+    return "", "", ["goal receipt has no verified terminal event date"]
 
 
 def _plan_digest(value: dict[str, Any]) -> str:
@@ -160,9 +175,12 @@ def _write_archive_journal(
 
 
 def _blocked(
-    root: pathlib.Path, identifier: str, errors: list[str]
+    root: pathlib.Path,
+    identifier: str,
+    errors: list[str],
+    continuation: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    result = {
         "schema_version": 1,
         "operation": "goal-archive",
         "status": "BLOCKED",
@@ -171,6 +189,9 @@ def _blocked(
         "errors": errors,
         "execute_required": True,
     }
+    if continuation is not None:
+        result["continuation"] = continuation
+    return result
 
 
 def _real_files(root: pathlib.Path) -> tuple[list[pathlib.Path], list[str]]:
@@ -215,7 +236,9 @@ def _receipt_binding_errors(
 
 
 def build_archive_plan(
-    project: pathlib.Path | str, identifier: str
+    project: pathlib.Path | str,
+    identifier: str,
+    recorded_on: str | None = None,
 ) -> dict[str, Any]:
     """Build a deterministic, read-only archive plan for a completed goal."""
     root = pathlib.Path(project).resolve()
@@ -240,7 +263,9 @@ def build_archive_plan(
         )
     spec_files, spec_errors = _real_files(spec_root)
     evidence_files, evidence_errors = _real_files(evidence_root)
-    archive_date, date_errors = _terminal_event_date(receipt_path)
+    archive_date, date_authority, date_errors = _terminal_event_date(
+        receipt_path, recorded_on
+    )
     errors = [
         *spec_errors,
         *evidence_errors,
@@ -248,7 +273,13 @@ def build_archive_plan(
         *_receipt_binding_errors(receipt_path, spec_root),
     ]
     if errors:
-        return _blocked(root, identifier, errors)
+        continuation = (
+            "python scripts/divan.py goal archive --project . "
+            f"--goal {identifier} --recorded-on YYYY-MM-DD"
+            if date_errors and recorded_on is None
+            else None
+        )
+        return _blocked(root, identifier, errors, continuation)
     destination = root / ".divan" / "archive" / f"{archive_date}-{identifier}"
     if destination.exists() or destination.is_symlink():
         return _blocked(root, identifier, ["goal archive destination exists"])
@@ -280,6 +311,7 @@ def build_archive_plan(
         "goal_id": identifier,
         "terminal_state": state,
         "archive_date": archive_date,
+        "date_authority": date_authority,
         "receipt_sha256": receipt_entry["sha256"],
         "artifacts": {
             row["destination"]: row["sha256"] for row in entries

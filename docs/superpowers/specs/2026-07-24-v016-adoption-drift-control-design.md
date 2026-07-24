@@ -284,6 +284,10 @@ Failure restores the previous config, ownership state, and managed payloads.
   archive date, and source-relative paths.
 - Archive dates use the verified receipt's terminal event date, not the local
   clock, so repeated planning is deterministic.
+- A legacy schema-1 receipt has no signed event date. Its archive plan is
+  `BLOCKED` until the owner supplies `--recorded-on YYYY-MM-DD`; the explicit
+  declaration becomes the deterministic `declared-legacy-terminal-event`
+  authority in `archive.json`. Divan never infers this date from file metadata.
 - Existing destinations, symlinks, invalid receipts, hash drift, or
   cross-filesystem partial moves are `BLOCKED`.
 

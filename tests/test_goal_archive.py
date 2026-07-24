@@ -68,6 +68,18 @@ class GoalArchiveTests(unittest.TestCase):
             if path.is_file()
         }
 
+    @staticmethod
+    def downgrade_to_schema_1(receipt: pathlib.Path) -> None:
+        value = json.loads(receipt.read_text(encoding="utf-8"))
+        value["schema_version"] = 1
+        previous_hash = None
+        for event in value["events"]:
+            event.pop("recorded_on")
+            event["previous_hash"] = previous_hash
+            event["hash"] = receipts._event_hash(event)
+            previous_hash = event["hash"]
+        receipts.write_receipt(receipt, value)
+
     def test_verified_goal_archives_dry_run_first_with_bound_hashes(self) -> None:
         module = self.require_module()
         with tempfile.TemporaryDirectory(prefix="divan-archive-") as temporary:
@@ -111,6 +123,33 @@ class GoalArchiveTests(unittest.TestCase):
 
             self.assertEqual(first["destination"], second["destination"])
             self.assertIn(f"2026-07-24-{goal_id}", first["destination"])
+
+    def test_legacy_receipt_requires_explicit_deterministic_date_authority(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-archive-") as temporary:
+            project = pathlib.Path(temporary)
+            goal_id, receipt = self.create_goal(project, verified=True)
+            self.downgrade_to_schema_1(receipt)
+            before = self.snapshot(project)
+
+            blocked = module.build_archive_plan(project, goal_id)
+            invalid = module.build_archive_plan(
+                project, goal_id, "2026-02-30"
+            )
+            plan = module.build_archive_plan(project, goal_id, "2026-07-23")
+
+            self.assertEqual(blocked["status"], "BLOCKED")
+            self.assertIn("--recorded-on", blocked["continuation"])
+            self.assertEqual(invalid["status"], "BLOCKED")
+            self.assertEqual(plan["status"], "PLANNED")
+            self.assertEqual(
+                plan["archive"]["date_authority"],
+                "declared-legacy-terminal-event",
+            )
+            self.assertIn(f"2026-07-23-{goal_id}", plan["destination"])
+            self.assertEqual(before, self.snapshot(project))
 
     def test_unfinished_tampered_or_colliding_goal_is_blocked_without_mutation(
         self,

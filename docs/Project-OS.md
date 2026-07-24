@@ -97,6 +97,16 @@ Divan re-verifies the receipt and every artifact hash, copies them into
 the bound sources. Unfinished, failed, changed, unsafe, or colliding goals remain
 `BLOCKED`.
 
+A legacy v0.15 schema-1 receipt has no signed event date. Divan therefore never
+guesses from the clock or file metadata; the owner must declare the historical
+terminal-event date explicitly, and that declaration is bound into
+`archive.json`:
+
+```powershell
+python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD
+python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD --execute
+```
+
 After a verified goal, a maintainer or independent user can export a bounded
 JSON receipt plus Markdown summary:
 

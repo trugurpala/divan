@@ -79,7 +79,7 @@ class PortableCompanyCliTests(unittest.TestCase):
                 ]
             )
         self.assertEqual(result, 0)
-        archive.assert_called_once_with(ROOT, "goal-0123456789ab")
+        archive.assert_called_once_with(ROOT, "goal-0123456789ab", None)
 
         output = io.StringIO()
         with mock.patch.object(

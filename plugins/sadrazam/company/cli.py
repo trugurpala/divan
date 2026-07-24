@@ -204,6 +204,7 @@ def _parser() -> argparse.ArgumentParser:
         "--project", type=pathlib.Path, default=pathlib.Path.cwd()
     )
     archive.add_argument("--goal", required=True)
+    archive.add_argument("--recorded-on")
     archive.add_argument("--execute", action="store_true")
     _common_output(archive)
 
@@ -277,7 +278,7 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
             return goals.goal_status(options.project, options.goal)
         if options.goal_command == "archive":
             plan = goal_archive.build_archive_plan(
-                options.project, options.goal
+                options.project, options.goal, options.recorded_on
             )
             return (
                 goal_archive.apply_archive_plan(plan)

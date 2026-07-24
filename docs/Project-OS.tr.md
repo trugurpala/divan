@@ -96,6 +96,15 @@ Divan receipt'i ve bütün artefakt hash'lerini yeniden doğrular,
 sonra yalnız bağlı kaynakları kaldırır. Bitmemiş, başarısız, değişmiş, güvensiz
 veya çakışan hedefler `BLOCKED` kalır.
 
+Eski v0.15 schema-1 makbuzunda imzalı olay tarihi yoktur. Divan yerel saati veya
+dosya metadata'sını tahmin olarak kullanmaz; sahip geçmiş terminal olay tarihini
+açıkça beyan eder ve bu beyan `archive.json` içine bağlanır:
+
+```powershell
+python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD
+python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD --execute
+```
+
 Doğrulanmış hedeften sınırlı JSON makbuzu ve Markdown özeti üretilebilir:
 
 ```powershell
