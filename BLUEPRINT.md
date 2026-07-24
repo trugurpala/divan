@@ -139,6 +139,14 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-25: Issue #35 post-merge evidence re-downloaded all five v0.16.0
+  Release assets and recomputed their SHA-256 values. GitHub asset digests,
+  both checksum manifests, SPDX 2.3 SBOM, embedded runner source identity, the
+  successful release workflow, release/SLSA attestations, Pages, and Wiki all
+  bind to immutable commit `5513e73d`. The evidence change passed 495 tests
+  with 11 platform skips, 74% branch coverage, Ruff, mypy, and Clean Code. No
+  owner canary, global-host update, or independent adoption was inferred; v1
+  remains 7/8.
 - 2026-07-25: Canonical handoff drift was found after v0.16.0 publication.
   PR #31 was merged and `main` plus tag `v0.16.0` resolved to
   `5513e73d5faa8657a22d813ecfec763a6089bea0`; the Release page returned HTTP

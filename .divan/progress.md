@@ -7,15 +7,15 @@ Son güncelleme: 2026-07-25
 - Latest published release: v0.16.0
 - Published commit: 5513e73d5faa8657a22d813ecfec763a6089bea0
 - Publication evidence: .divan/evidence/teftis-20260725-v016-publication-handoff.md
+- Release asset evidence: .divan/evidence/teftis-20260725-v016-release-assets.md
 
 ## Güncel hedef
 
 v0.16.0 is published from immutable commit `5513e73d`; PR #31 is merged and
-the Release page, Pages, and Wiki expose the release. The remaining v1 product
-gate is reproducible adoption evidence from a non-owner. This handoff does not
-claim release-asset byte verification, attestations, canary execution, or a
-transactional global-host update that was not reproduced in the current review.
-v1 remains 7/8.
+the Release page, five recomputed assets, checksum manifests, SPDX SBOM,
+attestations, Pages, and Wiki are bound to tracked evidence. The remaining v1
+product gate is reproducible adoption evidence from a non-owner. No canary or
+transactional global-host update was reproduced in this review. v1 remains 7/8.
 
 ## Yapıldı
 
@@ -23,6 +23,14 @@ v1 remains 7/8.
   `5513e73d5faa8657a22d813ecfec763a6089bea0`. The Release page returned HTTP
   200 and live Pages/Wiki readbacks contained v0.16.0. Bounded evidence is
   tracked in `.divan/evidence/teftis-20260725-v016-publication-handoff.md`.
+- All five v0.16.0 Release assets were downloaded again and their SHA-256
+  values matched the GitHub asset digests and published checksum manifests.
+  The SPDX 2.3 SBOM, runner source envelope, release/SLSA attestations, release
+  workflow, Pages, and Wiki readbacks are tracked in
+  `.divan/evidence/teftis-20260725-v016-release-assets.md`.
+- The post-merge evidence branch passed 495 tests with 11 platform skips, 74%
+  branch coverage, Ruff, mypy across 61 source files, Clean Code, release,
+  handoff, Wiki, Company OS, and eval contract checks. v1 remains 7/8.
 - Schema 2 config and install state bind immutable version/ref/commit, project
   identity, and managed whole-file/marked-block payload hashes.
 - `project status` is read-only; `project update` and `project repair` are
@@ -262,8 +270,6 @@ v1 remains 7/8.
 - Issue #34 requires a non-owner to install a pinned release, complete a bounded
   real task, export a privacy-bounded adoption receipt, and reproduce the
   result. Maintainer fixtures and owner canaries cannot close this gate.
-- Issue #35 tracks the release asset/checksum/attestation evidence that this
-  handoff review did not recompute.
 - Issue #33 tracks the order-sensitive local hygiene recipe.
 
 ## Tarihsel devam kayıtları

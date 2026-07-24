@@ -54,9 +54,11 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Five packages and 41 discoverable skills remain unchanged. Owner-operated
   canary evidence is classified separately and cannot close the independent
   adoption gate; v1 readiness remains 7/8.
-- This entry records local release preparation only. PR checks, immutable
-  `main`, tag, GitHub Release, assets/attestations, Pages, Wiki, canary readback,
-  and dual-host global update require separate evidence.
+- PR #31 and all required checks completed; immutable `main`/tag
+  `5513e73d5faa8657a22d813ecfec763a6089bea0`, GitHub Release, five recomputed
+  assets and checksum manifests, SPDX SBOM, release/SLSA attestations, Pages,
+  and Wiki are bound in tracked post-merge evidence. Owner canary, dual-host
+  global update, and independent adoption remain separate unverified states.
 
 ## [0.15.0] - 2026-07-24
 
