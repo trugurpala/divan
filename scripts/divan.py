@@ -27,6 +27,8 @@ COMPANY_COMMANDS = {
     "goal",
     "receipt",
     "release",
+    "project",
+    "adoption",
 }
 
 

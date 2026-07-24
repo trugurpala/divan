@@ -14,6 +14,7 @@ if str(DIRECTORY) not in sys.path:
 
 import engine  # noqa: E402
 import goals  # noqa: E402
+import project_lifecycle  # noqa: E402
 import project_os  # noqa: E402
 import providers  # noqa: E402
 import receipts  # noqa: E402
@@ -124,6 +125,18 @@ def _parser() -> argparse.ArgumentParser:
     init.add_argument("--execute", action="store_true")
     _common_output(init)
 
+    project = commands.add_parser("project", help="manage Project OS lifecycle")
+    project_commands = project.add_subparsers(
+        dest="project_command", required=True
+    )
+    project_status = project_commands.add_parser(
+        "status", help="inspect ownership and drift without mutation"
+    )
+    project_status.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    _common_output(project_status)
+
     for name in ("audit", "verify"):
         command = commands.add_parser(name)
         command.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
@@ -190,6 +203,8 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
             expected_url=options.expected_url,
         )
         return project_os.apply_init_plan(plan) if options.execute else plan
+    if options.command == "project":
+        return project_lifecycle.project_status(options.project)
     if options.command == "audit":
         return project_os.audit_project(options.project)
     if options.command == "verify":
@@ -251,6 +266,8 @@ def main(argv: list[str] | None = None) -> int:
             "goal",
             "receipt",
             "release",
+            "project",
+            "adoption",
         }:
             fallback = "valid" if result.get("ok") else "invalid"
             print(f"Status: {result.get('status', fallback)}")

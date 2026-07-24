@@ -20,6 +20,7 @@ from typing import Any, TypeGuard
 from urllib.parse import urlsplit
 
 import engine
+import project_state
 import receipts
 
 BEGIN_MARKER = "<!-- divan:begin v1 -->"
@@ -126,6 +127,7 @@ CI_PATH = ".github/workflows/divan-project.yml"
 SEO_TOOL_PATH = ".divan/seo-tools.json"
 LIGHTHOUSE_PATH = ".divan/lighthouse.json"
 SEO_CI_PATH = ".github/workflows/divan-seo.yml"
+INSTALL_STATE_PATH = ".divan/install-state.json"
 INIT_JOURNAL = ".divan-init-journal.json"
 INIT_STAGING = ".divan-init-staging"
 MAX_READ_BYTES = 1024 * 1024
@@ -402,6 +404,19 @@ def _trusted_action_commit() -> str:
             and re.fullmatch(r"[0-9a-f]{40}", metadata["source_commit"])
         ):
             return metadata["source_commit"]
+        if (
+            isinstance(metadata, dict)
+            and metadata.get("schema_version") == 2
+            and set(metadata)
+            == {
+                "schema_version",
+                "version",
+                "source_repository",
+                "source_ref",
+                "source_commit",
+            }
+        ):
+            return _runtime_source_identity()["source_commit"]
         raise ValueError("installed Divan source metadata is invalid")
     repository = directory.parents[2]
     try:
@@ -668,6 +683,67 @@ def render_seo_workflow(profile: str, expected_url: str) -> str:
     return _render_seo_workflow_from_tools(tools)
 
 
+def _runtime_source_identity() -> dict[str, str]:
+    directory = pathlib.Path(__file__).resolve().parent
+    metadata_path = directory / "divan-project-source.json"
+    if metadata_path.is_file() and not metadata_path.is_symlink():
+        try:
+            value = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            raise ValueError("installed Divan source metadata is invalid") from error
+        expected = {
+            "schema_version",
+            "version",
+            "source_repository",
+            "source_ref",
+            "source_commit",
+        }
+        if not isinstance(value, dict) or set(value) != expected:
+            raise ValueError("installed Divan source metadata is invalid")
+        source = {key: value[key] for key in expected if key != "schema_version"}
+        candidate = {
+            "schema_version": 1,
+            "product": "divan-project-os",
+            "contract_schema": 2,
+            "installed": source,
+            "project_identity": "sha256:" + "0" * 64,
+            "managed_files": [],
+        }
+        if project_state.validate_install_state(candidate):
+            raise ValueError("installed Divan source metadata is invalid")
+        return source
+    repository = directory.parents[2]
+    try:
+        commit = subprocess.check_output(
+            ["git", "-C", str(repository), "rev-parse", "HEAD"],
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            stderr=subprocess.DEVNULL,
+            timeout=15,
+        ).strip()
+        version = (repository / "VERSION").read_text(encoding="utf-8").strip()
+    except (OSError, subprocess.SubprocessError, UnicodeError) as error:
+        raise ValueError("Divan development source identity is unavailable") from error
+    source = {
+        "version": version,
+        "source_repository": project_state.SOURCE_REPOSITORY,
+        "source_ref": f"development@{commit}",
+        "source_commit": commit,
+    }
+    candidate = {
+        "schema_version": 1,
+        "product": "divan-project-os",
+        "contract_schema": 2,
+        "installed": source,
+        "project_identity": "sha256:" + "0" * 64,
+        "managed_files": [],
+    }
+    if project_state.validate_install_state(candidate):
+        raise ValueError("Divan development source identity is invalid")
+    return source
+
+
 def build_init_plan(
     project: pathlib.Path | str,
     profile: str,
@@ -706,7 +782,7 @@ def build_init_plan(
     if include_ci:
         managed_files.append(CI_PATH)
     config = {
-        "schema_version": 1,
+        "schema_version": 2,
         "profile": profile,
         "locale": resolved_locale,
         "autonomy": "supervised",
@@ -778,6 +854,35 @@ def build_init_plan(
                 "content": _ci_workflow(str(action_commit)),
             }
         )
+    owned_rows = []
+    for item in writes:
+        if item["path"] == ".divan/waivers.json":
+            continue
+        material = item.get("content", item.get("managed_block", "")).encode("utf-8")
+        owned_rows.append(
+            {
+                "path": item["path"],
+                "mode": (
+                    "marked-block" if item["kind"] == "managed" else "whole-file"
+                ),
+                "payload_sha256": f"sha256:{_sha256(material)}",
+            }
+        )
+    state = {
+        "schema_version": 1,
+        "product": "divan-project-os",
+        "contract_schema": 2,
+        "installed": _runtime_source_identity(),
+        "project_identity": _project_identity(root),
+        "managed_files": sorted(owned_rows, key=lambda row: row["path"]),
+    }
+    writes.append(
+        {
+            "path": INSTALL_STATE_PATH,
+            "kind": "replace",
+            "content": project_state.serialize_install_state(state).decode("utf-8"),
+        }
+    )
     for item in writes:
         material = item.get("content", item.get("managed_block", "")).encode("utf-8")
         item["payload_sha256"] = _sha256(material)
@@ -884,6 +989,7 @@ def _allowed_write_contracts() -> dict[str, tuple[str, str]]:
         ".divan/config.json": ("replace", "replace-generated"),
         ".divan/PROJECT_RULES.md": ("replace", "replace-generated"),
         ".divan/waivers.json": ("create", "preserve-existing"),
+        INSTALL_STATE_PATH: ("replace", "replace-generated"),
         "AGENTS.md": ("managed", "preserve-outside-managed-block"),
         "CLAUDE.md": ("managed", "preserve-outside-managed-block"),
         CI_PATH: ("replace", "replace-generated"),
@@ -918,6 +1024,7 @@ def _expected_plan_paths(plan: dict[str, Any]) -> list[str]:
         paths.append(CI_PATH)
     elif plan.get("include_ci") is not False:
         raise ValueError("init plan include_ci must be boolean")
+    paths.append(INSTALL_STATE_PATH)
     return paths
 
 
@@ -2255,9 +2362,9 @@ def _load_config(root: pathlib.Path) -> tuple[dict[str, Any] | None, list[str]]:
         return None, [".divan/config.json root must be an object"]
     errors = []
     if set(value) != set(CONFIG_KEYS):
-        errors.append(".divan/config.json keys do not match schema 1")
-    if type(value.get("schema_version")) is not int or value.get("schema_version") != 1:
-        errors.append(".divan/config.json schema_version must be 1")
+        errors.append(".divan/config.json keys do not match schema 2")
+    if type(value.get("schema_version")) is not int or value.get("schema_version") != 2:
+        errors.append(".divan/config.json schema_version must be 2")
     if value.get("profile") not in {"standard", "strict"}:
         errors.append(".divan/config.json profile is invalid")
     if value.get("locale") not in {"en", "tr"}:
@@ -2280,7 +2387,7 @@ def _load_config(root: pathlib.Path) -> tuple[dict[str, Any] | None, list[str]]:
         ) or len(items) != len(set(items)):
             errors.append(f".divan/config.json {field} are invalid")
     if value.get("capabilities") != list(LOCAL_CAPABILITIES):
-        errors.append(".divan/config.json capabilities do not match schema 1")
+        errors.append(".divan/config.json capabilities do not match schema 2")
     standards = value.get("standards")
     if isinstance(standards, list) and standards != _selected_standards(project_types):
         errors.append(".divan/config.json standards do not match project types")

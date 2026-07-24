@@ -112,6 +112,45 @@ class PortableCompanyCliTests(unittest.TestCase):
 
 
 class RepositoryDivanCliTests(unittest.TestCase):
+    def test_project_status_is_forwarded_and_read_only(self) -> None:
+        cli = load_module("repository_divan_lifecycle_cli", DIVAN_CLI)
+        with tempfile.TemporaryDirectory(prefix="divan-cli-status-") as temporary:
+            project = pathlib.Path(temporary)
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(
+                    cli.main(
+                        [
+                            "init",
+                            "--project",
+                            str(project),
+                            "--host",
+                            "agents",
+                            "--execute",
+                            "--json",
+                        ]
+                    ),
+                    0,
+                )
+            before = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                result = cli.main(
+                    ["project", "status", "--project", str(project), "--json"]
+                )
+            after = {
+                path.relative_to(project).as_posix(): path.read_bytes()
+                for path in project.rglob("*")
+                if path.is_file()
+            }
+
+        self.assertEqual(result, 0)
+        self.assertEqual(json.loads(output.getvalue())["status"], "CURRENT")
+        self.assertEqual(before, after)
+
     def test_project_init_defaults_to_both_hosts_and_dry_run(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-cli-") as temporary:
             project = pathlib.Path(temporary)
