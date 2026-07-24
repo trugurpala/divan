@@ -1,17 +1,28 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-24
+Son güncelleme: 2026-07-25
+
+## Yayın durumu
+
+- Latest published release: v0.16.0
+- Published commit: 5513e73d5faa8657a22d813ecfec763a6089bea0
+- Publication evidence: .divan/evidence/teftis-20260725-v016-publication-handoff.md
 
 ## Güncel hedef
 
-v0.16.0 completes the installed Project OS lifecycle after first init:
-ownership, drift status, safe schema update, narrow repair, verified goal
-archive, and redacted adoption receipts. The candidate must pass protected PR,
-immutable release, public owner canary, and transactional dual-host delivery.
-v1 remains 7/8 because owner canary evidence is not independent adoption.
+v0.16.0 is published from immutable commit `5513e73d`; PR #31 is merged and
+the Release page, Pages, and Wiki expose the release. The remaining v1 product
+gate is reproducible adoption evidence from a non-owner. This handoff does not
+claim release-asset byte verification, attestations, canary execution, or a
+transactional global-host update that was not reproduced in the current review.
+v1 remains 7/8.
 
 ## Yapıldı
 
+- PR #31 merged v0.16.0 to `main`; tag `v0.16.0` points to
+  `5513e73d5faa8657a22d813ecfec763a6089bea0`. The Release page returned HTTP
+  200 and live Pages/Wiki readbacks contained v0.16.0. Bounded evidence is
+  tracked in `.divan/evidence/teftis-20260725-v016-publication-handoff.md`.
 - Schema 2 config and install state bind immutable version/ref/commit, project
   identity, and managed whole-file/marked-block payload hashes.
 - `project status` is read-only; `project update` and `project repair` are
@@ -248,6 +259,18 @@ v1 remains 7/8 because owner canary evidence is not independent adoption.
 
 ## Devam ediyor
 
+- Issue #34 requires a non-owner to install a pinned release, complete a bounded
+  real task, export a privacy-bounded adoption receipt, and reproduce the
+  result. Maintainer fixtures and owner canaries cannot close this gate.
+- Issue #35 tracks the release asset/checksum/attestation evidence that this
+  handoff review did not recompute.
+- Issue #33 tracks the order-sensitive local hygiene recipe.
+
+## Tarihsel devam kayıtları
+
+The following entries are retained as dated pre-release snapshots. They are not
+the current execution queue.
+
 - 2026-07-19: v0.12.1 yüzeyleri hazır. Tam yerel teftiş, bağımsız code review,
   PR/main/Release/Pages/Wiki ve çift-host global kurulum kanıtı sıradadır.
 - 2026-07-19: ADR 0003 ve test-first v0.12.1 uygulama planı yazıldı. Sıradaki
@@ -271,8 +294,7 @@ v1 remains 7/8 because owner canary evidence is not independent adoption.
 
 ## Sıradaki kesin adım
 
-Run every local v0.16.0 gate and code review, push
-`codex/v016-adoption-drift`, then open a ready PR. Merge only when protected
-checks are green; publish from immutable `main`, verify release/canary/Pages/
-Wiki, and transactionally update both global hosts without changing unrelated
-plugins or marketplaces.
+Collect and human-review the reproducible non-owner adoption evidence required
+by issue #34. Run the adoption receipt verifier before changing
+`registry/v1-gates.json`; keep v1 at 7/8 if the evidence is absent, owner-run,
+privacy-unsafe, or not reproducible.

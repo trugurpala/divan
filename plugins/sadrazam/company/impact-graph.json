@@ -89,6 +89,12 @@
       "checks": []
     },
     {
+      "id": "project-memory",
+      "patterns": ["AGENTS.md", "CLAUDE.md", "BLUEPRINT.md", ".divan/*.md", ".divan/**/*.md"],
+      "effects": ["company-validation", "documentation", "release-validation"],
+      "checks": ["python scripts/handoff.py --check"]
+    },
+    {
       "id": "release-contract",
       "patterns": ["VERSION", "CHANGELOG.md", "release-manifest.json", "scripts/release.py"],
       "effects": ["release-validation", "public-site", "wiki"],
