@@ -150,6 +150,30 @@ class GoalArchiveTests(unittest.TestCase):
             )
             self.assertIn(f"2026-07-23-{goal_id}", plan["destination"])
             self.assertEqual(before, self.snapshot(project))
+            result = module.apply_archive_plan(plan)
+            self.assertEqual(result["status"], "ARCHIVED")
+
+    def test_legacy_archive_rejects_tampered_plan_and_stale_receipt(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(prefix="divan-archive-") as temporary:
+            project = pathlib.Path(temporary)
+            goal_id, receipt = self.create_goal(project, verified=True)
+            self.downgrade_to_schema_1(receipt)
+            plan = module.build_archive_plan(project, goal_id, "2026-07-23")
+            plan["archive"]["archive_date"] = "2026-07-22"
+            with self.assertRaisesRegex(ValueError, "digest"):
+                module.apply_archive_plan(plan)
+
+        with tempfile.TemporaryDirectory(prefix="divan-archive-") as temporary:
+            project = pathlib.Path(temporary)
+            goal_id, receipt = self.create_goal(project, verified=True)
+            self.downgrade_to_schema_1(receipt)
+            plan = module.build_archive_plan(project, goal_id, "2026-07-23")
+            receipts.append_transition(receipt, "RELEASED")
+            with self.assertRaisesRegex(ValueError, "goal changed"):
+                module.apply_archive_plan(plan)
 
     def test_unfinished_tampered_or_colliding_goal_is_blocked_without_mutation(
         self,

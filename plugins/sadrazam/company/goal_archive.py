@@ -397,6 +397,18 @@ def _verify_archive_destination(
         raise ValueError("pending archive metadata does not match journal")
 
 
+def _bound_legacy_date(plan: dict[str, Any]) -> str | None:
+    archive = plan.get("archive")
+    if (
+        isinstance(archive, dict)
+        and archive.get("date_authority")
+        == "declared-legacy-terminal-event"
+        and isinstance(archive.get("archive_date"), str)
+    ):
+        return str(archive["archive_date"])
+    return None
+
+
 def apply_archive_plan(plan: dict[str, Any]) -> dict[str, Any]:
     """Revalidate, stage, and move a goal archive with rollback on failure."""
     if not isinstance(plan, dict):
@@ -405,7 +417,9 @@ def apply_archive_plan(plan: dict[str, Any]) -> dict[str, Any]:
     plan_errors = _validate_plan(plan, root, str(plan.get("goal_id")))
     if plan_errors:
         raise ValueError("; ".join(plan_errors))
-    fresh = build_archive_plan(root, str(plan.get("goal_id")))
+    fresh = build_archive_plan(
+        root, str(plan.get("goal_id")), _bound_legacy_date(plan)
+    )
     if fresh.get("plan_digest") != plan.get("plan_digest"):
         raise ValueError("goal changed after archive plan")
     destination = project_os._safe_destination(root, plan["destination"])
