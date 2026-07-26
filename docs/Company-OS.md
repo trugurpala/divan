@@ -27,6 +27,17 @@ python scripts/divan.py impact README.md plugins/sadrazam/skills/sadrazam/SKILL.
 python scripts/divan.py company-validate
 ```
 
+Project OS makes this selection durable in the installed project:
+
+```powershell
+python scripts/divan.py init --project . --profile standard --locale auto
+python scripts/divan.py audit --project . --format json
+```
+
+Repository-level `DCS-*` rules remain Divan's maintenance contract. Applicable
+installed-project `DPS-*` rules and evidence are explained in
+[Project OS](../docs/Project-OS.md).
+
 The installed plugin carries the stdlib-only implementation under
 `plugins/sadrazam/company/`; it does not send project data anywhere.
 

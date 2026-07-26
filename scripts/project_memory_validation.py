@@ -22,11 +22,17 @@ from project_memory_store import (
 def _layout_errors(project_root: pathlib.Path) -> list[str]:
     base = memory_root(project_root)
     errors: list[str] = []
+    if base.is_symlink() or not base.is_dir():
+        return [f"memory root must be a real directory: {MEMORY_DIR}"]
     for directory in REQUIRED_DIRECTORIES:
-        if not (base / directory).is_dir():
+        path = base / directory
+        if path.is_symlink() or not path.is_dir():
             errors.append(f"missing memory directory: {MEMORY_DIR}/{directory}")
     for filename in REQUIRED_FILES:
         path = base / filename
+        if path.is_symlink():
+            errors.append(f"memory file cannot be a symlink: {MEMORY_DIR}/{filename}")
+            continue
         try:
             content = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError):
@@ -214,7 +220,11 @@ def _evidence_row_errors(project_root: pathlib.Path, task: dict[str, Any]) -> li
         except OSError:
             errors.append(f"{task.get('id')}: evidence cannot be resolved: {relative}")
             continue
-        if not resolved.is_relative_to(root) or not path.is_file():
+        if (
+            path.is_symlink()
+            or not resolved.is_relative_to(root)
+            or not path.is_file()
+        ):
             errors.append(f"{task.get('id')}: evidence is missing or unsafe: {relative}")
     return errors
 
@@ -236,8 +246,14 @@ def _current_state_errors(project_root: pathlib.Path,
                           current: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     last_handoff = current.get("last_handoff")
-    if last_handoff and not (project_root / str(last_handoff)).is_file():
-        errors.append("current-state.last_handoff does not exist")
+    if last_handoff:
+        handoff = project_root / str(last_handoff)
+        if (
+            handoff.is_symlink()
+            or not handoff.resolve().is_relative_to(project_root.resolve())
+            or not handoff.is_file()
+        ):
+            errors.append("current-state.last_handoff does not exist")
     if current.get("blocked") and not current.get("blocker"):
         errors.append("blocked state requires a blocker")
     if not current.get("blocked") and current.get("blocker"):

@@ -1,0 +1,10 @@
+{
+  "image": "docker.io/patrickhulce/lhci-client@sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9",
+  "manifest_digest": "sha256:558210c5e422a7babaaa09c285b7469da3f00fac1a9880c37883c65d666a7fc9",
+  "config_digest": "sha256:2e3042e7c41855a3c6b195c793961eb03645a555a75e940edbd30c70c7979df0",
+  "platform": "linux/amd64",
+  "history_install": "RUN /bin/sh -c npm install -g @lhci/cli@0.14.0 # buildkit",
+  "runtime_version": "0.14.0",
+  "npm_integrity": "sha512-TxOH9pFBnmmN7Jmo2Aimxx5UhE8veqXpHfFJDMWsCVxkwh7mGxcAWchGl84mK139SZbbRmerqZ72c+h2nG9/QQ==",
+  "source_git_head": "36e629e9c03a2b328f5996c16f256431c5fef1fe"
+}

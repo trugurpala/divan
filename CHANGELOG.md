@@ -10,6 +10,112 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.16.0] - 2026-07-24
+
+### Added
+
+- Schema 2 installed-project ownership with immutable Divan source identity,
+  project identity, and hashes for every managed whole file or marked block.
+- Read-only `project status`, dry-run-first transactional `project update`, and
+  intentionally narrow `project repair` commands with fail-closed drift,
+  marker, symlink/reparse, stale-plan, and unowned-path handling.
+- Verified goal archival with receipt/artifact hash binding, collision checks,
+  controlled source removal, and rollback on interrupted application.
+- Privacy-bounded JSON and Markdown adoption receipts with explicit
+  maintainer/independent declarations and offline verification.
+
+### Changed
+
+- `divan-project.pyz` now carries source metadata schema 2 and the complete
+  ownership, lifecycle, archive, and adoption engine while retaining
+  deterministic byte-identical builds.
+- DCS-007 and the impact graph now cover host lifecycle and installed-project
+  lifecycle together. English/Turkish README, Project OS, install, Wiki, and
+  publication surfaces distinguish host update, project update, audit, and
+  lifecycle status.
+- Ruff, mypy, coverage, and the Clean Code debt ratchet now include the
+  first-party Company OS runtime instead of measuring only `scripts/` and
+  `evals/`. Existing exact-symbol debt is pinned and cannot grow silently.
+
+### Security
+
+- Project updates run only from the immutable code already executing; they do
+  not fetch remote refs or execute target-project code. Install state is written
+  last inside the proven locked, journaled, authority-bound transaction.
+- Repair never force-overwrites user changes. Adoption exports reject secrets,
+  email addresses, usernames, absolute paths, remotes, unrelated plugin
+  inventory, and command-output bodies.
+
+### Verified
+
+- The release candidate passed the full local unit suite with 10
+  platform-specific skips plus focused lifecycle, archive, adoption,
+  reproducible-runner, Unicode, and fail-closed impact tests.
+- Five packages and 41 discoverable skills remain unchanged. Owner-operated
+  canary evidence is classified separately and cannot close the independent
+  adoption gate; v1 readiness remains 7/8.
+- PR #31 and all required checks completed; immutable `main`/tag
+  `5513e73d5faa8657a22d813ecfec763a6089bea0`, GitHub Release, five recomputed
+  assets and checksum manifests, SPDX SBOM, release/SLSA attestations, Pages,
+  and Wiki are bound in tracked post-merge evidence. Owner canary, dual-host
+  global update, and independent adoption remain separate unverified states.
+
+## [0.15.0] - 2026-07-24
+
+### Added
+
+- A portable Project OS contract with deterministic `init`, `inspect`, `audit`,
+  `plan`, `impact`, `goal`, `verify`, `release`, and receipt-verification
+  routes. Installed projects receive bounded `.divan/` rules, specs, plans,
+  tasks, waivers, and append-only evidence without losing existing host text.
+- Twelve `DPS-*` installed-project standards, scoped by project type, alongside
+  Divan's existing `DCS-*` repository-maintenance standards.
+- Unicode-aware English/Turkish intent routing, recursive bounded workspace
+  discovery, native package-manager command detection, multi-workflow
+  composition, and fail-closed impact classification.
+- Provider capability contracts for local, GitHub, Context7, and Vercel
+  delivery; a read-only composite action; and a reproducible standalone
+  `divan-project.pyz` runner.
+- Static public-web SEO contracts covering canonical metadata, robots,
+  sitemap, hreflang, social cards, structured data, internal links, and pinned
+  Lighthouse CI/Lychee evidence.
+
+### Changed
+
+- Sadrazam can carry a supervised goal from intent through specification,
+  planning, verified evidence, preview, release, and live observation while
+  keeping provider mutations behind explicit authority.
+- English machine interfaces and public technical documentation are canonical;
+  Turkish localization remains synchronized and first-class. Existing Turkish
+  script names remain bounded compatibility wrappers throughout `0.x`.
+- README, Project OS and Company OS guides, Community Standards, Wiki sources,
+  Pages/site metadata, install references, and release manifests now share one
+  change-impact and publication contract.
+
+### Security
+
+- Project discovery never executes target code, rejects symlink/path escape,
+  bounds traversal and input sizes, and reports every unknown changed path as
+  `unclassified`.
+- Project initialization is dry-run-first, idempotent, transactionally locked,
+  atomic, and fail-closed on malformed managed blocks or untrusted recovery
+  state.
+- Release completion requires provider-native, source-bound evidence and live
+  readback. Missing capabilities remain `BLOCKED`; ambient executables,
+  environment variables, local JSON, secrets, and hidden reasoning cannot
+  establish release authority.
+
+### Verified
+
+- The approved release candidate passed 452 repository tests with 10
+  platform-specific skips, Ruff, mypy, the Clean Code debt ratchet, and 71%
+  branch coverage against the 64% floor.
+- Five packages and 41 discoverable skills remain unchanged. The independent
+  adoption gate remains open, so v1 readiness honestly stays 7/8.
+- This section records local release preparation only. PR checks, immutable
+  `main`, tag, GitHub Release, Pages, Wiki, attestations, and dual-host global
+  installation require separate post-merge evidence.
+
 ## [0.14.1] - 2026-07-23
 
 ### Fixed
@@ -397,6 +503,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.15.0]: https://github.com/trugurpala/divan/releases/tag/v0.15.0
 [0.13.0]: https://github.com/trugurpala/divan/releases/tag/v0.13.0
 [0.11.0]: https://github.com/trugurpala/divan/releases/tag/v0.11.0
 [0.10.3]: https://github.com/trugurpala/divan/tree/main

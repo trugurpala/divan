@@ -12,7 +12,15 @@ from datetime import date
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+COMPANY = ROOT / "plugins" / "sadrazam" / "company"
+if str(COMPANY) not in sys.path:
+    sys.path.insert(0, str(COMPANY))
+
+import project_os as project_contracts  # noqa: E402
+
 REQUIRED_IDS = tuple(f"DCS-{number:03d}" for number in range(1, 12))
+PROJECT_REQUIRED_IDS = project_contracts.PROJECT_REQUIRED_IDS
+PROJECT_TYPES = project_contracts.PROJECT_TYPES
 REQUIRED_STANDARD_FIELDS = (
     "id",
     "title_tr",
@@ -41,6 +49,23 @@ def load_contract(root: pathlib.Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError("community-standards.json root must be an object")
     return value
+
+
+def load_project_contract(root: pathlib.Path) -> dict[str, Any]:
+    """Load the installed-project standards without requiring a public page."""
+    return project_contracts.load_project_contract(root)
+
+
+def validate_project_contract(root: pathlib.Path) -> list[str]:
+    """Validate DPS IDs, fields, applicability, and waiver duration."""
+    return project_contracts.validate_project_contract(root)
+
+
+def validate_waivers(
+    value: Any, *, today: date | None = None
+) -> list[str]:
+    """Validate the schema-v1 target-project waiver ledger."""
+    return project_contracts.validate_waivers(value, today=today)
 
 
 def _load_exceptions(root: pathlib.Path) -> Any:
@@ -235,6 +260,10 @@ def render_markdown(contract: dict[str, Any]) -> str:
         "",
         "Dogrulama: `python scripts/standards.py --check`",
         "",
+        "Bu `DCS-*` kurallari Divan repo dagitimini yonetir. Hedef kurulu proje,",
+        "Project OS tarafindan yalniz uygulanabilir `DPS-*` kurallariyla denetlenir.",
+        "Project OS ayrimi ve komutlari: `docs/Project-OS.tr.md`.",
+        "",
     ]
     for standard_id in REQUIRED_IDS:
         row = by_id.get(standard_id)
@@ -288,7 +317,11 @@ def _validate_for_render(root: pathlib.Path) -> list[str]:
         contract = load_contract(root)
     except (OSError, ValueError, json.JSONDecodeError) as error:
         return [f"community-standards.json okunamadi: {error}"]
-    return [*_validate_standards(root, contract), *_validate_exceptions(root)]
+    return [
+        *_validate_standards(root, contract),
+        *_validate_exceptions(root),
+        *validate_project_contract(root),
+    ]
 
 
 def main(arguments: list[str] | None = None) -> int:
@@ -305,7 +338,7 @@ def main(arguments: list[str] | None = None) -> int:
             destination = ROOT / "docs" / "Topluluk-Standartlari.md"
             destination.write_text(render_markdown(load_contract(ROOT)), encoding="utf-8", newline="\n")
     else:
-        errors = validate_contract(ROOT)
+        errors = [*validate_contract(ROOT), *validate_project_contract(ROOT)]
     status = {"errors": errors, "ok": not errors}
     if options.json:
         print(json.dumps(status, ensure_ascii=False, sort_keys=True))

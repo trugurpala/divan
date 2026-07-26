@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+import project_memory_workflow as memory_workflow  # noqa: E402
 from project_memory import main as memory_main  # noqa: E402
+from project_memory_knowledge import add_decision, add_lesson  # noqa: E402
 from project_memory_store import (  # noqa: E402
     LIFECYCLE_STATES,
     REQUIRED_DIRECTORIES,
@@ -23,8 +27,6 @@ from project_memory_store import (  # noqa: E402
 )
 from project_memory_validation import validate_memory  # noqa: E402
 from project_memory_workflow import (  # noqa: E402
-    add_decision,
-    add_lesson,
     add_task,
     checkpoint,
     complete_task,
@@ -149,6 +151,71 @@ class ProjectMemoryTests(unittest.TestCase):
             with self.assertRaises(ProjectMemoryError):
                 with MemoryLock(self.root):
                     pass
+
+    def test_writer_reloads_memory_after_acquiring_lock(self) -> None:
+        self.init()
+        original_lock = memory_workflow.MemoryLock
+        tasks_path = self.root / ".divan" / "tasks.json"
+
+        class InjectingLock:
+            def __init__(inner_self, project_root: pathlib.Path) -> None:
+                inner_self.lock = original_lock(project_root)
+
+            def __enter__(inner_self):
+                entered = inner_self.lock.__enter__()
+                payload = json.loads(tasks_path.read_text(encoding="utf-8"))
+                payload["tasks"].append(
+                    {
+                        "id": "TASK-001",
+                        "title": "Concurrent task",
+                        "description": "",
+                        "status": "pending",
+                        "depends_on": [],
+                        "acceptance_criteria": [],
+                        "evidence": [],
+                        "created_at": "2026-01-01T00:00:00Z",
+                        "updated_at": "2026-01-01T00:00:00Z",
+                        "completed_at": None,
+                        "blocker": None,
+                    }
+                )
+                payload["next_sequence"] = 2
+                tasks_path.write_text(
+                    json.dumps(payload, indent=2) + "\n", encoding="utf-8"
+                )
+                return entered
+
+            def __exit__(inner_self, *details: object) -> None:
+                inner_self.lock.__exit__(*details)
+
+        with mock.patch.object(memory_workflow, "MemoryLock", InjectingLock):
+            result = add_task(self.root, "Second task", execute=True)
+
+        payload = json.loads(tasks_path.read_text(encoding="utf-8"))
+        self.assertEqual(result["task"]["id"], "TASK-002")
+        self.assertEqual(
+            [task["title"] for task in payload["tasks"]],
+            ["Concurrent task", "Second task"],
+        )
+
+    @unittest.skipIf(os.name == "nt", "symlink creation is not portable on Windows CI")
+    def test_memory_directory_symlink_cannot_escape_project(self) -> None:
+        self.init()
+        with tempfile.TemporaryDirectory(prefix="divan-memory-outside-") as temporary:
+            outside = pathlib.Path(temporary)
+            lessons = self.root / ".divan" / "lessons"
+            lessons.rmdir()
+            lessons.symlink_to(outside, target_is_directory=True)
+
+            with self.assertRaises(ProjectMemoryError):
+                add_lesson(
+                    self.root,
+                    "Containment",
+                    "This must remain inside the project.",
+                    execute=True,
+                )
+
+            self.assertEqual(list(outside.iterdir()), [])
 
     def test_completed_task_without_evidence_is_invalid(self) -> None:
         self.init()

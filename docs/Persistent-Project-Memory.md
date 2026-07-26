@@ -17,10 +17,14 @@ Divan stores project state inside the user's repository. Claude Code, Codex, ter
 
 ## Guarantees
 
-Mutations are dry-run first and require explicit execution. Existing memory is never overwritten. Initialization and file updates are atomic. A fail-closed lock permits one writer. Only one task may be active. Dependencies must complete before a task starts. Completed tasks require existing evidence inside the project. Lifecycle transitions are adjacent and evidence-backed. Shipping requires explicit confirmation.
+Mutations are dry-run first and require explicit execution. Existing memory is never overwritten. Initialization and file updates are atomic. A fail-closed lock permits one writer, and every mutation reloads state only after acquiring that lock so a stale snapshot cannot overwrite another writer. Required memory directories and evidence files must be real in-project paths; symlink escapes are rejected. Only one task may be active. Dependencies must complete before a task starts. Completed tasks require existing evidence inside the project. Lifecycle transitions are adjacent and evidence-backed. Shipping requires explicit confirmation.
 
 ## Canonical commands
 
 Use `python scripts/divan.py memory init` to create memory, `task-add` and `task-start` to select work, `checkpoint` at every durable stopping point, `task-complete` with evidence, `transition` for project lifecycle, and `continue` in every new Claude or Codex session.
 
 Claude auto-memory, agent memory, Codex session history and chat transcripts are caches. They never override `.divan/`. Forge, Serena and reviewer adapters must share this contract rather than create competing private state.
+
+The compatibility workflow runs the complete project-memory test module on
+Linux, macOS, and Windows. This cross-platform smoke is required whenever the
+memory runtime, contract, tests, or compatibility workflow changes.

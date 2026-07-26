@@ -168,7 +168,38 @@ def _package(
     }
 
 
-def build_spdx(root: pathlib.Path, version: str, source_commit: str) -> dict[str, Any]:
+def _artifact_files(artifacts: dict[str, str]) -> list[dict[str, Any]]:
+    files = []
+    for name, digest in sorted(artifacts.items()):
+        if (
+            not isinstance(name, str)
+            or not name
+            or pathlib.PurePath(name).name != name
+            or re.fullmatch(r"[0-9a-f]{64}", digest) is None
+        ):
+            raise ValueError("artifact name and SHA-256 are invalid")
+        identifier = "SPDXRef-File-" + re.sub(r"[^A-Za-z0-9-]", "-", name)
+        files.append(
+            {
+                "SPDXID": identifier,
+                "fileName": name,
+                "checksums": [
+                    {"algorithm": "SHA256", "checksumValue": digest}
+                ],
+                "licenseConcluded": "NOASSERTION",
+                "copyrightText": "NOASSERTION",
+            }
+        )
+    return files
+
+
+def build_spdx(
+    root: pathlib.Path,
+    version: str,
+    source_commit: str,
+    *,
+    artifacts: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Return a deterministic SPDX 2.3 document for the five Divan packages."""
     if VERSION_PATTERN.fullmatch(version) is None:
         raise ValueError("Surum X.Y.Z biciminde olmali")
@@ -193,7 +224,11 @@ def build_spdx(root: pathlib.Path, version: str, source_commit: str) -> dict[str
         )
         for manifest in _marketplace_packages(root)
     ]
-    described = [package["SPDXID"] for package in packages]
+    files = _artifact_files({} if artifacts is None else artifacts)
+    described = [
+        *(package["SPDXID"] for package in packages),
+        *(item["SPDXID"] for item in files),
+    ]
     return {
         "spdxVersion": "SPDX-2.3",
         "dataLicense": "CC0-1.0",
@@ -209,6 +244,7 @@ def build_spdx(root: pathlib.Path, version: str, source_commit: str) -> dict[str
         },
         "documentDescribes": described,
         "packages": packages,
+        "files": files,
         "relationships": [
             {
                 "spdxElementId": DOCUMENT_ID,
@@ -225,9 +261,23 @@ def main() -> int:
     parser.add_argument("--root", type=pathlib.Path, default=pathlib.Path(__file__).parents[1])
     parser.add_argument("--output", required=True, type=pathlib.Path)
     parser.add_argument("--source-commit", required=True)
+    parser.add_argument("--artifact", action="append", default=[])
     arguments = parser.parse_args()
     version = (arguments.root / "VERSION").read_text(encoding="utf-8").strip()
-    document = build_spdx(arguments.root, version, arguments.source_commit)
+    artifacts: dict[str, str] = {}
+    for value in arguments.artifact:
+        if not isinstance(value, str) or "=" not in value:
+            parser.error("--artifact must use name=sha256")
+        name, digest = value.split("=", 1)
+        if name in artifacts:
+            parser.error(f"duplicate artifact: {name}")
+        artifacts[name] = digest
+    document = build_spdx(
+        arguments.root,
+        version,
+        arguments.source_commit,
+        artifacts=artifacts,
+    )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(
         json.dumps(document, ensure_ascii=False, sort_keys=True, indent=2) + "\n",

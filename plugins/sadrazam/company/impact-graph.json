@@ -40,8 +40,45 @@
       "checks": ["python -m unittest tests.test_company_engine -v"]
     },
     {
+      "id": "portable-action",
+      "patterns": ["plugins/sadrazam/company/portable_actions.py", "plugins/sadrazam/company/actions/*.py", "plugins/sadrazam/company/portable-actions/*.json"],
+      "effects": ["company-validation", "release-validation"],
+      "checks": ["python -m unittest tests.test_company_engine -v"]
+    },
+    {
+      "id": "project-os-controller",
+      "patterns": ["scripts/project_os*.py", "plugins/sadrazam/company/controller*.py"],
+      "effects": ["company-validation", "release-validation"],
+      "checks": ["python scripts/divan.py company-validate"]
+    },
+    {
+      "id": "project-os-state",
+      "patterns": [".divan/*.json", ".divan/**/*.json", ".divan/*.jsonl", ".divan/**/*.jsonl"],
+      "effects": ["company-validation"],
+      "checks": ["python scripts/divan.py company-validate"]
+    },
+    {
+      "id": "adoption-drift-lifecycle",
+      "patterns": [
+        "plugins/sadrazam/company/project_lifecycle.py",
+        "plugins/sadrazam/company/project_state.py",
+        "plugins/sadrazam/company/project_transactions.py",
+        "plugins/sadrazam/company/goal_archive.py",
+        "plugins/sadrazam/company/adoption.py",
+        ".divan/install-state.json",
+        ".divan/archive/**",
+        ".divan/evidence/*/adoption-receipt.*",
+        "canary/**"
+      ],
+      "effects": ["company-validation", "documentation", "release-validation"],
+      "checks": [
+        "python -m unittest tests.test_project_lifecycle tests.test_goal_archive tests.test_adoption -v",
+        "python scripts/release.py --check"
+      ]
+    },
+    {
       "id": "user-interface",
-      "patterns": ["site/*.html", "docs/index.html"],
+      "patterns": ["site/*.html", "site/robots.txt", "site/sitemap.xml", "docs/index.html", "docs/robots.txt", "docs/sitemap.xml"],
       "effects": ["accessibility", "browser-testing", "public-site"],
       "checks": []
     },
@@ -50,6 +87,12 @@
       "patterns": ["README*.md", "docs/*.md", "CONTRIBUTING*.md"],
       "effects": ["documentation"],
       "checks": []
+    },
+    {
+      "id": "project-memory",
+      "patterns": ["AGENTS.md", "CLAUDE.md", "BLUEPRINT.md", ".divan/*.md", ".divan/**/*.md"],
+      "effects": ["company-validation", "documentation", "release-validation"],
+      "checks": ["python scripts/handoff.py --check"]
     },
     {
       "id": "release-contract",

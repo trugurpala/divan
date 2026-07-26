@@ -8,15 +8,19 @@ Vibe coding'in tek gerçek sigortası budur: ajanın "çalışıyor" demesi değ
 ≤64/≤1024, eval sözleşmesi, yol güvenliği, ad çakışması ve vitrin tutarlılığı.
 `VERSION`, marketplace, iki README, CHANGELOG, BLUEPRINT ve kurulum belgesi
 aynı sürümü söylemezse teftiş kırılır; `.divan/progress.md` sıradaki kesin
-adımı taşımak zorundadır. CI bunun ardından
+adımı taşımak zorundadır. Yerel ve CI çekirdek kapıları aynı cache-stabil
+girişten çalışır:
+
+```
+python scripts/verify.py
+```
+
+Bu komut Python bytecode'unu kapatır; Ruff, mypy ve coverage cache'lerini repo
+dışındaki geçici dizine yönlendirir ve ikinci hijyen kontrolüyle biter. Dosya
+silmez; açık bakım gerektiğinde `scripts/hygiene.py --clean` yalnız sabit
+allowlist'i temizler. CI bunun ardından
 `skills-ref==0.1.1` ile 41 skill'i ve Claude Code 2.1.212 ile marketplace ile
-beş paketi doğrular. Yerelde önce bağımlılıksız teftişi çalıştır:
-```
-python scripts/validate.py
-python scripts/release.py --check
-python scripts/v1.py --check
-python -m unittest discover -s tests -p 'test_*.py'
-```
+beş paketi doğrular.
 
 ## 2. Soğuk klon testi (kullanıcının gerçeği)
 ```

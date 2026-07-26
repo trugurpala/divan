@@ -9,6 +9,37 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 
 
 class WorkflowHardeningTests(unittest.TestCase):
+    def test_portable_project_action_is_pinned_read_only_and_input_safe(self) -> None:
+        text = (
+            ROOT / ".github" / "actions" / "divan-project" / "action.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("using: composite", text)
+        self.assertIn(
+            "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6",
+            text,
+        )
+        self.assertIn(
+            "$GITHUB_ACTION_PATH/../../../plugins/sadrazam/company/cli.py",
+            text,
+        )
+        self.assertIn("DIVAN_PROJECT_INPUT: ${{ inputs.project }}", text)
+        self.assertNotIn("build_project_runner.py", text)
+        self.assertNotIn("github.action_ref", text)
+        run_blocks = "\n".join(
+            line for line in text.splitlines() if line.lstrip().startswith("run:")
+        )
+        self.assertNotIn("${{ inputs.", run_blocks)
+        self.assertNotIn("secrets.", text)
+        self.assertNotIn("deploy", text.casefold())
+
+    def test_pull_request_quality_path_is_secret_free_and_read_only(self) -> None:
+        text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
+        self.assertIn("pull_request", text)
+        self.assertNotIn("pull_request_target", text)
+        self.assertIn("permissions:\n  contents: read", text)
+        self.assertNotIn("secrets.", text)
+        self.assertNotIn("environment:", text)
+
     def test_all_actions_are_pinned_to_full_commit_sha(self) -> None:
         mutable: list[str] = []
         for path in sorted(WORKFLOWS.glob("*.yml")):
@@ -32,6 +63,43 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn('test "$source_commit" = "$GITHUB_SHA"', text)
         self.assertIn('cmp --silent "$archive"', text)
         self.assertIn('cmp --silent "$checksum"', text)
+
+    def test_existing_release_is_rebuilt_from_tag_without_duplicate_attestation(
+        self,
+    ) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+
+        self.assertIn(
+            'source_commit="$(git rev-parse "$tag^{commit}")"',
+            text,
+        )
+        self.assertIn(
+            'git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA"',
+            text,
+        )
+        self.assertIn(
+            'git worktree add --detach "$source_root" "$source_commit"',
+            text,
+        )
+        self.assertIn(
+            'python "$source_root/scripts/build_project_runner.py" '
+            '--root "$source_root"',
+            text,
+        )
+        self.assertIn(
+            'python "$source_root/scripts/sbom.py" --root "$source_root"',
+            text,
+        )
+        self.assertIn("TZ: UTC", text)
+        self.assertIn("published_release=true", text)
+        self.assertIn(
+            "if: steps.release-assets.outputs.published_release != 'true'",
+            text,
+        )
+        self.assertNotIn(
+            'test "$tagged_commit" = "$source_commit"',
+            text,
+        )
 
     def test_scorecard_is_pinned_and_publishes_sarif_with_narrow_permissions(self) -> None:
         text = (WORKFLOWS / "scorecard.yml").read_text(encoding="utf-8")
@@ -68,7 +136,8 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("artifact-metadata: write", text)
         self.assertIn('sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"', text)
         self.assertIn(
-            'python scripts/sbom.py --output "$sbom" --source-commit "$source_commit"', text
+            'python "$source_root/scripts/sbom.py" --root "$source_root"',
+            text,
         )
         self.assertIn('sbom_sha256="$(sha256sum "$sbom"', text)
         self.assertIn('cmp --silent "$sbom"', text)
@@ -81,6 +150,32 @@ class WorkflowHardeningTests(unittest.TestCase):
         )
         self.assertIn("${{ steps.release-assets.outputs.archive }}", text)
         self.assertIn("${{ steps.release-assets.outputs.sbom }}", text)
+        self.assertIn(
+            'python "$source_root/scripts/build_project_runner.py" '
+            '--root "$source_root"',
+            text,
+        )
+        self.assertIn('runner_sha256="$(sha256sum "$runner"', text)
+        self.assertIn('cmp --silent "$runner"', text)
+        self.assertIn('gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner"', text)
+        self.assertIn("${{ steps.release-assets.outputs.runner }}", text)
+        self.assertIn("${{ steps.release-assets.outputs.checksum }}", text)
+        self.assertIn("environment: production-release", text)
+        self.assertIn("if: github.ref == 'refs/heads/main'", text)
+        attest = text.index("actions/attest-build-provenance@")
+        publish = text.index('gh release create "$tag"')
+        self.assertLess(attest, publish)
+        self.assertIn('runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"', text)
+        self.assertIn('--artifact "$(basename "$runner")=$runner_sha256"', text)
+        self.assertIn(
+            '--artifact "$(basename "$runner_checksum")=$runner_checksum_sha256"',
+            text,
+        )
+
+    def test_non_main_dispatch_cannot_reach_publication(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        publish_job = text[text.index("  publish:") :]
+        self.assertIn("if: github.ref == 'refs/heads/main'", publish_job)
 
     def test_supply_chain_actions_are_attributed_and_release_tracked(self) -> None:
         upstream = (ROOT / "UPSTREAM.md").read_text(encoding="utf-8")
@@ -124,19 +219,48 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("resolved = shutil.which(host)", text)
         self.assertIn('["cmd.exe", "/d", "/s", "/c", resolved', text)
 
+    def test_project_memory_smoke_runs_on_linux_macos_and_windows(self) -> None:
+        text = (WORKFLOWS / "compatibility.yml").read_text(encoding="utf-8")
+        self.assertIn("  project-memory:", text)
+        self.assertIn("os: [ubuntu-latest, macos-latest, windows-latest]", text)
+        self.assertIn(
+            "python -m unittest tests.test_project_memory -v",
+            text,
+        )
+        for path in (
+            "'scripts/project_memory*.py'",
+            "'registry/project-memory-contract.json'",
+            "'tests/test_project_memory.py'",
+        ):
+            self.assertIn(path, text)
+
     def test_primary_audit_runs_lint_types_coverage_and_actionlint(self) -> None:
         text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
         for command in (
             "pip install -r requirements-dev.txt",
-            "python scripts/hygiene.py --check",
+            "python scripts/verify.py",
             "python scripts/standards.py --check",
             "ruff check .",
-            "mypy scripts",
+            "mypy scripts evals plugins/sadrazam/company",
             "coverage run -m unittest discover -s tests",
             "coverage report",
             '"$(go env GOPATH)/bin/actionlint"',
         ):
             self.assertIn(command, text)
+
+    def test_primary_audit_keeps_tool_caches_outside_checkout(self) -> None:
+        text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
+        quality_step = text[
+            text.index("      - name: Local quality gates") :
+            text.index("      - name: Agent Skills resmi dogrulayici")
+        ]
+        for declaration in (
+            "PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache",
+            "RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache",
+            "MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache",
+            "COVERAGE_FILE: ${{ runner.temp }}/coverage",
+        ):
+            self.assertIn(declaration, quality_step)
 
     def test_python_complexity_budget_is_pinned(self) -> None:
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")

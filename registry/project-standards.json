@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "waiver_max_days": 180,
+  "project_types": [
+    "library",
+    "service",
+    "application",
+    "public-web",
+    "documentation",
+    "monorepo"
+  ],
+  "standards": [
+    {
+      "id": "DPS-001",
+      "title_en": "Initialized project contract",
+      "title_tr": "Baslatilmis proje sozlesmesi",
+      "level": "required",
+      "purpose": "Keep schema-v1 configuration, project rules, waivers, and bounded host instructions explicit.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["config", "managed-files"],
+      "evidence": [".divan/config.json", ".divan/PROJECT_RULES.md", ".divan/waivers.json"]
+    },
+    {
+      "id": "DPS-002",
+      "title_en": "Explicit project classification",
+      "title_tr": "Acik proje siniflandirmasi",
+      "level": "required",
+      "purpose": "Record bounded workspace and project-type inspection rather than guessing applicability.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["project-types", "workspaces"],
+      "evidence": [".divan/config.json"]
+    },
+    {
+      "id": "DPS-003",
+      "title_en": "Deterministic project commands",
+      "title_tr": "Deterministik proje komutlari",
+      "level": "required",
+      "purpose": "Expose project-native commands as plans; inspection never executes detected project code.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["commands"],
+      "evidence": [".divan/config.json"]
+    },
+    {
+      "id": "DPS-004",
+      "title_en": "Supervised autonomy",
+      "title_tr": "Gozetimli ozerklik",
+      "level": "required",
+      "purpose": "Require explicit execution authority for mutations and preserve user authority over material actions.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["autonomy"],
+      "evidence": [".divan/config.json", ".divan/PROJECT_RULES.md"]
+    },
+    {
+      "id": "DPS-005",
+      "title_en": "Specification before implementation",
+      "title_tr": "Uygulamadan once belirtim",
+      "level": "required",
+      "purpose": "Represent each authorized goal with deterministic specification, plan, and task artifacts.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["goal-artifacts"],
+      "evidence": [".divan/specs"]
+    },
+    {
+      "id": "DPS-006",
+      "title_en": "Verification evidence before claims",
+      "title_tr": "Iddiadan once dogrulama kaniti",
+      "level": "required",
+      "purpose": "Tie phase changes to append-only receipts and verifiable artifact hashes.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["receipts", "hashes", "transitions"],
+      "evidence": [".divan/evidence"]
+    },
+    {
+      "id": "DPS-007",
+      "title_en": "Provider-bounded delivery",
+      "title_tr": "Saglayici sinirli teslim",
+      "level": "required",
+      "purpose": "Report missing provider capabilities as BLOCKED and never synthesize success.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["providers", "capabilities"],
+      "evidence": [".divan/config.json", ".divan/evidence"]
+    },
+    {
+      "id": "DPS-008",
+      "title_en": "Redacted portable evidence",
+      "title_tr": "Redakte tasinabilir kanit",
+      "level": "required",
+      "purpose": "Keep receipts secret-free, project-relative, deterministic, and free of hidden reasoning.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["redaction", "relative-paths"],
+      "evidence": [".divan/evidence"]
+    },
+    {
+      "id": "DPS-009",
+      "title_en": "Narrow expiring waivers",
+      "title_tr": "Dar ve sureli muafiyetler",
+      "level": "required",
+      "purpose": "Limit project waivers to named standards, exact targets, evidence, ownership, and 180 days.",
+      "applies_to": ["library", "service", "application", "public-web", "documentation", "monorepo"],
+      "checks": ["waivers"],
+      "evidence": [".divan/waivers.json"]
+    },
+    {
+      "id": "DPS-010",
+      "title_en": "Reader-facing documentation",
+      "title_tr": "Okur odakli dokumantasyon",
+      "level": "required",
+      "purpose": "Keep application, web, and documentation surfaces discoverable in the project locale.",
+      "applies_to": ["application", "public-web", "documentation"],
+      "checks": ["documentation"],
+      "evidence": ["README.md"]
+    },
+    {
+      "id": "DPS-011",
+      "title_en": "Public web quality evidence",
+      "title_tr": "Kamusal web kalite kaniti",
+      "level": "required",
+      "purpose": "Require applicable accessibility, metadata, SEO, preview, and live-readback evidence for public web delivery.",
+      "applies_to": ["public-web"],
+      "checks": ["public-web"],
+      "evidence": [".divan/evidence"]
+    },
+    {
+      "id": "DPS-012",
+      "title_en": "Bounded monorepo workspaces",
+      "title_tr": "Sinirli monorepo calisma alanlari",
+      "level": "required",
+      "purpose": "Keep workspace discovery bounded and require workspace-relative commands and evidence.",
+      "applies_to": ["monorepo"],
+      "checks": ["workspaces"],
+      "evidence": [".divan/config.json"]
+    }
+  ]
+}

@@ -8,11 +8,10 @@ import pathlib
 import sys
 from typing import Any
 
+from project_memory_knowledge import add_decision, add_lesson
 from project_memory_store import ProjectMemoryError, initialize
 from project_memory_validation import validate_memory
 from project_memory_workflow import (
-    add_decision,
-    add_lesson,
     add_task,
     block_task,
     checkpoint,
