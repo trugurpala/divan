@@ -139,6 +139,15 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-26: Issue #33's hygiene-stable verification candidate added one
+  cross-platform `scripts/verify.py` entrypoint shared by AGENTS and CI. It
+  disables bytecode, redirects Python/Ruff/mypy/coverage caches outside the
+  repository, runs the core gates, and finishes with a second hygiene check
+  without invoking cleanup. A separate date-sensitive Goal Archive fixture
+  was frozen to one receipt date after it failed on 2026-07-26. Local evidence:
+  501 discovered tests across 36 green modules, 74% branch coverage, Ruff,
+  mypy, Clean Code, 94 release surfaces, and final hygiene. PR/main/CI remain
+  separate states; v0.16.0 and v1 at 7/8 are unchanged.
 - 2026-07-25: PR #39 closed issue #38's immutable-release idempotency
   regression. Two post-release main runs had failed because the workflow tried
   to bind the existing v0.16.0 tag to each new `GITHUB_SHA`. The repaired

@@ -48,14 +48,14 @@ class GoalArchiveTests(unittest.TestCase):
                     project, "standard", "en", ("agents",), False
                 )
             )
-        result = goals.start_goal(
-            project, "Publish the API guide", "verified", execute=True
-        )
-        receipt = project / result["receipt"]
-        if verified:
-            with mock.patch.object(
-                receipts, "_utc_date", return_value="2026-07-24", create=True
-            ):
+        with mock.patch.object(
+            receipts, "_utc_date", return_value="2026-07-24", create=True
+        ):
+            result = goals.start_goal(
+                project, "Publish the API guide", "verified", execute=True
+            )
+            receipt = project / result["receipt"]
+            if verified:
                 for state in ("SPECIFIED", "PLANNED", "IMPLEMENTING", "VERIFIED"):
                     receipts.append_transition(receipt, state)
         return result["goal_id"], receipt

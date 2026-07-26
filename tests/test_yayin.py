@@ -146,6 +146,7 @@ class PublicationTests(unittest.TestCase):
                 "scripts/host_lifecycle.py",
                 "scripts/legacy_state.py",
                 "scripts/hygiene.py",
+                "scripts/verify.py",
                 "scripts/standards.py",
                 "scripts/naming.py",
                 "evals/run.py",

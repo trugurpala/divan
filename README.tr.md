@@ -128,11 +128,15 @@ host'a göre elle kaldırma ve sahiplik sınırları: [docs/Kaldirma.md](docs/Ka
 ## Temiz geliştirme
 
 ```powershell
+python scripts/verify.py
 python scripts/hygiene.py --check
 python scripts/hygiene.py --clean
 ```
 
-`--check`; birinci taraf metinde UTF-8/BOM/mojibake, locale'e bırakılmış metin
+`verify.py`, yerel geliştirme ile CI'ın ortak doğrulama yoludur. Python
+bytecode'unu kapatır, araç cache'lerini repo dışına yönlendirir, çekirdek
+kapıları çalıştırır ve ikinci bir hijyen kontrolüyle biter. `--check`; birinci
+taraf metinde UTF-8/BOM/mojibake, locale'e bırakılmış metin
 subprocess'i ve repo cache'lerini reddeder. `--clean` yalnız sabit allowlist'teki
 yeniden üretilebilir cache'leri kalıcı siler; `.divan/evidence`, eval sonuçları,
 manifestler, worktree'ler ve kullanıcı/rollback yedeklerine dokunmaz. Repo metni

@@ -24,6 +24,7 @@
     {"id": "host-state", "path": "scripts/host_state.py", "marker": "Strict, reusable state evidence", "replace_version": false},
     {"id": "legacy-transaction", "path": "scripts/legacy_state.py", "marker": "installed_sha256", "replace_version": false},
     {"id": "repo-hygiene", "path": "scripts/hygiene.py", "marker": "GENERATED_DIRECTORIES", "replace_version": false},
+    {"id": "verification-runner", "path": "scripts/verify.py", "marker": "CORE_COMMANDS", "replace_version": false},
     {"id": "community-standards-registry", "path": "registry/community-standards.json", "marker": "DCS-011", "replace_version": false},
     {"id": "community-standards-exceptions", "path": "registry/standard-exceptions.json", "marker": "[", "replace_version": false},
     {"id": "community-standards-controller", "path": "scripts/standards.py", "marker": "REQUIRED_IDS", "replace_version": false},
