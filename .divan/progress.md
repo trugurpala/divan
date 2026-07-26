@@ -288,8 +288,10 @@ final hygiene checks. GitHub PR/CI evidence remains pending.
 - Issue #34 requires a non-owner to install a pinned release, complete a bounded
   real task, export a privacy-bounded adoption receipt, and reproduce the
   result. Maintainer fixtures and owner canaries cannot close this gate.
-- Issue #33 has a locally verified test-first implementation candidate. The
-  next gate is PR CI and merge to `main`.
+- Issue #33 is published as PR #46. Its first Quality Gate proved that CI-only
+  lint/type/coverage commands still wrote caches into the checkout before the
+  canonical runner. A focused regression now requires `${{ runner.temp }}`
+  cache paths; replacement CI and merge are the remaining gates.
 
 ## Tarihsel devam kayıtları
 
@@ -319,6 +321,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Publish the issue #33 verification candidate and merge it only after every
-applicable PR check is green. Then return to issue #34; keep v1 at 7/8 until
-reproducible non-owner evidence exists.
+Re-run PR #46 checks with the CI cache-path regression fixed and merge only
+after every applicable check is green. Then return to merge-ready technical
+work while keeping issue #34 and v1 at 7/8 until reproducible non-owner evidence
+exists.

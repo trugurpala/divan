@@ -15,6 +15,11 @@ checkout hygiene-green on POSIX and Windows without touching user files.
   the initial receipt event used the current date while later events were
   forced to `2026-07-24`. The fixture now freezes the whole receipt lifecycle
   to one date.
+- The first PR Quality Gate exposed an integration gap after all 501 tests and
+  static gates had passed: the CI-only Ruff, mypy, and coverage commands wrote
+  `.ruff_cache`, `.mypy_cache`, and `.coverage` into the checkout before the
+  canonical runner's opening hygiene check. A regression test now requires all
+  CI tool caches to use `${{ runner.temp }}`.
 
 ## Implemented contract
 
@@ -22,6 +27,8 @@ checkout hygiene-green on POSIX and Windows without touching user files.
 - Child Python uses `sys.executable` and `-B`.
 - `PYTHONDONTWRITEBYTECODE`, `PYTHONPYCACHEPREFIX`, `RUFF_CACHE_DIR`,
   `MYPY_CACHE_DIR`, and `COVERAGE_FILE` keep generated state outside the repo.
+- The Quality Gate applies the same external-cache contract to its additional
+  CI-only Ruff, mypy, coverage, and Python invocations.
 - The first and last commands are `scripts/hygiene.py --check`.
 - The runner never calls `--clean`; the existing fail-closed cleanup allowlist
   and Windows link/junction protections are unchanged.
@@ -42,14 +49,22 @@ checkout hygiene-green on POSIX and Windows without touching user files.
 | Eval contract | PASS, 4 skills / 13 cases |
 | Final hygiene | PASS |
 | Company OS impact | PASS, no unclassified changed paths |
+| Focused CI-cache regression | PASS, 21 workflow/runner tests |
 
 The Work execution surface imposes an approximately 30-second process window,
 so the 501 tests were also executed as bounded per-module subprocesses. Every
 module returned zero; coverage was collected in parallel data files outside the
 repository and combined afterward.
 
+## GitHub verification
+
+- PR #46 was opened from the focused delivery branch.
+- The first Quality Gate run failed only at the canonical runner's opening
+  hygiene check after the preceding CI-only commands created local cache
+  paths. The cache-path regression was reproduced locally and fixed
+  test-first; the replacement CI run is the merge gate.
+
 ## Non-claims
 
-- GitHub PR and CI results are not local evidence and remain pending here.
 - The immutable v0.16.0 tag and Release assets were not changed.
 - No independent-user adoption evidence was produced; v1 remains 7/8.

@@ -233,6 +233,16 @@ class WorkflowHardeningTests(unittest.TestCase):
         ):
             self.assertIn(command, text)
 
+    def test_primary_audit_keeps_tool_caches_outside_checkout(self) -> None:
+        text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
+        for declaration in (
+            "PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache",
+            "RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache",
+            "MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache",
+            "COVERAGE_FILE: ${{ runner.temp }}/coverage",
+        ):
+            self.assertIn(declaration, text)
+
     def test_python_complexity_budget_is_pinned(self) -> None:
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
         self.assertIn('select = ["E4", "E7", "E9", "F", "I", "C90"]', pyproject)

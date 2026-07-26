@@ -54,6 +54,6 @@
 - Create: `.divan/evidence/teftis-20260726-verification-hygiene.md`
 
 - [x] Run the canonical verification command from a clean commit and confirm the final hygiene check is green.
-- [ ] Run the impact-required workflow, handoff, release, Wiki, Company OS, actionlint, Ruff, mypy, Clean Code, and coverage gates.
+- [x] Run the impact-required workflow, handoff, release, Wiki, Company OS, actionlint, Ruff, mypy, Clean Code, and coverage gates.
 - [x] Record exact commands and results without changing the immutable `v0.16.0` tag or claiming v1 completion.
 - [ ] Publish a focused PR that closes #33; merge only after every applicable GitHub check is green.
