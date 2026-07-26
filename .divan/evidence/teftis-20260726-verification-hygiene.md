@@ -28,7 +28,9 @@ checkout hygiene-green on POSIX and Windows without touching user files.
 - `PYTHONDONTWRITEBYTECODE`, `PYTHONPYCACHEPREFIX`, `RUFF_CACHE_DIR`,
   `MYPY_CACHE_DIR`, and `COVERAGE_FILE` keep generated state outside the repo.
 - The Quality Gate applies the same external-cache contract to its additional
-  CI-only Ruff, mypy, coverage, and Python invocations.
+  CI-only Ruff, mypy, coverage, and Python invocations. The `${{ runner.temp }}`
+  expressions live on the executable step, where the `runner` context exists,
+  rather than at job scope.
 - The first and last commands are `scripts/hygiene.py --check`.
 - The runner never calls `--clean`; the existing fail-closed cleanup allowlist
   and Windows link/junction protections are unchanged.
@@ -62,7 +64,11 @@ repository and combined afterward.
 - The first Quality Gate run failed only at the canonical runner's opening
   hygiene check after the preceding CI-only commands created local cache
   paths. The cache-path regression was reproduced locally and fixed
-  test-first; the replacement CI run is the merge gate.
+  test-first.
+- The first replacement commit put `runner.temp` at job scope, so GitHub did
+  not create a Quality Gate run. A second red test narrowed the contract to the
+  `Local quality gates` step, and the expressions were moved to that supported
+  context. The next replacement CI run is the merge gate.
 
 ## Non-claims
 

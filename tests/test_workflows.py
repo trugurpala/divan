@@ -235,13 +235,17 @@ class WorkflowHardeningTests(unittest.TestCase):
 
     def test_primary_audit_keeps_tool_caches_outside_checkout(self) -> None:
         text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
+        quality_step = text[
+            text.index("      - name: Local quality gates") :
+            text.index("      - name: Agent Skills resmi dogrulayici")
+        ]
         for declaration in (
             "PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache",
             "RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache",
             "MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache",
             "COVERAGE_FILE: ${{ runner.temp }}/coverage",
         ):
-            self.assertIn(declaration, text)
+            self.assertIn(declaration, quality_step)
 
     def test_python_complexity_budget_is_pinned(self) -> None:
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")

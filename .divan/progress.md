@@ -291,7 +291,8 @@ final hygiene checks. GitHub PR/CI evidence remains pending.
 - Issue #33 is published as PR #46. Its first Quality Gate proved that CI-only
   lint/type/coverage commands still wrote caches into the checkout before the
   canonical runner. A focused regression now requires `${{ runner.temp }}`
-  cache paths; replacement CI and merge are the remaining gates.
+  cache paths on the executable step (not unsupported job scope); replacement
+  CI and merge are the remaining gates.
 
 ## Tarihsel devam kayıtları
 
