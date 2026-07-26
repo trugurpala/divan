@@ -54,6 +54,19 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Yayımlanan temel
 
+- **v0.16.0 ✓** Published installed-project adoption and drift-control release:
+  schema 2 ownership state, read-only lifecycle status, transaction-bound
+  update/repair, verified goal archive, redacted adoption receipts, and a
+  deterministic schema 2 project runner. PR #31, immutable commit/tag, Release
+  reachability, Pages, and Wiki are bound in the handoff evidence. Asset-byte,
+  attestation, canary, global-host, and independent-adoption claims remain
+  separate until reproduced.
+- **v0.15.0 ✓** Local release candidate for the Portable Project OS;
+  `DPS-001..DPS-012` contracts, Unicode intent routing, bounded monorepo
+  discovery, supervised goal/receipt lifecycle, provider-native delivery
+  evidence, reproducible project runner, and public-web SEO/accessibility
+  policy. Local preparation is complete; PR/main/tag/Release/Pages/Wiki and
+  dual-host delivery remain separately evidenced states.
 - **v0.14.1 ✓** Codex'in yerel marketplace metadata dosyasını kaynak/ref/commit
   doğrulamasıyla işlemsel yükseltmeye dahil eden uyumluluk düzeltmesi; diğer
   kirli dosyalar ve metadata tahrifatı fail-closed kalır
@@ -126,6 +139,50 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-26: Issue #33's hygiene-stable verification candidate added one
+  cross-platform `scripts/verify.py` entrypoint shared by AGENTS and CI. It
+  disables bytecode, redirects Python/Ruff/mypy/coverage caches outside the
+  repository, runs the core gates, and finishes with a second hygiene check
+  without invoking cleanup. A separate date-sensitive Goal Archive fixture
+  was frozen to one receipt date after it failed on 2026-07-26. Local evidence:
+  501 discovered tests across 36 green modules, 74% branch coverage, Ruff,
+  mypy, Clean Code, 94 release surfaces, and final hygiene. PR/main/CI remain
+  separate states; v0.16.0 and v1 at 7/8 are unchanged.
+- 2026-07-25: PR #39 closed issue #38's immutable-release idempotency
+  regression. Two post-release main runs had failed because the workflow tried
+  to bind the existing v0.16.0 tag to each new `GITHUB_SHA`. The repaired
+  workflow rebuilds from the tagged commit in a detached worktree, fixes ZIP
+  timestamps to UTC, skips duplicate attestations, and compares all five
+  assets byte-for-byte. Main release run `30131579254` passed; tag
+  `5513e73d`, all five SHA-256 digests, and two attestations per asset remained
+  unchanged. v1 remains 7/8.
+- 2026-07-25: Issue #35 post-merge evidence re-downloaded all five v0.16.0
+  Release assets and recomputed their SHA-256 values. GitHub asset digests,
+  both checksum manifests, SPDX 2.3 SBOM, embedded runner source identity, the
+  successful release workflow, release/SLSA attestations, Pages, and Wiki all
+  bind to immutable commit `5513e73d`. The evidence change passed 495 tests
+  with 11 platform skips, 74% branch coverage, Ruff, mypy, and Clean Code. No
+  owner canary, global-host update, or independent adoption was inferred; v1
+  remains 7/8.
+- 2026-07-25: Canonical handoff drift was found after v0.16.0 publication.
+  PR #31 was merged and `main` plus tag `v0.16.0` resolved to
+  `5513e73d5faa8657a22d813ecfec763a6089bea0`; the Release page returned HTTP
+  200 and Pages/Wiki exposed v0.16.0. `.divan/progress.md` still instructed the
+  next maintainer to push the merged branch and open its PR. Issue #32 binds the
+  handoff to a tracked publication record and rejects republishing an already
+  published version. Asset bytes, attestations, canary, global-host delivery,
+  and independent adoption were not inferred; v1 remains 7/8.
+- 2026-07-24: v0.16.0 adoption/drift scope was implemented test-first in the
+  isolated `codex/v016-adoption-drift` worktree. Existing 5 packages/41 skills
+  remain unchanged. Local preparation does not claim PR, merge, release,
+  canary, Pages/Wiki, provenance, or dual-host delivery, and v1 stays 7/8.
+- 2026-07-24: v0.15.0 release surfaces were prepared only through the canonical
+  `scripts/release.py --prepare 0.15.0` path after an approved whole-branch
+  review. The preflight passed 452 tests (10 platform-specific skips), Ruff,
+  mypy, Clean Code, and 71% branch coverage against the 64% floor. Five
+  packages/41 skills and v1 readiness at 7/8 are unchanged. No PR, merge, tag,
+  GitHub Release, Pages/Wiki publication, or global-host delivery claim is made
+  by this local preparation record.
 - 2026-07-21: v0.13.0 local release candidate prepared after 223 tests (2
   platform-specific skips), Ruff, mypy, Clean Code, actionlint 1.7.10,
   skills-ref 0.1.1 validation of 41 skills, and Claude Code 2.1.212 validation
@@ -276,7 +333,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Run an independent whole-branch review, fix every Critical and Important
-finding, then deliver v0.13.0 through a green PR/main/public-release chain.
-Only after main checks are observed may the main ruleset be applied. Keep v1 at
-7/8 until a non-owner submits reproducible acceptance evidence.
+Collect and human-review the reproducible non-owner adoption evidence in issue
+#34. Verify its privacy-bounded receipt before changing the machine-backed v1
+scorecard. Owner fixtures or canaries do not qualify; without valid evidence,
+v1 remains 7/8.

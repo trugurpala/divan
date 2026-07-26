@@ -85,9 +85,14 @@ def _logical_lines(source: str) -> set[int]:
 
 
 def _python_paths(root: pathlib.Path) -> list[pathlib.Path]:
+    roots = (
+        root / "scripts",
+        root / "evals",
+        root / "plugins" / "sadrazam" / "company",
+    )
     return sorted(
         path
-        for directory in (root / "scripts", root / "evals")
+        for directory in roots
         if directory.exists()
         for path in directory.rglob("*.py")
     )
@@ -119,6 +124,7 @@ def _ruff_complexity(root: pathlib.Path) -> dict[str, int]:
         "check",
         "scripts",
         "evals",
+        "plugins/sadrazam/company",
         "--select",
         "C901",
         "--config",

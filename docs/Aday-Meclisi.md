@@ -6,11 +6,17 @@
 
 ## Durum
 
-Toplam **1** aday · ADAPT: 0 · ADOPT: 0 · PENDING: 0 · REFERENCE: 1 · REJECT: 0
+Toplam **7** aday · ADAPT: 2 · ADOPT: 3 · PENDING: 0 · REFERENCE: 2 · REJECT: 0
 
 | Aday | Tür | Lisans | Karar | Sonraki inceleme | Gerekçe |
 |---|---|---|---|---|---|
+| [Agent Skills Specification](https://github.com/agentskills/agentskills) | `standard-research` | Apache-2.0 | **ADOPT** | 2026-10-23 | ADOPT, yalnız açık Agent Skills sözleşmesinin uygun yüzeyini inceleme/adaptasyon adayı yapar; taşınacak içerik için ayrı pin, atıf, eval ve teftiş gerekir. |
+| [Auto Company](https://github.com/MaxMiksa/Auto-Company) | `app-template` | UNKNOWN | **REFERENCE** | 2026-10-23 | REFERENCE: rol metaforu karşılaştırma girdisidir; lisans belirsizliği ve daemon modeli nedeniyle kod, prompt veya yapılandırma alınmayacaktır. |
 | [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) | `registry-index` | MIT | **REFERENCE** | 2026-10-18 | İçeriği topluca almak yerine yapılandırılmış katkı ve otomatik aday teftişi fikri özgün Meclis akışına uyarlandı. |
+| [GitHub Spec Kit](https://github.com/github/spec-kit) | `standard-research` | MIT | **ADAPT** | 2026-10-23 | ADAPT: specification-first kanıt zinciri Divan'ın dil, host ve fail-closed sözleşmesine özgün olarak uyarlanacaktır. |
+| [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | `framework-library` | Apache-2.0 | **ADOPT** | 2026-10-23 | ADOPT: pinli, opt-in SEO/erişilebilirlik kanıtı için adaydır; gerçek çalıştırma ve CI entegrasyonu ayrı bir karardır. |
+| [Lychee](https://github.com/lycheeverse/lychee) | `framework-library` | Apache-2.0 OR MIT | **ADOPT** | 2026-10-23 | ADOPT: isteğe bağlı, pinli link denetimi için adaydır; bu kayıt kurulum veya kaynak dağıtımı değildir. |
+| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | `standard-research` | MIT | **ADAPT** | 2026-10-23 | ADAPT: değişiklik-spec yaklaşımı, Divan'ın kendi durum makinesi ve receipt sözleşmesine uyarlanacaktır. |
 
 ## Yaşam döngüsü
 

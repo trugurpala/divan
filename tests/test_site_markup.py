@@ -19,6 +19,30 @@ def _contrast(foreground: str, background: str) -> float:
 
 
 class SiteMarkupTests(unittest.TestCase):
+    def test_public_metadata_and_structured_data_are_complete(self) -> None:
+        required = (
+            '<meta name="description"',
+            '<meta property="og:title"',
+            '<meta property="og:description"',
+            '<meta property="og:image"',
+            '<meta name="twitter:card" content="summary_large_image"',
+            '<meta name="twitter:image"',
+            '<link rel="alternate" hreflang="tr"',
+            '<link rel="alternate" hreflang="en"',
+            'application/ld+json',
+            '"@type":"SoftwareSourceCode"',
+        )
+        sources = []
+        for relative in ("docs/index.html", "site/index.html"):
+            html = (ROOT / relative).read_text(encoding="utf-8")
+            sources.append(html)
+            with self.subTest(relative=relative):
+                for marker in required:
+                    self.assertIn(marker, html)
+                self.assertIn("Project OS", html)
+                self.assertIn("DPS-001", html)
+        self.assertEqual(sources[0], sources[1])
+
     def test_skip_link_and_single_main_landmark_exist(self) -> None:
         for relative in ("docs/index.html", "site/index.html"):
             with self.subTest(relative=relative):

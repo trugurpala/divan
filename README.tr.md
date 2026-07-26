@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.14.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.16.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
 plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Sürüm:** v0.14.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Sürüm:** v0.16.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Neden Divan?
 
@@ -44,6 +44,36 @@ mühendislik disiplinini, UI Pack arayüz kalitesini sağlar. React Pack yalnız
 React projesinde; Zanaat Pack yalnız yaratıcı veya entegrasyon işinde devreye
 girer. Ayrıntılar: [Company OS](docs/Company-OS.tr.md).
 
+Aynı sözleşmeyi hedef projeye önce yazmayan önizlemeyle kur:
+
+```powershell
+python scripts/divan.py init --project . --profile standard --locale auto
+python scripts/divan.py init --project . --profile standard --locale auto --execute
+python scripts/divan.py audit --project . --format json
+```
+
+Divan reposu `DCS-*`, kurulu proje ise yalnız uygulanabilir `DPS-*` kurallarını
+izler ve kanıtı `.divan/` altında tutar. Ayrıntılar:
+[Project OS sözleşmesi](docs/Project-OS.tr.md).
+
+Kurulumdan sonra sahiplik ve sapmayı yazmadan oku; proje schema güncellemesini
+veya güvenli onarımı uygulamadan önce planını gör:
+
+```powershell
+python scripts/divan.py project status --project . --json
+python scripts/divan.py project update --project .
+python scripts/divan.py project update --project . --execute
+python scripts/divan.py project repair --project .
+python scripts/divan.py project repair --project . --execute
+```
+
+Host `update`, Claude/Codex içindeki Divan paketlerini değiştirir. Project
+`update`, hedef repoda yalnız Divan'ın sahip olduğu yüzeyleri taşır. `audit`,
+DPS kalite kanıtını; `project status`, sahiplik parmak izlerini ve sapmayı
+değerlendirir. Doğrulanmış hedefler arşivlenebilir; kullanıcı adı, mutlak yol,
+remote, secret veya alakasız eklenti açıklamayan sınırlı kabul makbuzu
+üretilebilir. Sahip canary kanıtı bağımsız kabul kapısını kapatmaz.
+
 ## Kendi kendini nasıl geliştirir?
 
 Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
@@ -69,8 +99,8 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 Önce değişiklik yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.14.1
-python scripts/divan.py install --host both --ref v0.14.1 --execute
+python scripts/divan.py install --host both --ref v0.16.0
+python scripts/divan.py install --host both --ref v0.16.0 --execute
 ```
 
 Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
@@ -84,9 +114,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.14.1
-python scripts/divan.py update --host both --ref v0.14.1
-python scripts/divan.py update --host both --ref v0.14.1 --execute
+python scripts/divan.py doctor --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0
+python scripts/divan.py update --host both --ref v0.16.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -98,11 +128,15 @@ host'a göre elle kaldırma ve sahiplik sınırları: [docs/Kaldirma.md](docs/Ka
 ## Temiz geliştirme
 
 ```powershell
+python scripts/verify.py
 python scripts/hygiene.py --check
 python scripts/hygiene.py --clean
 ```
 
-`--check`; birinci taraf metinde UTF-8/BOM/mojibake, locale'e bırakılmış metin
+`verify.py`, yerel geliştirme ile CI'ın ortak doğrulama yoludur. Python
+bytecode'unu kapatır, araç cache'lerini repo dışına yönlendirir, çekirdek
+kapıları çalıştırır ve ikinci bir hijyen kontrolüyle biter. `--check`; birinci
+taraf metinde UTF-8/BOM/mojibake, locale'e bırakılmış metin
 subprocess'i ve repo cache'lerini reddeder. `--clean` yalnız sabit allowlist'teki
 yeniden üretilebilir cache'leri kalıcı siler; `.divan/evidence`, eval sonuçları,
 manifestler, worktree'ler ve kullanıcı/rollback yedeklerine dokunmaz. Repo metni

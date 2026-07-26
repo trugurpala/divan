@@ -1,16 +1,86 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-23
+Son güncelleme: 2026-07-26
+
+## Yayın durumu
+
+- Latest published release: v0.16.0
+- Published commit: 5513e73d5faa8657a22d813ecfec763a6089bea0
+- Publication evidence: .divan/evidence/teftis-20260725-v016-publication-handoff.md
+- Release asset evidence: .divan/evidence/teftis-20260725-v016-release-assets.md
+- Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-v0.14.1 closes the Codex native marketplace metadata compatibility defect found
-during the real dual-host v0.14.0 upgrade. The patch must pass CI, publish from
-`main`, and then upgrade Claude and Codex transactionally. v1 remains 7/8
-because independent adoption evidence is still outside repository control.
+v0.16.0 is published from immutable commit `5513e73d`; PR #31 is merged and
+the Release page, five recomputed assets, checksum manifests, SPDX SBOM,
+attestations, Pages, and Wiki are bound to tracked evidence. Post-release
+`main` commits now rebuild from the immutable tag and verify all five Release
+assets byte-for-byte without moving the tag or duplicating attestations. The
+remaining v1 product gate is reproducible adoption evidence from a non-owner.
+No canary or transactional global-host update was reproduced in this review.
+v1 remains 7/8.
+
+PR #46 closed issue #33 as main commit `5f7f088`; its five PR checks passed and
+the canonical `scripts/verify.py` controller now keeps local and CI caches
+outside the checkout. PR #29's persistent-memory refresh passed all seven
+GitHub workflows, including Linux/macOS/Windows project-memory smoke, and
+remains draft only because independent review is not yet recorded. PR #28's
+Forge Council candidate is integrated locally with current `main`; 514 tests,
+11 platform skips, 74% coverage, 63 mypy source files, Clean Code, release,
+handoff, impact, and final hygiene passed.
 
 ## Yapıldı
 
+- PR #39 merged the issue #38 release-idempotency repair as `da5c2a7c`.
+  Main release run `30131579254` passed all three clean hosts, skipped duplicate
+  attestation, and verified all five v0.16.0 assets byte-for-byte from the
+  immutable tag. The tag, five SHA-256 digests, and two attestations per asset
+  remained unchanged. Evidence is tracked in
+  `.divan/evidence/teftis-20260725-release-idempotency.md`.
+- PR #31 merged v0.16.0 to `main`; tag `v0.16.0` points to
+  `5513e73d5faa8657a22d813ecfec763a6089bea0`. The Release page returned HTTP
+  200 and live Pages/Wiki readbacks contained v0.16.0. Bounded evidence is
+  tracked in `.divan/evidence/teftis-20260725-v016-publication-handoff.md`.
+- All five v0.16.0 Release assets were downloaded again and their SHA-256
+  values matched the GitHub asset digests and published checksum manifests.
+  The SPDX 2.3 SBOM, runner source envelope, release/SLSA attestations, release
+  workflow, Pages, and Wiki readbacks are tracked in
+  `.divan/evidence/teftis-20260725-v016-release-assets.md`.
+- The post-merge evidence branch passed 495 tests with 11 platform skips, 74%
+  branch coverage, Ruff, mypy across 61 source files, Clean Code, release,
+  handoff, Wiki, Company OS, and eval contract checks. v1 remains 7/8.
+- Schema 2 config and install state bind immutable version/ref/commit, project
+  identity, and managed whole-file/marked-block payload hashes.
+- `project status` is read-only; `project update` and `project repair` are
+  dry-run-first and reuse the proven lock, ACL, journal, authority, marker,
+  rollback, and recovery transaction boundary.
+- Verified goals archive with bound hashes and controlled source removal.
+  Adoption export writes redacted JSON/Markdown and distinguishes
+  `valid-owner-canary` from `valid-independent-declaration`.
+- The deterministic project runner, impact graph, DCS-007, README, Project OS,
+  install, Wiki, changelog, blueprint, and publication manifest include the new
+  lifecycle while 5 packages/41 skills and v1 at 7/8 remain unchanged.
+- Ruff, mypy, coverage, and Clean Code now measure the first-party Company OS
+  runtime; previously invisible exact module/function/complexity debt is pinned
+  in the ratchet and cannot increase without failing CI.
+- Whole-branch review approved the Project OS candidate at `1a94b61` after
+  provider, SEO, initialization, recovery, and mutation-authority findings were
+  closed test-first.
+- Portable Project OS now provides dry-run-first initialization, deterministic
+  goals/specs/plans/tasks, append-only receipts, `DPS-001..DPS-012`, bounded
+  monorepo discovery, Unicode English/Turkish routing, multi-workflow planning,
+  fail-closed impact classification, and provider-native release evidence.
+- Public-web projects receive scoped SEO/accessibility policy, static metadata
+  checks, pinned Lighthouse CI/Lychee plans, and provider-bound live evidence;
+  irrelevant web standards are not forced on libraries or services.
+- English canonical Project OS, Company OS, Community Standards, README, Wiki,
+  Pages/site, install, workflow, and release surfaces are synchronized with
+  first-class Turkish localization.
+- `python scripts/release.py --prepare 0.15.0` updated only deterministic version
+  surfaces. Preflight passed 452 tests with 10 platform-specific skips, Ruff,
+  mypy, Clean Code, and 71% coverage; five packages/41 skills and v1 at 7/8
+  remain unchanged.
 - The failed v0.14.0 dual-host upgrade rolled back automatically and both hosts
   were re-proven healthy at v0.12.2 before development continued.
 - Codex's isolated native metadata file is now accepted through its existing
@@ -216,6 +286,20 @@ because independent adoption evidence is still outside repository control.
 
 ## Devam ediyor
 
+- Issue #34 requires a non-owner to install a pinned release, complete a bounded
+  real task, export a privacy-bounded adoption receipt, and reproduce the
+  result. Maintainer fixtures and owner canaries cannot close this gate.
+- Issue #33 is published as PR #46. Its first Quality Gate proved that CI-only
+  lint/type/coverage commands still wrote caches into the checkout before the
+  canonical runner. A focused regression now requires `${{ runner.temp }}`
+  cache paths on the executable step (not unsupported job scope); replacement
+  CI and merge are the remaining gates.
+
+## Tarihsel devam kayıtları
+
+The following entries are retained as dated pre-release snapshots. They are not
+the current execution queue.
+
 - 2026-07-19: v0.12.1 yüzeyleri hazır. Tam yerel teftiş, bağımsız code review,
   PR/main/Release/Pages/Wiki ve çift-host global kurulum kanıtı sıradadır.
 - 2026-07-19: ADR 0003 ve test-first v0.12.1 uygulama planı yazıldı. Sıradaki
@@ -239,6 +323,7 @@ because independent adoption evidence is still outside repository control.
 
 ## Sıradaki kesin adım
 
-Obtain a clean independent review of `origin/main..HEAD`, then push a ready PR
-and wait for every workflow. Merge only when green; observe exact main check
-names before applying the recovery-bypass ruleset and continuing public release.
+Publish the current-main Forge Council integration to PR #28 and require all
+applicable GitHub checks before merge. Keep PR #29 draft until independent
+review is recorded, and keep issue #34 plus v1 at 7/8 until reproducible
+non-owner evidence exists.

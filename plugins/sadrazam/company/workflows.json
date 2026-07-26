@@ -5,73 +5,122 @@
       "id": "security-delivery",
       "label": {"en": "Security delivery", "tr": "Güvenlik teslimi"},
       "priority": 90,
-      "keywords": ["security", "vulnerability", "threat", "secret", "authentication", "authorization"],
+      "keywords": ["security", "vulnerability", "threat", "secret", "authentication", "authorization", "güvenlik", "açık", "kimlik doğrulama", "yetkilendirme"],
       "roles": ["security-reviewer", "backend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "temkin"}],
-      "stages": ["threat model", "regression", "implementation", "security review", "verification"]
+      "stages": ["threat model", "regression", "implementation", "security review", "verification"],
+      "providers": ["local"],
+      "required_evidence": ["threat model", "security regression", "verification result"]
     },
     {
       "id": "integration-delivery",
       "label": {"en": "Integration delivery", "tr": "Entegrasyon teslimi"},
       "priority": 80,
-      "keywords": ["mcp", "integration", "connector", "webhook", "external api", "tool server"],
+      "keywords": ["mcp", "integration", "connector", "webhook", "external api", "tool server", "entegrasyon", "bağlayıcı", "harici api"],
       "roles": ["product-strategist", "integration-engineer", "security-reviewer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "zanaat-pack", "skill": "mcp-builder"}],
-      "stages": ["contract", "threat review", "test-first implementation", "evaluation", "verification"]
+      "stages": ["contract", "threat review", "test-first implementation", "evaluation", "verification"],
+      "providers": ["context7", "local"],
+      "required_evidence": ["integration contract", "provider documentation", "verification result"]
     },
     {
       "id": "ui-delivery",
       "label": {"en": "UI and UX delivery", "tr": "UI ve UX teslimi"},
       "priority": 70,
-      "keywords": ["ui", "ux", "design", "redesign", "interface", "dashboard", "frontend", "responsive", "accessibility", "onboarding"],
+      "keywords": ["ui", "ux", "design", "redesign", "interface", "dashboard", "frontend", "responsive", "accessibility", "onboarding", "tasarım", "arayüz", "erişilebilirlik"],
       "roles": ["ux-designer", "frontend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "ui-pack", "skill": "ui-ux-pro-max"}],
-      "stages": ["design system", "interaction contract", "test-first implementation", "browser verification", "review"]
+      "stages": ["design system", "interaction contract", "test-first implementation", "browser verification", "review"],
+      "providers": ["local", "vercel"],
+      "required_evidence": ["accessibility review", "browser verification", "visual readback"]
+    },
+    {
+      "id": "testing-delivery",
+      "label": {"en": "Testing delivery", "tr": "Test teslimi"},
+      "priority": 65,
+      "keywords": ["test", "tests", "testing", "quality assurance", "coverage", "e2e", "unit test", "integration test", "testlerini", "sınama", "kalite güvencesi"],
+      "roles": ["qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "test-driven-development"}],
+      "stages": ["test contract", "red evidence", "minimal implementation", "green evidence", "independent review"],
+      "providers": ["local"],
+      "required_evidence": ["red test evidence", "green test evidence", "test summary"]
     },
     {
       "id": "bugfix-delivery",
       "label": {"en": "Bug fix delivery", "tr": "Hata düzeltme teslimi"},
       "priority": 60,
-      "keywords": ["bug", "fix", "error", "crash", "regression", "debug", "broken", "fails"],
+      "keywords": ["bug", "fix", "error", "crash", "regression", "debug", "broken", "fails", "hata", "düzelt", "çökme", "bozuk"],
       "roles": ["backend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "systematic-debugging"}],
-      "stages": ["reproduce", "root cause", "regression test", "minimal fix", "verification"]
+      "stages": ["reproduce", "root cause", "regression test", "minimal fix", "verification"],
+      "providers": ["local"],
+      "required_evidence": ["reproduction", "root cause", "regression test"]
+    },
+    {
+      "id": "deployment-delivery",
+      "label": {"en": "Deployment delivery", "tr": "Dağıtım teslimi"},
+      "priority": 55,
+      "keywords": ["deploy", "deployment", "preview", "production", "promotion", "staging", "dağıtım", "önizleme", "canlıya al", "yayına al"],
+      "roles": ["release-manager", "platform-engineer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "core-pack", "skill": "finishing-a-development-branch"}],
+      "stages": ["provider preflight", "dry run", "preview", "verification", "promotion readback"],
+      "providers": ["vercel"],
+      "required_evidence": ["provider capability", "deployment result", "live readback"]
     },
     {
       "id": "release-delivery",
       "label": {"en": "Release delivery", "tr": "Yayın teslimi"},
       "priority": 50,
-      "keywords": ["release", "publish", "ship", "deploy", "version", "distribution"],
+      "keywords": ["release", "publish", "ship", "version", "distribution", "release notes", "sürüm", "yayınla", "dağıtım paketi"],
       "roles": ["release-manager", "platform-engineer", "technical-writer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "finishing-a-development-branch"}],
-      "stages": ["preflight", "public surface sync", "CI", "publication", "live readback"]
+      "stages": ["preflight", "public surface sync", "CI", "publication", "live readback"],
+      "providers": ["github", "local"],
+      "required_evidence": ["CI result", "release artifact", "remote readback"]
+    },
+    {
+      "id": "seo-delivery",
+      "label": {"en": "SEO delivery", "tr": "SEO teslimi"},
+      "priority": 45,
+      "keywords": ["seo", "search engine", "metadata", "sitemap", "robots", "structured data", "arama motoru", "meta veri", "site haritası", "yapısal veri"],
+      "roles": ["product-strategist", "ux-designer", "frontend-engineer", "technical-writer", "qa-engineer", "independent-reviewer"],
+      "skills": [{"package": "ui-pack", "skill": "webapp-testing"}],
+      "stages": ["applicability", "technical audit", "implementation", "crawl evidence", "live readback"],
+      "providers": ["context7", "vercel"],
+      "required_evidence": ["SEO applicability", "crawl evidence", "live metadata readback"]
     },
     {
       "id": "creative-delivery",
       "label": {"en": "Creative delivery", "tr": "Yaratıcı teslim"},
       "priority": 40,
-      "keywords": ["poster", "visual", "brand", "theme", "canvas", "gif", "creative artifact"],
+      "keywords": ["poster", "visual", "brand", "theme", "canvas", "gif", "creative artifact", "görsel", "marka", "tema"],
       "roles": ["product-strategist", "creative-producer", "ux-designer", "independent-reviewer"],
       "skills": [{"package": "zanaat-pack", "skill": "theme-factory"}],
-      "stages": ["creative direction", "original production", "format validation", "accessibility review"]
+      "stages": ["creative direction", "original production", "format validation", "accessibility review"],
+      "providers": ["local"],
+      "required_evidence": ["original artifact", "format validation", "accessibility review"]
     },
     {
       "id": "documentation-delivery",
       "label": {"en": "Documentation delivery", "tr": "Dokümantasyon teslimi"},
       "priority": 30,
-      "keywords": ["documentation", "docs", "readme", "wiki", "guide", "translation", "localization"],
+      "keywords": ["documentation", "docs", "readme", "wiki", "guide", "translation", "localization", "dokümantasyon", "belge", "rehber", "çeviri", "yerelleştirme"],
       "roles": ["technical-writer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "writing-skills"}],
-      "stages": ["source audit", "canonical edit", "locale sync", "link validation", "review"]
+      "stages": ["source audit", "canonical edit", "locale sync", "link validation", "review"],
+      "providers": ["local"],
+      "required_evidence": ["canonical source", "link validation", "locale review"]
     },
     {
       "id": "feature-delivery",
       "label": {"en": "Feature delivery", "tr": "Özellik teslimi"},
       "priority": 10,
-      "keywords": ["feature", "build", "application", "develop", "implement", "create", "add"],
+      "keywords": ["feature", "build", "application", "develop", "implement", "create", "add", "özellik", "uygulama", "geliştir", "oluştur", "ekle"],
       "roles": ["product-strategist", "frontend-engineer", "backend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "test-driven-development"}],
-      "stages": ["brief", "design", "plan", "test-first implementation", "review", "verification"]
+      "stages": ["brief", "design", "plan", "test-first implementation", "review", "verification"],
+      "providers": ["local"],
+      "required_evidence": ["approved brief", "red-green evidence", "verification result"]
     }
   ]
 }

@@ -16,48 +16,35 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
-      - name: Install Python quality dependencies
-        run: pip install -r requirements-dev.txt
-      - name: Repository hygiene
-        run: python scripts/hygiene.py --check
-      - name: Forge registry gates
+      - name: Local quality gates
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache
+          RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
+          MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache
+          COVERAGE_FILE: ${{ runner.temp }}/coverage
         run: |
+          pip install -r requirements-dev.txt
           python scripts/forge_registry.py
           python -m unittest tests.test_forge_registry -v
-          ruff check scripts/forge_registry.py tests/test_forge_registry.py
-          mypy scripts/forge_registry.py
-      - name: Repository naming
-        run: python scripts/naming.py --check
-      - name: Company and standards gates
-        run: |
+          python scripts/naming.py --check
           python scripts/divan.py company-validate
           python scripts/standards.py --check
-      - name: Complete repository unit tests
-        run: python -m unittest discover -s tests -p 'test_*.py'
-      - name: General repository validator
-        run: python scripts/validate.py
-      - name: Product and publication gates
-        run: |
-          python evals/run.py --check
           python scripts/wiki.py --check
           python scripts/candidate_review.py --check
-          python scripts/catalog.py --check
-          python scripts/v1.py --check
-          python scripts/release.py --check
-      - name: Ruff and Clean Code
-        run: |
+          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-a.pyz" --source-commit "${{ github.sha }}"
+          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-b.pyz" --source-commit "${{ github.sha }}"
+          cmp "$RUNNER_TEMP/divan-project-a.pyz" "$RUNNER_TEMP/divan-project-b.pyz"
+          python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
           ruff check .
           python scripts/clean_code.py --check
-      - name: Mypy
-        run: mypy scripts evals
-      - name: Coverage
-        run: |
+          mypy scripts evals plugins/sadrazam/company
           coverage run -m unittest discover -s tests
           coverage report --fail-under=64
       - name: Actionlint
         run: |
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
           "$(go env GOPATH)/bin/actionlint"
+          python scripts/verify.py
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1

@@ -55,6 +55,32 @@ def copy_sbom_fixture(destination: pathlib.Path) -> None:
 
 
 class SbomTests(unittest.TestCase):
+    def test_runner_and_checksum_are_described_with_sha256(self) -> None:
+        sbom = load_sbom()
+        artifacts = {
+            "divan-project.pyz": "a" * 64,
+            "divan-project.pyz.sha256": "b" * 64,
+        }
+
+        document = sbom.build_spdx(
+            ROOT,
+            "0.12.2",
+            SOURCE_COMMIT,
+            artifacts=artifacts,
+        )
+
+        self.assertEqual(
+            [item["fileName"] for item in document["files"]],
+            ["divan-project.pyz", "divan-project.pyz.sha256"],
+        )
+        self.assertEqual(
+            [item["checksums"][0]["checksumValue"] for item in document["files"]],
+            ["a" * 64, "b" * 64],
+        )
+        described = set(document["documentDescribes"])
+        self.assertIn("SPDXRef-File-divan-project-pyz", described)
+        self.assertIn("SPDXRef-File-divan-project-pyz-sha256", described)
+
     def test_spdx_document_has_deterministic_identity_and_order(self) -> None:
         sbom = load_sbom()
         first = sbom.build_spdx(ROOT, "0.12.2", SOURCE_COMMIT)
