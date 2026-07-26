@@ -223,7 +223,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
         for command in (
             "pip install -r requirements-dev.txt",
-            "python scripts/hygiene.py --check",
+            "python scripts/verify.py",
             "python scripts/standards.py --check",
             "ruff check .",
             "mypy scripts evals plugins/sadrazam/company",

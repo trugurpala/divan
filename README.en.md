@@ -116,11 +116,15 @@ removal and ownership boundaries.
 ## Clean development
 
 ```powershell
+python scripts/verify.py
 python scripts/hygiene.py --check
 python scripts/hygiene.py --clean
 ```
 
-`--check` rejects invalid UTF-8, BOM/mojibake, locale-dependent text
+`verify.py` is the shared local/CI verification path. It disables Python
+bytecode, redirects tool caches outside the repository, runs the core gates,
+and finishes with a second hygiene check. `--check` rejects invalid UTF-8,
+BOM/mojibake, locale-dependent text
 subprocesses, and repository caches. `--clean` permanently removes only a fixed
 allowlist of reproducible caches; it never touches `.divan/evidence`, eval
 results, manifests, worktrees, or user/rollback backups. CI pins repository text

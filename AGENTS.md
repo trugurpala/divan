@@ -46,19 +46,18 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 
 ## Doğrulama
 
-Teslimden önce en az şunları çalıştır:
+Teslimden önce çapraz-platform, cache'leri depo dışında tutan kanonik yolu
+çalıştır:
 
 ```bash
-python scripts/hygiene.py --check
-python scripts/validate.py
-python scripts/handoff.py --check
-python scripts/catalog.py --check
-python scripts/v1.py --check
-python scripts/release.py --check
-python evals/run.py --check
-python -m unittest discover -s tests -v
+python scripts/verify.py
 git diff --check
 ```
+
+Doğrulayıcı ilk ve son adımda hijyen kapısını çalıştırır; Python bytecode,
+Ruff, mypy ve coverage cache'lerini geçici olarak depo dışına yönlendirir.
+`scripts/hygiene.py --clean` yalnız mevcut allowlist için açık bir bakım
+komutudur ve normal doğrulama sırasında çağrılmaz.
 
 Claude Code veya Agent Skills şemasını etkileyen değişikliklerde CI'daki resmî
 doğrulayıcıların yerel karşılıklarını da çalıştır. Kanıt görmeden “bitti” deme.

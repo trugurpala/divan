@@ -1,6 +1,6 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-25
+Son güncelleme: 2026-07-26
 
 ## Yayın durumu
 
@@ -20,6 +20,14 @@ assets byte-for-byte without moving the tag or duplicating attestations. The
 remaining v1 product gate is reproducible adoption evidence from a non-owner.
 No canary or transactional global-host update was reproduced in this review.
 v1 remains 7/8.
+
+Issue #33's implementation candidate is on
+`agent/verification-hygiene-stable`. The new `scripts/verify.py` controller
+runs the shared local/CI core sequence with bytecode disabled and tool caches
+outside the repository; it never invokes cleanup. Local verification found 501
+tests across 36 green modules, 74% branch coverage, 62 mypy source files, 94
+release surfaces, and green Ruff, Clean Code, handoff, Wiki, Company OS, and
+final hygiene checks. GitHub PR/CI evidence remains pending.
 
 ## Yapıldı
 
@@ -280,7 +288,8 @@ v1 remains 7/8.
 - Issue #34 requires a non-owner to install a pinned release, complete a bounded
   real task, export a privacy-bounded adoption receipt, and reproduce the
   result. Maintainer fixtures and owner canaries cannot close this gate.
-- Issue #33 tracks the order-sensitive local hygiene recipe.
+- Issue #33 has a locally verified test-first implementation candidate. The
+  next gate is PR CI and merge to `main`.
 
 ## Tarihsel devam kayıtları
 
@@ -310,7 +319,6 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Collect and human-review the reproducible non-owner adoption evidence required
-by issue #34. Run the adoption receipt verifier before changing
-`registry/v1-gates.json`; keep v1 at 7/8 if the evidence is absent, owner-run,
-privacy-unsafe, or not reproducible.
+Publish the issue #33 verification candidate and merge it only after every
+applicable PR check is green. Then return to issue #34; keep v1 at 7/8 until
+reproducible non-owner evidence exists.
