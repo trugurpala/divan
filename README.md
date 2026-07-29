@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.17.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.18.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -22,7 +22,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v0.17.1 · **Latest published:** v0.17.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.18.0 · **Latest published:** v0.17.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -128,8 +128,8 @@ ref whose immutable tag and GitHub Release exist. Preview the no-write plan,
 then install the same pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.17.1
-python scripts/divan.py install --host both --ref v0.17.1 --execute
+python scripts/divan.py install --host both --ref v0.18.0
+python scripts/divan.py install --host both --ref v0.18.0 --execute
 ```
 
 For safety, the installer never overwrites an existing `divan` marketplace or
@@ -144,9 +144,9 @@ migration, and removal paths.
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.17.1
-python scripts/divan.py update --host both --ref v0.17.1
-python scripts/divan.py update --host both --ref v0.17.1 --execute
+python scripts/divan.py doctor --host both --ref v0.18.0
+python scripts/divan.py update --host both --ref v0.18.0
+python scripts/divan.py update --host both --ref v0.18.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

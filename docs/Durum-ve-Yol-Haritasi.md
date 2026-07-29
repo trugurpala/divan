@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v0.17.1
+# Durum ve Yol Haritası · v0.18.0
 
 Son durum tarihi: 2026-07-29.
 
@@ -73,13 +73,16 @@ değildir.
   üzerinden çalışır. Tam model adı yalnız host doğrulaması gereken adaydır.
 - Goal klasörü `route.json` taşır; görev, bağımlılık, sefer, devir ve kanıt
   yükümlülükleri oturumlar arasında kalır.
-- Bu satırlar kaynak geliştirme durumudur; PR, CI, merge ve v0.18.0 Release
-  kanıtı tamamlanmadan yayımlanmış özellik sayılmaz.
+- Uygulama PR #54 ile `7c674874` commit'inde `main`e birleşti; 562 test, iki
+  bağımsız inceleme ve zorunlu CI kapıları geçti. Sürüm PR'ı, değişmez
+  v0.18.0 tag/Release'i, varlıklar, Pages ve Wiki doğrulanmadan yayımlanmış
+  özellik sayılmaz.
 
 ## Sıradaki ürün kanıtı
 
-1. Nizâm-ı Sefer değişikliğini PR/CI, bağımsız inceleme ve temiz-host
-   doğrulamasıyla `main`e taşı.
+1. v0.18.0 sürüm adayını korumalı PR/CI üzerinden `main`e taşı; tag/Release,
+   beş varlık, checksum, attestation, Pages/Wiki ve sabitlenmiş kurulum
+   geri okumasını doğrula.
 2. Native host adaptörleri ve tek-komut kurulum profillerini ayrı, kanıtlı
    dilimler halinde uygula; sahte “her hostta tam uyum” iddiası kurma.
 3. Yayımlanan sabit sürümü kullanan, repo sahibi olmayan bağımsız kullanıcıdan
