@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "tiers": ["experimental", "skill-compatible", "native", "verified"],
+  "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
+  "hosts": [
+    {
+      "id": "claude-code",
+      "tier": "verified",
+      "target_tier": "verified",
+      "distribution": "plugin",
+      "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
+      "official_docs": "https://code.claude.com/docs/en/plugins-reference",
+      "evidence": [".github/workflows/compatibility.yml", "tests/test_host_install.py"]
+    },
+    {
+      "id": "codex",
+      "tier": "verified",
+      "target_tier": "verified",
+      "distribution": "plugin",
+      "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
+      "official_docs": "https://developers.openai.com/codex/plugins",
+      "evidence": [".github/workflows/compatibility.yml", "tests/test_host_install.py"]
+    },
+    {
+      "id": "cursor",
+      "tier": "skill-compatible",
+      "target_tier": "verified",
+      "distribution": "plugin",
+      "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp"],
+      "official_docs": "https://cursor.com/docs/reference/plugins",
+      "evidence": []
+    },
+    {
+      "id": "antigravity-cli",
+      "tier": "experimental",
+      "target_tier": "verified",
+      "distribution": "plugin",
+      "capabilities": ["skills", "instructions", "agents", "hooks", "mcp", "lifecycle"],
+      "official_docs": "https://antigravity.google/docs/cli/plugins",
+      "evidence": []
+    },
+    {
+      "id": "gemini-cli",
+      "tier": "experimental",
+      "target_tier": "verified",
+      "distribution": "extension",
+      "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
+      "official_docs": "https://geminicli.com/docs/extensions/reference/",
+      "evidence": []
+    },
+    {
+      "id": "github-copilot",
+      "tier": "skill-compatible",
+      "target_tier": "verified",
+      "distribution": "surface-specific",
+      "capabilities": ["skills", "instructions", "agents", "hooks", "mcp"],
+      "official_docs": "https://docs.github.com/en/copilot/reference/customization-cheat-sheet",
+      "evidence": []
+    },
+    {
+      "id": "kiro-ide",
+      "tier": "experimental",
+      "target_tier": "native",
+      "distribution": "power",
+      "capabilities": ["skills", "instructions", "hooks", "mcp", "lifecycle"],
+      "official_docs": "https://kiro.dev/docs/powers/",
+      "evidence": []
+    },
+    {
+      "id": "kiro-cli",
+      "tier": "experimental",
+      "target_tier": "verified",
+      "distribution": "adapter",
+      "capabilities": ["instructions", "agents", "hooks", "mcp", "lifecycle"],
+      "official_docs": "https://kiro.dev/docs/cli/skills/",
+      "evidence": []
+    },
+    {
+      "id": "opencode",
+      "tier": "skill-compatible",
+      "target_tier": "verified",
+      "distribution": "adapter",
+      "capabilities": ["skills", "instructions", "commands", "agents", "mcp"],
+      "official_docs": "https://opencode.ai/docs/skills/",
+      "evidence": []
+    },
+    {
+      "id": "windsurf",
+      "tier": "skill-compatible",
+      "target_tier": "verified",
+      "distribution": "adapter",
+      "capabilities": ["skills", "instructions", "commands", "hooks", "mcp"],
+      "official_docs": "https://docs.windsurf.com/windsurf/cascade/skills",
+      "evidence": []
+    },
+    {
+      "id": "other-agents",
+      "tier": "skill-compatible",
+      "target_tier": "skill-compatible",
+      "distribution": "agent-skills",
+      "capabilities": ["skills", "instructions"],
+      "official_docs": "https://agentskills.io/specification",
+      "evidence": []
+    }
+  ]
+}

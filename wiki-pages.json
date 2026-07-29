@@ -3,6 +3,7 @@
     {"source": "docs/Home.md", "slug": "Home", "title": "Ana Sayfa"},
     {"source": "docs/Hizli-Baslangic.md", "slug": "Hizli-Baslangic", "title": "Hızlı Başlangıç"},
     {"source": "docs/Kurulum.md", "slug": "Kurulum", "title": "Kurulum"},
+    {"source": "docs/Host-Uyumlulugu.md", "slug": "Host-Uyumlulugu", "title": "Host Uyumluluğu"},
     {"source": "docs/Vibe-Coder-Icin-Deger.md", "slug": "Vibe-Coder-Icin-Deger", "title": "Vibe Coder İçin Değer"},
     {"source": "docs/Divan-Engine.tr.md", "slug": "Divan-Engine", "title": "Divan Engine ve Divan Nizamı"},
     {"source": "docs/Project-Contract.tr.md", "slug": "Project-Contract", "title": "Divan Proje Sözleşmesi"},

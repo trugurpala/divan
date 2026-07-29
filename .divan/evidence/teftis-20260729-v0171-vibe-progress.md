@@ -1,5 +1,15 @@
 # v0.17.1 release evidence
 
+## Publication identity
+
+- Version: v0.17.1
+- Source commit: 4144e096fdcdf07f2caab50585a831beb4f3f60b
+- Release: https://github.com/trugurpala/divan/releases/tag/v0.17.1
+- Release workflow: https://github.com/trugurpala/divan/actions/runs/30482056816
+- Release workflow conclusion: `success`
+- Published at: `2026-07-29T18:57:12Z`
+- Draft/prerelease: `false` / `false`
+
 ## Scope
 
 Vibe-friendly, evidence-bound progress communication for substantial Divan
@@ -24,9 +34,15 @@ They do not establish a new real-agent A/B improvement claim.
 
 ## GitHub delivery
 
-Pending PR, protected merge, immutable tag, Release assets, Pages, and Wiki
-readback. These states are not claimed until their identifiers are recorded
-here.
+- PR: `#52`.
+- Protected squash merge: `4144e096fdcdf07f2caab50585a831beb4f3f60b`.
+- Release workflow: `30482056816`, successful on the exact merge commit.
+- Immutable tag and public Release: `v0.17.1`.
+- Five assets were downloaded and matched their GitHub SHA-256 digests:
+  `divan-project.pyz`, its checksum, the release checksum manifest, SPDX SBOM,
+  and release ZIP.
+- Every asset has two GitHub attestations.
+- Pages and Wiki returned HTTP 200 and exposed v0.17.1 after publication.
 
 ## v1 boundary
 

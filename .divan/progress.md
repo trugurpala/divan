@@ -4,19 +4,19 @@ Son güncelleme: 2026-07-29
 
 ## Yayın durumu
 
-- Latest published release: v0.17.0
-- Published commit: 8b711b6f0ebb696ce971d83c90833bb59acf3c34
-- Publication evidence: .divan/evidence/teftis-20260729-v017-release.md
-- Release asset evidence: .divan/evidence/teftis-20260729-v017-release.md
+- Latest published release: v0.17.1
+- Published commit: 4144e096fdcdf07f2caab50585a831beb4f3f60b
+- Publication evidence: .divan/evidence/teftis-20260729-v0171-vibe-progress.md
+- Release asset evidence: .divan/evidence/teftis-20260729-v0171-vibe-progress.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release remains v0.17.0 at immutable commit `8b711b6f`.
-The active v0.17.1 patch candidate gives substantial Divan work one calm,
-evidence-bound progress language for vibe coders. Local implementation is not
-yet a merge, release, or live deployment; those states remain pending until
-their identifiers are recorded in the v0.17.1 evidence file.
+The latest published release is v0.17.1 at immutable commit `4144e096`.
+The active v0.18 line builds one evidence-backed compatibility registry and
+small host adapters without forking Divan into separate repositories. A host
+may be called verified only after a clean-host lifecycle canary records real
+evidence.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -342,7 +342,8 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Open the v0.17.1 patch PR from the locally verified candidate, pass required
-CI, merge through branch protection, publish the immutable release, and read
-back assets, Pages, and Wiki. Only after that return to issue #34; keep v1 at
-7/8 unless reproducible, privacy-bounded non-owner adoption evidence exists.
+Open the v0.18 host-foundation PR from the locally verified candidate. Pass the
+required cross-platform and publication-surface checks before merging. Keep
+every non-canary host below `verified` until its own clean-host lifecycle
+evidence exists. Issue #34 remains separate; keep v1 at 7/8 unless reproducible,
+privacy-bounded non-owner adoption evidence exists.

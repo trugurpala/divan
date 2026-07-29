@@ -11,26 +11,27 @@ import sys
 
 try:
     from company_contracts import validate as company_contracts_validate
+    from host_compatibility import validate as host_compatibility_validate
     from host_marketplaces import check as host_marketplaces_check
     from hygiene import source_issues as hygiene_source_issues
     from naming import validate as naming_validate
     from standards import validate_contract as standards_validate_contract
 except ModuleNotFoundError:  # Imported as scripts.validate in unit tests.
     from scripts.company_contracts import validate as company_contracts_validate
+    from scripts.host_compatibility import validate as host_compatibility_validate
     from scripts.host_marketplaces import check as host_marketplaces_check
     from scripts.hygiene import source_issues as hygiene_source_issues
     from scripts.naming import validate as naming_validate
     from scripts.standards import validate_contract as standards_validate_contract
-
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 AD_DESENI = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 SEMVER_DESENI = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 IZINLI_ALANLAR = {"name", "description", "license", "allowed-tools", "metadata", "compatibility"}
 
-
 def frontmatter(metin: str) -> tuple[str, int] | None:
     """YAML frontmatter metnini ve govdenin basladigi indeksi dondur."""
+
     eslesme = re.match(r"^---\s*\n(.*?)\n---", metin, re.S)
     if not eslesme:
         return None
@@ -394,12 +395,11 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     uyarilar: list[str] = []
     hatalar.extend(f"REPO HIJYENI: {issue}" for issue in hygiene_source_issues(kok))
     hatalar.extend(f"NAMING POLICY: {issue}" for issue in naming_validate(kok))
-    hatalar.extend(
-        f"DIVAN ENGINE: {issue}" for issue in company_contracts_validate(kok)
-    )
+    hatalar.extend(f"DIVAN ENGINE: {issue}" for issue in company_contracts_validate(kok))
     hatalar.extend(
         f"TOPLULUK STANDARTLARI: {issue}" for issue in standards_validate_contract(kok)
     )
+    hatalar.extend(f"HOST COMPATIBILITY: {issue}" for issue in host_compatibility_validate(kok))
     marketplace, eklentiler = marketplace_denetle(kok, hatalar)
     skiller = skilleri_denetle(kok, hatalar, uyarilar)
     zorunlu_belgeleri_denetle(kok, hatalar)

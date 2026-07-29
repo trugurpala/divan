@@ -256,18 +256,15 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 
 ## Uyumluluk matrisi (dürüst)
 
-| Katman | Claude Code | Codex / Cursor / diğer |
-|---|---|---|
-| Skills (41 beceri) | ✓ yerel plugin ile | ✓ Codex yerel plugin; diğer hostlarda Agent Skills klasörü |
-| Memory (defterdar dosyaları: AGENTS.md, BLUEPRINT, .divan/) | ✓ | ✓ düz dosya + AGENTS.md'yi Codex/Cursor doğal okur |
-| Komutlar (/ferman /sefer /defter /teftis) | ✓ | ✗ Claude Code'a özgü (skill tetikleyicileri yine çalışır) |
-| Subagents (kâşif, müfettiş) | ✓ | ✗ Claude Code'a özgü |
-| Hooks (oturum başında defteri otomatik oku) | ✓ | ✗ Claude Code'a özgü |
-| Marketplace tek komut kurulum | ✓ | ✓ |
+Divan bütün hostları aynı kabul etmez. `skill-compatible`, `native` ve
+`verified` farklı kanıt seviyeleridir; bir hostta skill okunması hook, agent,
+MCP ve güncelleme yaşam döngüsünün de çalıştığı anlamına gelmez.
+Kanonik dağıtım bugün 5 paket içinde 41 beceri taşır.
 
-Özet: skill'ler ve hafıza dosyaları her yerde taşınır; komut/subagent/hook
-katmanları Claude Code'da tam güçtedir.
+Güncel 11-host matrisi, resmî belge bağlantıları ve desteklenen yetenekler:
+[[Host Uyumluluğu|Host-Uyumlulugu]]. Makinece doğrulanan tek kaynak
+`registry/host-compatibility.json` dosyasıdır.
 
-`uyumluluk` CI matrisi Claude Code ve Codex pazar/paket şemalarını; fallback
-yolunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41 beceri
-keşfi ve kayıtlı kaldırma tatbikatıyla sınar.
+Bugün Claude Code ve Codex temiz-host kurulum yaşam döngüsüyle
+`verified` seviyesindedir. Diğer hostlar, gerçek canary kanıtı oluşana kadar
+daha düşük ve dürüst seviyede kalır.
