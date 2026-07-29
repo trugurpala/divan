@@ -387,9 +387,7 @@ def _evidence_boundary(
             f"{spec_root}plan.md",
             f"{spec_root}tasks.md",
         }
-        allowed = required | {f"{spec_root}route.json"}
-        supplied = set(evidence)
-        return required <= supplied <= allowed
+        return required <= set(evidence) <= required | {f"{spec_root}route.json"}
     return bool(evidence) and all(
         item.startswith(evidence_root)
         for item in evidence

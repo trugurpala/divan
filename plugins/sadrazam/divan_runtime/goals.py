@@ -154,6 +154,15 @@ def _validate_goal_id(identifier: Any) -> str:
     return identifier
 
 
+def _normalize_target(target: str) -> str:
+    normalized = target.upper()
+    if normalized not in TARGETS:
+        raise ValueError(
+            "goal target must be verified, previewed, released, or observed"
+        )
+    return normalized
+
+
 def _goal_paths(
     root: pathlib.Path, identifier: str
 ) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
@@ -205,6 +214,30 @@ def _planning_identity(
     }
 
 
+def _legacy_goal_is_unchanged(
+    spec_root: pathlib.Path,
+    receipt_path: pathlib.Path,
+    identifier: str,
+    intent: str,
+    target: str,
+) -> bool:
+    if (spec_root / "route.json").exists() or not receipt_path.is_file():
+        return False
+    verification = receipts.verify_receipt(receipt_path)
+    if not verification["ok"]:
+        return False
+    value = json.loads(receipt_path.read_text(encoding="utf-8"))
+    required = {
+        f".divan/specs/{identifier}/{name}"
+        for name in ("spec.md", "plan.md", "tasks.md")
+    }
+    return (
+        value.get("intent") == intent
+        and value.get("target") == target
+        and set(value.get("artifacts", {})) == required
+    )
+
+
 def start_goal(
     project: pathlib.Path | str,
     intent: str,
@@ -221,11 +254,7 @@ def start_goal(
         raise ValueError(f"project directory does not exist: {root}")
     if not isinstance(intent, str) or not intent.strip():
         raise ValueError("goal intent must be non-empty")
-    normalized_target = target.upper()
-    if normalized_target not in TARGETS:
-        raise ValueError(
-            "goal target must be verified, previewed, released, or observed"
-        )
+    normalized_target = _normalize_target(target)
     snapshot = _inspection(root)
     safe_intent = receipts.redact_text(intent.strip())
     route = _goal_route(
@@ -265,6 +294,21 @@ def start_goal(
         "writes": [path.relative_to(root).as_posix() for path in paths],
         "receipt": receipt_path.relative_to(root).as_posix(),
     }
+    if identity is None and _legacy_goal_is_unchanged(
+        spec_root, receipt_path, identifier, safe_intent, normalized_target
+    ):
+        result.update(
+            {
+                "status": "legacy-unchanged",
+                "migration_required": True,
+                "writes": [
+                    (spec_root / name).relative_to(root).as_posix()
+                    for name in ("spec.md", "plan.md", "tasks.md")
+                ],
+            }
+        )
+        result["writes"].append(receipt_path.relative_to(root).as_posix())
+        return result
     if not execute:
         return result
 

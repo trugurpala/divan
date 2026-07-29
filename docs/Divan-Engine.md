@@ -54,17 +54,21 @@ runtime or external-repository dependency.
 
 ## Nizam-i Sefer
 
-`council` owns a separate `planning.py` component. The existing schema-2 route
-is enriched with `execution_plan`; no tenth runtime module is created.
+`council` owns `planning.py` plus a small `planning_policy.py` policy component.
+Both remain inside the existing council boundary. The schema-2 route is
+enriched with `execution_plan`; no tenth runtime module is created.
 
 The plan contains:
 
 - explicit, environment-hint, ambiguous, or unknown host resolution without
   persisting environment values;
 - a context budget whose fallback is always labeled a planning assumption;
-- structural complexity and an economy/balanced/frontier model class;
+- structural complexity and an economy/balanced/frontier model class, with
+  mandatory high-risk floors for security, production, release, credentials,
+  package-manager conflicts, and destructive or production-data signals;
 - deterministic workflow-stage tasks, dependencies, evidence, sefer
-  boundaries, and at most three parallel workstreams;
+  boundaries, explicit independent-review gates, and at most three parallel
+  workstreams that join at integrated verification;
 - shell-free argv for project-native commands and `auto_execute: false`;
 - canonical-source, documentation, public-surface, provider, and handoff
   obligations.

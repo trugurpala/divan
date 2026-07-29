@@ -55,14 +55,18 @@ başka bir repoya veya harici agent runtime'ına bağlı değildir.
 
 ## Nizâm-ı Sefer
 
-`council` modülü ayrı bir `planning.py` bileşenine sahiptir. Mevcut schema-2
-rota `execution_plan` ile zenginleşir; onuncu runtime modülü oluşturulmaz.
+`council` modülü `planning.py` ve küçük bir `planning_policy.py` politika
+bileşenine sahiptir. İkisi de mevcut council sınırı içindedir. Schema-2 rota
+`execution_plan` ile zenginleşir; onuncu runtime modülü oluşturulmaz.
 
 Plan; hostun açık, ortam ipuçlu, çelişkili veya bilinmeyen oluşunu değerleri
 kaydetmeden gösterir. Bağlam fallback'i daima Divan'ın ihtiyatlı planlama
-varsayımıdır, ürün/model limiti değildir. Yapısal karmaşıklık; ekonomi, dengeli
-veya frontier model sınıfına; deterministik görev grafiğine; seferlere; devir
-kuralına; kanıta ve en fazla üç paralel iş hattına dönüşür.
+varsayımıdır, ürün/model limiti değildir. Güvenlik, production, release,
+credential, paket yöneticisi çakışması, finansal ve yıkıcı/production-data
+sinyalleri yüksek risk tabanını zorunlu kılar. Yapısal karmaşıklık; ekonomi,
+dengeli veya frontier model sınıfına; açık bağımsız inceleme kapılarına;
+deterministik görev grafiğine; sıralı bağlam/devir seferlerine; kanıta ve
+entegre doğrulamada birleşen en fazla üç paralel iş hattına dönüşür.
 
 Codex'te güncel resmî OpenAI rehberi ekonomi için `gpt-5.6-luna`, dengeli için
 `gpt-5.6-terra`, frontier için `gpt-5.6-sol` adayını verir. Bunlar hesapta

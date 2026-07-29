@@ -13,6 +13,10 @@ Versioning while the public API remains in initial development (`0.y.z`).
   model capability classes, and public-surface obligations.
 - `--host-profile`, `--context-window`, and `--target` planning controls.
 - Goal-local `route.json`, bound into the existing evidence receipt.
+- Explicit dependency-graph workstream lanes that join at integrated
+  verification, while sefers remain sequential context/handoff windows.
+- A mandatory independent-review gate for every workflow that declares the
+  independent reviewer role.
 
 ### Safety
 
@@ -20,6 +24,9 @@ Versioning while the public API remains in initial development (`0.y.z`).
   vendor-verified product limits.
 - Codex GPT-5.6 Luna/Terra/Sol values are candidates chosen by risk class; the
   host must confirm availability before execution.
+- Security, production, release, credential, package-manager conflict,
+  financial, and destructive/production-data signals cannot fall through to
+  the economy model class.
 - Planning performs no model call, target-project command, dependency install,
   daemon startup, or external harness activation.
 

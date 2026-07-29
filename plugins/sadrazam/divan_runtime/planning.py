@@ -9,6 +9,8 @@ import os
 from collections.abc import Mapping
 from typing import Any
 
+from . import planning_policy
+
 HOST_PROFILES = (
     "antigravity-cli",
     "claude-code",
@@ -32,19 +34,7 @@ HOST_ENV_HINTS = (
     ("claude-code", ("CLAUDE_CODE_PLUGIN_ROOT",)),
 )
 
-RISKY_WORKFLOWS = {
-    "deployment-delivery",
-    "integration-delivery",
-    "release-delivery",
-    "security-delivery",
-}
-TARGET_WEIGHTS = {"verified": 0, "previewed": 1, "released": 2, "observed": 3}
-MODEL_POLICY = {
-    "low": ("economy", "low", "gpt-5.6-luna"),
-    "moderate": ("balanced", "medium", "gpt-5.6-terra"),
-    "high": ("frontier", "high", "gpt-5.6-sol"),
-    "critical": ("frontier", "max", "gpt-5.6-sol"),
-}
+TARGET_WEIGHTS = planning_policy.TARGET_WEIGHTS
 ROLE_HINTS = (
     (("threat", "security", "auth"), "security-reviewer"),
     (("design", "interaction", "accessibility"), "ux-designer"),
@@ -145,67 +135,6 @@ def _context_budget(context_window: int | None) -> dict[str, Any]:
     }
 
 
-def _complexity(route: dict[str, Any], target: str) -> dict[str, Any]:
-    workflows = route["workflows"]
-    roles = route["roles"]
-    workspaces = route["workspaces"]
-    providers = route["providers"]
-    risky = sorted(set(workflows) & RISKY_WORKFLOWS)
-    score = (
-        1
-        + max(0, len(workflows) - 1) * 2
-        + min(3, len(roles) // 3)
-        + min(3, max(0, len(workspaces) - 1))
-        + len(providers)
-        + len(risky) * 2
-        + TARGET_WEIGHTS[target]
-    )
-    level = "low" if score <= 5 else "moderate" if score <= 9 else "high"
-    if score > 14:
-        level = "critical"
-    working_set = (
-        3_000
-        + sum(len(row["stages"]) for row in route["workflow_contracts"]) * 800
-        + len(roles) * 500
-        + len(workflows) * 700
-        + len(route["required_evidence"]) * 350
-        + len(route["commands"]) * 250
-        + len(workspaces) * 500
-    )
-    return {
-        "level": level,
-        "score": score,
-        "estimated_working_set_tokens": working_set,
-        "signals": {
-            "workflow_count": len(workflows),
-            "role_count": len(roles),
-            "workspace_count": len(workspaces),
-            "provider_count": len(providers),
-            "risky_workflows": risky,
-            "target": target,
-        },
-    }
-
-
-def _model_policy(level: str, host_id: str) -> dict[str, Any]:
-    capability, effort, codex_candidate = MODEL_POLICY[level]
-    candidate = None
-    if host_id == "codex":
-        candidate = {
-            "model": codex_candidate,
-            "status": "candidate",
-            "availability": "host-confirmation-required",
-            "evidence_source": "official-openai-model-guide-2026-07-29",
-        }
-    return {
-        "capability_class": capability,
-        "reasoning_effort": effort,
-        "selection": "risk-based",
-        "host_candidate": candidate,
-        "fallback": "host-selects-an-available-equivalent",
-    }
-
-
 def _stage_role(stage: str, roles: list[str]) -> str:
     normalized = stage.casefold()
     for markers, role in ROLE_HINTS:
@@ -227,18 +156,19 @@ def _native_argv(command: dict[str, str]) -> list[str]:
 
 
 def _command_rows(route: dict[str, Any]) -> list[dict[str, Any]]:
-    rows = []
-    native = {row["command"]: row for row in route["commands"]}
-    for check in route["checks"]:
-        source = native.get(check)
-        row = {
-            "kind": "project-check",
-            "display": check,
-            "auto_execute": False,
+    rows = [{
+            "kind": "project-check", "display": source["command"],
+            "workspace": source["workspace"], "auto_execute": False,
+            "argv": _native_argv(source), "shell": False,
         }
-        if source is not None:
-            row.update({"argv": _native_argv(source), "shell": False})
-        rows.append(row)
+        for source in route["commands"]
+    ]
+    native_displays = {source["command"] for source in route["commands"]}
+    rows.extend(
+        {"kind": "project-check", "display": check, "auto_execute": False}
+        for check in route["checks"]
+        if check not in native_displays
+    )
     return rows
 
 
@@ -357,8 +287,9 @@ def build_execution_plan(
     current_environment = environment if environment is not None else os.environ
     host = _detect_host(host_profile, current_environment)
     budget = _context_budget(context_window)
-    complexity = _complexity(route, normalized_target)
+    complexity = planning_policy.complexity(route, normalized_target)
     tasks = _tasks(route)
+    workstreams = planning_policy.workstreams(tasks)
     count = _sefer_count(complexity, budget, len(tasks))
     parallel = 1
     if host["id"] not in {"unknown", "ambiguous"}:
@@ -377,10 +308,15 @@ def build_execution_plan(
             "lane": "bounded-parallel" if parallel > 1 else "sequential",
             "max_parallel_workstreams": max(1, parallel),
             "recommended_sefers": count,
+            "sefer_semantics": "sequential-context-windows",
+            "workstream_semantics": "dependency-graph-lanes",
             "external_agent_harness_required": False,
         },
-        "model_policy": _model_policy(complexity["level"], host["id"]),
+        "model_policy": planning_policy.model_policy(
+            complexity["level"], host["id"]
+        ),
         "sefers": _sefers(tasks, count),
+        "workstreams": workstreams,
         "tasks": tasks,
         "handoff": {
             "at_each_sefer_boundary": True,

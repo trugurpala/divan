@@ -1441,7 +1441,7 @@ def plan_intent(
         "workflow_contracts": [
             {
                 "id": row.id,
-                "roles": list(row.roles),
+                "roles": list(_qualified_roles(intent, row)),
                 "stages": list(row.stages),
             }
             for row in workflows
