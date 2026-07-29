@@ -52,6 +52,33 @@ authority contract. `python scripts/divan.py architecture --json` validates
 and displays both. Dependencies must be acyclic. The core has no external
 runtime or external-repository dependency.
 
+## Nizam-i Sefer
+
+`council` owns `planning.py` plus a small `planning_policy.py` policy component.
+Both remain inside the existing council boundary. The schema-2 route is
+enriched with `execution_plan`; no tenth runtime module is created.
+
+The plan contains:
+
+- explicit, environment-hint, ambiguous, or unknown host resolution without
+  persisting environment values;
+- a context budget whose fallback is always labeled a planning assumption;
+- structural complexity and an economy/balanced/frontier model class, with
+  mandatory high-risk floors for security, production, release, credentials,
+  package-manager conflicts, and destructive or production-data signals;
+- deterministic workflow-stage tasks, dependencies, evidence, sefer
+  boundaries, explicit independent-review gates, and at most three parallel
+  workstreams that join at integrated verification;
+- shell-free argv for project-native commands and `auto_execute: false`;
+- canonical-source, documentation, public-surface, provider, and handoff
+  obligations.
+
+On Codex, current official OpenAI guidance maps economy to `gpt-5.6-luna`,
+balanced to `gpt-5.6-terra`, and frontier to `gpt-5.6-sol`. These are candidates,
+not availability claims. The host must confirm the model. Exact
+`--context-window` input is owner-declared and is still not described as a
+verified vendor limit.
+
 ## Use it
 
 Ordinary users state the desired result. The CLI is an expert and integration
@@ -61,6 +88,7 @@ surface:
 python scripts/divan.py architecture --json
 python scripts/divan.py inspect --project .
 python scripts/divan.py plan --project . --intent "Improve the onboarding UI"
+python scripts/divan.py plan --project . --intent "Secure and release the API" --host-profile codex --context-window 1050000 --target released --json
 python scripts/divan.py impact README.md plugins/sadrazam/skills/sadrazam/SKILL.md
 python scripts/divan.py validate
 python scripts/divan.py init --project . --profile standard

@@ -63,6 +63,17 @@ engineering discipline, UI Pack handles interfaces, React Pack activates only
 for detected React projects, and Zanaat Pack joins creative or integration
 work. See [Divan Engine](docs/Divan-Engine.md).
 
+Nizam-i Sefer adds the missing execution judgment. A plan now explains the
+structural risk, host certainty, conservative context budget, required model
+class, number of sefers, task dependencies, handoff point, evidence, and a
+maximum of three parallel workstreams. It does not call a model or claim that a
+candidate model is available:
+
+```powershell
+python scripts/divan.py plan --project . --intent "Secure, test and release the API" --host-profile auto --json
+python scripts/divan.py plan --project . --intent "Secure, test and release the API" --host-profile codex --context-window 1050000 --target released --json
+```
+
 Hükümdar is the final authority. A Ferman delegates bounded work through
 Sadrazam and Divan to specialists and providers. Tool availability never grants
 authority, and only Hükümdar may expand scope. Inspect the nine-module contract

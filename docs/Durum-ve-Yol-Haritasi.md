@@ -61,13 +61,32 @@ değildir.
 - v0.17 yayını bağımsız kullanıcı kabulü değildir; issue #34 kapanmadan v1
   karnesi **7/8** kalır.
 
+## Aktif v0.18 — Nizâm-ı Sefer
+
+- Ferman; hedef, workflow aşamaları ve bağımlılıklardan oluşan makine-okunur
+  görev grafiğine çevrilir.
+- Risk, yapısal karmaşıklık, host kimliği ve bağlam bütçesi açıklanabilir
+  kurallarla hesaplanır.
+- En fazla üç bağımsız sefer açılır; `unknown` veya `ambiguous` hostta sıralı
+  güvenli yürütme seçilir.
+- Model politikası taşınabilir `economy`, `balanced` ve `frontier` sınıfları
+  üzerinden çalışır. Tam model adı yalnız host doğrulaması gereken adaydır.
+- Goal klasörü `route.json` taşır; görev, bağımlılık, sefer, devir ve kanıt
+  yükümlülükleri oturumlar arasında kalır.
+- Bu satırlar kaynak geliştirme durumudur; PR, CI, merge ve v0.18.0 Release
+  kanıtı tamamlanmadan yayımlanmış özellik sayılmaz.
+
 ## Sıradaki ürün kanıtı
 
-1. Yayımlanan v0.17.0'ı kullanan, repo sahibi olmayan bağımsız kullanıcıdan
+1. Nizâm-ı Sefer değişikliğini PR/CI, bağımsız inceleme ve temiz-host
+   doğrulamasıyla `main`e taşı.
+2. Native host adaptörleri ve tek-komut kurulum profillerini ayrı, kanıtlı
+   dilimler halinde uygula; sahte “her hostta tam uyum” iddiası kurma.
+3. Yayımlanan sabit sürümü kullanan, repo sahibi olmayan bağımsız kullanıcıdan
    gizlilik sınırlı ve tekrar üretilebilir kabul kanıtı topla.
-2. Kabul kaydını tekrar doğrula; owner canary veya maintainer fixture ile kapıyı
+4. Kabul kaydını tekrar doğrula; owner canary veya maintainer fixture ile kapıyı
    geçilmiş sayma.
-3. Kanıt geçerliyse issue #34 ve v1 karnesini ayrı, denetlenebilir değişiklikle
+5. Kanıt geçerliyse issue #34 ve v1 karnesini ayrı, denetlenebilir değişiklikle
    güncelle.
 
 ## v1.0 kapıları

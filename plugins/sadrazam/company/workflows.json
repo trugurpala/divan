@@ -8,7 +8,7 @@
       "keywords": ["security", "vulnerability", "threat", "secret", "authentication", "authorization", "güvenlik", "açık", "kimlik doğrulama", "yetkilendirme"],
       "roles": ["security-reviewer", "backend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "temkin"}],
-      "stages": ["threat model", "regression", "implementation", "security review", "verification"],
+      "stages": ["threat model", "regression", "implementation", "security review", "independent review", "verification"],
       "providers": ["local"],
       "required_evidence": ["threat model", "security regression", "verification result"]
     },
@@ -19,7 +19,7 @@
       "keywords": ["mcp", "integration", "connector", "webhook", "external api", "tool server", "entegrasyon", "bağlayıcı", "harici api"],
       "roles": ["product-strategist", "integration-engineer", "security-reviewer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "zanaat-pack", "skill": "mcp-builder"}],
-      "stages": ["contract", "threat review", "test-first implementation", "evaluation", "verification"],
+      "stages": ["contract", "threat review", "test-first implementation", "evaluation", "independent review", "verification"],
       "providers": ["context7", "local"],
       "required_evidence": ["integration contract", "provider documentation", "verification result"]
     },
@@ -30,7 +30,7 @@
       "keywords": ["ui", "ux", "design", "redesign", "interface", "dashboard", "frontend", "responsive", "accessibility", "onboarding", "tasarım", "arayüz", "erişilebilirlik"],
       "roles": ["ux-designer", "frontend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "ui-pack", "skill": "ui-ux-pro-max"}],
-      "stages": ["design system", "interaction contract", "test-first implementation", "browser verification", "review"],
+      "stages": ["design system", "interaction contract", "test-first implementation", "browser verification", "independent review"],
       "providers": ["local", "vercel"],
       "required_evidence": ["accessibility review", "browser verification", "visual readback"]
     },
@@ -52,7 +52,7 @@
       "keywords": ["bug", "fix", "error", "crash", "regression", "debug", "broken", "fails", "hata", "düzelt", "çökme", "bozuk"],
       "roles": ["backend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "systematic-debugging"}],
-      "stages": ["reproduce", "root cause", "regression test", "minimal fix", "verification"],
+      "stages": ["reproduce", "root cause", "regression test", "minimal fix", "independent review", "verification"],
       "providers": ["local"],
       "required_evidence": ["reproduction", "root cause", "regression test"]
     },
@@ -63,7 +63,7 @@
       "keywords": ["deploy", "deployment", "preview", "production", "promotion", "staging", "dağıtım", "önizleme", "canlıya al", "yayına al"],
       "roles": ["release-manager", "platform-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "finishing-a-development-branch"}],
-      "stages": ["provider preflight", "dry run", "preview", "verification", "promotion readback"],
+      "stages": ["provider preflight", "dry run", "preview", "verification", "independent review", "promotion readback"],
       "providers": ["vercel"],
       "required_evidence": ["provider capability", "deployment result", "live readback"]
     },
@@ -74,7 +74,7 @@
       "keywords": ["release", "publish", "ship", "version", "distribution", "release notes", "sürüm", "yayınla", "dağıtım paketi"],
       "roles": ["release-manager", "platform-engineer", "technical-writer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "finishing-a-development-branch"}],
-      "stages": ["preflight", "public surface sync", "CI", "publication", "live readback"],
+      "stages": ["preflight", "public surface sync", "CI", "independent review", "publication", "live readback"],
       "providers": ["github", "local"],
       "required_evidence": ["CI result", "release artifact", "remote readback"]
     },
@@ -85,7 +85,7 @@
       "keywords": ["seo", "search engine", "metadata", "sitemap", "robots", "structured data", "arama motoru", "meta veri", "site haritası", "yapısal veri"],
       "roles": ["product-strategist", "ux-designer", "frontend-engineer", "technical-writer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "ui-pack", "skill": "webapp-testing"}],
-      "stages": ["applicability", "technical audit", "implementation", "crawl evidence", "live readback"],
+      "stages": ["applicability", "technical audit", "implementation", "crawl evidence", "independent review", "live readback"],
       "providers": ["context7", "vercel"],
       "required_evidence": ["SEO applicability", "crawl evidence", "live metadata readback"]
     },
@@ -96,7 +96,7 @@
       "keywords": ["poster", "visual", "brand", "theme", "canvas", "gif", "creative artifact", "görsel", "marka", "tema"],
       "roles": ["product-strategist", "creative-producer", "ux-designer", "independent-reviewer"],
       "skills": [{"package": "zanaat-pack", "skill": "theme-factory"}],
-      "stages": ["creative direction", "original production", "format validation", "accessibility review"],
+      "stages": ["creative direction", "original production", "format validation", "accessibility review", "independent review"],
       "providers": ["local"],
       "required_evidence": ["original artifact", "format validation", "accessibility review"]
     },
@@ -107,7 +107,7 @@
       "keywords": ["documentation", "docs", "readme", "wiki", "guide", "translation", "localization", "dokümantasyon", "belge", "rehber", "çeviri", "yerelleştirme"],
       "roles": ["technical-writer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "writing-skills"}],
-      "stages": ["source audit", "canonical edit", "locale sync", "link validation", "review"],
+      "stages": ["source audit", "canonical edit", "locale sync", "link validation", "independent review"],
       "providers": ["local"],
       "required_evidence": ["canonical source", "link validation", "locale review"]
     },
@@ -118,7 +118,7 @@
       "keywords": ["feature", "build", "application", "develop", "implement", "create", "add", "özellik", "uygulama", "geliştir", "oluştur", "ekle"],
       "roles": ["product-strategist", "frontend-engineer", "backend-engineer", "qa-engineer", "independent-reviewer"],
       "skills": [{"package": "core-pack", "skill": "test-driven-development"}],
-      "stages": ["brief", "design", "plan", "test-first implementation", "review", "verification"],
+      "stages": ["brief", "design", "plan", "test-first implementation", "independent review", "verification"],
       "providers": ["local"],
       "required_evidence": ["approved brief", "red-green evidence", "verification result"]
     }

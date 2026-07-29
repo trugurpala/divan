@@ -23,8 +23,14 @@
       "id": "council",
       "en": "Council",
       "tr": "Divan",
-      "python_modules": ["engine"],
-      "capabilities": ["project_discovery", "intent_routing", "impact_analysis"],
+      "python_modules": ["engine", "planning", "planning_policy"],
+      "capabilities": [
+        "project_discovery",
+        "intent_routing",
+        "impact_analysis",
+        "capacity_planning",
+        "bounded_orchestration"
+      ],
       "depends_on": ["kernel", "governance"],
       "required": true
     },

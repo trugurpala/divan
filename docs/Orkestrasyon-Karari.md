@@ -1,4 +1,4 @@
-# Orkestrasyon Kararı — v0.8
+# Orkestrasyon Kararı — v0.18
 
 **Karar:** Divan, üçüncü taraf bir agent harness'e bağlanmaz. Varsayılan yol
 Claude Code ve Codex'in yerel skill, subagent ve worktree yetenekleridir.
@@ -56,6 +56,22 @@ Tam veri: [`data/orkestrasyon-adaylari.csv`](data/orkestrasyon-adaylari.csv).
 `/sefer` komutu ve `ordu-nizami` skill'i bu kararı uygulanabilir hale getirir.
 Harici harness kurulumu her zaman ayrı bir kullanıcı kararı, güncel güvenlik
 incelemesi ve lisans/kimlik doğrulama kontrolü gerektirir.
+
+## Nizâm-ı Sefer makine kararı
+
+v0.18 hattında karar yalnız metinsel tavsiye değildir. Divan Engine her plan
+için yapısal karmaşıklık, host belirsizliği, ihtiyatlı bağlam bütçesi, model
+sınıfı, görev bağımlılıkları, sefer sınırları, devir eşiği ve en fazla üç
+paralel iş hattı üretir. Aynı rota yeni hedeflerde `route.json` olarak kalır.
+
+Risk düşükse ekonomi, orta ise dengeli, yüksek/kritik ise frontier sınıfı
+istenir. Codex'te güncel resmî OpenAI adayları Luna, Terra ve Sol'dur; fakat
+Divan hesap erişimini uydurmaz. Host doğrulamadan model seçilmiş sayılmaz.
+`--context-window` Hükümdar beyanıdır; fallback sayı üretici limiti değildir.
+
+Planlama hedef proje komutunu, model API'sini veya harici ajan harness'ini
+çalıştırmaz. Paralel yazım için Ordu Nizamı'nın worktree ve dosya sahipliği
+kuralları ayrıca geçerlidir.
 
 ## Kaynaklar ve anlık görüntü
 

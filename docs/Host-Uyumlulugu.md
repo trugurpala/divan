@@ -39,6 +39,21 @@ Bu tablo elle verilmiş bağımsız bir vaat değildir. Kanonik kayıt
 `python scripts/host_compatibility.py` komutudur. `verified` yazabilmek için
 repoda gerçek kanıt yolu bulunmak zorundadır.
 
+## Host kimliği ile model kapasitesi aynı şey değildir
+
+Nizâm-ı Sefer plan üretirken hostu açık `--host-profile`, `DIVAN_HOST` veya
+yalnız adı bilinen resmî ortam işaretlerinden algılar. Birden fazla işaret
+çakışırsa host `ambiguous`, hiçbir kanıt yoksa `unknown` olur ve çalışma tek
+seferlik güvenli hatta düşer. Ortam değişkenlerinin değerleri plana veya
+makbuza yazılmaz.
+
+Hostun Codex olarak algılanması belirli bir modelin hesapta açıldığı anlamına
+gelmez. Divan yalnız risk düzeyine göre `economy`, `balanced` veya `frontier`
+model sınıfı ve muhakeme bütçesi önerir. Tam model adı ancak kanıtlı bir aday
+olarak gösterilir; seçilmeden önce host tarafından doğrulanması gerekir.
+Bağlam penceresi de hosttan kanıtlanamıyorsa ürün limiti diye sunulmaz,
+işaretlenmiş bir planlama varsayımı kullanılır.
+
 ## Neden hepsinde bugün tam güç değil?
 
 Hostlar aynı eklenti sözleşmesini kullanmıyor. Dizinler, manifest biçimleri,
@@ -62,6 +77,7 @@ hostu algıla → güvenli önizleme → kur → becerileri keşfet
   Divan'ın beyni veya zorunlu kurulum bağımlılığı değildir.
 - MCP sunucuları varsayılan olarak açılmaz; görev ve izin gerektiğinde seçilir.
 - Yeni bir host “verified” seviyesine yalnız tekrarlanabilir canary kanıtıyla çıkar.
+- Model, bağlam ve alt ajan kapasitesi host desteğinden ayrı kanıtlanır.
 
 Bu model kurulum paketini gereksiz büyütmeden daha çok hosta ulaşmayı ve bir
 host değiştiğinde bütün Divan'ı çatallamadan yalnız ilgili adaptörü güncellemeyi

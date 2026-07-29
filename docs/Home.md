@@ -19,14 +19,19 @@ kısa insan diliyle bildirmeye yönlendirir. Komut, dosya ve alt ajan günlükle
 yalnız gerçek bir engeli açıklıyorsa öne çıkar. Repo testleri bu sözleşmenin
 dağıtımını doğrular; yeni bir gerçek-ajan A/B sonucu iddia etmez.
 
+Aktif v0.18 hattındaki **Nizâm-ı Sefer**, fermanı risk ve yapısal karmaşıklığa
+göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıcı
+`route.json` kaydına dönüştürür. Host belirsizse sıralı çalışır; model ve bağlam
+kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik henüz yayımlanmış
+v0.17.1 kurulumunun parçası değildir.
+
 > **Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
-v0.17.0 dokuz modüllü Divan Engine sözleşmesini, Hükümdar öncelikli yetki
-zincirini ve eski adlar için sınırlı uyumluluğu yayımlar. PR #49, bütün zorunlu
-CI kapıları, değişmez tag/Release, checksum ve attestation bağlı beş varlık,
-Pages ve Wiki yayın kanıtında doğrulanmıştır.
+v0.17.1 vibe coder ilerleme sözleşmesini yayımlar. Aktif v0.18 geliştirmesi
+aynı dokuz modüllü çekirdeğin `council` modülü içinde Nizâm-ı Sefer planlama
+zekâsını ekler; ikinci ürün, repo veya üçüncü taraf runtime oluşturmaz.
 
 ## Fermanını seç
 

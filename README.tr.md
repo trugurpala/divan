@@ -58,6 +58,17 @@ mühendislik disiplinini, UI Pack arayüz kalitesini sağlar. React Pack yalnız
 React projesinde; Zanaat Pack yalnız yaratıcı veya entegrasyon işinde devreye
 girer. Ayrıntılar: [Divan Engine](docs/Divan-Engine.tr.md).
 
+Nizâm-ı Sefer eksik olan icra muhakemesini ekler. Plan artık yapısal riski,
+host kesinliğini, ihtiyatlı bağlam bütçesini, gereken model sınıfını, sefer
+sayısını, görev bağımlılıklarını, devir noktasını, kanıtları ve en fazla üç
+paralel iş hattını açıklar. Model çağırmaz ve aday modelin hesapta bulunduğunu
+varsaymaz:
+
+```powershell
+python scripts/divan.py plan --project . --intent "API'yi güvenli yap, test et ve yayınla" --host-profile auto --json
+python scripts/divan.py plan --project . --intent "API'yi güvenli yap, test et ve yayınla" --host-profile codex --context-window 1050000 --target released --json
+```
+
 Son yetki Hükümdardadır. Ferman; sınırları belli işi Sadrazam ve Divan üzerinden
 uzmanlara ve sağlayıcılara devreder. Bir aracın bağlı olması yetki vermez;
 kapsamı yalnız Hükümdar genişletebilir. Dokuz modüllü sözleşmeyi yazmadan gör

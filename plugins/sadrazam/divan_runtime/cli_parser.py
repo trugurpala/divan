@@ -6,7 +6,7 @@ import argparse
 import pathlib
 from typing import Any
 
-from . import adoption
+from . import adoption, planning
 from . import release as release_api
 
 DESCRIPTION = "Portable command-line interface for the Divan runtime."
@@ -85,11 +85,31 @@ def _add_discovery_parsers(commands: Any) -> None:
     plan = commands.add_parser("plan", help="route an intent to a qualified team")
     plan.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     plan.add_argument("--intent", required=True)
+    _planning_controls(plan)
     _common_output(plan)
     impact = commands.add_parser("impact", help="calculate transitive change impact")
     impact.add_argument("paths", nargs="+")
     _common_output(impact)
     _add_runtime_contract_parsers(commands)
+
+
+def _planning_controls(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--host-profile",
+        choices=("auto", *planning.HOST_PROFILES),
+        default="auto",
+        help="explicit host profile or bounded environment-hint detection",
+    )
+    parser.add_argument(
+        "--context-window",
+        type=int,
+        help="exact user-declared context window; never treated as a verified limit",
+    )
+    parser.add_argument(
+        "--target",
+        choices=("verified", "previewed", "released", "observed"),
+        default="verified",
+    )
 
 
 def _add_init_parser(commands: Any) -> None:
@@ -138,11 +158,7 @@ def _add_goal_parsers(commands: Any) -> None:
     goal_start = goal_commands.add_parser("start")
     goal_start.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     goal_start.add_argument("--intent", required=True)
-    goal_start.add_argument(
-        "--target",
-        choices=("verified", "previewed", "released", "observed"),
-        default="verified",
-    )
+    _planning_controls(goal_start)
     _mutation_control(goal_start)
     _common_output(goal_start)
     goal_status = goal_commands.add_parser("status")

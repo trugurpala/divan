@@ -71,6 +71,22 @@ Host ve proje komutları farklıdır:
 | `divan.py audit --project ...` | Uygulanabilir DPS standartları | Proje kalite kanıtını değerlendirir |
 | `divan.py project status --project ...` | Sahiplik ve sapma | Kayıtlı, gözlenen ve istenen payload'ı karşılaştırır |
 
+## Hedef rotası ve Nizâm-ı Sefer
+
+`goal start`, `spec.md`, `plan.md` ve `tasks.md` yanında artık `route.json`
+üretir. Hash'i makbuza bağlanır. Böylece yeni oturum; host/bağlam varsayımını,
+görev bağımlılıklarını, sefer sınırlarını, model sınıfını, kanıtı ve kamusal
+yüzey yükümlülüklerini sohbet geçmişine güvenmeden sürdürebilir.
+
+```powershell
+python scripts/divan.py goal start --project . --intent "API'yi güvenli yap ve yayınla" --host-profile auto --target released
+python scripts/divan.py goal start --project . --intent "API'yi güvenli yap ve yayınla" --host-profile codex --context-window 1050000 --target released --execute
+```
+
+İlk komut yazmayan önizlemedir. İkincideki bağlam penceresi Hükümdar beyanıdır;
+üretici limiti veya model erişimi kanıtı değildir. `route.json` içermeyen eski
+hedefler okunmaya ve doğrulanmaya devam eder.
+
 ## Hedef ve kanıt yaşam döngüsü
 
 ```text

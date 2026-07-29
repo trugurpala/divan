@@ -11,7 +11,10 @@ import re
 import tomllib
 import unicodedata
 from collections import deque
+from collections.abc import Mapping
 from typing import Any, NamedTuple
+
+from . import planning
 
 MAX_MARKER_BYTES = 1024 * 1024
 MAX_MARKER_NESTING = 32
@@ -20,35 +23,12 @@ MAX_PROJECT_DIRECTORIES = 128
 MAX_DIRECTORY_ENTRIES = 256
 IGNORED_PROJECT_DIRECTORIES = frozenset(
     {
-        ".cache",
-        ".git",
-        ".gradle",
-        ".hg",
-        ".mypy_cache",
-        ".next",
-        ".nuxt",
-        ".output",
-        ".parcel-cache",
-        ".pytest_cache",
-        ".ruff_cache",
-        ".svelte-kit",
-        ".svn",
-        ".tox",
-        ".turbo",
-        ".venv",
-        ".vercel",
-        "__pycache__",
-        "bin",
-        "build",
-        "cache",
-        "coverage",
-        "dist",
-        "node_modules",
-        "obj",
-        "out",
-        "target",
-        "vendor",
-        "venv",
+        ".cache", ".git", ".gradle", ".hg", ".mypy_cache",
+        ".next", ".nuxt", ".output", ".parcel-cache",
+        ".pytest_cache", ".ruff_cache", ".svelte-kit", ".svn",
+        ".tox", ".turbo", ".venv", ".vercel", "__pycache__",
+        "bin", "build", "cache", "coverage", "dist",
+        "node_modules", "obj", "out", "target", "vendor", "venv",
     }
 )
 WORKSPACE_MANIFESTS = frozenset(
@@ -1389,6 +1369,10 @@ def plan_intent(
     project: pathlib.Path,
     contracts: Contracts,
     target: str = "verified",
+    *,
+    host_profile: str | None = None,
+    context_window: int | None = None,
+    environment: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Return the smallest deterministic company route for an intent."""
     if not isinstance(intent, str) or not intent.strip():
@@ -1447,13 +1431,21 @@ def plan_intent(
             ),
         }
     )
-    return {
+    route = {
         "schema_version": 2,
         "intent": intent.strip(),
         "project": inspection["project"],
         "workflow": workflow.id,
         "primary_workflow": workflow.id,
         "workflows": [row.id for row in workflows],
+        "workflow_contracts": [
+            {
+                "id": row.id,
+                "roles": list(_qualified_roles(intent, row)),
+                "stages": list(row.stages),
+            }
+            for row in workflows
+        ],
         "providers": providers,
         "required_evidence": required_evidence,
         "frameworks": inspection["frameworks"],
@@ -1468,6 +1460,14 @@ def plan_intent(
         "skills": [_skill_dict(skill) for skill in ordered_skills],
         "checks": sorted(checks),
     }
+    route["execution_plan"] = planning.build_execution_plan(
+        route,
+        target=target,
+        host_profile=host_profile,
+        context_window=context_window,
+        environment=environment,
+    )
+    return route
 
 
 def _change_path(value: str) -> str:

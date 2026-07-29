@@ -20,6 +20,11 @@ bitirmektir. Önce tek oturum; yalnızca iş gerçekten bölünebiliyorsa ordu.
 
 Kararsızsan daha düşük kademeyi seç. Ajan sayısı bir başarı ölçütü değildir.
 
+Divan Engine `execution_plan` ürettiyse önce onu uygula. Önerilen sefer sayısı,
+görev bağımlılıkları ve `max_parallel_workstreams` üst sınırdır; daha çok ajan
+açma gerekçesi değildir. Host `unknown` veya `ambiguous` ise yerel ajan
+yeteneğini var sayma ve işleri sıralı yürüt.
+
 ## Sevkten önce
 
 1. Fermanı tek cümleye indir ve teslim ölçütlerini yaz.
@@ -28,6 +33,8 @@ Kararsızsan daha düşük kademeyi seç. Ajan sayısı bir başarı ölçütü 
 4. Varsayılan üst sınır üç yardımcı ajandır. Daha fazlası için kullanıcıya
    maliyet ve koordinasyon gerekçesini söyle.
 5. İki ajan aynı dosyayı yazacaksa planı değiştir veya ayrı worktree kullan.
+6. Her sefer sonunda `route.json` ile tamamlanan görevleri, kanıtı, engeli ve
+   sıradaki görev kimliğini devret.
 
 ## Kademe seçimi
 

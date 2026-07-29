@@ -28,6 +28,13 @@ adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
+- Nizâm-ı Sefer now compiles intent into a deterministic dependency graph,
+  structural risk, an explicit context-budget authority, portable model
+  classes, at most three bounded sefers, durable handoff, and goal-bound
+  `route.json`. Unknown or conflicting hosts fail safe to sequential work;
+  environment values are not persisted and exact model availability requires
+  host confirmation. Focused tests, public guides, skills, impact obligations,
+  and release surfaces are being synchronized before PR/CI.
 - ADR 0008 and the v0.17.1 specification define one Vibe Progress Protocol.
   Sadrazam and all seven public chat commands point to the same loaded-plugin
   root contract. README, Wiki, Pages/site source, and the vibe-coder guide

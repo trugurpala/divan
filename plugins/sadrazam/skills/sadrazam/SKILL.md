@@ -23,6 +23,10 @@ task, use the portable Divan runtime contracts next to this skill:
    `python "${CLAUDE_PLUGIN_ROOT}/divan_runtime/cli.py" inspect --project <project> --json`.
 3. Route the request with
    `python "${CLAUDE_PLUGIN_ROOT}/divan_runtime/cli.py" plan --project <project> --intent "<intent>" --json`.
+   Consume its `execution_plan`: respect the host uncertainty, context/handoff
+   budget, model capability class, sefer boundaries, task dependencies,
+   evidence duties, and `max_parallel_workstreams`. A Codex model candidate is
+   not selected until the host confirms it is available.
 4. Before editing, calculate impact for the intended source paths with
    `python "${CLAUDE_PLUGIN_ROOT}/divan_runtime/cli.py" impact <relative-paths> --json`.
 5. Select the smallest qualified team from the result. Roles are functional
@@ -54,8 +58,10 @@ surface through v1, not a second runtime.
    skill is available, use it for anything non-trivial. Pick one and say why.
 3. **Plan.** Write a short numbered plan (use `writing-plans` if available).
    For small tasks, 3–5 bullets suffice — but always plan before building.
-   If the plan contains two or more genuinely independent workstreams, load
-   `ordu-nizami` and select the smallest safe orchestration lane.
+   Follow the Nizam-i Sefer route when available. If it contains two or more
+   genuinely independent workstreams, load `ordu-nizami` and stay within the
+   computed bound. Unknown or ambiguous host capability falls back to
+   sequential work.
 4. **İcra (Execute).** Build the whole thing. Prefer TDD when code is involved
    (`test-driven-development` skill). Work in small verified increments.
 5. **Teftiş (Inspect).** Verify before declaring done
@@ -76,6 +82,9 @@ surface through v1, not a second runtime.
 - External agent harnesses are never an implicit prerequisite. Prefer native
   skills, bounded subagents and isolated worktrees; experimental Agent Teams
   requires an explicit user choice.
+- Model routing is a requirement, not an availability claim. Economy, balanced,
+  and frontier are portable classes. Never invent a model/context limit, never
+  auto-enable a paid API, and never silently weaken a frontier requirement.
 
 ## Vibe progress protocol
 
