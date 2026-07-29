@@ -93,6 +93,22 @@ class PlanningProfileTests(unittest.TestCase):
         self.assertEqual(result["capacity_kind"], "conservative-fallback")
         self.assertIn("not a verified model", result["warning"])
 
+    def test_release_manifest_tracks_the_complete_planning_contract(self) -> None:
+        manifest = json.loads(
+            (ROOT / "release-manifest.json").read_text(encoding="utf-8")
+        )
+        paths = {surface["path"] for surface in manifest["public_surfaces"]}
+        self.assertTrue(
+            {
+                "plugins/sadrazam/company/host-profiles.json",
+                "plugins/sadrazam/company/planning.py",
+                "plugins/sadrazam/company/goals.py",
+                "plugins/sadrazam/company/cli.py",
+                "plugins/sadrazam/skills/sadrazam/SKILL.md",
+                "tests/test_planning_intelligence.py",
+            }.issubset(paths)
+        )
+
 
 class SeferPlanningTests(unittest.TestCase):
     def test_small_route_can_fit_one_declared_session(self) -> None:
@@ -103,12 +119,18 @@ class SeferPlanningTests(unittest.TestCase):
             directory=COMPANY,
         )
         self.assertEqual(result["schema_version"], 3)
+        self.assertEqual(result["planning_contract"], "nizami-sefer")
         self.assertEqual(result["recommended_sessions"], 1)
-        self.assertEqual(result["orchestration_lane"], "tek-sefer")
-        self.assertEqual(len(result["sefers"]), 1)
+        self.assertEqual(result["orchestration_lane"], "single-expedition")
+        self.assertEqual(len(result["campaigns"]), 1)
+        self.assertEqual(result["campaigns"][0]["display_name"], "Sefer 01")
         self.assertEqual(
             result["context_budget"]["capacity_source"],
             "explicit-context-window",
+        )
+        self.assertEqual(
+            set(result["command_structure"]),
+            {"sovereign", "grand_vizier", "council_roles", "field_commanders"},
         )
 
     def test_large_compound_route_is_split_and_parallelism_is_bounded(self) -> None:
@@ -176,12 +198,33 @@ class SeferPlanningTests(unittest.TestCase):
         )
         self.assertEqual(first, second)
         self.assertGreater(first["recommended_sessions"], 1)
-        self.assertEqual(first["orchestration_lane"], "sinirli-ordu")
+        self.assertEqual(first["orchestration_lane"], "bounded-army")
         self.assertLessEqual(first["safe_parallel_workstreams"], 3)
         self.assertTrue(
             first["publication_obligations"]["remote_readback_required"]
         )
         self.assertTrue(all(task["required_evidence"] for task in first["tasks"]))
+        self.assertTrue(all("commanders" in row for row in first["campaigns"]))
+
+    def test_goal_identity_does_not_change_with_host_capacity(self) -> None:
+        base = sample_route()
+        claude = planning.enrich_plan(
+            base,
+            host_profile="claude",
+            context_window=128000,
+            directory=COMPANY,
+        )
+        codex = planning.enrich_plan(
+            base,
+            host_profile="codex",
+            context_window=256000,
+            directory=COMPANY,
+        )
+        self.assertNotEqual(claude["context_budget"], codex["context_budget"])
+        self.assertEqual(
+            goals.goal_id("Fix the Python backend regression", "VERIFIED", claude),
+            goals.goal_id("Fix the Python backend regression", "VERIFIED", codex),
+        )
 
     def test_goal_start_persists_machine_route_and_human_plan(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -210,6 +253,7 @@ class SeferPlanningTests(unittest.TestCase):
         self.assertEqual(result["schema_version"], 2)
         self.assertEqual(route["schema_version"], 3)
         self.assertIn("## Nizâm-ı Sefer", plan)
+        self.assertIn("Sefer 01", plan)
         self.assertIn("task-01", tasks)
         self.assertEqual(
             result["route_sha256"], hashlib.sha256(route_bytes).hexdigest()
