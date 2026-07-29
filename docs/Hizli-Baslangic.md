@@ -8,6 +8,11 @@ düzenidir. Güncel v1 karnesi **7/8** kapının geçtiğini, bağımsız kullan
 kanıtının beklediğini gösterir. Ürün sözleşmesi:
 [[Topluluk Standartları|Topluluk-Standartlari]].
 
+Sadrazam'ın ilerleme sözleşmesi, çalışma uzadığında host ajanını ham teknik
+günlük yerine işe başlarken ve anlamlı aşama değişimlerinde ne yaptığını, bunun
+neden önemli olduğunu ve sırada ne bulunduğunu kısa biçimde söylemeye
+yönlendirir.
+
 ## 1. Beş dakikalık güvenli yolu çalıştır
 
 Aşağıdaki örnekler Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
@@ -16,16 +21,16 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.17.0
-python scripts/divan.py install --host both --ref v0.17.0 --execute
+python scripts/divan.py install --host both --ref v0.17.1
+python scripts/divan.py install --host both --ref v0.17.1 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0 --execute
+python scripts/divan.py doctor --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:

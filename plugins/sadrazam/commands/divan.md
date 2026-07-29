@@ -9,7 +9,7 @@ user to select a package, skill, module, provider, or quality gate.
 
 1. Resolve the project root without executing project code.
 2. Resolve `${CLAUDE_PLUGIN_ROOT}` or the equivalent loaded-plugin root from
-   host metadata; never resolve relative to the user project.
+   host metadata; never resolve from the user's current working directory.
 3. Run
    `python "${CLAUDE_PLUGIN_ROOT}/divan_runtime/cli.py" architecture --json`.
 4. Run
@@ -22,6 +22,10 @@ user to select a package, skill, module, provider, or quality gate.
 7. If changed paths exist, run
    `python "${CLAUDE_PLUGIN_ROOT}/divan_runtime/cli.py" impact <relative-paths> --json`
    and close the transitive checks.
+
+Load and follow Sadrazam's canonical
+`skills/sadrazam/references/vibe-progress.md` Vibe progress protocol before
+tool use and at each meaningful phase change.
 
 This is an expert inspection surface. Normal users can state the same mandate
 directly; Sadrazam performs the routing automatically.

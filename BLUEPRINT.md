@@ -40,6 +40,11 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
    sınırlı uyumluluk yüzeyidir. Teknik kimlikler İngilizce kanonik, Türkçe
    sunum birinci sınıftır. Ayrıntı ADR 0007'dedir; ADR 0005 ve 0006 tarihsel
    bağlam ile kararlı veri/CLI kimlikleri için korunur.
+8. **Vibe coder ilerleme nizamı:** Divan teknik ağırlığı arkada tutarken
+   kullanıcıya yalnız şu an ne olduğunu, neden önemli olduğunu ve sıradaki
+   anlamlı sonucu kısa ve kanıta bağlı biçimde söyler. Plan, kod, test, GitHub,
+   merge, yayın ve canlı doğrulama ayrı iddialardır. Bu sözleşme host arayüzünü
+   değiştirmez, yeni runtime veya dış bağımlılık eklemez. Ayrıntı ADR 0008'dedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -62,7 +67,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin yayın adayı
 
-- Yok. Sıradaki sürüm kapsamı kanıtlanmadan sürüm numarası ayrılmayacaktır.
+- **v0.17.1 ✓** Local patch candidate: one canonical vibe-progress contract,
+  all seven public command entry points, synchronized public guidance, release
+  surface coverage, and focused regression tests. Runtime architecture and v1
+  readiness remain unchanged until full verification and publication evidence
+  are complete.
 
 ### Yayımlanan temel
 
@@ -156,6 +165,12 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-29: v0.17.1 work began from the published v0.17.0 base. ADR 0008,
+  the canonical Vibe Progress Protocol, seven public command links, guidance,
+  release surfaces, and focused regression tests were added without changing
+  the nine-module runtime or adding an external dependency. Full verification,
+  independent review, PR/CI, merge, Release, Pages, and Wiki remain separate
+  pending states.
 - 2026-07-29: PR #49 published v0.17.0 from
   `8b711b6f0ebb696ce971d83c90833bb59acf3c34`. All seven PR workflows and nine
   main/publication workflows passed. Tag/Release ID 361750779, five downloaded

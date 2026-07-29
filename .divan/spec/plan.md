@@ -1,24 +1,20 @@
-# Etkin plan — v0.17.0 One Divan / Modular Engine
+# Etkin plan — v0.17.1 Vibe-friendly Progress
 
-Kanonik hedef:
-`.divan/spec/v0.17.0-one-divan-modular-engine.md`.
+Kanonik hedef: `.divan/spec/v0.17.1-vibe-progress.md`.
 
-1. ADR 0007 ile tek ürün, Hükümdar yetkisi, modül sınırı ve uyumluluk süresini
-   sabitle.
-2. Çalışan çekirdeği aynı klasör derinliğindeki `divan_runtime` paketine taşı;
-   paket-içi importları kullan.
-3. Modül grafiği ve Divan Nizamı sözleşmesini fail-closed kernel ile doğrula.
-4. Eski `company` Python/JSON yollarını ve `company-validate` takma adını v1
-   boyunca davranış eşliğiyle koru.
-5. Deterministik project runner, composite action, etki grafiği, mypy, coverage,
-   Clean Code ve CI yüzeylerini kanonik pakete geçir.
-6. README, kanonik iki dilli rehberler, Wiki, site, CHANGELOG, BLUEPRINT,
-   progress ve release manifestini tek ürün diliyle eşitle.
-7. Odaklı ve tam testleri çalıştır; bağımsız inceleme bulgularını test-first
-   kapat.
-8. v0.17 PR'ını aç, bütün CI kapılarını geçir, `main`e birleştir.
-9. Kanonik release workflow'undan tag/Release/assets/attestations üret; Pages,
-   Wiki ve varlık hash'lerini geri oku.
+1. ADR 0008 ile sade ilerleme dili, kanıt ayrımları, erişilebilir durum dili ve
+   host UI sınırını sabitle.
+2. Sadrazam altında tek kanonik ilerleme sözleşmesi oluştur; davranışı yeni bir
+   runtime veya dış bağımlılık hâline getirme.
+3. `/divan`, `/ferman`, `/sefer`, `/teftis` ve `/yayin` girişlerini aynı
+   sözleşmeye bağla; kopyalanmış protokol üretme.
+4. Vibe coder değer rehberi, README, Wiki, Pages/site kaynağı, paket metadata,
+   changelog, blueprint, progress ve release manifestini eşitle.
+5. Odaklı testleri, etki grafiğinin istediği kapıları ve tam kanonik teftişi
+   çalıştır; bağımsız inceleme bulgularını kapat.
+6. v0.17.1 PR'ını aç, zorunlu CI kapılarını geç, korumalı `main`e birleştir.
+7. Kanonik release akışından değişmez tag/Release/assets/attestations üret;
+   Pages, Wiki ve varlık hash'lerini geri oku.
 
-Issue #34 dış kullanıcı gerektirir. v0.17 yayını bu kanıtı üretmez ve v1,
-bağımsız kabul gelene kadar 7/8 kalır.
+Issue #34 dış kullanıcı gerektirir. Bu sahip-yürütümlü iletişim sürümü o kanıtı
+üretmez ve v1, bağımsız kabul gelene kadar 7/8 kalır.

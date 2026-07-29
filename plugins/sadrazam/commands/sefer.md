@@ -13,4 +13,9 @@ sonra Ocak / Sefer / Ordu kademelerinden en küçüğünü gerekçesiyle seç.
 - Agent Teams veya harici harness için kullanıcıdan açık yetki almadan ayar,
   ortam değişkeni ya da bağımlılık ekleme.
 
+`${CLAUDE_PLUGIN_ROOT}` veya host metadata içindeki eşdeğer loaded-plugin root'u
+çöz; kullanıcının current working directory yolundan çözme. O kökteki
+`skills/sadrazam/references/vibe-progress.md` kanonik Vibe progress protocol
+sözleşmesini araçlardan önce ve her meaningful phase değişiminde uygula.
+
 Sonunda görev-sahip eşlemesini, birleşik test kanıtını ve açık riskleri takdim et.

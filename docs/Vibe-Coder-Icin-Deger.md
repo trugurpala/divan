@@ -44,3 +44,29 @@ sabit tasarruf yüzdesi veya token sayısı iddia edilmez.
 modüllü, stdlib-only çekirdek bu repoda yaşar; Divan Proje Sözleşmesi hedef
 repoya denetlenebilir durum ve kanıt yüzeylerini kurar. Eski Company OS ve
 Project OS adları yalnız v1 uyumluluğu için korunur.
+
+## İlerleme dili
+
+**Önde sakin ve anlaşılır Divan; arkada bütün mühendislik ağırlığı.**
+
+Sadrazam'ın kanonik sözleşmesi host ajanını her komutu, dosyayı ve alt ajanı
+sohbet ekranına dökmemeye yönlendirir. İşe başlarken ve anlamlı bir aşama
+değiştiğinde şimdi ne yapıldığını, bunun neden önemli olduğunu ve sırada ne
+bulunduğunu kısa biçimde bildirmesini ister. Uzun işlerde yalnız yeni bilgi
+varsa 45–60 saniyede bir ses verir; ilerleme yüzdesi uydurmaz.
+
+Örnek:
+
+> Açık çalışmaları güncel Divan mimarisine göre ayıklıyorum. Eski olanı
+> yanlışlıkla birleştirmemek için önce güvenli parçaları belirliyorum. Sonra
+> uygun olanları test edeceğim.
+
+`Kod hazır`, `Test edildi`, `GitHub'a gönderildi`, `main'e birleşti`,
+`Yayınlandı` ve `Canlı ortamda doğrulandı` ayrı durumlardır. Divan kanıtı
+olmayan sonraki aşamayı olmuş gibi anlatmaz. Gerçek bir engel yoksa teknik
+sorunu kendi çözer; kullanıcıdan yalnız kararı değiştiren veya yeni yetki
+gerektiren konuyu ister.
+
+Bu sürümde repo testleri sözleşme, komut bağlantısı ve yayın yüzeylerini
+doğrular. Yeni bir gerçek-ajan A/B sonucu veya host arayüzü değişikliği iddia
+edilmez; gözlenmiş davranış kanıtı ayrı ve redakte edilmiş bir eval ister.

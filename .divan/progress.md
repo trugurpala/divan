@@ -12,10 +12,11 @@ Son güncelleme: 2026-07-29
 
 ## Güncel hedef
 
-The latest published release is v0.17.0 at immutable commit `8b711b6f`. PR #49,
-all required pull-request and main workflows, Release ID `361750779`, five
-downloaded assets, checksums, SPDX 2.3 SBOM, attestations, Pages, and Wiki are
-bound to tracked evidence.
+The latest published release remains v0.17.0 at immutable commit `8b711b6f`.
+The active v0.17.1 patch candidate gives substantial Divan work one calm,
+evidence-bound progress language for vibe coders. Local implementation is not
+yet a merge, release, or live deployment; those states remain pending until
+their identifiers are recorded in the v0.17.1 evidence file.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -27,6 +28,13 @@ adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
+- ADR 0008 and the v0.17.1 specification define one Vibe Progress Protocol.
+  Sadrazam and all seven public chat commands point to the same loaded-plugin
+  root contract. README, Wiki, Pages/site source, and the vibe-coder guide
+  explain the user benefit and the contract-only evidence boundary. Focused
+  tests cover the contract and public surfaces. The nine-module runtime,
+  Hükümdar authority order, compatibility paths, and v1 7/8 status remain
+  unchanged.
 - PR #49 merged v0.17.0 to `main` as
   `8b711b6f0ebb696ce971d83c90833bb59acf3c34`. Seven PR workflows and nine
   main/publication workflows completed successfully. Release workflow
@@ -332,7 +340,8 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Collect and human-review the reproducible non-owner adoption evidence required
-by issue #34. Run the adoption receipt verifier before changing
-`registry/v1-gates.json`; keep v1 at 7/8 if the evidence is absent, owner-run,
-privacy-unsafe, or not reproducible.
+Finish the v0.17.1 canonical verifier and independent review, then open the
+patch PR, pass required CI, merge through branch protection, publish the
+immutable release, and read back assets, Pages, and Wiki. Only after that
+return to issue #34; keep v1 at 7/8 unless reproducible, privacy-bounded
+non-owner adoption evidence exists.

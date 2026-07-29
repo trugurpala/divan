@@ -9,11 +9,11 @@ komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
 Release'i bulunan bir ref'i kur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.17.0
-python scripts/divan.py install --host both --ref v0.17.0 --execute
-python scripts/divan.py doctor --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0 --execute
+python scripts/divan.py install --host both --ref v0.17.1
+python scripts/divan.py install --host both --ref v0.17.1 --execute
+python scripts/divan.py doctor --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -238,11 +238,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.17.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.17.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.17.0/scripts/install_codex.sh | DIVAN_REF=v0.17.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.17.1/scripts/install_codex.sh | DIVAN_REF=v0.17.1 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

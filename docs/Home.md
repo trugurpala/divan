@@ -1,4 +1,4 @@
-# Divan Wiki · v0.17.0
+# Divan Wiki · v0.17.1
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -13,7 +13,13 @@ Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Diva
 ürününün parçalarıdır. v1 durumu **7/8** kapıdır: bağımsız kullanıcı kabul
 kanıtı hâlâ bekleniyor.
 
-> **Güncel kaynak:** v0.17.0 · **Son yayımlanan:** v0.17.0 · `main` ürün kaynağı · Wiki bu repodaki
+Yeni Sadrazam sözleşmesi, host ajanını başlangıçta ve anlamlı aşama
+değişimlerinde şu an ne olduğunu, neden önemli olduğunu ve sırada ne bulunduğunu
+kısa insan diliyle bildirmeye yönlendirir. Komut, dosya ve alt ajan günlükleri
+yalnız gerçek bir engeli açıklıyorsa öne çıkar. Repo testleri bu sözleşmenin
+dağıtımını doğrular; yeni bir gerçek-ajan A/B sonucu iddia etmez.
+
+> **Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.0 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

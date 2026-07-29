@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.17.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.17.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
-**Current source:** v0.17.0 · **Latest published:** v0.17.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.17.1 · **Latest published:** v0.17.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -42,6 +42,7 @@ surface that stays in sync with the implementation.
 | External swarm harnesses add cost and complexity | One native session first; bounded subagents/worktrees only when justified |
 | A PR is ready but the public product is still stale | Publication Law: docs + wiki + changelog + merge + live verification |
 | A connected tool silently expands the job | Divan Nizamı: only Hükümdar can expand scope; every delegated layer is narrower |
+| The technical work is hard to follow in chat | Plain-language progress contract: report what is happening, why it matters, and what comes next |
 
 Divan is not a model or a separate third-party agent runtime. It is an
 auditable Agent Skills distribution with its own modular execution core,
@@ -111,8 +112,8 @@ ref whose immutable tag and GitHub Release exist. Preview the no-write plan,
 then install the same pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.17.0
-python scripts/divan.py install --host both --ref v0.17.0 --execute
+python scripts/divan.py install --host both --ref v0.17.1
+python scripts/divan.py install --host both --ref v0.17.1 --execute
 ```
 
 For safety, the installer never overwrites an existing `divan` marketplace or
@@ -127,9 +128,9 @@ migration, and removal paths.
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0 --execute
+python scripts/divan.py doctor --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

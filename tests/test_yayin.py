@@ -264,6 +264,13 @@ class PublicationTests(unittest.TestCase):
 
     def test_real_manifest_prepare_preserves_published_truth(self) -> None:
         old = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        progress = (ROOT / ".divan" / "progress.md").read_text(encoding="utf-8")
+        published_prefix = "- Latest published release: v"
+        published = next(
+            line.removeprefix(published_prefix)
+            for line in progress.splitlines()
+            if line.startswith(published_prefix)
+        )
         major, minor, patch = map(int, old.split("."))
         new = f"{major}.{minor}.{patch + 1}"
         manifest = json.loads(
@@ -322,8 +329,12 @@ class PublicationTests(unittest.TestCase):
 
             self.assertIn(f"**Current source:** v{new}", texts["README.md"])
             self.assertIn(f"**Güncel kaynak:** v{new}", texts["README.tr.md"])
-            self.assertIn(f"**Latest published:** v{old}", texts["README.md"])
-            self.assertIn(f"**Son yayımlanan:** v{old}", texts["README.tr.md"])
+            self.assertIn(
+                f"**Latest published:** v{published}", texts["README.md"]
+            )
+            self.assertIn(
+                f"**Son yayımlanan:** v{published}", texts["README.tr.md"]
+            )
             self.assertNotIn(f"**Latest published:** v{new}", texts["README.md"])
             self.assertNotIn(f"**Son yayımlanan:** v{new}", texts["README.tr.md"])
 

@@ -11,6 +11,11 @@ Teftiş (kanıt göster: test çıktısı, çalışan komut) → Takdim (bitmiş
 satır özet + sonraki adımlar). Yarım iş teslim etme; engel varsa önce
 yapılabilen her şeyi yap, sonra tam olarak neyin gerektiğini söyle.
 
+`${CLAUDE_PLUGIN_ROOT}` veya host metadata içindeki eşdeğer loaded-plugin root'u
+çöz; kullanıcının current working directory yolundan çözme. O kökteki
+`skills/sadrazam/references/vibe-progress.md` kanonik Vibe progress protocol
+sözleşmesini araçlardan önce ve her meaningful phase değişiminde uygula.
+
 Plan iki veya daha fazla gerçekten bağımsız çalışma hattı içeriyorsa
 `ordu-nizami` skill'ini de yükle; aksi halde tek oturumda kal. Harici harness
 ve deneysel Agent Teams açık kullanıcı tercihi olmadan kurulmaz veya açılmaz.
