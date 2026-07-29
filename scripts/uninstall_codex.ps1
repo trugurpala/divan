@@ -1,5 +1,8 @@
 # Canonical Windows fallback uninstaller for Codex.
-param([string]$Manifest = "")
+param(
+  [string]$Manifest = "",
+  [string]$Python = ""
+)
 $ErrorActionPreference = "Stop"
 
 $dst = if ($env:CODEX_SKILLS_DIR) {
@@ -28,9 +31,16 @@ if (-not (Test-Path -LiteralPath $Manifest -PathType Leaf)) {
   throw "Kurulum kaydi bulunamadi: $Manifest"
 }
 
-$python = Get-Command python -ErrorAction SilentlyContinue
-if (-not $python) { throw "Python 3 bulunamadi; guvenli kaldirma calistirilamiyor." }
+$pythonPath = if ($Python -and (Test-Path -LiteralPath $Python -PathType Leaf)) {
+  $Python
+} elseif ($env:DIVAN_PYTHON -and (Test-Path -LiteralPath $env:DIVAN_PYTHON -PathType Leaf)) {
+  $env:DIVAN_PYTHON
+} else {
+  $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+  if ($pythonCommand) { $pythonCommand.Source } else { $null }
+}
+if (-not $pythonPath) { throw "Python 3 bulunamadi; guvenli kaldirma calistirilamiyor." }
 $helper = Join-Path $PSScriptRoot "legacy_state.py"
-& $python.Source $helper migrate --manifest $Manifest --skills-dir $dst --state-dir $stateDir
+& $pythonPath $helper migrate --manifest $Manifest --skills-dir $dst --state-dir $stateDir
 if ($LASTEXITCODE -ne 0) { throw "Legacy Divan kaldirma islemi guvenli bicimde geri alindi." }
 Write-Host "Divan karantinaya alindi; kullanilan kayit korundu -> $Manifest"

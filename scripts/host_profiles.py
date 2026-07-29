@@ -80,8 +80,15 @@ def rollback_command(root: pathlib.Path) -> list[str]:
             "Bypass",
             "-File",
             str(root / "scripts" / "uninstall_codex.ps1"),
+            "-Python",
+            sys.executable,
         ]
-    return ["bash", str(root / "scripts" / "uninstall_codex.sh")]
+    return [
+        "bash",
+        str(root / "scripts" / "uninstall_codex.sh"),
+        "--python",
+        sys.executable,
+    ]
 
 
 def fallback_plan(options: Any, root: pathlib.Path, cli_status: str) -> dict[str, Any]:

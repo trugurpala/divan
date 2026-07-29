@@ -642,6 +642,7 @@ class HostInstallTests(unittest.TestCase):
         self.assertEqual(len(record["installed_sha256"]), 41)
         self.assertEqual(record["archive_sha256"], "b" * 64)
         self.assertIn("uninstall_codex", record["rollback_command"])
+        self.assertIn(sys.executable, record["rollback_command"])
         self.assertEqual(len(fallback.calls), 1)
         self.assertEqual(fallback.calls[0][1]["DIVAN_REF"], REF)
         self.assertEqual(fallback.calls[0][1]["DIVAN_PYTHON"], sys.executable)
