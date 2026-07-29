@@ -46,17 +46,22 @@ The enriched route is schema 3 and adds:
 - a deterministic complexity score and estimated working-set size;
 - usable context budget, reserve, and handoff threshold;
 - recommended session count and bounded parallel-workstream limit;
-- `tek-sefer`, `ardisik-sefer`, or `sinirli-ordu` orchestration;
+- `single-expedition`, `sequential-expeditions`, or `bounded-army`
+  orchestration identifiers;
+- a `campaigns` array whose user-facing names remain `Sefer 01`, `Sefer 02`,
+  and so on;
 - stage tasks with dependencies, responsible functional roles, and required
   evidence;
-- the Padişah → Sadrazam → vezir → paşa command structure;
+- English-canonical `command_structure` keys with Padişah and Sadrazam display
+  names;
 - durable memory and public-surface obligations.
 
 Starting a goal keeps the long-standing human contract under
 `.divan/specs/<goal-id>/{spec.md,plan.md,tasks.md}` and writes the machine route
 to `.divan/routes/<goal-id>.json`. The route SHA-256 is recorded in `spec.md`.
 This preserves existing Project OS receipts while giving every new session an
-exact restart contract.
+exact restart contract. Host/context capacity is excluded from goal identity,
+so the same intent and project keep the same `goal_id` across Claude and Codex.
 
 ```powershell
 python scripts/divan.py goal start --project . --intent "Harden and publish the API" --target released --host-profile auto --json
