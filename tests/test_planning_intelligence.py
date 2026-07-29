@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import sys
@@ -105,7 +106,10 @@ class SeferPlanningTests(unittest.TestCase):
         self.assertEqual(result["recommended_sessions"], 1)
         self.assertEqual(result["orchestration_lane"], "tek-sefer")
         self.assertEqual(len(result["sefers"]), 1)
-        self.assertEqual(result["context_budget"]["capacity_source"], "explicit-context-window")
+        self.assertEqual(
+            result["context_budget"]["capacity_source"],
+            "explicit-context-window",
+        )
 
     def test_large_compound_route_is_split_and_parallelism_is_bounded(self) -> None:
         route = sample_route()
@@ -194,20 +198,25 @@ class SeferPlanningTests(unittest.TestCase):
                 context_window=128000,
             )
             goal_root = project / ".divan" / "specs" / result["goal_id"]
-            route = json.loads(
-                (goal_root / "route.json").read_text(encoding="utf-8")
-            )
+            route_path = project / result["route"]
+            route = json.loads(route_path.read_text(encoding="utf-8"))
             plan = (goal_root / "plan.md").read_text(encoding="utf-8")
             tasks = (goal_root / "tasks.md").read_text(encoding="utf-8")
+            spec = (goal_root / "spec.md").read_text(encoding="utf-8")
             receipt_path = project / result["receipt"]
             verification = receipts.verify_receipt(receipt_path)
+            route_bytes = route_path.read_bytes()
 
         self.assertEqual(result["schema_version"], 2)
         self.assertEqual(route["schema_version"], 3)
         self.assertIn("## Nizâm-ı Sefer", plan)
         self.assertIn("task-01", tasks)
+        self.assertEqual(
+            result["route_sha256"], hashlib.sha256(route_bytes).hexdigest()
+        )
+        self.assertIn(result["route_sha256"], spec)
         self.assertTrue(verification["ok"])
-        self.assertIn("route.json", " ".join(verification["artifacts"]))
+        self.assertNotIn(result["route"], verification["artifacts"])
 
 
 if __name__ == "__main__":
