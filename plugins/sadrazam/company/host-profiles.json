@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "default_profile": "portable",
+  "profiles": [
+    {
+      "id": "portable",
+      "label": {"en": "Portable fallback", "tr": "Taşınabilir güvenli varsayım"},
+      "default_context_window_tokens": 64000,
+      "reserve_percent": 40,
+      "handoff_percent": 60,
+      "max_parallel_workstreams": 1,
+      "capacity_kind": "conservative-fallback"
+    },
+    {
+      "id": "claude",
+      "label": {"en": "Claude host planning profile", "tr": "Claude host planlama profili"},
+      "default_context_window_tokens": 128000,
+      "reserve_percent": 35,
+      "handoff_percent": 60,
+      "max_parallel_workstreams": 2,
+      "capacity_kind": "conservative-fallback"
+    },
+    {
+      "id": "codex",
+      "label": {"en": "Codex host planning profile", "tr": "Codex host planlama profili"},
+      "default_context_window_tokens": 128000,
+      "reserve_percent": 35,
+      "handoff_percent": 60,
+      "max_parallel_workstreams": 2,
+      "capacity_kind": "conservative-fallback"
+    },
+    {
+      "id": "chatgpt",
+      "label": {"en": "ChatGPT host planning profile", "tr": "ChatGPT host planlama profili"},
+      "default_context_window_tokens": 128000,
+      "reserve_percent": 35,
+      "handoff_percent": 60,
+      "max_parallel_workstreams": 2,
+      "capacity_kind": "conservative-fallback"
+    },
+    {
+      "id": "extended",
+      "label": {"en": "Extended context planning profile", "tr": "Geniş bağlam planlama profili"},
+      "default_context_window_tokens": 256000,
+      "reserve_percent": 35,
+      "handoff_percent": 55,
+      "max_parallel_workstreams": 3,
+      "capacity_kind": "conservative-fallback"
+    }
+  ]
+}
