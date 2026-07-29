@@ -5,6 +5,7 @@
     "documentation": ["public-site", "wiki"],
     "evaluation": ["release-validation"],
     "marketplace-validation": ["release-validation"],
+    "planning-intelligence": ["company-validation", "documentation", "release-validation"],
     "public-site": ["release-validation"],
     "wiki": ["release-validation"],
     "company-validation": ["documentation"]
@@ -13,6 +14,7 @@
     "catalog": ["python scripts/catalog.py --check"],
     "evaluation": ["python evals/run.py --check"],
     "marketplace-validation": ["python scripts/validate.py"],
+    "planning-intelligence": ["python -m unittest tests.test_planning_intelligence -v"],
     "wiki": ["python scripts/wiki.py --check"],
     "public-site": ["python -m unittest tests.test_site_markup -v"],
     "release-validation": ["python scripts/release.py --check"],
@@ -38,6 +40,18 @@
       "patterns": ["plugins/sadrazam/company/*.json", "plugins/sadrazam/company/*.py"],
       "effects": ["company-validation"],
       "checks": ["python -m unittest tests.test_company_engine -v"]
+    },
+    {
+      "id": "planning-intelligence-contract",
+      "patterns": [
+        "plugins/sadrazam/company/planning.py",
+        "plugins/sadrazam/company/host-profiles.json",
+        "plugins/sadrazam/company/goals.py",
+        "plugins/sadrazam/company/cli.py",
+        "tests/test_planning_intelligence.py"
+      ],
+      "effects": ["planning-intelligence"],
+      "checks": ["python -m unittest tests.test_planning_intelligence -v"]
     },
     {
       "id": "portable-action",
