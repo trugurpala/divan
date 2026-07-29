@@ -10,6 +10,27 @@ import subprocess
 from collections.abc import Callable
 from typing import Any
 
+import host_probe
+
+_FALLBACK_CLI_STATUSES = {"missing", "not-executable", "access-denied"}
+_NATIVE_CAPABILITIES = {
+    "skills": True,
+    "instructions": True,
+    "commands": True,
+    "agents": True,
+    "hooks": True,
+    "mcp": True,
+    "native_lifecycle": True,
+}
+_SKILL_FALLBACK_CAPABILITIES = {
+    "skills": True,
+    "instructions": True,
+    "commands": False,
+    "agents": False,
+    "hooks": False,
+    "mcp": False,
+    "native_lifecycle": False,
+}
 
 def marketplace_list_command(host: str) -> list[str]:
     return [host, "plugin", "marketplace", "list", "--json"]
@@ -163,15 +184,20 @@ Runner = Callable[[list[str]], Any]
 Normalizer = Callable[[str], str]
 
 
-def _doctor_json(runner: Runner, command: list[str]) -> tuple[Any | None, str | None, bool]:
+def _doctor_json(
+    runner: Runner, command: list[str]
+) -> tuple[Any | None, str | None, str]:
     result = runner(command)
     if result.returncode:
         detail = (result.stderr or result.stdout or "unknown CLI error").strip()
-        return None, detail, result.returncode == 127
+        cli_status = host_probe.cli_status(result)
+        if cli_status is None and result.returncode == 127:
+            cli_status = "missing"
+        return None, detail, cli_status or "healthy"
     try:
-        return json.loads(result.stdout), None, False
+        return json.loads(result.stdout), None, "healthy"
     except json.JSONDecodeError as exc:
-        return None, str(exc), False
+        return None, str(exc), "invalid-json"
 
 
 def _doctor_command(runner: Runner, command: list[str]) -> tuple[str | None, str | None]:
@@ -262,25 +288,53 @@ def _doctor_host(
     runner: Runner,
     normalize: Normalizer,
 ) -> dict[str, Any]:
-    marketplaces_value, error, unavailable = _doctor_json(
+    marketplaces_value, error, cli_status = _doctor_json(
         runner, marketplace_list_command(host)
     )
     if error:
-        status = "unavailable" if unavailable else "attention"
-        issue = "CLI unavailable" if unavailable else f"marketplace list: {error}"
-        return {"status": status, "issues": [issue]}
-    plugins_value, error, unavailable = _doctor_json(runner, plugin_list_command(host))
+        return _cli_failure_result(host, "marketplace list", error, cli_status)
+    plugins_value, error, cli_status = _doctor_json(runner, plugin_list_command(host))
     if error:
-        status = "unavailable" if unavailable else "attention"
-        issue = "CLI unavailable" if unavailable else f"plugin list: {error}"
-        return {"status": status, "issues": [issue]}
+        return _cli_failure_result(host, "plugin list", error, cli_status)
     marketplaces = marketplace_rows(host, marketplaces_value)
     plugins = plugin_rows(host, plugins_value)
     marketplace = marketplaces.get("divan")
     issues = _plugin_issues(host, marketplace is not None, plugins, expected)
     if marketplace is not None:
         issues.extend(_marketplace_issues(host, marketplace, options, runner, normalize))
-    return {"status": "healthy" if not issues else "attention", "issues": issues}
+    return {
+        "status": "healthy" if not issues else "attention",
+        "cli_status": "healthy",
+        "recommended_mode": "native",
+        "capabilities": dict(_NATIVE_CAPABILITIES),
+        "issues": issues,
+    }
+
+
+def _cli_failure_result(
+    host: str, operation: str, error: str, cli_status: str
+) -> dict[str, Any]:
+    fallback = host == "codex" and cli_status in _FALLBACK_CLI_STATUSES
+    unavailable = cli_status in _FALLBACK_CLI_STATUSES
+    if cli_status == "missing":
+        issue = "CLI unavailable"
+    elif cli_status == "access-denied":
+        issue = "CLI access denied"
+    elif cli_status == "not-executable":
+        issue = "CLI not executable"
+    elif cli_status == "invalid-json":
+        issue = f"{operation}: invalid JSON: {error}"
+    else:
+        issue = f"{operation}: {error}"
+    return {
+        "status": "unavailable" if unavailable else "attention",
+        "cli_status": cli_status,
+        "recommended_mode": "verified-skill-fallback" if fallback else "blocked",
+        "capabilities": dict(
+            _SKILL_FALLBACK_CAPABILITIES if fallback else _NATIVE_CAPABILITIES
+        ),
+        "issues": [issue],
+    }
 
 
 def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
@@ -300,7 +354,28 @@ def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
     return None
 
 
-def _next_command(options: Any) -> str:
+def _next_command(options: Any, results: dict[str, dict[str, Any]]) -> str:
+    codex = results.get("codex")
+    if codex is not None and codex.get("cli_status") == "invalid-json":
+        return subprocess.list2cmdline(marketplace_list_command("codex"))
+    if (
+        codex is not None
+        and codex.get("cli_status") in _FALLBACK_CLI_STATUSES
+    ):
+        command = [
+            "python",
+            "scripts/divan.py",
+            "install",
+            "--host",
+            "codex",
+            "--source",
+            options.source,
+            "--ref",
+            options.ref,
+            "--profile",
+            "auto",
+        ]
+        return subprocess.list2cmdline(command)
     command = [
         "python",
         "scripts/divan.py",
@@ -333,7 +408,7 @@ def doctor(
         issues.append("unfinished transaction")
     statuses = {result["status"] for result in results.values()}
     status = "unavailable" if "unavailable" in statuses else "attention" if issues else "healthy"
-    next_command = _next_command(options)
+    next_command = _next_command(options, results)
     if transaction is not None:
         next_command = subprocess.list2cmdline(
             ["python", "scripts/divan.py", "recover", str(transaction)]

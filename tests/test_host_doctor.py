@@ -30,9 +30,14 @@ PACKAGE_VERSIONS = {
 
 
 class DoctorRunner:
-    def __init__(self, unavailable: set[str] | None = None) -> None:
+    def __init__(
+        self,
+        unavailable: set[str] | None = None,
+        cli_statuses: dict[str, str] | None = None,
+    ) -> None:
         self.commands: list[tuple[str, ...]] = []
         self.unavailable = unavailable or set()
+        self.cli_statuses = cli_statuses or {}
         self.marketplaces = {"claude": {"divan"}, "codex": {"divan"}}
         self.plugins = {
             host: {f"{package}@divan" for package in PACKAGE_VERSIONS}
@@ -47,6 +52,19 @@ class DoctorRunner:
         host = command[0]
         if host in self.unavailable:
             return subprocess.CompletedProcess(command, 127, "", f"executable not found: {host}")
+        cli_status = self.cli_statuses.get(host)
+        if cli_status == "invalid-json":
+            return subprocess.CompletedProcess(command, 0, "{not-json", "")
+        if cli_status in {"missing", "not-executable", "access-denied"}:
+            code = {"not-executable": 125, "access-denied": 126, "missing": 127}[
+                cli_status
+            ]
+            return subprocess.CompletedProcess(
+                command,
+                code,
+                "",
+                f"divan-cli-status:{cli_status}: fixture failure",
+            )
         if host == "git":
             if "get-url" in command:
                 return subprocess.CompletedProcess(
@@ -162,6 +180,7 @@ class HostDoctorTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "unavailable")
         self.assertEqual(result["hosts"]["claude"]["status"], "unavailable")
+        self.assertEqual(result["hosts"]["claude"]["cli_status"], "missing")
         self.assertIn("CLI unavailable", result["issues"])
 
     def test_healthy_pinned_install_reports_no_issues(self) -> None:
@@ -172,6 +191,53 @@ class HostDoctorTests(unittest.TestCase):
         self.assertEqual(result["issues"], [])
         self.assertEqual(set(result["hosts"]), {"claude", "codex"})
         self.assertTrue(all(host["status"] == "healthy" for host in result["hosts"].values()))
+        self.assertTrue(
+            all(host["cli_status"] == "healthy" for host in result["hosts"].values())
+        )
+
+    def test_codex_access_denied_recommends_explicit_auto_profile(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            runner = DoctorRunner(cli_statuses={"codex": "access-denied"})
+            result = self.diagnose(
+                runner,
+                self.options(pathlib.Path(temporary), host="codex"),
+            )
+
+        self.assertEqual(result["status"], "unavailable")
+        self.assertEqual(result["hosts"]["codex"]["cli_status"], "access-denied")
+        self.assertEqual(
+            result["hosts"]["codex"]["recommended_mode"],
+            "verified-skill-fallback",
+        )
+        self.assertIn("--profile auto", result["next_command"])
+
+    def test_codex_not_executable_recommends_explicit_auto_profile(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            runner = DoctorRunner(cli_statuses={"codex": "not-executable"})
+            result = self.diagnose(
+                runner,
+                self.options(pathlib.Path(temporary), host="codex"),
+            )
+
+        self.assertEqual(result["hosts"]["codex"]["cli_status"], "not-executable")
+        self.assertIn("--profile auto", result["next_command"])
+
+    def test_invalid_json_is_distinct_and_does_not_recommend_fallback(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            runner = DoctorRunner(cli_statuses={"codex": "invalid-json"})
+            result = self.diagnose(
+                runner,
+                self.options(pathlib.Path(temporary), host="codex"),
+            )
+
+        self.assertEqual(result["status"], "attention")
+        self.assertEqual(result["hosts"]["codex"]["cli_status"], "invalid-json")
+        self.assertEqual(result["hosts"]["codex"]["recommended_mode"], "blocked")
+        self.assertNotIn("--profile auto", result["next_command"])
+        self.assertEqual(
+            result["next_command"],
+            "codex plugin marketplace list --json",
+        )
 
     def test_healthy_local_source_proves_both_checkout_heads_without_url_comparison(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
