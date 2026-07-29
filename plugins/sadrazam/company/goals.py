@@ -109,6 +109,7 @@ def _artifact_values(
     intent: str,
     target: str,
     route: dict[str, Any],
+    route_digest: str,
 ) -> dict[str, bytes]:
     project_types = ", ".join(route.get("project_types", [])) or "unclassified"
     workflows = ", ".join(route.get("workflows", [])) or "feature-delivery"
@@ -120,6 +121,7 @@ def _artifact_values(
     context = route.get("context_budget", {})
     obligations = route.get("publication_obligations", {})
     surface_classes = ", ".join(obligations.get("surface_classes", []))
+    route_path = f".divan/routes/{identifier}.json"
 
     spec = (
         f"# Goal {identifier}\n\n"
@@ -129,6 +131,8 @@ def _artifact_values(
         f"- Project types: {project_types}\n"
         f"- Workflows: {workflows}\n"
         f"- Vezirler: {roles}\n"
+        f"- Machine route: `{route_path}`\n"
+        f"- Route SHA-256: `{route_digest}`\n"
         f"- Surface classes: {surface_classes or 'project-memory, verification-evidence'}\n\n"
         "## Acceptance evidence\n\n"
         f"{evidence}\n"
@@ -168,14 +172,10 @@ def _artifact_values(
         + "\n".join(_task_lines(route))
         + "\n"
     )
-    route_json = (
-        json.dumps(route, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-    )
     return {
         "spec.md": spec.encode("utf-8"),
         "plan.md": plan.encode("utf-8"),
         "tasks.md": tasks.encode("utf-8"),
-        "route.json": route_json.encode("utf-8"),
     }
 
 
@@ -223,14 +223,15 @@ def _validate_goal_id(identifier: Any) -> str:
 
 def _goal_paths(
     root: pathlib.Path, identifier: str
-) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path]:
+) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path, pathlib.Path]:
     validated = _validate_goal_id(identifier)
     spec_root = root / ".divan" / "specs" / validated
+    route_path = root / ".divan" / "routes" / f"{validated}.json"
     evidence_root = root / ".divan" / "evidence" / validated
     receipt_path = evidence_root / "receipt.json"
-    for path in (spec_root, evidence_root, receipt_path):
+    for path in (spec_root, route_path, evidence_root, receipt_path):
         _safe_goal_path(root, path)
-    return spec_root, evidence_root, receipt_path
+    return spec_root, route_path, evidence_root, receipt_path
 
 
 def start_goal(
@@ -262,17 +263,24 @@ def start_goal(
         context_window,
     )
     identifier = goal_id(safe_intent, normalized_target, route)
+    route_content = (
+        json.dumps(route, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    route_digest = hashlib.sha256(route_content).hexdigest()
     artifacts = _artifact_values(
-        identifier, safe_intent, normalized_target, route
+        identifier, safe_intent, normalized_target, route, route_digest
     )
-    spec_root, evidence_root, receipt_path = _goal_paths(root, identifier)
+    spec_root, route_path, _evidence_root, receipt_path = _goal_paths(
+        root, identifier
+    )
     relative_artifacts = {
         (pathlib.PurePosixPath(".divan") / "specs" / identifier / name).as_posix():
         hashlib.sha256(content).hexdigest()
         for name, content in artifacts.items()
     }
     paths = [
-        *(spec_root / name for name in ("spec.md", "plan.md", "tasks.md", "route.json")),
+        *(spec_root / name for name in ("spec.md", "plan.md", "tasks.md")),
+        route_path,
         receipt_path,
     ]
     result = {
@@ -283,6 +291,8 @@ def start_goal(
         "target": normalized_target,
         "writes": [path.relative_to(root).as_posix() for path in paths],
         "receipt": receipt_path.relative_to(root).as_posix(),
+        "route": route_path.relative_to(root).as_posix(),
+        "route_sha256": route_digest,
         "complexity": route["complexity"],
         "recommended_sessions": route["recommended_sessions"],
         "orchestration_lane": route["orchestration_lane"],
@@ -292,6 +302,7 @@ def start_goal(
         return result
 
     desired = {spec_root / name: content for name, content in artifacts.items()}
+    desired[route_path] = route_content
     receipt_value = receipts.new_receipt(
         identifier, safe_intent, normalized_target, relative_artifacts
     )
@@ -335,14 +346,14 @@ def goal_status(
                     }
                 )
         return {"schema_version": 1, "status": "listed", "goals": goals}
-    _, _, path = _goal_paths(root, identifier)
+    _, _, _, path = _goal_paths(root, identifier)
     verification = receipts.verify_receipt(path)
     return {"goal_id": identifier, **verification}
 
 
 def resume_goal(project: pathlib.Path | str, identifier: str, execute: bool) -> dict[str, Any]:
     root = pathlib.Path(project).resolve()
-    _, _, path = _goal_paths(root, identifier)
+    _, _, _, path = _goal_paths(root, identifier)
     verification = receipts.verify_receipt(path)
     if not verification["ok"]:
         raise ValueError("; ".join(verification["errors"]))
