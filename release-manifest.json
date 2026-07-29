@@ -156,6 +156,7 @@
     {"id": "adr-nizam-i-sefer", "path": ".divan/decisions/0010-nizam-i-sefer.md", "marker": "# ADR 0010: Nizam-i Sefer is planning intelligence inside Divan", "replace_version": false},
     {"id": "v018-nizam-i-sefer-spec", "path": ".divan/spec/v0.18.0-nizam-i-sefer.md", "marker": "# v0.18.0 target — Nizam-i Sefer planning intelligence", "replace_version": false},
     {"id": "v018-release-candidate-evidence", "path": ".divan/evidence/teftis-20260729-v018-release-candidate.md", "marker": "# v0.18.0 local release-candidate evidence", "replace_version": false},
+    {"id": "v018-release-evidence", "path": ".divan/evidence/teftis-20260729-v018-release.md", "marker": "# v0.18.0 immutable release evidence", "replace_version": false},
     {"id": "nizam-i-sefer-tests", "path": "tests/test_planning_intelligence.py", "marker": "class NizamPlanningTests", "replace_version": false},
     {"id": "orchestration-guide", "path": "docs/Orkestrasyon-Karari.md", "marker": "# Orkestrasyon Kararı — v0.18", "replace_version": false},
     {"id": "v013-local-evidence", "path": ".divan/evidence/teftis-20260721-v013-community-standards.md", "marker": "# v0.13.0 local release-candidate evidence", "replace_version": false},

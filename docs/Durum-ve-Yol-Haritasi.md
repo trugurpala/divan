@@ -2,13 +2,13 @@
 
 Son durum tarihi: 2026-07-29.
 
-> **En güncel yayımlanmış sürüm v0.17.1'dir.** PR #52, bütün zorunlu CI
-> kapıları, değişmez tag/GitHub Release, beş varlık, checksum, attestations,
-> Pages ve Wiki kanıtıyla tamamlanmıştır.
+> **En güncel yayımlanmış sürüm v0.18.0'dır.** PR #54 uygulamayı, PR #55 sürüm
+> hazırlığını tamamladı. Değişmez tag/GitHub Release, beş varlık, checksum,
+> SPDX SBOM, çift attestation, Pages ve Wiki kanıtıyla yayımlandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.17.1` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
+- Değişmez `v0.18.0` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -61,7 +61,7 @@ değildir.
 - v0.17 yayını bağımsız kullanıcı kabulü değildir; issue #34 kapanmadan v1
   karnesi **7/8** kalır.
 
-## Aktif v0.18 — Nizâm-ı Sefer
+## v0.18 — yayımlanan Nizâm-ı Sefer
 
 - Ferman; hedef, workflow aşamaları ve bağımlılıklardan oluşan makine-okunur
   görev grafiğine çevrilir.
@@ -74,22 +74,20 @@ değildir.
 - Goal klasörü `route.json` taşır; görev, bağımlılık, sefer, devir ve kanıt
   yükümlülükleri oturumlar arasında kalır.
 - Uygulama PR #54 ile `7c674874` commit'inde `main`e birleşti; 562 test, iki
-  bağımsız inceleme ve zorunlu CI kapıları geçti. Sürüm PR'ı, değişmez
-  v0.18.0 tag/Release'i, varlıklar, Pages ve Wiki doğrulanmadan yayımlanmış
-  özellik sayılmaz.
+  bağımsız inceleme ve zorunlu CI kapıları geçti. Sürüm PR #55,
+  `3bbbd95881a7c33f64e3e9f8d23824e3eef8977e` commit'inde birleşti. Değişmez
+  v0.18.0 tag/Release'i, beş varlık, iki attestation türü, Pages ve Wiki
+  yeniden okunarak doğrulandı.
 
 ## Sıradaki ürün kanıtı
 
-1. v0.18.0 sürüm adayını korumalı PR/CI üzerinden `main`e taşı; tag/Release,
-   beş varlık, checksum, attestation, Pages/Wiki ve sabitlenmiş kurulum
-   geri okumasını doğrula.
-2. Native host adaptörleri ve tek-komut kurulum profillerini ayrı, kanıtlı
+1. Native host adaptörleri ve tek-komut kurulum profillerini ayrı, kanıtlı
    dilimler halinde uygula; sahte “her hostta tam uyum” iddiası kurma.
-3. Yayımlanan sabit sürümü kullanan, repo sahibi olmayan bağımsız kullanıcıdan
+2. Yayımlanan sabit sürümü kullanan, repo sahibi olmayan bağımsız kullanıcıdan
    gizlilik sınırlı ve tekrar üretilebilir kabul kanıtı topla.
-4. Kabul kaydını tekrar doğrula; owner canary veya maintainer fixture ile kapıyı
+3. Kabul kaydını tekrar doğrula; owner canary veya maintainer fixture ile kapıyı
    geçilmiş sayma.
-5. Kanıt geçerliyse issue #34 ve v1 karnesini ayrı, denetlenebilir değişiklikle
+4. Kanıt geçerliyse issue #34 ve v1 karnesini ayrı, denetlenebilir değişiklikle
    güncelle.
 
 ## v1.0 kapıları

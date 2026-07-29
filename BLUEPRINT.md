@@ -73,18 +73,21 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Yol Haritası
 
-### Etkin yayın adayı
+### Etkin geliştirme hattı
 
-- **v0.18.0 ✓** Release candidate: Nizâm-ı Sefer turns intent into a
-  deterministic task graph, risk/context policy, at most three bounded
-  workstreams, durable handoffs, and a goal-bound `route.json`. Host and model
-  uncertainty fail safe; no external agent runtime or second repository is
-  introduced. Implementation PR #54 and its required CI are complete at
-  `7c674874`; the versioned release PR, immutable tag/Release, release assets,
-  Pages, and Wiki remain separate pending evidence.
+- Yeni bir sürüm adayı henüz etkin değildir. Sıradaki sınırlandırılmış ürün
+  dilimi, her hostu kendi resmî sözleşmesi ve temiz yaşam döngüsü kanıtıyla ele
+  alan native adaptörlerdir. Issue #34 bağımsız kullanıcı gerektiren ayrı v1
+  kapısı olarak kalır.
 
 ### Yayımlanan temel
 
+- **v0.18.0 ✓** Published Nizâm-ı Sefer release: intent becomes a deterministic
+  task graph, risk/context policy, at most three bounded workstreams, durable
+  handoffs, and a goal-bound `route.json`. Host and model uncertainty fail
+  safe; no external agent runtime or second repository is introduced. PR #54,
+  release PR #55, immutable tag/Release, five checksummed assets, SPDX SBOM,
+  release/SLSA attestations, Pages, and Wiki are bound in the v0.18 evidence.
 - **v0.17.1 ✓** Published vibe-progress release: one canonical human progress
   contract across seven public commands, synchronized public guidance, and
   focused regressions. PR #52, immutable tag/Release, five assets, checksums,
