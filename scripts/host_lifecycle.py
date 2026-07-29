@@ -401,6 +401,7 @@ def install(
     options: Options,
     *,
     runner: Runner = _subprocess_runner,
+    fallback_runner: _host_profiles.FallbackRunner = _host_profiles.subprocess_fallback_runner,
     root: pathlib.Path | None = None,
 ) -> dict[str, Any]:
     """Plan or execute installation and return the auditable transaction record."""
@@ -419,6 +420,16 @@ def install(
                 f"{selected_cli_status}; next: {diagnosis['next_command']}"
             )
         if selected_mode == _host_profiles.FALLBACK_MODE:
+            if options.execute:
+                try:
+                    return _host_profiles.execute_fallback(
+                        options,
+                        repository,
+                        selected_cli_status,
+                        fallback_runner,
+                    )
+                except ValueError as exc:
+                    raise InstallError(str(exc)) from exc
             return _host_profiles.fallback_plan(
                 options, repository, selected_cli_status
             )
@@ -680,6 +691,17 @@ def main(argv: list[str] | None = None) -> int:
             print("  " + subprocess.list2cmdline(command))
     elif record["status"] == "no-op":
         print("NO-OP - installed Divan already matches target.")
+    elif record.get("selected_mode") == _host_profiles.FALLBACK_MODE:
+        print(
+            "VERIFIED SKILL FALLBACK "
+            f"- {record['skill_count']}/41 skills; manifest: {record['manifest']}"
+        )
+        print(
+            "CAPABILITIES - skills/instructions available; "
+            "native commands, agents, hooks, MCP, and lifecycle unavailable."
+        )
+        print(f"ROLLBACK: {record['rollback_command']}")
+        print(f"NEXT: {record['next_command']}")
     else:
         print(f"VERIFIED - transaction: {record['transaction_path']}")
     return 0

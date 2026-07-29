@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import copy
+import csv
 import errno
 import hashlib
 import importlib.util
+import io
 import json
 import os
 import pathlib
@@ -11,11 +13,13 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import host_probe as HOST_PROBE  # noqa: E402
+import legacy_state as LEGACY_STATE  # noqa: E402
 
 SPEC = importlib.util.spec_from_file_location(
     "divan_host_install", ROOT / "scripts" / "host_lifecycle.py"
@@ -302,6 +306,80 @@ class CodexCliStateRunner(FakeRunner):
         return super().__call__(command)
 
 
+class FallbackFixtureRunner:
+    def __init__(
+        self,
+        state_dir: pathlib.Path,
+        skills_dir: pathlib.Path,
+        *,
+        ref: str = REF,
+        fail: bool = False,
+    ) -> None:
+        self.state_dir = state_dir
+        self.skills_dir = skills_dir
+        self.ref = ref
+        self.fail = fail
+        self.calls: list[tuple[list[str], dict[str, str]]] = []
+
+    def __call__(
+        self, command: list[str], environment: dict[str, str]
+    ) -> subprocess.CompletedProcess[str]:
+        self.calls.append((command, environment))
+        if self.fail:
+            return subprocess.CompletedProcess(command, 9, "", "fixture fallback failure")
+        self.state_dir.mkdir(parents=True, exist_ok=True)
+        self.skills_dir.mkdir(parents=True, exist_ok=True)
+        manifest = self.state_dir / "divan-install-fixture.tsv"
+        journal = self.state_dir / "divan-transactions" / "legacy-install-fixture.json"
+        journal.parent.mkdir(parents=True, exist_ok=True)
+        journal.write_text('{"schema": 1, "status": "installed"}\n', encoding="utf-8")
+        fieldnames = (
+            "skill",
+            "hedef",
+            "yedek",
+            "surum",
+            "ref",
+            "source_commit",
+            "archive_sha256",
+            "installed_sha256",
+            "installed_at",
+        )
+        candidates = sorted((ROOT / "plugins").glob("*/skills/*"))
+        candidates = [path for path in candidates if (path / "SKILL.md").is_file()]
+        with manifest.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, delimiter="\t", fieldnames=fieldnames)
+            writer.writeheader()
+            for candidate in candidates:
+                target = self.skills_dir / candidate.name
+                target.mkdir()
+                (target / "SKILL.md").write_text(
+                    f"# {candidate.name}\n", encoding="utf-8"
+                )
+                writer.writerow(
+                    {
+                        "skill": candidate.name,
+                        "hedef": str(target),
+                        "yedek": "",
+                        "surum": self.ref.removeprefix("v"),
+                        "ref": self.ref,
+                        "source_commit": "a" * 40,
+                        "archive_sha256": "b" * 64,
+                        "installed_sha256": LEGACY_STATE.tree_digest(target),
+                        "installed_at": "2026-07-30T00:00:00Z",
+                    }
+                )
+        (self.state_dir / "divan-install-latest").write_text(
+            str(manifest) + "\n", encoding="utf-8"
+        )
+        payload = {
+            "status": "installed",
+            "manifest": str(manifest),
+            "journal": str(journal),
+            "skill_count": len(candidates),
+        }
+        return subprocess.CompletedProcess(command, 0, json.dumps(payload) + "\n", "")
+
+
 class HostInstallTests(unittest.TestCase):
     def options(self, state_dir: pathlib.Path, **changes: object):
         values = {
@@ -533,6 +611,129 @@ class HostInstallTests(unittest.TestCase):
                     runner=CodexCliStateRunner("invalid-json"),
                     root=ROOT,
                 )
+
+    def test_auto_profile_executes_and_verifies_canonical_skill_fallback(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-execute-") as temporary:
+            base = pathlib.Path(temporary)
+            fallback = FallbackFixtureRunner(
+                base / "fallback-state",
+                base / "skills",
+            )
+            environment = {
+                "DIVAN_STATE_DIR": str(fallback.state_dir),
+                "CODEX_SKILLS_DIR": str(fallback.skills_dir),
+            }
+            with mock.patch.dict(os.environ, environment, clear=False):
+                record = HOST_INSTALL.install(
+                    self.options(
+                        base / "native-state",
+                        host="codex",
+                        execute=True,
+                        profile="auto",
+                    ),
+                    runner=CodexCliStateRunner("access-denied"),
+                    fallback_runner=fallback,
+                    root=ROOT,
+                )
+
+        self.assertEqual(record["status"], "verified")
+        self.assertEqual(record["selected_mode"], "verified-skill-fallback")
+        self.assertEqual(record["skill_count"], 41)
+        self.assertEqual(len(record["installed_sha256"]), 41)
+        self.assertEqual(record["archive_sha256"], "b" * 64)
+        self.assertIn("uninstall_codex", record["rollback_command"])
+        self.assertEqual(len(fallback.calls), 1)
+        self.assertEqual(fallback.calls[0][1]["DIVAN_REF"], REF)
+        self.assertEqual(fallback.calls[0][1]["DIVAN_PYTHON"], sys.executable)
+
+    def test_auto_profile_propagates_fallback_installer_failure(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-execute-") as temporary:
+            base = pathlib.Path(temporary)
+            fallback = FallbackFixtureRunner(
+                base / "fallback-state",
+                base / "skills",
+                fail=True,
+            )
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "DIVAN_STATE_DIR": str(fallback.state_dir),
+                    "CODEX_SKILLS_DIR": str(fallback.skills_dir),
+                },
+                clear=False,
+            ), self.assertRaisesRegex(HOST_INSTALL.InstallError, "fixture fallback failure"):
+                HOST_INSTALL.install(
+                    self.options(
+                        base / "native-state",
+                        host="codex",
+                        execute=True,
+                        profile="auto",
+                    ),
+                    runner=CodexCliStateRunner("access-denied"),
+                    fallback_runner=fallback,
+                    root=ROOT,
+                )
+
+    def test_auto_profile_rejects_a_fallback_manifest_for_another_ref(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-execute-") as temporary:
+            base = pathlib.Path(temporary)
+            fallback = FallbackFixtureRunner(
+                base / "fallback-state",
+                base / "skills",
+                ref="v9.9.9",
+            )
+            with mock.patch.dict(
+                os.environ,
+                {
+                    "DIVAN_STATE_DIR": str(fallback.state_dir),
+                    "CODEX_SKILLS_DIR": str(fallback.skills_dir),
+                },
+                clear=False,
+            ), self.assertRaisesRegex(HOST_INSTALL.InstallError, "manifest ref"):
+                HOST_INSTALL.install(
+                    self.options(
+                        base / "native-state",
+                        host="codex",
+                        execute=True,
+                        profile="auto",
+                    ),
+                    runner=CodexCliStateRunner("access-denied"),
+                    fallback_runner=fallback,
+                    root=ROOT,
+                )
+
+    def test_verified_fallback_output_explains_limits_and_recovery(self) -> None:
+        payload = {
+            "status": "verified",
+            "selected_mode": "verified-skill-fallback",
+            "skill_count": 41,
+            "manifest": "C:\\state\\divan-install.tsv",
+            "rollback_command": "powershell.exe -File uninstall_codex.ps1",
+            "next_command": "Restart Codex, then open a new task.",
+        }
+        output = io.StringIO()
+        with mock.patch.object(
+            HOST_INSTALL, "install", return_value=payload
+        ), redirect_stdout(output):
+            result = HOST_INSTALL.main(
+                [
+                    "--host",
+                    "codex",
+                    "--profile",
+                    "auto",
+                    "--ref",
+                    REF,
+                    "--execute",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        rendered = output.getvalue()
+        self.assertIn("VERIFIED SKILL FALLBACK", rendered)
+        self.assertIn("41/41", rendered)
+        self.assertIn("native commands, agents, hooks, MCP", rendered)
+        self.assertIn("ROLLBACK:", rendered)
+        self.assertIn("NEXT:", rendered)
         self.assertEqual(
             HOST_INSTALL._remove_plugin_command("claude", "sadrazam@divan"),
             [

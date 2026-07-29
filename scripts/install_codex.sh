@@ -78,7 +78,10 @@ if [[ ! -d "$SOURCE/plugins" ]]; then
   echo "HATA: Divan kaynagi bulunamadi: $SOURCE" >&2
   exit 1
 fi
-PYTHON_BIN="$(command -v python3 || command -v python || true)"
+PYTHON_BIN="${DIVAN_PYTHON:-}"
+if [[ -z "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="$(command -v python3 || command -v python || true)"
+fi
 if [[ -z "$PYTHON_BIN" ]]; then
   echo "HATA: Python 3 bulunamadi; guvenli kurulum kaydi uretilemiyor." >&2
   exit 1

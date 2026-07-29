@@ -7,6 +7,7 @@ import os
 import pathlib
 import shutil
 import subprocess
+from collections.abc import Mapping
 
 _MARKER = "divan-cli-status:"
 _CODES = {
@@ -40,7 +41,11 @@ def _os_error_status(exc: OSError) -> str:
     return "not-executable"
 
 
-def run(command: list[str]) -> subprocess.CompletedProcess[str]:
+def run(
+    command: list[str],
+    *,
+    env: Mapping[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     """Run a host command without allowing launch failures to escape."""
     resolved = shutil.which(command[0])
     if resolved is None:
@@ -56,6 +61,7 @@ def run(command: list[str]) -> subprocess.CompletedProcess[str]:
             encoding="utf-8",
             errors="replace",
             check=False,
+            env=env,
         )
     except OSError as exc:
         status = _os_error_status(exc)
@@ -73,4 +79,3 @@ def cli_status(result: subprocess.CompletedProcess[str]) -> str | None:
         if status in _CODES:
             return status
     return None
-
