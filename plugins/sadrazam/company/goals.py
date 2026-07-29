@@ -17,6 +17,24 @@ import receipts
 
 TARGETS = ("VERIFIED", "PREVIEWED", "RELEASED", "OBSERVED")
 GOAL_ID_PATTERN = re.compile(r"^goal-[0-9a-f]{12}$")
+HOST_PLANNING_KEYS = frozenset(
+    {
+        "campaigns",
+        "command_structure",
+        "complexity",
+        "context_budget",
+        "memory_contract",
+        "orchestration_lane",
+        "planning_contract",
+        "publication_obligations",
+        "recommended_sessions",
+        "route_schema_version",
+        "safe_parallel_workstreams",
+        "schema_version",
+        "target",
+        "tasks",
+    }
+)
 
 
 def _normalized(value: str) -> str:
@@ -42,12 +60,21 @@ def _route(
     )
 
 
+def _goal_route_identity(route: dict[str, Any]) -> dict[str, Any]:
+    """Return host-neutral Company OS facts that define the same project goal."""
+    return {
+        key: value
+        for key, value in route.items()
+        if key not in HOST_PLANNING_KEYS and key != "intent"
+    }
+
+
 def goal_id(intent: str, target: str, route: dict[str, Any]) -> str:
-    """Derive the stable goal ID from normalized inputs and the enriched route."""
+    """Derive one stable goal ID across supported hosts and context profiles."""
     seed = {
         "intent": _normalized(intent),
         "target": target.upper(),
-        "route": route,
+        "route": _goal_route_identity(route),
     }
     encoded = json.dumps(
         seed, ensure_ascii=False, separators=(",", ":"), sort_keys=True
@@ -65,21 +92,24 @@ def _command_lines(route: dict[str, Any]) -> list[str]:
     return lines or ["- No project-native command was discovered."]
 
 
-def _sefer_lines(route: dict[str, Any]) -> list[str]:
+def _campaign_lines(route: dict[str, Any]) -> list[str]:
     lines: list[str] = []
-    for sefer in route.get("sefers", []):
-        if not isinstance(sefer, dict):
+    for campaign in route.get("campaigns", []):
+        if not isinstance(campaign, dict):
             continue
-        stages = ", ".join(str(item) for item in sefer.get("stages", []))
-        owners = ", ".join(str(item) for item in sefer.get("paşalar", []))
+        stages = ", ".join(str(item) for item in campaign.get("stages", []))
+        commanders = ", ".join(
+            str(item) for item in campaign.get("commanders", [])
+        )
         lines.extend(
             [
-                f"### {sefer.get('id')}",
+                f"### {campaign.get('display_name') or campaign.get('id')}",
                 "",
+                f"- Route ID: `{campaign.get('id')}`",
                 f"- Stages: {stages or 'unclassified'}",
-                f"- Paşalar: {owners or 'sadrazam'}",
-                f"- Exit gate: {sefer.get('exit_gate')}",
-                f"- Handoff required: {str(bool(sefer.get('handoff_required'))).lower()}",
+                f"- Paşalar: {commanders or 'sadrazam'}",
+                f"- Exit gate: {campaign.get('exit_gate')}",
+                f"- Handoff required: {str(bool(campaign.get('handoff_required'))).lower()}",
                 "",
             ]
         )
@@ -138,7 +168,7 @@ def _artifact_values(
         f"{evidence}\n"
     )
 
-    sefer_text = "\n".join(_sefer_lines(route))
+    campaign_text = "\n".join(_campaign_lines(route))
     commands = "\n".join(_command_lines(route))
     warning = context.get("warning")
     warning_line = f"\n- Capacity warning: {warning}" if warning else ""
@@ -156,14 +186,14 @@ def _artifact_values(
         f"- Handoff threshold: {context.get('handoff_percent')}%"
         f"{warning_line}\n\n"
         "## Seferler\n\n"
-        f"{sefer_text}\n"
+        f"{campaign_text}\n"
         "## Discovered commands\n\n"
         f"{commands}\n\n"
         "## Standing completion law\n\n"
         "1. Calculate impact before editing and from the actual changed paths.\n"
         "2. Block completion when any path is unclassified.\n"
         "3. Update canonical documentation and derived public surfaces in the same change.\n"
-        "4. Record checkpoint, decisions, progress, evidence and the next action after every sefer.\n"
+        "4. Record checkpoint, decisions, progress, evidence and the next action after every campaign.\n"
         "5. Require remote readback whenever the publication contract says so.\n"
     )
 
@@ -318,7 +348,9 @@ def start_goal(
     for path, content in desired.items():
         if path.exists() and path.read_bytes() != content:
             raise ValueError(
-                f"goal artifact already exists with different content: {path.name}"
+                "goal artifact already exists with different content; "
+                "resume the existing route or archive the goal before replanning: "
+                f"{path.name}"
             )
     for path, content in desired.items():
         if not path.exists():
