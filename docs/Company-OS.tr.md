@@ -44,16 +44,22 @@ Genişletilmiş rota şema 3'tür ve şunları üretir:
 - deterministik karmaşıklık puanı ve tahmini çalışma yükü;
 - kullanılabilir bağlam bütçesi, güvenlik payı ve devir eşiği;
 - önerilen oturum sayısı ve güvenli paralel iş şeridi sınırı;
-- `tek-sefer`, `ardisik-sefer` veya `sinirli-ordu` çalışma yolu;
+- teknik olarak İngilizce-kanonik `single-expedition`,
+  `sequential-expeditions` veya `bounded-army` çalışma yolu;
+- makine tarafında `campaigns` dizisi, kullanıcı tarafında `Sefer 01`,
+  `Sefer 02` gibi Osmanlı düzenini koruyan görünen adlar;
 - bağımlılıkları, görev sahibi paşası ve kanıt şartı belirlenmiş işler;
-- Padişah → Sadrazam → vezir → paşa komuta düzeni;
+- İngilizce-kanonik `command_structure` alanları içinde Padişah ve Sadrazam
+  görünen adları;
 - kalıcı hafıza ve yayın yüzeyi yükümlülükleri.
 
 Bir hedef başlatıldığında eski insan-okunur sözleşme korunur:
 `.divan/specs/<goal-id>/{spec.md,plan.md,tasks.md}`. Makine rotası ayrıca
 `.divan/routes/<goal-id>.json` dosyasına yazılır ve SHA-256 özeti `spec.md`
 içine mühürlenir. Böylece eski Project OS makbuzları bozulmaz; yeni oturum ise
-işe tam olarak nereden devam edeceğini bilir.
+işe tam olarak nereden devam edeceğini bilir. Host ve context kapasitesi hedef
+kimliğinden çıkarıldığı için aynı proje ve ferman Claude ile Codex'te aynı
+`goal_id` değerini korur.
 
 ```powershell
 python scripts/divan.py goal start --project . --intent "API'yi sertleştir ve yayınla" --target released --host-profile auto --json
