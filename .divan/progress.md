@@ -13,10 +13,12 @@ Son güncelleme: 2026-07-29
 ## Güncel hedef
 
 The latest published release is v0.17.1 at immutable commit `4144e096`.
-The active v0.18 line builds one evidence-backed compatibility registry and
-small host adapters without forking Divan into separate repositories. A host
-may be called verified only after a clean-host lifecycle canary records real
-evidence.
+The active v0.18.0 release candidate adds Nizâm-ı Sefer planning intelligence
+inside the existing council module and keeps the evidence-backed host registry
+as its execution boundary. Implementation PR #54 is merged at `7c674874`; the
+versioned release PR, immutable tag/Release, assets, Pages, and Wiki are still
+separate pending evidence. A host may be called verified only after a
+clean-host lifecycle canary records real evidence.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -28,6 +30,12 @@ adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
+- PR #54 merged Nizâm-ı Sefer to `main` at
+  `7c674874503853216dc8f2abddaa0459811a5ee6`. Its required CI passed 562 tests
+  with 11 expected platform skips and 75% coverage plus the cross-platform
+  compatibility matrix, CodeQL, dependency review, Playwright, and Wiki/Pages
+  checks. Two independent read-only reviews were completed and every reported
+  P1/P2 finding was addressed before merge.
 - Nizâm-ı Sefer now compiles intent into a deterministic dependency graph,
   structural risk, an explicit context-budget authority, portable model
   classes, at most three bounded sefers, durable handoff, and goal-bound
@@ -349,8 +357,10 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Open the v0.18 host-foundation PR from the locally verified candidate. Pass the
-required cross-platform and publication-surface checks before merging. Keep
+Complete the v0.18.0 versioned release PR from the merged, locally verified
+candidate. Require protected merge, all release gates, immutable tag/Release,
+five checksummed and attested assets, Pages/Wiki convergence, live browser
+readback, and a pinned-install smoke test before calling it published. Keep
 every non-canary host below `verified` until its own clean-host lifecycle
 evidence exists. Issue #34 remains separate; keep v1 at 7/8 unless reproducible,
 privacy-bounded non-owner adoption evidence exists.

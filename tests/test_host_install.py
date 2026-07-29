@@ -21,7 +21,7 @@ assert SPEC and SPEC.loader
 HOST_INSTALL = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(HOST_INSTALL)
 PACKAGE_VERSIONS = {
-    "sadrazam": "0.9.2",
+    "sadrazam": "0.10.0",
     "core-pack": "0.5.1",
     "ui-pack": "0.1.0",
     "react-pack": "0.2.1",
@@ -406,7 +406,7 @@ class HostInstallTests(unittest.TestCase):
             "claude": (
                 "claude-plugin-list.json",
                 pathlib.Path("fixture-home/.claude/plugins/marketplaces/divan"),
-                ("plugins", "cache", "divan", "sadrazam", "0.9.2"),
+                ("plugins", "cache", "divan", "sadrazam", "0.10.0"),
             ),
             "codex": (
                 "codex-plugin-list.json",
@@ -427,7 +427,7 @@ class HostInstallTests(unittest.TestCase):
                 except HOST_INSTALL._host_upgrade.host_state.StateError as exc:
                     self.fail(f"real {host} plugin JSON was rejected: {exc}")
 
-                self.assertEqual(fingerprint["version"], "0.9.2")
+                self.assertEqual(fingerprint["version"], "0.10.0")
                 self.assertEqual(
                     pathlib.Path(fingerprint["install_path"]).parts[-len(suffix) :],
                     suffix,
@@ -448,9 +448,9 @@ class HostInstallTests(unittest.TestCase):
             )
 
         foreign = dict(claude)
-        foreign["version"] = "0.9.2"
+        foreign["version"] = "0.10.0"
         foreign["installPath"] = (
-            "foreign-home/.claude/plugins/cache/divan/sadrazam/0.9.2"
+            "foreign-home/.claude/plugins/cache/divan/sadrazam/0.10.0"
         )
         with self.assertRaisesRegex(
             HOST_INSTALL._host_upgrade.host_state.StateError, "path|native"
@@ -463,7 +463,7 @@ class HostInstallTests(unittest.TestCase):
             )
 
         wrong_scope = dict(claude)
-        wrong_scope["version"] = "0.9.2"
+        wrong_scope["version"] = "0.10.0"
         wrong_scope["scope"] = "project"
         with self.assertRaisesRegex(
             HOST_INSTALL._host_upgrade.host_state.StateError, "provenance|scope"
@@ -481,10 +481,10 @@ class HostInstallTests(unittest.TestCase):
             source = root / "checkout"
             config = root / ".claude"
             source.mkdir()
-            install_path = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.9.2"
+            install_path = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.10.0"
             row = {
                 "id": "sadrazam@divan",
-                "version": "0.9.2",
+                "version": "0.10.0",
                 "scope": "user",
                 "enabled": True,
                 "installPath": str(install_path),
@@ -587,7 +587,7 @@ class HostInstallTests(unittest.TestCase):
         self.assertEqual(claude["version"], PACKAGE_VERSIONS["sadrazam"])
         self.assertEqual(
             pathlib.Path(claude["install_path"]).parts[-5:],
-            ("plugins", "cache", "divan", "sadrazam", "0.9.2"),
+            ("plugins", "cache", "divan", "sadrazam", "0.10.0"),
         )
 
     def test_schema1_authority_rejects_tampering_before_any_runner_call(self) -> None:

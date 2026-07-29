@@ -6,6 +6,13 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+### Planned
+
+- Native host adapters, clean-host canaries, independent adoption evidence,
+  and reproducible quality measurements.
+
+## [0.18.0] - 2026-07-29
+
 ### Added
 
 - Nizam-i Sefer planning intelligence: deterministic complexity, host/context
@@ -17,6 +24,19 @@ Versioning while the public API remains in initial development (`0.y.z`).
   verification, while sefers remain sequential context/handoff windows.
 - A mandatory independent-review gate for every workflow that declares the
   independent reviewer role.
+
+### Changed
+
+- The Sadrazam package advances to `0.10.0`, so host caches and upgrade
+  evidence cannot confuse this planning-capability release with v0.17.1.
+- A sefer is a sequential context and handoff window; independent workstreams
+  are explicit dependency-graph lanes that converge at integrated
+  verification. Public language no longer presents the two concepts as the
+  same thing.
+- The existing nine-module Divan Engine remains the canonical stdlib-only
+  runtime. Planning policy belongs to the council module and does not create a
+  tenth module, external agent runtime, second repository, or mandatory MCP
+  dependency.
 
 ### Safety
 
@@ -30,10 +50,19 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Planning performs no model call, target-project command, dependency install,
   daemon startup, or external harness activation.
 
-### Planned
+### Verification
 
-- Native host adapters, clean-host canaries, independent adoption evidence,
-  and reproducible quality measurements.
+- The implementation pull request passed 562 tests with 11 expected
+  platform-specific skips and 75% coverage. Quality Gate, CodeQL, dependency
+  review, Pages/Wiki checks, Playwright, and the Claude/Codex compatibility
+  matrix were green before merge.
+- Two independent read-only reviews were completed. Their task-ownership,
+  monorepo-command, legacy-goal, impact-graph, risk-floor, independent-review,
+  and parallel-semantics findings were addressed before the protected squash
+  merge.
+- Planning remains deterministic and side-effect free. Exact model
+  availability, native host execution, independent adoption, and measured
+  productivity improvement are not claimed by this release.
 
 ## [0.17.1] - 2026-07-29
 
@@ -644,6 +673,10 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[0.18.0]: https://github.com/trugurpala/divan/releases/tag/v0.18.0
+[0.17.1]: https://github.com/trugurpala/divan/releases/tag/v0.17.1
+[0.17.0]: https://github.com/trugurpala/divan/releases/tag/v0.17.0
+[0.16.0]: https://github.com/trugurpala/divan/releases/tag/v0.16.0
 [0.15.0]: https://github.com/trugurpala/divan/releases/tag/v0.15.0
 [0.13.0]: https://github.com/trugurpala/divan/releases/tag/v0.13.0
 [0.11.0]: https://github.com/trugurpala/divan/releases/tag/v0.11.0

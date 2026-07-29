@@ -75,12 +75,13 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin yayın adayı
 
-- **v0.18.0 — active development:** Nizâm-ı Sefer turns intent into a
+- **v0.18.0 ✓** Release candidate: Nizâm-ı Sefer turns intent into a
   deterministic task graph, risk/context policy, at most three bounded
   workstreams, durable handoffs, and a goal-bound `route.json`. Host and model
   uncertainty fail safe; no external agent runtime or second repository is
-  introduced. PR/CI, clean-host canaries, merge, tag, Release, Pages, and Wiki
-  remain separate pending evidence.
+  introduced. Implementation PR #54 and its required CI are complete at
+  `7c674874`; the versioned release PR, immutable tag/Release, release assets,
+  Pages, and Wiki remain separate pending evidence.
 
 ### Yayımlanan temel
 
@@ -179,6 +180,9 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Durum Günlüğü
 - 2026-07-29: v0.18 Nizâm-ı Sefer development started from published v0.17.1.
+- 2026-07-29: PR #54 merged Nizâm-ı Sefer to `main` at `7c674874` after 562
+  tests, the cross-platform host matrix, two independent reviews, CodeQL,
+  dependency review, Playwright, and publication-surface checks passed.
   The existing council module gained deterministic host detection, explicit
   planning assumptions, structural risk, model-class policy, a dependency
   graph, at most three sefers, durable handoff, and goal-bound route evidence.

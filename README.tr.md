@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.17.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.18.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -19,7 +19,7 @@ yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların 
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 
-**Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v0.18.0 · **Son yayımlanan:** v0.17.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -140,8 +140,8 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce değişi
 yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.17.1
-python scripts/divan.py install --host both --ref v0.17.1 --execute
+python scripts/divan.py install --host both --ref v0.18.0
+python scripts/divan.py install --host both --ref v0.18.0 --execute
 ```
 
 Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
@@ -155,9 +155,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.17.1
-python scripts/divan.py update --host both --ref v0.17.1
-python scripts/divan.py update --host both --ref v0.17.1 --execute
+python scripts/divan.py doctor --host both --ref v0.18.0
+python scripts/divan.py update --host both --ref v0.18.0
+python scripts/divan.py update --host both --ref v0.18.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

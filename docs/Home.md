@@ -1,4 +1,4 @@
-# Divan Wiki · v0.17.1
+# Divan Wiki · v0.18.0
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -25,7 +25,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik henüz yayımlanmış
 v0.17.1 kurulumunun parçası değildir.
 
-> **Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.18.0 · **Son yayımlanan:** v0.17.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

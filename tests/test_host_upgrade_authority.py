@@ -188,7 +188,7 @@ class HostUpgradeAuthorityTests(unittest.TestCase):
     def test_local_claude_schema2_created_authority_and_source_tamper(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-local-claude-schema2-") as temporary:
             config = pathlib.Path(temporary) / ".claude"
-            install = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.9.2"
+            install = config / "plugins" / "cache" / "divan" / "sadrazam" / "0.10.0"
             target = {
                 "source": str(ROOT),
                 "ref": TARGET_REF,
@@ -204,7 +204,7 @@ class HostUpgradeAuthorityTests(unittest.TestCase):
             plugin = {
                 "host": "claude",
                 "id": "sadrazam@divan",
-                "version": "0.9.2",
+                "version": "0.10.0",
                 "marketplace_root": str(ROOT),
                 "install_path": str(install),
                 "native_provenance": True,
