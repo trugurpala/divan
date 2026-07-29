@@ -22,21 +22,29 @@ task, use the portable Company OS contracts next to this skill:
 2. Run or reproduce the result of
    `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" inspect --project <project> --json`.
 3. Route the request with
-   `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" plan --project <project> --intent "<intent>" --json`.
-4. Before editing, calculate impact for the intended source paths with
+   `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" plan --project <project> --intent "<intent>" --target <target> --host-profile auto --json`.
+   If the host reports an exact context window, also pass `--context-window
+   <tokens>`. Never infer or claim an exact host/model capacity from a fallback.
+4. Read `complexity`, `context_budget`, `recommended_sessions`,
+   `orchestration_lane`, `safe_parallel_workstreams`, `sefers`, `tasks`,
+   `memory_contract`, and `publication_obligations` before execution. The route
+   is the operational contract, not optional commentary.
+5. Before editing, calculate impact for the intended source paths with
    `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" impact <relative-paths> --json`.
-5. Select the smallest qualified team from the result. Roles are functional
+6. Select the smallest qualified team from the result. Roles are functional
    contracts, not famous-person personas.
-6. Load only the selected `core-pack`, `ui-pack`, `react-pack`, and
+7. Load only the selected `core-pack`, `ui-pack`, `react-pack`, and
    `zanaat-pack` skills. React Pack requires detected React/Next.js evidence;
    Zanaat Pack requires a matching integration or creative workflow.
-7. Recalculate impact from the actual changed paths before verification and
-   close every required check or state the exact blocker.
+8. Recalculate impact from the actual changed paths before verification and
+   close every required check or state the exact blocker. An unclassified path
+   blocks completion.
 
 The CLI is an optional expert interface, not user homework. If the host has no
 plugin-root variable, resolve the same root from its loaded-skill metadata. If
 execution is unavailable, read the sibling `company/roles.json`,
-`workflows.json`, `frameworks.json`, and `impact-graph.json` directly.
+`workflows.json`, `frameworks.json`, `impact-graph.json`,
+`host-profiles.json`, and `planning.py` contract directly.
 
 ## The six phases
 
@@ -45,17 +53,45 @@ execution is unavailable, read the sibling `company/roles.json`,
    Otherwise state your assumptions inline and proceed.
 2. **Divan (Counsel).** Briefly weigh 2–3 approaches. If the `brainstorming`
    skill is available, use it for anything non-trivial. Pick one and say why.
-3. **Plan.** Write a short numbered plan (use `writing-plans` if available).
-   For small tasks, 3–5 bullets suffice — but always plan before building.
-   If the plan contains two or more genuinely independent workstreams, load
-   `ordu-nizami` and select the smallest safe orchestration lane.
+3. **Plan.** Use the Nizâm-ı Sefer route. For a single-session task, keep the
+   plan short. For a multi-session task, preserve the generated sefer/task
+   boundaries, dependencies, owners, evidence gates, and handoff points. If the
+   route permits two or more genuinely independent workstreams, load
+   `ordu-nizami`; never exceed `safe_parallel_workstreams`.
 4. **İcra (Execute).** Build the whole thing. Prefer TDD when code is involved
-   (`test-driven-development` skill). Work in small verified increments.
+   (`test-driven-development` skill). Work in small verified increments and do
+   not cross a sefer exit gate without recording its evidence.
 5. **Teftiş (Inspect).** Verify before declaring done
    (`verification-before-completion`): run the code, test the output, check
    edge cases. Show evidence — command output, test results, screenshots.
 6. **Takdim (Present).** Deliver the finished artifact plus: a 3-line summary
    of what was built, evidence it works, and 2–3 concrete next steps.
+
+## Nizâm-ı Sefer kanunu
+
+Sadrazam must know the size of the campaign before sending the army:
+
+- `context_budget.capacity_source=profile-fallback` is a conservative planning
+  assumption, not a verified model, plan, product, or subscription limit. Keep
+  its warning visible in the durable plan.
+- `recommended_sessions` defines the initial sefer count. It may be reduced only
+  when measured evidence shows the work is smaller; it may be increased when
+  new risk or scope is discovered. Record the reason.
+- `tek-sefer` means one bounded session. `ardisik-sefer` means sequential
+  sessions with disk handoff. `sinirli-ordu` permits bounded parallel lanes,
+  never an unlimited swarm.
+- Every generated task has one responsible functional role, dependencies,
+  required evidence, and an evidence-backed completion rule. "Mostly done" is
+  not a task state.
+- At the route's handoff percentage, stop expanding context. Write the current
+  state, completed evidence, unresolved risks, exact next task, and resume
+  command to disk before compaction or a new session.
+- Unknown capacity, package-manager conflict, missing provenance, or unclear
+  ownership reduces autonomy. It never authorizes a wider or more parallel
+  execution lane.
+- The Padişah sets intent and irreversible authority. Sadrazam routes and
+  supervises. Vezirs own domains and policy. Paşas command bounded executable
+  workstreams. The hierarchy is functional, auditable, and evidence-led.
 
 ## Standing orders
 
@@ -78,7 +114,11 @@ State context'te değil diskte yaşar. `defterdar` skill'i ile birlikte çalış
   mevcut olanları ve `git log --oneline -5` çıktısını oku.
 - Bu dosyalar yoksa ancak kullanıcı Divan hafızası isterse `defterdar` ile kur.
   Mevcut dosyaların üzerine yazma; oluşturma ve geniş kapsamlı kayıt için onay al.
-- **Her fazdan sonra dosyaya işle**: Divan→ADR (.divan/decisions/),
+- Hedef başlatıldıysa `.divan/specs/<goal-id>/spec.md`, `plan.md`, `tasks.md`
+  ve `.divan/routes/<goal-id>.json` dosyalarını kanonik devam sözleşmesi say.
+  `spec.md` içindeki rota SHA-256 değeri makine rotasıyla eşleşmiyorsa icraya
+  geçme.
+- **Her seferden sonra dosyaya işle**: Divan→ADR (.divan/decisions/),
   Plan→.divan/spec/plan.md, İcra→progress.md,
   Teftiş→.divan/evidence/, Takdim→BLUEPRINT durum günlüğü + net
   "sıradaki adım".
@@ -103,9 +143,11 @@ ikincil not değil ürün yüzeyidir:
 2. Ürün veya sürüm değişiminde kaynak belgeyi kodla aynı değişiklikte güncelle.
 3. Mümkünse derleme/eşitleme işini CI'a bağla ve kırık bağlantı ile eski sürümü
    teftişte başarısız say.
-4. `main` sonrası uzak yüzeyi yeniden oku. Kaynak güncel ama Wiki/site yayını
+4. `publication_obligations` içindeki yüzey sınıflarını ve remote readback
+   şartını tamamlamadan Takdim'e geçme.
+5. `main` sonrası uzak yüzeyi yeniden oku. Kaynak güncel ama Wiki/site yayını
    başarısızsa “belge hazır” de; “canlı güncel” deme.
-5. Geçici yayın engelini BLUEPRINT/progress kaydında açık bırak; kullanıcıya
+6. Geçici yayın engelini BLUEPRINT/progress kaydında açık bırak; kullanıcıya
    her oturumda yeniden hatırlatma yükü bindirme.
 
 ## Yayın kanunu
