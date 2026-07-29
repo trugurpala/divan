@@ -11,12 +11,14 @@ import sys
 
 try:
     from company_contracts import validate as company_contracts_validate
+    from host_compatibility import validate as host_compatibility_validate
     from host_marketplaces import check as host_marketplaces_check
     from hygiene import source_issues as hygiene_source_issues
     from naming import validate as naming_validate
     from standards import validate_contract as standards_validate_contract
 except ModuleNotFoundError:  # Imported as scripts.validate in unit tests.
     from scripts.company_contracts import validate as company_contracts_validate
+    from scripts.host_compatibility import validate as host_compatibility_validate
     from scripts.host_marketplaces import check as host_marketplaces_check
     from scripts.hygiene import source_issues as hygiene_source_issues
     from scripts.naming import validate as naming_validate
@@ -399,6 +401,9 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     )
     hatalar.extend(
         f"TOPLULUK STANDARTLARI: {issue}" for issue in standards_validate_contract(kok)
+    )
+    hatalar.extend(
+        f"HOST COMPATIBILITY: {issue}" for issue in host_compatibility_validate(kok)
     )
     marketplace, eklentiler = marketplace_denetle(kok, hatalar)
     skiller = skilleri_denetle(kok, hatalar, uyarilar)

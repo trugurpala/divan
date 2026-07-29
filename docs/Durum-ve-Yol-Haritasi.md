@@ -2,13 +2,13 @@
 
 Son durum tarihi: 2026-07-29.
 
-> **En güncel yayımlanmış sürüm v0.17.0'dır.** PR #49, bütün zorunlu CI
+> **En güncel yayımlanmış sürüm v0.17.1'dir.** PR #52, bütün zorunlu CI
 > kapıları, değişmez tag/GitHub Release, beş varlık, checksum, attestations,
 > Pages ve Wiki kanıtıyla tamamlanmıştır.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.17.0` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
+- Değişmez `v0.17.1` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.

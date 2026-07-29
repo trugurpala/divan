@@ -19,7 +19,7 @@ kısa insan diliyle bildirmeye yönlendirir. Komut, dosya ve alt ajan günlükle
 yalnız gerçek bir engeli açıklıyorsa öne çıkar. Repo testleri bu sözleşmenin
 dağıtımını doğrular; yeni bir gerçek-ajan A/B sonucu iddia etmez.
 
-> **Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.0 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -44,6 +44,7 @@ Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 
 - [[Hızlı Başlangıç|Hizli-Baslangic]] — ilk beş dakika
 - [[Kurulum]] — Claude Code, Codex, Cursor ve diğer uyumlu hostlar
+- [[Host Uyumluluğu|Host-Uyumlulugu]] — resmî kaynaklı yetenek ve kanıt matrisi
 - [[Divan Engine|Divan-Engine]] — tek ürün, dokuz modül ve Hükümdar öncelikli nizam
 - [[Divan Proje Sözleşmesi|Project-Contract]] — hedef repoya kurulan gözetimli sözleşme
 - [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] — kurunca ne değişir?
