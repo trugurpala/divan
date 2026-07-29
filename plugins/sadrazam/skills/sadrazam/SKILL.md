@@ -26,7 +26,7 @@ task, use the portable Company OS contracts next to this skill:
    If the host reports an exact context window, also pass `--context-window
    <tokens>`. Never infer or claim an exact host/model capacity from a fallback.
 4. Read `complexity`, `context_budget`, `recommended_sessions`,
-   `orchestration_lane`, `safe_parallel_workstreams`, `sefers`, `tasks`,
+   `orchestration_lane`, `safe_parallel_workstreams`, `campaigns`, `tasks`,
    `memory_contract`, and `publication_obligations` before execution. The route
    is the operational contract, not optional commentary.
 5. Before editing, calculate impact for the intended source paths with
@@ -54,13 +54,13 @@ execution is unavailable, read the sibling `company/roles.json`,
 2. **Divan (Counsel).** Briefly weigh 2–3 approaches. If the `brainstorming`
    skill is available, use it for anything non-trivial. Pick one and say why.
 3. **Plan.** Use the Nizâm-ı Sefer route. For a single-session task, keep the
-   plan short. For a multi-session task, preserve the generated sefer/task
+   plan short. For a multi-session task, preserve the generated campaign/task
    boundaries, dependencies, owners, evidence gates, and handoff points. If the
    route permits two or more genuinely independent workstreams, load
    `ordu-nizami`; never exceed `safe_parallel_workstreams`.
 4. **İcra (Execute).** Build the whole thing. Prefer TDD when code is involved
    (`test-driven-development` skill). Work in small verified increments and do
-   not cross a sefer exit gate without recording its evidence.
+   not cross a campaign exit gate without recording its evidence.
 5. **Teftiş (Inspect).** Verify before declaring done
    (`verification-before-completion`): run the code, test the output, check
    edge cases. Show evidence — command output, test results, screenshots.
@@ -77,9 +77,10 @@ Sadrazam must know the size of the campaign before sending the army:
 - `recommended_sessions` defines the initial sefer count. It may be reduced only
   when measured evidence shows the work is smaller; it may be increased when
   new risk or scope is discovered. Record the reason.
-- `tek-sefer` means one bounded session. `ardisik-sefer` means sequential
-  sessions with disk handoff. `sinirli-ordu` permits bounded parallel lanes,
-  never an unlimited swarm.
+- `single-expedition` means one bounded session. `sequential-expeditions` means
+  disk-backed sequential sessions. `bounded-army` permits limited parallel
+  lanes, never an unlimited swarm. Technical identifiers remain English;
+  campaign display names retain `Sefer 01`, `Sefer 02`, and the Ottoman order.
 - Every generated task has one responsible functional role, dependencies,
   required evidence, and an evidence-backed completion rule. "Mostly done" is
   not a task state.
