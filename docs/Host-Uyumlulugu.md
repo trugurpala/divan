@@ -39,6 +39,22 @@ Bu tablo elle verilmiş bağımsız bir vaat değildir. Kanonik kayıt
 `python scripts/host_compatibility.py` komutudur. `verified` yazabilmek için
 repoda gerçek kanıt yolu bulunmak zorundadır.
 
+## Codex Desktop kurulum sonucu
+
+Codex'in genel `verified` seviyesi, temiz hostta kanıtlanmış yerel plugin yaşam
+döngüsünü anlatır. Tek bir Windows kurulumundaki AppX/ACL veya PATH durumu ise
+yerel sonucu değiştirebilir. Bu nedenle Divan aşağıdaki açık profili sunar:
+
+```powershell
+python scripts/divan.py install --host codex --profile auto --ref v0.18.1 --execute
+```
+
+Komut `missing`, `not-executable`, `access-denied`, `invalid-json` ve `healthy`
+tanılarını ayrı tutar. İlk üç tanıda checksum-backed skill fallback seçilebilir;
+`invalid-json` gerçek bir protokol uyumsuzluğu olarak durur. Fallback sonucu
+`skill-compatible` yetenek verir: 41 skill ve talimat vardır, fakat yerel
+komutlar, ajanlar, hook'lar, MCP ve host yaşam döngüsü varmış gibi gösterilmez.
+
 ## Host kimliği ile model kapasitesi aynı şey değildir
 
 Nizâm-ı Sefer plan üretirken hostu açık `--host-profile`, `DIVAN_HOST` veya

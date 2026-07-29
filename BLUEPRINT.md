@@ -53,6 +53,12 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     bileşenidir; onuncu runtime modülü veya dış agent harness değildir. Host
     kanıtı yoksa sıralı çalışır, en fazla üç bağımsız sefer açar ve kesin model
     kullanılabilirliğini host doğrulamadan iddia etmez. Ayrıntı ADR 0010'dadır.
+11. **Codex Desktop otomatik kurulum profili:** Kullanıcı açıkça `auto`
+    profilini seçtiğinde Divan Codex CLI çalıştırma sonucunu ayrı tanılar;
+    sağlıklı CLI'da native yolu, kanıtlı çalıştırma engelinde checksum-backed
+    41-skill fallback'i seçer. Fallback native komut/ajan/hook/MCP/lifecycle
+    iddiasında bulunmaz; geçersiz JSON gerçek uyumsuzluk olarak durur. Ayrıntı
+    ADR 0011'dedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -75,10 +81,14 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- Yeni bir sürüm adayı henüz etkin değildir. Sıradaki sınırlandırılmış ürün
-  dilimi, her hostu kendi resmî sözleşmesi ve temiz yaşam döngüsü kanıtıyla ele
-  alan native adaptörlerdir. Issue #34 bağımsız kullanıcı gerektiren ayrı v1
-  kapısı olarak kalır.
+- **v0.18.1 adayı:** Codex Desktop için açık `auto` profil, güvenli CLI tanısı,
+  native/fallback yetenek sınırı ve checksum-backed 41-skill kurulum doğrulaması
+  uygulanıyor. Issue #57 ancak temiz Windows canary, tam CI, değişmez release,
+  Pages ve Wiki geri okumasıyla kapanır. Issue #34 bağımsız kullanıcı
+  gerektiren ayrı v1 kapısı olarak kalır.
+- **v0.18.1 ✓** Release yüzeyleri hazırlanmış yerel adaydır; bu işaret
+  yayınlandığı anlamına gelmez. Yayın iddiası yalnız immutable tag/Release ve
+  canlı geri okuma kanıtı eklendikten sonra yapılır.
 
 ### Yayımlanan temel
 

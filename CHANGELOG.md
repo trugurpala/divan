@@ -11,6 +11,31 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Native host adapters, clean-host canaries, independent adoption evidence,
   and reproducible quality measurements.
 
+## [0.18.1] - 2026-07-30
+
+### Added
+
+- An explicit Codex Desktop `--profile auto` install path that distinguishes
+  healthy, missing, non-executable, access-denied, and invalid-JSON CLI states.
+- A machine-readable native-versus-skill-fallback capability contract.
+
+### Changed
+
+- Eligible Codex launch failures now reuse the canonical checksum-backed
+  41-skill installer instead of ending at a manual troubleshooting step.
+- The fallback receives the running Divan Python interpreter, so Codex Desktop
+  does not depend on a separate `python` command being present on `PATH`.
+
+### Safety
+
+- Plain install remains native; fallback requires explicit user selection and
+  dry-run remains the default.
+- Invalid host JSON blocks instead of hiding a protocol incompatibility.
+- Fallback completion verifies immutable ref, source commit, release archive
+  SHA-256, exactly 41 skills, and every installed tree SHA-256.
+- Skill fallback never claims native commands, agents, hooks, MCP
+  configuration, or native lifecycle support.
+
 ## [0.18.0] - 2026-07-29
 
 ### Added
