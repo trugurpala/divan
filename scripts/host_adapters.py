@@ -10,6 +10,9 @@ import subprocess
 from collections.abc import Callable
 from typing import Any
 
+import host_probe
+import host_profiles
+
 
 def marketplace_list_command(host: str) -> list[str]:
     return [host, "plugin", "marketplace", "list", "--json"]
@@ -163,15 +166,20 @@ Runner = Callable[[list[str]], Any]
 Normalizer = Callable[[str], str]
 
 
-def _doctor_json(runner: Runner, command: list[str]) -> tuple[Any | None, str | None, bool]:
+def _doctor_json(
+    runner: Runner, command: list[str]
+) -> tuple[Any | None, str | None, str]:
     result = runner(command)
     if result.returncode:
         detail = (result.stderr or result.stdout or "unknown CLI error").strip()
-        return None, detail, result.returncode == 127
+        cli_status = host_probe.cli_status(result)
+        if cli_status is None and result.returncode == 127:
+            cli_status = "missing"
+        return None, detail, cli_status or "healthy"
     try:
-        return json.loads(result.stdout), None, False
+        return json.loads(result.stdout), None, "healthy"
     except json.JSONDecodeError as exc:
-        return None, str(exc), False
+        return None, str(exc), "invalid-json"
 
 
 def _doctor_command(runner: Runner, command: list[str]) -> tuple[str | None, str | None]:
@@ -262,26 +270,29 @@ def _doctor_host(
     runner: Runner,
     normalize: Normalizer,
 ) -> dict[str, Any]:
-    marketplaces_value, error, unavailable = _doctor_json(
+    marketplaces_value, error, cli_status = _doctor_json(
         runner, marketplace_list_command(host)
     )
     if error:
-        status = "unavailable" if unavailable else "attention"
-        issue = "CLI unavailable" if unavailable else f"marketplace list: {error}"
-        return {"status": status, "issues": [issue]}
-    plugins_value, error, unavailable = _doctor_json(runner, plugin_list_command(host))
+        return host_profiles.cli_failure_result(
+            host, "marketplace list", error, cli_status
+        )
+    plugins_value, error, cli_status = _doctor_json(runner, plugin_list_command(host))
     if error:
-        status = "unavailable" if unavailable else "attention"
-        issue = "CLI unavailable" if unavailable else f"plugin list: {error}"
-        return {"status": status, "issues": [issue]}
+        return host_profiles.cli_failure_result(host, "plugin list", error, cli_status)
     marketplaces = marketplace_rows(host, marketplaces_value)
     plugins = plugin_rows(host, plugins_value)
     marketplace = marketplaces.get("divan")
     issues = _plugin_issues(host, marketplace is not None, plugins, expected)
     if marketplace is not None:
         issues.extend(_marketplace_issues(host, marketplace, options, runner, normalize))
-    return {"status": "healthy" if not issues else "attention", "issues": issues}
-
+    return {
+        "status": "healthy" if not issues else "attention",
+        "cli_status": "healthy",
+        "recommended_mode": host_profiles.NATIVE_MODE,
+        "capabilities": host_profiles.capabilities(host_profiles.NATIVE_MODE),
+        "issues": issues,
+    }
 
 def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
     if not state_dir.is_dir():
@@ -298,22 +309,6 @@ def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
         }:
             return path
     return None
-
-
-def _next_command(options: Any) -> str:
-    command = [
-        "python",
-        "scripts/divan.py",
-        "install",
-        "--host",
-        options.host,
-        "--source",
-        options.source,
-        "--ref",
-        options.ref,
-    ]
-    return subprocess.list2cmdline(command)
-
 
 def doctor(
     options: Any,
@@ -333,7 +328,9 @@ def doctor(
         issues.append("unfinished transaction")
     statuses = {result["status"] for result in results.values()}
     status = "unavailable" if "unavailable" in statuses else "attention" if issues else "healthy"
-    next_command = _next_command(options)
+    next_command = host_profiles.next_command(
+        options, results, marketplace_list_command
+    )
     if transaction is not None:
         next_command = subprocess.list2cmdline(
             ["python", "scripts/divan.py", "recover", str(transaction)]
@@ -345,17 +342,3 @@ def doctor(
         "issues": issues,
         "next_command": next_command,
     }
-
-
-def print_doctor(record: dict[str, Any], json_output: bool) -> None:
-    if json_output:
-        print(json.dumps(record, ensure_ascii=False))
-        return
-    for host, result in record["hosts"].items():
-        suffix = "" if not result["issues"] else " - " + "; ".join(result["issues"])
-        print(f"{host}: {result['status']}{suffix}")
-    host_issues = {issue for result in record["hosts"].values() for issue in result["issues"]}
-    aggregate = [issue for issue in record["issues"] if issue not in host_issues]
-    if aggregate:
-        print(f"STATUS: {record['status']} - {'; '.join(aggregate)}")
-    print(f"NEXT: {record['next_command']}")

@@ -9,14 +9,45 @@ komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
 Release'i bulunan bir ref'i kur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.0
-python scripts/divan.py install --host both --ref v0.18.0 --execute
-python scripts/divan.py doctor --host both --ref v0.18.0
-python scripts/divan.py update --host both --ref v0.18.0
-python scripts/divan.py update --host both --ref v0.18.0 --execute
+python scripts/divan.py install --host both --ref v0.18.1
+python scripts/divan.py install --host both --ref v0.18.1 --execute
+python scripts/divan.py doctor --host both --ref v0.18.1
+python scripts/divan.py update --host both --ref v0.18.1
+python scripts/divan.py update --host both --ref v0.18.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+## Codex Desktop için tek komutluk güvenli seçim
+
+Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
+
+```powershell
+python scripts/divan.py install --host codex --profile auto --ref v0.18.1
+```
+
+Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
+
+```powershell
+python scripts/divan.py install --host codex --profile auto --ref v0.18.1 --execute
+```
+
+`auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
+Codex CLI sonucunu şu şekilde ayırır:
+
+| CLI tanısı | Seçilen yol |
+|---|---|
+| `healthy` | Beş paket ve 41 beceriyi içeren tam yerel plugin kurulumu |
+| `missing` | Checksum ve kaynak commit'i doğrulanan 41-skill fallback |
+| `not-executable` | Checksum ve kaynak commit'i doğrulanan 41-skill fallback |
+| `access-denied` | Checksum ve kaynak commit'i doğrulanan 41-skill fallback |
+| `invalid-json` | Kurulum durur; host protokol sorunu fallback ile gizlenmez |
+
+Skill fallback, bütün 41 beceriyi ve talimatları kurar; sürüm, değişmez ref,
+kaynak commit'i, release arşiv SHA-256 değeri ve beceri başına kurulu dosya
+SHA-256 kaydı üretir. Ancak yerel plugin komutları, ajanlar, hook'lar, MCP
+yapılandırması ve host yaşam döngüsü bu modda yoktur. Başarılı çıktı tam
+manifest yolunu, sınırı, geri alma komutunu ve sıradaki adımı açıkça yazar.
 
 Örnek yolu doctor çıktısındaki tam `recovery_command` ile değiştir.
 `install-...json` geri alması yalnız o kurulumun oluşturduğu Divan kayıtlarını
@@ -238,11 +269,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.18.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.18.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.18.0/scripts/install_codex.sh | DIVAN_REF=v0.18.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.18.1/scripts/install_codex.sh | DIVAN_REF=v0.18.1 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

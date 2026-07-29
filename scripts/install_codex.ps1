@@ -2,7 +2,7 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 $ErrorActionPreference = "Stop"
 
-$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v0.18.0" }
+$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v0.18.1" }
 $dst = if ($env:CODEX_SKILLS_DIR) {
   $env:CODEX_SKILLS_DIR
 } else {
@@ -75,8 +75,13 @@ try {
   if (-not (Test-Path (Join-Path $source "plugins"))) {
     throw "Divan kaynagi bulunamadi: $source"
   }
-  $python = Get-Command python -ErrorAction SilentlyContinue
-  if (-not $python) { throw "Python 3 bulunamadi; guvenli kurulum kaydi uretilemiyor." }
+  $pythonPath = if ($env:DIVAN_PYTHON -and (Test-Path -LiteralPath $env:DIVAN_PYTHON -PathType Leaf)) {
+    $env:DIVAN_PYTHON
+  } else {
+    $python = Get-Command python -ErrorAction SilentlyContinue
+    if ($python) { $python.Source } else { $null }
+  }
+  if (-not $pythonPath) { throw "Python 3 bulunamadi; guvenli kurulum kaydi uretilemiyor." }
   $legacyState = Join-Path $source "scripts\legacy_state.py"
   if (-not (Test-Path -LiteralPath $legacyState -PathType Leaf)) {
     throw "Legacy durum yardimcisi bulunamadi: $legacyState"
@@ -90,7 +95,7 @@ try {
     $ref.TrimStart("v")
   }
   $installedAt = (Get-Date).ToUniversalTime().ToString("o")
-  & $python.Source $legacyState install --source $source --skills-dir $dst --state-dir $stateDir `
+  & $pythonPath $legacyState install --source $source --skills-dir $dst --state-dir $stateDir `
     --version $version --ref $ref --source-commit $sourceCommit `
     --archive-sha256 $archiveSha256 --installed-at $installedAt
   if ($LASTEXITCODE -ne 0) { throw "Islemsel fallback kurulumu geri alindi." }

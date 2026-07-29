@@ -4,7 +4,23 @@ set -Eeuo pipefail
 
 DST="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
-MANIFEST="${1:-}"
+MANIFEST=""
+PYTHON_OVERRIDE="${DIVAN_PYTHON:-}"
+while (($#)); do
+  case "$1" in
+    --manifest) MANIFEST="$2"; shift 2 ;;
+    --python) PYTHON_OVERRIDE="$2"; shift 2 ;;
+    *)
+      if [[ -z "$MANIFEST" ]]; then
+        MANIFEST="$1"
+        shift
+      else
+        echo "HATA: Bilinmeyen kaldirma argumani: $1" >&2
+        exit 2
+      fi
+      ;;
+  esac
+done
 
 if [[ -z "$MANIFEST" ]]; then
   latest="$STATE_DIR/divan-install-latest"
@@ -29,7 +45,10 @@ if [[ ! -f "$MANIFEST" ]]; then
   exit 1
 fi
 
-PYTHON_BIN="$(command -v python3 || command -v python || true)"
+PYTHON_BIN="$PYTHON_OVERRIDE"
+if [[ -z "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="$(command -v python3 || command -v python || true)"
+fi
 if [[ -z "$PYTHON_BIN" ]]; then
   echo "HATA: Python 3 bulunamadi; guvenli kaldirma calistirilamiyor." >&2
   exit 1

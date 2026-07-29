@@ -1,6 +1,6 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-29
+Son güncelleme: 2026-07-30
 
 ## Yayın durumu
 
@@ -20,6 +20,18 @@ five assets, checksums, SPDX SBOM, release/SLSA attestations, Pages, and Wiki
 were read back from their public surfaces. A host may be called verified only
 after a clean-host lifecycle canary records real evidence.
 
+The active v0.18.1 candidate addresses issue #57. Codex Desktop install now
+has an explicit `auto` profile that separates healthy, missing,
+not-executable, access-denied, and invalid-JSON CLI states. Healthy Codex keeps
+the native plugin route. Proven launch barriers may select the existing
+checksum-backed 41-skill fallback, whose output states that native commands,
+agents, hooks, MCP configuration, and host lifecycle are unavailable. This is
+not published until full CI, immutable release, remote checksum-backed Windows
+canary, Pages, and Wiki readback evidence exist. The local candidate passed 580
+tests with 13 expected platform skips, 77% coverage, Ruff, Clean Code, mypy
+across 90 source files, and the isolated local-source Windows install/remove
+canary.
+
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
 installed layer is Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is
@@ -30,6 +42,13 @@ adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
+- Issue #57 design and implementation candidate adds safe process probing,
+  explicit profile selection, canonical fallback execution, exact 41-skill
+  manifest verification, per-skill installed SHA-256 verification, a rollback
+  command, and user-facing native/fallback limits. Plain native installation
+  remains unchanged and invalid host JSON fails closed. Host parsing, output,
+  diagnosis, profile policy, and lifecycle execution are separate modules; the
+  registered install-function complexity and length debt was removed.
 - PR #55 merged the v0.18.0 release preparation to `main` at
   `3bbbd95881a7c33f64e3e9f8d23824e3eef8977e`. Release workflow
   `30493811167` published immutable tag/Release v0.18.0. All five downloaded

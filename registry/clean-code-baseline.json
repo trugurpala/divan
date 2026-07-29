@@ -31,7 +31,6 @@
     {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/receipts.py:verify_receipt_value", "value": 22},
     {"kind": "complexity", "target": "scripts/host_marketplaces.py:check", "value": 11},
     {"kind": "complexity", "target": "scripts/host_lifecycle.py:_verify_host", "value": 12},
-    {"kind": "complexity", "target": "scripts/host_lifecycle.py:install", "value": 11},
     {"kind": "complexity", "target": "scripts/legacy_state.py:recover_legacy", "value": 24},
     {"kind": "complexity", "target": "scripts/candidate_review.py:denetle", "value": 22},
     {"kind": "complexity", "target": "scripts/upstream_watch.py:baseline_errors", "value": 15},
@@ -53,7 +52,6 @@
     {"kind": "function-lines", "target": "plugins/sadrazam/divan_runtime/providers.py:release_project", "value": 61},
     {"kind": "function-lines", "target": "plugins/sadrazam/divan_runtime/receipts.py:_transition_errors", "value": 57},
     {"kind": "function-lines", "target": "plugins/sadrazam/divan_runtime/receipts.py:verify_receipt_value", "value": 69},
-    {"kind": "function-lines", "target": "scripts/host_lifecycle.py:install", "value": 72},
     {"kind": "function-lines", "target": "scripts/legacy_state.py:install_legacy", "value": 65},
     {"kind": "function-lines", "target": "scripts/legacy_state.py:recover_legacy", "value": 88},
     {"kind": "function-lines", "target": "scripts/candidate_review.py:denetle", "value": 51},
@@ -63,7 +61,7 @@
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/project_os.py", "value": 2932},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/providers.py", "value": 1238},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/receipts.py", "value": 788},
-    {"kind": "module-lines", "target": "scripts/host_lifecycle.py", "value": 651},
+    {"kind": "module-lines", "target": "scripts/host_lifecycle.py", "value": 649},
     {"kind": "module-lines", "target": "scripts/legacy_state.py", "value": 507},
     {"kind": "module-lines", "target": "scripts/validate.py", "value": 429}
   ]

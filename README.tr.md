@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.18.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.18.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -19,7 +19,7 @@ yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların 
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 
-**Güncel kaynak:** v0.18.0 · **Son yayımlanan:** v0.18.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v0.18.1 · **Son yayımlanan:** v0.18.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -140,9 +140,24 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce değişi
 yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.0
-python scripts/divan.py install --host both --ref v0.18.0 --execute
+python scripts/divan.py install --host both --ref v0.18.1
+python scripts/divan.py install --host both --ref v0.18.1 --execute
 ```
+
+Codex Desktop için tek bir açık `auto` profil komutu yerel CLI'ı tanılar ve
+kanıtlayabildiği en güçlü yolu seçer:
+
+```powershell
+python scripts/divan.py install --host codex --profile auto --ref v0.18.1
+python scripts/divan.py install --host codex --profile auto --ref v0.18.1 --execute
+```
+
+Codex CLI sağlıklıysa tam yerel plugin yolu korunur. CLI bulunamazsa,
+çalıştırılamazsa veya işletim sistemi erişimi reddederse checksum ile
+doğrulanan 41 becerilik fallback seçilir. Fallback skill ve talimatları sağlar;
+yerel komut, ajan, hook, MCP yapılandırması veya yerel yaşam döngüsü sağladığını
+iddia etmez. Host geçersiz JSON döndürürse gerçek uyumluluk sorunu gizlenmeden
+kurulum durur.
 
 Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
 veya `@divan` eklentisinin üzerine yazmaz; kaydı olduğu gibi bırakıp açık bir
@@ -155,9 +170,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.18.0
-python scripts/divan.py update --host both --ref v0.18.0
-python scripts/divan.py update --host both --ref v0.18.0 --execute
+python scripts/divan.py doctor --host both --ref v0.18.1
+python scripts/divan.py update --host both --ref v0.18.1
+python scripts/divan.py update --host both --ref v0.18.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

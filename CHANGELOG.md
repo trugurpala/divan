@@ -11,6 +11,43 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Native host adapters, clean-host canaries, independent adoption evidence,
   and reproducible quality measurements.
 
+## [0.18.1] - 2026-07-30
+
+### Added
+
+- An explicit Codex Desktop `--profile auto` install path that distinguishes
+  healthy, missing, non-executable, access-denied, and invalid-JSON CLI states.
+- A machine-readable native-versus-skill-fallback capability contract.
+
+### Changed
+
+- Eligible Codex launch failures now reuse the canonical checksum-backed
+  41-skill installer instead of ending at a manual troubleshooting step.
+- The fallback receives the running Divan Python interpreter, so Codex Desktop
+  does not depend on a separate `python` command being present on `PATH`.
+
+### Safety
+
+- Plain install remains native; fallback requires explicit user selection and
+  dry-run remains the default.
+- Invalid host JSON blocks instead of hiding a protocol incompatibility.
+- Fallback completion verifies immutable ref, source commit, release archive
+  SHA-256, exactly 41 skills, and every installed tree SHA-256.
+- Skill fallback never claims native commands, agents, hooks, MCP
+  configuration, or native lifecycle support.
+
+### Verification
+
+- The clean Windows candidate passed 580 tests with 13 expected
+  platform-specific skips and 77% branch coverage.
+- Ruff, the Clean Code debt ratchet, and mypy across 90 first-party source
+  files passed. The install function's previous complexity and function-length
+  debt was removed by separating host options and human output from execution.
+- The isolated Windows install/remove canary produced 41 verified Divan skills,
+  preserved an unrelated skill, and restored a quarantined collision.
+- GitHub CI, immutable Release assets, attestations, the checksum-backed remote
+  auto-install canary, and live Pages/Wiki readback remain publication gates.
+
 ## [0.18.0] - 2026-07-29
 
 ### Added

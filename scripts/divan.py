@@ -123,6 +123,8 @@ def _host_arguments(options: argparse.Namespace) -> list[str]:
         arguments.append("--execute")
     if options.command == "install" and options.migrate_legacy:
         arguments.append("--migrate-legacy")
+    if options.command == "install" and options.profile != "native":
+        arguments.extend(["--profile", options.profile])
     if options.command != "doctor" and options.state_dir is not None:
         arguments.extend(["--state-dir", str(options.state_dir)])
     return arguments
@@ -148,6 +150,7 @@ def _parser() -> argparse.ArgumentParser:
     _add_host_common(install)
     install.add_argument("--execute", action="store_true")
     install.add_argument("--migrate-legacy", action="store_true")
+    install.add_argument("--profile", choices=("native", "auto"), default="native")
     install.add_argument("--state-dir", type=pathlib.Path)
 
     update = commands.add_parser("update", help="plan or update a proven install")
