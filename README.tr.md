@@ -8,11 +8,13 @@
 
 <img src="docs/assets/muhurdar-idle.png" alt="Divan'ın Mühürdar maskotu" width="128" align="right">
 
-**Hükümdar sensin. Divan, kodlama ajanının etrafındaki tek üründür — 41 beceri,
-5 paket, kalıcı proje hafızası ve bağımsız denetim.**
-Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim eder
-ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
-plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
+**Divan, Claude Code ve Codex için yerel bir beceri ve plugin setidir.**
+
+Kodlama ajanıyla yürüttüğün işi düzenler: planı kaydeder, göreve uygun
+becerileri seçer, kontrolleri çalıştırır ve teslimde hangilerinin geçtiğini
+gösterir. 41 beceri, 5 paket. Kullandığın hosta yerel plugin olarak kurulur;
+modeli ve runtime'ı host sağlar. Agent Skills, Cursor ve diğer uyumlu
+hostlara taşınabilir.
 
 **Güncel kaynak:** v0.17.0 · **Son yayımlanan:** v0.17.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
@@ -168,13 +170,13 @@ UTF-8/LF, çekirdek Python karmaşıklık bütçesi McCabe 25 olarak CI'da sabit
 
 ## Bir dakikada başla
 
-Skill adı ezberlemek zorunda değilsin. [Canlı ferman seçicide](https://trugurpala.github.io/divan/#basla)
-niyetini seç; Divan gerekli paketi, kopyalanabilir fermanı ve teslim akışını
+Skill adı ezberlemek zorunda değilsin. [Canlı çalışma hedefi seçicide](https://trugurpala.github.io/divan/#basla)
+niyetini seç; Divan gerekli paketi, kopyalanabilir talebi ve teslim akışını
 göstersin.
 
 | Niyet | Paket | Divan'ın ilk hareketi |
 |---|---|---|
-| Özellik çıkar | `sadrazam` + `core-pack` | Brief → plan → TDD → teftiş → yayın |
+| Özellik çıkar | `sadrazam` + `core-pack` | Plan → uygulama → kontroller → teslim özeti |
 | Bug düzelt | `core-pack` | Belirti → kök neden → regresyon testi |
 | Arayüz tasarla | `ui-pack` + `react-pack` | Estetik yön → sistem → tarayıcı doğrulaması |
 | Projeyi tanı | `sadrazam` + `core-pack` | Kanıtlı arama → mimari/risk haritası → defter |

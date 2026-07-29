@@ -90,7 +90,7 @@ jobs:
           for _ in $(seq 1 18); do
             if icerik="$(curl -fsSL --max-time 15 "$adres")" && \
                grep -Fq "v${surum}" <<<"$icerik" && \
-               grep -Fq "Fermanını seç" <<<"$icerik"; then
+               grep -Fq "Ne yapmak istiyorsun?" <<<"$icerik"; then
               echo "Wiki v${surum} canlı ve güncel."
               exit 0
             fi

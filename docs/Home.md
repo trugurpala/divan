@@ -2,10 +2,10 @@
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
-**Hükümdar sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
-kalıcı bir teslim akışına çeviren tek üründür. Aynı 5 paket/41 beceri Claude
-Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
-davranış eval'i ve yayın teftişi aynı çatıdadır.
+**Divan, Claude Code ve Codex için yerel bir beceri ve plugin setidir.**
+Planı kaydeder, göreve uygun becerileri seçer, kontrolleri çalıştırır ve
+teslimde hangilerinin geçtiğini gösterir. 41 beceri, 5 paket. İki hosta da
+yerel plugin olarak kurulur.
 
 Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
 repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
@@ -22,11 +22,11 @@ zincirini ve eski adlar için sınırlı uyumluluğu yayımlar. PR #49, bütün 
 CI kapıları, değişmez tag/Release, checksum ve attestation bağlı beş varlık,
 Pages ve Wiki yayın kanıtında doğrulanmıştır.
 
-## Fermanını seç
+## Ne yapmak istiyorsun?
 
 | Niyetin | İlk durak | Sonuç |
 |---|---|---|
-| Bir özellik çıkar | [[Hızlı Başlangıç|Hizli-Baslangic]] | Brief → plan → TDD → kanıt → yayın |
+| Bir özellik çıkar | [[Hızlı Başlangıç|Hizli-Baslangic]] | Plan → uygulama → kontroller → teslim özeti |
 | Bir bug düzelt | [[Test ve Teftiş|Test-ve-Teftis]] | Kök neden → regresyon testi → dar düzeltme |
 | Arayüz tasarla | [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] | Estetik yön → sistem → tarayıcı kanıtı |
 | Divan'ı kur | [[Kurulum]] | Hostuna uygun en küçük kurulum yolu |

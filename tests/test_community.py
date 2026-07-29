@@ -196,9 +196,15 @@ class CommunityContractTests(unittest.TestCase):
         for html in sources:
             self.assertIn(f'<link rel="canonical" href="{PAGES_URL}">', html)
             self.assertIn('data-homepage="https://trugurpala.github.io/divan/"', html)
-            self.assertIn("yerel skill/plugin dağıtımı", html)
-            self.assertIn("model veya runtime değildir", html)
-            self.assertIn("v1: 7/8", html)
+            self.assertIn(
+                "Claude Code ve Codex için açık kaynak araç seti",
+                html,
+            )
+            self.assertIn(
+                "planı kaydeder, göreve uygun becerileri seçer",
+                html,
+            )
+            self.assertIn(f"v{version} güncel kaynak", html)
             self.assertIn("Topluluk Standartları", html)
             visible = unescape(html)
             self.assertNotRegex(visible, r"--rollback-transaction\s+<[^>]+>")

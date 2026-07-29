@@ -43,7 +43,24 @@ class SiteMarkupTests(unittest.TestCase):
                 self.assertIn("docs/Divan-Engine.tr.md", html)
                 self.assertIn("Divan Proje Sözleşmesi", html)
                 self.assertIn("docs/Project-Contract.tr.md", html)
-                self.assertIn("Hükümdar sensin", html)
+                self.assertIn(
+                    "Claude Code ve Codex için açık kaynak araç seti",
+                    html,
+                )
+                self.assertIn(
+                    "planı kaydeder, göreve uygun becerileri seçer",
+                    html,
+                )
+                self.assertIn("Ne yapmak istiyorsun?", html)
+                self.assertNotIn("Vibe coder'ın vezirler kurulu", html)
+                self.assertNotIn(
+                    "AI kodlama ajanları için doğrulanabilir teslim",
+                    html,
+                )
+                self.assertNotIn(
+                    "Talep → Plan → Uygulama → Doğrulama → Kanıtlı Teslim",
+                    html,
+                )
                 self.assertIn("41 beceri", html)
                 self.assertNotIn("Company OS", html)
                 self.assertNotIn("Project OS", html)

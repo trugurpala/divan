@@ -25,8 +25,20 @@ with sync_playwright() as p:
         hatalar.append(f"HTTP {yanit.status}")
     if "Divan" not in sayfa.title():
         hatalar.append(f"Baslik hatali: {sayfa.title()}")
-    if not sayfa.get_by_text("Hükümdar sensin").is_visible():
-        hatalar.append("'Hükümdar sensin' gorunmuyor")
+    if not sayfa.get_by_text(
+        "Claude Code ve Codex için açık kaynak araç seti", exact=True
+    ).is_visible():
+        hatalar.append("Somut urun tanimi gorunmuyor")
+    if not sayfa.get_by_text("Ne yapmak istiyorsun?", exact=True).is_visible():
+        hatalar.append("Calisma hedefi secici basligi gorunmuyor")
+    icerik = sayfa.content()
+    for yapay_soylem in (
+        "Vibe coder'ın vezirler kurulu",
+        "AI kodlama ajanları için doğrulanabilir teslim",
+        "Talep → Plan → Uygulama → Doğrulama → Kanıtlı Teslim",
+    ):
+        if yapay_soylem in icerik:
+            hatalar.append(f"Eski veya soyut vitrin soylemi hala gorunuyor: {yapay_soylem}")
     engine_link = sayfa.get_by_role(
         "link", name="Divan Engine ve Divan Nizamı sözleşmesini incele"
     )
@@ -56,12 +68,12 @@ with sync_playwright() as p:
     if sayfa.locator("#protokol ol.protokol li").count() != 6:
         hatalar.append("Protokol 6 faz degil")
     if sayfa.locator("[data-niyet]").count() != 5:
-        hatalar.append("Ferman secici 5 niyet sunmuyor")
+        hatalar.append("Calisma hedefi secici 5 niyet sunmuyor")
     sayfa.get_by_role("button", name="Bug düzelt").click()
     if sayfa.locator("#secici-paket").inner_text() != "core-pack":
         hatalar.append("Bug niyeti core-pack secmiyor")
     if "kök nedenini bul" not in sayfa.locator("#secici-komut").inner_text():
-        hatalar.append("Bug fermani guncellenmiyor")
+        hatalar.append("Bug talebi guncellenmiyor")
     if sayfa.locator("#secici-akis li").count() != 5:
         hatalar.append("Secili teslim akisi 5 adim degil")
     # mobil gorunum

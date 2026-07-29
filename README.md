@@ -8,14 +8,13 @@
 
 <img src="docs/assets/muhurdar-idle.png" alt="Mühürdar, Divan's verification mascot" width="128" align="right">
 
-**You are Hükümdar, the owner. Divan is one product around your coding agent:
-41 skills, five focused packs, persistent project memory, and independent
-verification.**
+**Divan is a local skill and plugin set for Claude Code and Codex.**
 
-You issue the decree. Divan clarifies it, plans the work, builds with tests,
-verifies the result, records the decisions, and presents a finished delivery.
-It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
-Skills remain portable to Cursor and other compatible hosts.
+It records the plan, selects the skills needed for the job, runs the checks,
+and shows what passed at delivery. Divan currently ships 41 skills in five
+focused packages. It installs into the host you already use; the host provides
+the model and runtime. Its Agent Skills remain portable to Cursor and other
+compatible hosts.
 
 **Current source:** v0.17.0 · **Latest published:** v0.17.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
@@ -159,13 +158,13 @@ to UTF-8/LF and core Python complexity to McCabe 25.
 ## Start from intent
 
 You do not need to memorize skill names. Use the
-[live decree selector](https://trugurpala.github.io/divan/#basla) to choose what
+[live task selector](https://trugurpala.github.io/divan/#basla) to choose what
 you want to accomplish; it returns the smallest pack, a copyable request, and
 the delivery path.
 
 | Intent | Pack | First path |
 |---|---|---|
-| Ship a feature | `sadrazam` + `core-pack` | Brief → plan → TDD → inspection → publication |
+| Ship a feature | `sadrazam` + `core-pack` | Plan → implementation → checks → delivery summary |
 | Fix a bug | `core-pack` | Symptom → root cause → regression test |
 | Design a UI | `ui-pack` + `react-pack` | Aesthetic direction → system → browser verification |
 | Learn a codebase | `sadrazam` + `core-pack` | Evidence search → architecture/risk map → durable record |

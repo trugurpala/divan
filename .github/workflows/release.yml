@@ -104,8 +104,8 @@ jobs:
 
           version = pathlib.Path("VERSION").read_text().strip()
           surfaces = {
-              "Pages": ("https://trugurpala.github.io/divan/", [f"v{version}", "Fermanını seç"]),
-              "Wiki": ("https://raw.githubusercontent.com/wiki/trugurpala/divan/Home.md", [f"v{version}", "Fermanını seç"]),
+              "Pages": ("https://trugurpala.github.io/divan/", [f"v{version}", "Ne yapmak istiyorsun?"]),
+              "Wiki": ("https://raw.githubusercontent.com/wiki/trugurpala/divan/Home.md", [f"v{version}", "Ne yapmak istiyorsun?"]),
           }
           pending = dict(surfaces)
           for _ in range(30):

@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Divan — Vibe coder'ın vezirler kurulu</title>
-<meta name="description" content="Claude Code ve Codex için modüler, denetimli teslim framework'ü ve geri alınabilir 41 becerilik Divan dağıtımı.">
+<title>Divan — Claude Code ve Codex için araç seti</title>
+<meta name="description" content="Planı kaydeder, göreve uygun becerileri seçer ve teslimde hangi kontrollerin geçtiğini gösterir.">
 <link rel="canonical" href="https://trugurpala.github.io/divan/">
 <link rel="alternate" hreflang="tr" href="https://trugurpala.github.io/divan/">
 <link rel="alternate" hreflang="en" href="https://github.com/trugurpala/divan/blob/main/README.md">
-<meta property="og:title" content="Divan — Vibe coder'ın vezirler kurulu">
-<meta property="og:description" content="Hükümdar sensin: fermanı ver, Divan işi planlasın, doğrulasın ve kanıtıyla teslim etsin.">
+<meta property="og:title" content="Divan — Claude Code ve Codex için araç seti">
+<meta property="og:description" content="Planı kaydeder, göreve uygun becerileri seçer ve teslimde hangi kontrollerin geçtiğini gösterir.">
 <meta property="og:image" content="https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/divan-social-preview.png">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://trugurpala.github.io/divan/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/divan-social-preview.png">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Divan","codeRepository":"https://github.com/trugurpala/divan","license":"https://opensource.org/license/mit","programmingLanguage":"Python","description":"A modular, supervised delivery framework and Agent Skills distribution for Claude Code and Codex; not a model or runtime."}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareSourceCode","name":"Divan","codeRepository":"https://github.com/trugurpala/divan","license":"https://opensource.org/license/mit","programmingLanguage":"Python","description":"A local skill and plugin set for Claude Code and Codex."}</script>
 <meta name="theme-color" content="#0B1633">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2718%27 fill=%27%230B1633%27/%3E%3Ctext x=%2750%27 y=%2770%27 text-anchor=%27middle%27 font-family=%27serif%27 font-size=%2764%27 fill=%27%23C9A227%27%3ED%3C/text%3E%3C/svg%3E">
 <style>
@@ -56,7 +56,7 @@ h1 .nokta{color:var(--mercan)}
 .ferman code{display:block;font-family:Consolas,'Liberation Mono',monospace;font-size:15px;color:var(--fildisi);line-height:1.9;overflow-x:auto;white-space:pre}
 .ferman code .p{color:var(--firuze)}
 
-/* Vibe coder ilk dakika seçicisi */
+/* Çalışma hedefi seçicisi */
 .niyetler{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
 .niyet{appearance:none;border:1px solid rgba(243,237,221,.2);border-radius:999px;padding:9px 14px;
   background:transparent;color:var(--fildisi);font:500 15px system-ui,-apple-system,'Segoe UI',sans-serif;cursor:pointer}
@@ -128,11 +128,11 @@ footer p+p{margin-top:10px}
 
 <header class="hero">
   <div class="wrap">
-    <p class="tugra">Vibe coder'ın vezirler kurulu</p>
+    <p class="tugra">Claude Code ve Codex için açık kaynak araç seti</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Hükümdar sensin.</b> Divan tek üründür: Claude Code ve Codex için <b>modüler, denetimli teslim framework'ü ve yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Divan Nizamı ürünün yönetim modelidir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.17.0 güncel kaynak · son yayımlanan v0.17.0 · 41 beceri · 5 paket · v1: 7/8.</p>
+    <p class="tez">Kodlama ajanıyla yürüttüğün işi düzenler: planı kaydeder, göreve uygun becerileri seçer ve teslimde hangi kontrollerin geçtiğini gösterir.</p>
     <div class="ferman">
-      <p class="ferman-etiket">Güncel yayın · yazmayan önizleme</p>
+      <p class="ferman-etiket">v0.17.0 güncel kaynak · 41 beceri · 5 paket · yazmayan önizleme</p>
       <code>python scripts/divan.py install --host both --ref v0.17.0</code>
     </div>
   </div>
@@ -140,8 +140,8 @@ footer p+p{margin-top:10px}
 
 <section class="bab" id="basla">
   <div class="wrap">
-    <p class="bab-etiket">Bab I</p>
-    <h2>Fermanını seç</h2>
+    <p class="bab-etiket">Başlangıç</p>
+    <h2>Ne yapmak istiyorsun?</h2>
     <div class="niyetler" role="group" aria-label="Ne yapmak istiyorsun?">
       <button type="button" class="niyet" data-niyet="ship" aria-pressed="true">Özellik çıkar</button>
       <button type="button" class="niyet" data-niyet="fix" aria-pressed="false">Bug düzelt</button>
@@ -152,14 +152,14 @@ footer p+p{margin-top:10px}
     <div class="secici" aria-live="polite">
       <div class="secici-ust">
         <div><p class="secici-etiket">Gerekli paket</p><p class="secici-paket" id="secici-paket">sadrazam + core-pack</p></div>
-        <p class="secici-neden" id="secici-neden">Plan, TDD, teftiş ve yayın zinciri</p>
+        <p class="secici-neden" id="secici-neden">Planlı uygulama, test, doğrulama ve yayın</p>
       </div>
       <div class="secici-ferman">
         <code id="secici-komut">Bu özelliği baştan sona planla, testle ve main'de doğrula.</code>
-        <button type="button" class="kopyala" id="ferman-kopyala">Fermanı kopyala</button>
+        <button type="button" class="kopyala" id="ferman-kopyala">Talebi kopyala</button>
       </div>
       <ol class="secici-akis" id="secici-akis" aria-label="Teslim akışı">
-        <li>Brief</li><li>Plan</li><li>TDD</li><li>Teftiş</li><li>Yayın</li>
+        <li>Talep</li><li>Plan</li><li>Uygulama</li><li>Doğrulama</li><li>Teslim</li>
       </ol>
     </div>
   </div>
@@ -168,9 +168,9 @@ footer p+p{margin-top:10px}
 <section class="bab" id="divan-engine">
   <div class="wrap">
     <p class="bab-etiket">Divan Engine · Divan Nizamı</p>
-    <h2>Tek Divan, tek ferman, doğru ekip</h2>
+    <h2>Hangi paket ne zaman devreye giriyor?</h2>
     <p class="tez">Divan Engine projeyi kod çalıştırmadan inceler; Divan Nizamı
-      Hükümdarın fermanını göreve ve framework'e göre en küçük yetkin ekibe
+      kullanıcı talebini göreve ve framework'e göre en küçük yetkin ekibe
       yönlendirir. Her değişikliği test, README, Wiki, site ve yayın
       bağımlılıklarına kadar izler.</p>
     <div class="vezirler">
@@ -198,7 +198,7 @@ footer p+p{margin-top:10px}
 <section class="bab" id="kurulum">
   <div class="wrap">
     <p class="bab-etiket">Güvenli yol</p>
-    <h2>Yayın sonrasında beş dakikada ilk başarı</h2>
+    <h2>Kur, denetle, gerekirse geri al</h2>
     <ol class="yasam">
       <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v0.17.0 --execute</code></div></li>
       <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v0.17.0</code></div></li>
@@ -308,7 +308,7 @@ footer p+p{margin-top:10px}
 
 <script>
 const seciciVeri={
-  ship:{paket:'sadrazam + core-pack',neden:'Plan, TDD, teftiş ve yayın zinciri',komut:"Bu özelliği baştan sona planla, testle ve main'de doğrula.",akis:['Brief','Plan','TDD','Teftiş','Yayın']},
+  ship:{paket:'sadrazam + core-pack',neden:'Planlı uygulama, test, doğrulama ve yayın',komut:"Bu özelliği baştan sona planla, testle ve main'de doğrula.",akis:['Talep','Plan','Uygulama','Doğrulama','Teslim']},
   fix:{paket:'core-pack',neden:'Kök neden, regresyon testi ve dar düzeltme',komut:"Bu bug'ın kök nedenini bul, önce regresyon testini yaz, sonra en küçük düzeltmeyi yap.",akis:['Belirti','Kök neden','Test','Düzeltme','Doğrula']},
   design:{paket:'ui-pack + react-pack',neden:'Estetik yön, üretim kodu ve tarayıcı testi',komut:'Bu arayüz için ayırt edici bir estetik seç, üretim kodunu yaz ve tarayıcıda doğrula.',akis:['Niyet','Estetik','Sistem','İnşa','Tarayıcı']},
   learn:{paket:'sadrazam + core-pack',neden:'Kanıtlı arama ve kalıcı proje hafızası',komut:'Bu projeyi değiştirmeden tanı; mimariyi, riskleri ve sıradaki kesin adımı kanıtlarıyla deftere yaz.',akis:['Kapsam','Ara','Harita','Risk','Defter']},
@@ -328,7 +328,7 @@ document.querySelectorAll('[data-niyet]').forEach(dugme=>dugme.addEventListener(
 document.getElementById('ferman-kopyala').addEventListener('click',async event=>{
   await navigator.clipboard.writeText(seciciVeri[seciliNiyet].komut);
   event.currentTarget.textContent='Kopyalandı';
-  window.setTimeout(()=>{event.currentTarget.textContent='Fermanı kopyala';},1600);
+  window.setTimeout(()=>{event.currentTarget.textContent='Talebi kopyala';},1600);
 });
 </script>
 
