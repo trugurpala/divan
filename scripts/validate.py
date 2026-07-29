@@ -354,12 +354,12 @@ def vitrini_denetle(
 ) -> None:
     """Katalog, belge, komut ve sürüm yüzeylerinin aynı gerçeği taşımasını sağla."""
     gercek_sayi = len(skiller)
-    katalog = kok / "docs" / "Vezir-Katalogu.md"
+    katalog = kok / "docs" / "skill-catalog.md"
     if katalog.exists():
         katalog_sayi = katalog.read_text(encoding="utf-8").count("| **")
         if katalog_sayi != gercek_sayi:
             hatalar.append(
-                f"VITRIN ESKI: katalog {katalog_sayi} vezir diyor, gercek {gercek_sayi}"
+                f"VITRIN ESKI: katalog {katalog_sayi} skill diyor, gercek {gercek_sayi}"
             )
 
     belgeler = {
@@ -372,7 +372,7 @@ def vitrini_denetle(
     }
     for belge_adi in ["README", "Kurulum", "Standartlar"]:
         icerik = belgeler[belge_adi]
-        if f"{gercek_sayi} vezir" not in icerik and f"{gercek_sayi} skill" not in icerik:
+        if all(f"{gercek_sayi} {label}" not in icerik for label in ("skill", "beceri", "vezir")):
             hatalar.append(f"VITRIN ESKI: {belge_adi} guncel skill sayisini ({gercek_sayi}) anmiyor")
     for eklenti in eklentiler:
         ad = eklenti.get("name") if isinstance(eklenti, dict) else None
@@ -395,7 +395,7 @@ def denetle(kok: pathlib.Path = KOK) -> tuple[list[str], list[str], int, int]:
     hatalar.extend(f"REPO HIJYENI: {issue}" for issue in hygiene_source_issues(kok))
     hatalar.extend(f"NAMING POLICY: {issue}" for issue in naming_validate(kok))
     hatalar.extend(
-        f"COMPANY OS: {issue}" for issue in company_contracts_validate(kok)
+        f"DIVAN ENGINE: {issue}" for issue in company_contracts_validate(kok)
     )
     hatalar.extend(
         f"TOPLULUK STANDARTLARI: {issue}" for issue in standards_validate_contract(kok)

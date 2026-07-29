@@ -39,7 +39,16 @@ class SiteMarkupTests(unittest.TestCase):
             with self.subTest(relative=relative):
                 for marker in required:
                     self.assertIn(marker, html)
-                self.assertIn("Project OS", html)
+                self.assertIn("Divan Engine · Divan Nizamı", html)
+                self.assertIn("docs/Divan-Engine.tr.md", html)
+                self.assertIn("Divan Proje Sözleşmesi", html)
+                self.assertIn("docs/Project-Contract.tr.md", html)
+                self.assertIn("Hükümdar sensin", html)
+                self.assertIn("41 beceri", html)
+                self.assertNotIn("Company OS", html)
+                self.assertNotIn("Project OS", html)
+                self.assertNotIn("Padişah sensin", html)
+                self.assertNotIn("41 vezir", html)
                 self.assertIn("DPS-001", html)
         self.assertEqual(sources[0], sources[1])
 

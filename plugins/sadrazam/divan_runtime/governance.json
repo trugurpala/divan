@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "product": {
+    "id": "divan",
+    "en": "Divan",
+    "tr": "Divan"
+  },
+  "governance_model": {
+    "id": "divan_governance_model",
+    "en": "Divan Governance Model",
+    "tr": "Divan Nizamı"
+  },
+  "authority_chain": [
+    {
+      "id": "owner",
+      "en": "Owner",
+      "tr": "Hükümdar",
+      "rank": 0,
+      "receives_authority_from": null,
+      "may_expand_scope": true
+    },
+    {
+      "id": "mandate",
+      "en": "Mandate",
+      "tr": "Ferman",
+      "rank": 1,
+      "receives_authority_from": "owner",
+      "may_expand_scope": false
+    },
+    {
+      "id": "orchestrator",
+      "en": "Orchestrator",
+      "tr": "Sadrazam",
+      "rank": 2,
+      "receives_authority_from": "mandate",
+      "may_expand_scope": false
+    },
+    {
+      "id": "council",
+      "en": "Council",
+      "tr": "Divan",
+      "rank": 3,
+      "receives_authority_from": "orchestrator",
+      "may_expand_scope": false
+    },
+    {
+      "id": "specialist",
+      "en": "Specialist",
+      "tr": "Uzman",
+      "rank": 4,
+      "receives_authority_from": "council",
+      "may_expand_scope": false
+    },
+    {
+      "id": "provider",
+      "en": "Provider",
+      "tr": "Sağlayıcı",
+      "rank": 5,
+      "receives_authority_from": "specialist",
+      "may_expand_scope": false
+    }
+  ],
+  "invariants": [
+    "owner_is_final_authority",
+    "delegation_cannot_expand_scope",
+    "mutations_require_explicit_authority",
+    "local_governance_uses_host_identity_boundary",
+    "completion_requires_evidence",
+    "core_has_no_external_runtime_dependency"
+  ]
+}

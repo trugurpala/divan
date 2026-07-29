@@ -1,8 +1,8 @@
 {
   "name": "divan",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "interface": {
-    "displayName": "Divan Company OS"
+    "displayName": "Divan Engine"
   },
   "plugins": [
     {

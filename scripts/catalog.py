@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Skill frontmatter'larından deterministik Vezir Kataloğu üret ve denetle."""
+"""Skill frontmatter'larından deterministik Beceri Kataloğu üret ve denetle."""
 
 # English canonical implementation.
 from __future__ import annotations
@@ -16,7 +16,7 @@ except ModuleNotFoundError:  # Direct script execution.
 
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
-KATALOG = KOK / "docs" / "Vezir-Katalogu.md"
+KATALOG = KOK / "docs" / "skill-catalog.md"
 
 
 def kisalt(metin: str, sinir: int = 240) -> str:
@@ -46,7 +46,7 @@ def katalog_uret(kok: pathlib.Path = KOK) -> str:
     paketler = skill_kayitlari(kok)
     toplam = sum(len(skiller) for skiller in paketler.values())
     satirlar = [
-        "# Vezir Kataloğu",
+        "# Skill Catalog / Beceri Kataloğu",
         "",
         "> Tek doğru kaynak: `plugins/*/skills/*/SKILL.md`. Bu sayfa",
         "> `python scripts/catalog.py --render` ile deterministik üretilir.",
@@ -58,9 +58,9 @@ def katalog_uret(kok: pathlib.Path = KOK) -> str:
         skiller = sorted(paketler[paket], key=lambda kayit: kayit[0])
         satirlar.extend(
             [
-                f"## {paket} ({len(skiller)} vezir)",
+                f"## {paket} ({len(skiller)} skill)",
                 "",
-                "| Vezir | Ne yapar / ne zaman |",
+                "| Skill / Beceri | Ne yapar / ne zaman |",
                 "|---|---|",
             ]
         )
@@ -79,13 +79,13 @@ def main() -> int:
     secim = ayrac.parse_args()
     beklenen = katalog_uret()
     if secim.render:
-        KATALOG.write_text(beklenen, encoding="utf-8")
+        KATALOG.write_text(beklenen, encoding="utf-8", newline="\n")
         print(f"{KATALOG.relative_to(KOK)} güncellendi")
         return 0
     gercek = KATALOG.read_text(encoding="utf-8") if KATALOG.exists() else ""
     if gercek != beklenen:
-        raise SystemExit("Vezir Kataloğu eski; python scripts/catalog.py --render çalıştır")
-    print("Vezir Kataloğu temiz: 41 skill / 5 paket")
+        raise SystemExit("Beceri Kataloğu eski; python scripts/catalog.py --render çalıştır")
+    print("Beceri Kataloğu temiz: 41 skill / 5 paket")
     return 0
 
 

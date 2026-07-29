@@ -1,22 +1,13 @@
 ---
-description: Inspect a project, select the qualified Divan team, and show change impact.
-argument-hint: <natural-language intent>
+description: Compatibility alias for /divan; retained through v1.
+argument-hint: <natural-language mandate>
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
-Treat `$ARGUMENTS` as natural-language intent. Do not ask the user to select a
-package or skill.
+This is the pre-v0.17 compatibility alias. Follow the canonical `/divan`
+contract with the same `$ARGUMENTS`.
 
-1. Resolve the current project root without executing project code.
-2. Resolve `${CLAUDE_PLUGIN_ROOT}` or the equivalent root from this loaded
-   command's host metadata; never resolve relative to the user project.
-3. Run `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" inspect --project <project> --json`.
-4. Run `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" plan --project <project> --intent "$ARGUMENTS" --json`.
-5. Present the detected frameworks, selected workflow, smallest qualified
-   team, skills, and quality checks.
-6. If changed paths already exist, run
-   `python "${CLAUDE_PLUGIN_ROOT}/company/cli.py" impact <relative-paths> --json` and include the
-   transitive surfaces.
-
-This command is an expert inspection surface. Normal users can state the same
-intent directly; Sadrazam performs this routing automatically.
+Use `${CLAUDE_PLUGIN_ROOT}/divan_runtime/cli.py` as the primary CLI. If a pinned
+pre-v0.17 installation lacks that path, fall back to
+`${CLAUDE_PLUGIN_ROOT}/company/cli.py`. Do not treat `Company OS` as a separate
+product and do not expand the Hükümdar's mandate.

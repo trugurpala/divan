@@ -1,15 +1,15 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.16.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.17.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
 
 <img src="docs/assets/muhurdar-idle.png" alt="Mühürdar, Divan's verification mascot" width="128" align="right">
 
-**You are the sovereign. Divan is the council around your coding agent: 41
-skills, five focused packs, persistent project memory, and independent
+**You are Hükümdar, the owner. Divan is one product around your coding agent:
+41 skills, five focused packs, persistent project memory, and independent
 verification.**
 
 You issue the decree. Divan clarifies it, plans the work, builds with tests,
@@ -17,7 +17,15 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
-**Current release:** v0.16.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/Vezir-Katalogu.md](docs/Vezir-Katalogu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Release candidate:** v0.17.0 · **Latest published:** v0.16.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+
+Divan Engine is the product's built-in, stdlib-only execution core. The Divan
+Governance Model (Divan Nizamı) defines its owner-first authority order; it is
+not a second product. The core remains in this repository and has no external
+agent-runtime or external-repository dependency.
+Divan Nizamı is local workflow governance, not identity authentication; the
+host operating-system account and repository permissions remain the security
+boundary.
 
 ## Why Divan?
 
@@ -33,22 +41,36 @@ surface that stays in sync with the implementation.
 | Huge skill dumps consume context and trust | Curation, license/provenance gates, and progressive disclosure |
 | External swarm harnesses add cost and complexity | One native session first; bounded subagents/worktrees only when justified |
 | A PR is ready but the public product is still stale | Publication Law: docs + wiki + changelog + merge + live verification |
+| A connected tool silently expands the job | Divan Nizamı: only Hükümdar can expand scope; every delegated layer is narrower |
 
-Divan is not a model and not another agent runtime. It is an auditable Agent
-Skills distribution that adds **delivery discipline, specialist procedures,
-and project memory** to the coding agent you already use.
+Divan is not a model or a separate third-party agent runtime. It is an
+auditable Agent Skills distribution with its own modular execution core,
+adding **delivery discipline, specialist procedures, and project memory** to
+the coding agent you already use.
 
-## Company OS
+## Divan Engine
 
 Describe the outcome; do not memorize internal skill names. Sadrazam safely
 inspects the project, detects its framework, selects the smallest qualified
 team, and expands changed paths through an impact graph. Core Pack supplies
 engineering discipline, UI Pack handles interfaces, React Pack activates only
 for detected React projects, and Zanaat Pack joins creative or integration
-work. See [Company OS](docs/Company-OS.md).
+work. See [Divan Engine](docs/Divan-Engine.md).
+
+Hükümdar is the final authority. A Ferman delegates bounded work through
+Sadrazam and Divan to specialists and providers. Tool availability never grants
+authority, and only Hükümdar may expand scope. Inspect the nine-module contract
+or validate it without changing the project:
+
+```powershell
+python scripts/divan.py architecture --json
+python scripts/divan.py validate
+```
 
 Expert shortcuts remain available when explicit control is useful:
-`/ferman`, `/sefer`, `/teftis`, `/defter`, `/vezir`, and `/company`.
+`/divan`, `/ferman`, `/sefer`, `/teftis`, `/defter`, and `/vezir`. The former
+`/company` and `company-validate` names remain bounded compatibility aliases
+through v1.
 
 Install the same contract into a project with a no-write preview first:
 
@@ -60,7 +82,7 @@ python scripts/divan.py audit --project . --format json
 
 The Divan repository follows `DCS-*`; the installed project follows only the
 applicable `DPS-*` rules and records evidence in `.divan/`. See the
-[Project OS contract](docs/Project-OS.md).
+[Divan Project Contract](docs/Project-Contract.md).
 
 After initialization, inspect ownership and drift without writing, then preview
 any repair or project-schema update before execution:
@@ -74,19 +96,22 @@ python scripts/divan.py project repair --project . --execute
 ```
 
 Host `update` replaces Divan packages in Claude/Codex. Project `update` migrates
-only Divan-owned surfaces in a target repository. `audit` evaluates DPS quality
-evidence; `project status` compares ownership fingerprints and drift. Verified
+only Divan-owned Project Contract surfaces in a target repository. `audit`
+evaluates DPS quality evidence; `project status` compares ownership
+fingerprints and drift. Verified
 goals can be archived, and a privacy-bounded adoption receipt can be exported
 without exposing usernames, absolute paths, remotes, secrets, or unrelated
 plugins. Owner-canary evidence never closes the independent-adoption gate.
 
 ## Install
 
+The commands below target the v0.17.0 candidate and become stable only after
+its immutable tag and GitHub Release exist. Until then, use `--ref v0.16.0`.
 Preview the no-write plan, then install the same pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.16.0
-python scripts/divan.py install --host both --ref v0.16.0 --execute
+python scripts/divan.py install --host both --ref v0.17.0
+python scripts/divan.py install --host both --ref v0.17.0 --execute
 ```
 
 For safety, the installer never overwrites an existing `divan` marketplace or
@@ -101,9 +126,9 @@ migration, and removal paths.
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.16.0
-python scripts/divan.py update --host both --ref v0.16.0
-python scripts/divan.py update --host both --ref v0.16.0 --execute
+python scripts/divan.py doctor --host both --ref v0.17.0
+python scripts/divan.py update --host both --ref v0.17.0
+python scripts/divan.py update --host both --ref v0.17.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -206,7 +231,10 @@ community and security files, but it is not v1.0 yet. All 41 skills receive
 structural validation; four original skills provide 13 behavioral cases and a
 provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
 compatibility checks. The first declared real-agent/judge comparison is now
-published; independent user evidence remains the external gate. See the
+published; independent user evidence remains the external gate. The v0.17
+candidate makes Divan Engine and Divan Nizamı explicit while preserving old
+paths, but the latest published release remains v0.16.0 until the full
+PR/CI/tag/Release/Pages/Wiki chain is verified. See the
 [machine-backed v1 scorecard](docs/V1-Hazirlik.md). Until that evidence exists,
 the project does not claim a speed multiplier, revenue
 increase, or “best in the world” status.

@@ -88,6 +88,7 @@ def _python_paths(root: pathlib.Path) -> list[pathlib.Path]:
     roots = (
         root / "scripts",
         root / "evals",
+        root / "plugins" / "sadrazam" / "divan_runtime",
         root / "plugins" / "sadrazam" / "company",
     )
     return sorted(
@@ -124,6 +125,7 @@ def _ruff_complexity(root: pathlib.Path) -> dict[str, int]:
         "check",
         "scripts",
         "evals",
+        "plugins/sadrazam/divan_runtime",
         "plugins/sadrazam/company",
         "--select",
         "C901",

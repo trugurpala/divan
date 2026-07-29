@@ -5,6 +5,7 @@ import importlib.util
 import os
 import pathlib
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -175,6 +176,8 @@ class RepositoryTests(unittest.TestCase):
             skills_dir = base / "skills"
             state_dir = base / "state"
             env = os.environ.copy()
+            python_directory = str(pathlib.Path(sys.executable).resolve().parent)
+            env["PATH"] = python_directory + os.pathsep + env.get("PATH", "")
             env.update(
                 {
                     "DIVAN_SOURCE_DIR": str(ROOT),

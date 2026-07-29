@@ -1,7 +1,9 @@
 # Bunu Kurunca Ne Değişir? (Vibe Coder İçin Değer)
 
-Reponun aklı şudur: **sen "ne" istediğini söylersin (vibe), Divan "nasıl"ı
-kıdemli mühendis disipliniyle uygular.** Kurulum öncesi ve sonrası fark:
+Reponun aklı şudur: **Hükümdar olarak sen "ne" istediğini söylersin (vibe),
+Divan "nasıl"ı kıdemli mühendis disipliniyle uygular.** Kapsamı yalnız sen
+genişletebilirsin; bağlı araçlar kendiliğinden yetki kazanmaz. Kurulum öncesi
+ve sonrası fark:
 
 | Durum | Divan'sız ajan | Divan'lı ajan |
 |---|---|---|
@@ -17,6 +19,7 @@ kıdemli mühendis disipliniyle uygular.** Kurulum öncesi ve sonrası fark:
 | PR açıldı | “Bitti” deyip merge'i sana bırakır | Yayın Kanunu: CHANGELOG + hazır PR + main + canlı doğrulama |
 | Nereden başlayacağını bilmiyorsun | Skill kataloğunda kaybolursun | Beş niyetli seçici: en küçük paket + kopyalanabilir ferman + teslim akışı |
 | “Bu skill daha iyi” dendi | Söze veya demo çıktısına güvenirsin | Aynı promptlu baseline/skill koşusu + A/B körleme + opsiyonel hakem/eşik |
+| Araç ve roller çoğaldı | Kimin neye yetkili olduğu belirsizleşir | Divan Nizamı: Hükümdar → Ferman → Sadrazam → Divan → Uzman → Sağlayıcı |
 
 Somut bir gün: sabah `/ferman kullanıcı girişi ekle` dersin — ajan planı
 yazar, testleri önce yazar, kodu geçirir, tarayıcıda dener (webapp-testing =
@@ -26,7 +29,7 @@ Birden çok bağımsız parça varsa `/sefer` kullanırsın. Divan sırf “çok
 görünmek için swarm kurmaz; çakışan yazımı ayırır, maliyet sınırı koyar ve
 birleşik sonucu yeniden test eder.
 
-Yeni vezirler de yalnızca “iyi prompt” oldukları için kabul edilmez. Eval
+Yeni beceriler de yalnızca “iyi prompt” oldukları için kabul edilmez. Eval
 sözleşmesi gerçek kullanım örneklerini, beklenen çıktıyı ve nesnel beklentileri
 tanımlar. `python evals/run.py --check` mevcut 4 özgün skill'deki 13 vakayı
 denetler; gerçek adaptör verildiğinde aynı girdiyi baseline ve skill koşullarında
@@ -36,3 +39,8 @@ denetler; gerçek adaptör verildiğinde aynı girdiyi baseline ve skill koşull
 yalnızca ad+açıklama; gövde ancak tetiklenince, ayrıntılı kaynaklar gerektiğinde
 okunur. Gerçek token maliyeti istemciye ve etkin skill'lere bağlıdır; ölçülmeden
 sabit tasarruf yüzdesi veya token sayısı iddia edilmez.
+
+**Motor nerede?** Divan Engine başka bir ürün veya dış repo değildir. Dokuz
+modüllü, stdlib-only çekirdek bu repoda yaşar; Divan Proje Sözleşmesi hedef
+repoya denetlenebilir durum ve kanıt yüzeylerini kurar. Eski Company OS ve
+Project OS adları yalnız v1 uyumluluğu için korunur.

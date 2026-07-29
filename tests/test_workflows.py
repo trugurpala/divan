@@ -19,7 +19,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            "$GITHUB_ACTION_PATH/../../../plugins/sadrazam/company/cli.py",
+            "$GITHUB_ACTION_PATH/../../../plugins/sadrazam/divan_runtime/cli.py",
             text,
         )
         self.assertIn("DIVAN_PROJECT_INPUT: ${{ inputs.project }}", text)
@@ -226,7 +226,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             "python scripts/verify.py",
             "python scripts/standards.py --check",
             "ruff check .",
-            "mypy scripts evals plugins/sadrazam/company",
+            "mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company",
             "coverage run -m unittest discover -s tests",
             "coverage report",
             '"$(go env GOPATH)/bin/actionlint"',

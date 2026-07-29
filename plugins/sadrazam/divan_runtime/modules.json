@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "modules": [
+    {
+      "id": "kernel",
+      "en": "Kernel",
+      "tr": "Çekirdek",
+      "python_modules": ["kernel", "contract_validation"],
+      "capabilities": ["architecture_validation", "module_resolution"],
+      "depends_on": [],
+      "required": true
+    },
+    {
+      "id": "governance",
+      "en": "Governance",
+      "tr": "Divan Nizamı",
+      "python_modules": ["governance"],
+      "capabilities": ["authority_chain", "scope_control"],
+      "depends_on": ["kernel"],
+      "required": true
+    },
+    {
+      "id": "council",
+      "en": "Council",
+      "tr": "Divan",
+      "python_modules": ["engine"],
+      "capabilities": ["project_discovery", "intent_routing", "impact_analysis"],
+      "depends_on": ["kernel", "governance"],
+      "required": true
+    },
+    {
+      "id": "evidence",
+      "en": "Evidence",
+      "tr": "Kanıt",
+      "python_modules": ["receipts"],
+      "capabilities": ["evidence_ledger", "receipt_verification"],
+      "depends_on": ["kernel", "governance"],
+      "required": true
+    },
+    {
+      "id": "project",
+      "en": "Project Contract",
+      "tr": "Proje Sözleşmesi",
+      "python_modules": [
+        "project_os",
+        "project_state",
+        "project_transactions",
+        "project_lifecycle"
+      ],
+      "capabilities": ["initialization", "ownership", "drift_control", "verification"],
+      "depends_on": ["kernel", "governance", "council", "evidence"],
+      "required": true
+    },
+    {
+      "id": "records",
+      "en": "Records",
+      "tr": "Defter",
+      "python_modules": ["goals", "goal_archive", "adoption"],
+      "capabilities": ["goal_state", "archive", "adoption"],
+      "depends_on": ["kernel", "governance", "council", "evidence", "project"],
+      "required": true
+    },
+    {
+      "id": "providers",
+      "en": "Providers",
+      "tr": "Sağlayıcılar",
+      "python_modules": ["providers"],
+      "capabilities": ["local", "github", "context7", "vercel"],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "evidence",
+        "project",
+        "records"
+      ],
+      "required": true
+    },
+    {
+      "id": "release",
+      "en": "Release",
+      "tr": "Yayın",
+      "python_modules": ["release"],
+      "capabilities": ["release_plan", "provider_evidence", "live_readback"],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "evidence",
+        "project",
+        "records",
+        "providers"
+      ],
+      "required": true
+    },
+    {
+      "id": "api",
+      "en": "Command API",
+      "tr": "Komut Arayüzü",
+      "python_modules": ["compatibility", "cli_parser", "cli"],
+      "capabilities": [
+        "cli",
+        "stable_json",
+        "redacted_output",
+        "legacy_company_imports",
+        "legacy_cli_aliases"
+      ],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "council",
+        "evidence",
+        "project",
+        "records",
+        "providers",
+        "release"
+      ],
+      "required": true
+    }
+  ]
+}

@@ -3,6 +3,9 @@
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
 Mühürdar, Divan'ın temkinli mühür bekçisidir: çalışmayı yapmaz, kanıtı gözetir.
+Bir ürün yetki katmanı veya yasal üretici değildir. Makine sözleşmesindeki
+karşılığı `attestation` (mühür) artefaktıdır; karar ve kapsam yetkisi yalnız
+Hükümdardadır.
 “Bitti” sözüyle gerçek teslim arasındaki farkı görünür kılan ürün karakteridir.
 
 ## Üç vazifesi

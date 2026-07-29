@@ -94,7 +94,10 @@ class CommunityContractTests(unittest.TestCase):
             with self.subTest(relative=relative):
                 self.assertRegex(content, r"Topluluk-Standartlari(?:\.md)?")
                 self.assertIn("7/8", content)
-                self.assertRegex(content.lower(), r"not (?:a )?(?:model|runtime)|model veya.*runtime|model.*runtime.*değildir")
+                lowered = content.lower()
+                if "not a model" not in lowered and "not model" not in lowered:
+                    self.assertIn("model veya", lowered)
+                    self.assertIn("runtime değildir", lowered)
 
     def test_wiki_and_release_manifests_cover_community_surfaces(self) -> None:
         wiki = read("wiki-pages.json")
@@ -115,24 +118,30 @@ class CommunityContractTests(unittest.TestCase):
             self.assertIn(f'"path": "{path}"', manifest)
 
     def test_public_contract_distinguishes_distribution_and_installed_project(self) -> None:
-        english = read("docs/Project-OS.md")
-        turkish = read("docs/Project-OS.tr.md")
+        english = read("docs/Project-Contract.md")
+        turkish = read("docs/Project-Contract.tr.md")
         standards = read("docs/Topluluk-Standartlari.md")
         for content in (english, turkish, standards):
             self.assertIn("DCS-", content)
             self.assertIn("DPS-", content)
-            self.assertIn("Project OS", content)
+        self.assertIn("Divan Project Contract", english)
+        self.assertIn("Divan Proje Sözleşmesi", turkish)
+        self.assertIn("Divan Proje Sozlesmesi", standards)
         self.assertIn("repository distribution", english)
         self.assertIn("kurulu proje", turkish)
         self.assertIn("supervised", english.lower())
         self.assertIn("gözetimli", turkish.lower())
 
-    def test_project_os_surfaces_are_synchronized_in_wiki_and_release_manifest(self) -> None:
+    def test_project_contract_surfaces_are_synchronized_in_wiki_and_release_manifest(self) -> None:
         wiki = read("wiki-pages.json")
         manifest = read("release-manifest.json")
+        self.assertIn('"source": "docs/Project-Contract.tr.md"', wiki)
+        self.assertIn('"slug": "Project-Contract"', wiki)
         self.assertIn('"source": "docs/Project-OS.tr.md"', wiki)
         self.assertIn('"slug": "Project-OS"', wiki)
         for path in (
+            "docs/Project-Contract.md",
+            "docs/Project-Contract.tr.md",
             "docs/Project-OS.md",
             "docs/Project-OS.tr.md",
             "registry/project-standards.json",
@@ -147,18 +156,29 @@ class CommunityContractTests(unittest.TestCase):
         ):
             self.assertIn(f'"path": "{path}"', manifest)
 
-    def test_readmes_and_company_guides_explain_the_installed_project_path(self) -> None:
+    def test_readmes_and_engine_guides_explain_the_installed_project_path(self) -> None:
         for relative in (
             "README.md",
             "README.tr.md",
-            "docs/Company-OS.md",
-            "docs/Company-OS.tr.md",
+            "docs/Divan-Engine.md",
+            "docs/Divan-Engine.tr.md",
         ):
             content = read(relative)
             with self.subTest(relative=relative):
                 self.assertIn("scripts/divan.py init", content)
                 self.assertIn("scripts/divan.py audit", content)
-                self.assertIn("docs/Project-OS", content)
+                self.assertIn("Project-Contract", content)
+
+    def test_legacy_os_guides_point_to_canonical_divan_guides(self) -> None:
+        aliases = {
+            "docs/Company-OS.md": "Divan-Engine.md",
+            "docs/Company-OS.tr.md": "Divan-Engine.tr.md",
+            "docs/Project-OS.md": "Project-Contract.md",
+            "docs/Project-OS.tr.md": "Project-Contract.tr.md",
+        }
+        for relative, canonical in aliases.items():
+            with self.subTest(relative=relative):
+                self.assertIn(canonical, read(relative))
 
     def test_both_html_sources_share_homepage_and_lifecycle_contract(self) -> None:
         version = read("VERSION").strip()
@@ -176,7 +196,7 @@ class CommunityContractTests(unittest.TestCase):
         for html in sources:
             self.assertIn(f'<link rel="canonical" href="{PAGES_URL}">', html)
             self.assertIn('data-homepage="https://trugurpala.github.io/divan/"', html)
-            self.assertIn("Yerel skill/plugin dağıtımı", html)
+            self.assertIn("yerel skill/plugin dağıtımı", html)
             self.assertIn("model veya runtime değildir", html)
             self.assertIn("v1: 7/8", html)
             self.assertIn("Topluluk Standartları", html)

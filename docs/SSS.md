@@ -1,8 +1,10 @@
 # SSS
 
-Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. On
-zorunlu ürün kuralı [[Topluluk Standartları|Topluluk-Standartlari]] sayfasında
-yaşar. v1 durumu **7/8** kapıdır; bağımsız kullanıcı kanıtı beklenmektedir.
+Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
+runtime değildir. Kendi modüler Divan Engine çekirdeği aynı repoda yaşar. On
+bir zorunlu ürün kuralı [[Topluluk Standartları|Topluluk-Standartlari]]
+sayfasındadır. v1 durumu **7/8** kapıdır; bağımsız kullanıcı kanıtı
+beklenmektedir.
 
 **Neden repoları tek tek fork'lamadık?**
 Marketplace tek repo olmak zorunda: `/plugin marketplace add` tek depo okur.
@@ -13,7 +15,19 @@ MIT/Apache-2.0 buna açıkça izin verir.
 **Neden MCP değiliz?**
 Ürünümüz prosedürel bilgi (nasıl yapılır). Skill'ler aşamalı yüklemeyle
 token-verimli ve tüm Agent Skills uyumlu ajanlarda çalışır. MCP canlı
-veri/aksiyon içindir; ihtiyaç doğunca (v2) eklenir.
+veri/aksiyon içindir; bağlandığında sağlayıcı katmanında kalır ve tek başına
+yetki yaratmaz.
+
+**Company OS ve Project OS ne oldu?**
+Ürün adı hep Divan'dır. İcra çekirdeğinin kanonik adı **Divan Engine**,
+yetki modelinin adı **Divan Nizamı**, hedef repoya kurulan katmanın adı
+**Divan Proje Sözleşmesi**dir. Eski `Company OS`, `Project OS`, `/company` ve
+`company-validate` adları v1 boyunca uyumluluk yüzeyi olarak korunur.
+
+**Divan başka bir repoya veya agent runtime'ına bağımlı mı?**
+Hayır. Dokuz modüllü çekirdek bu repoda ve Python standart kütüphanesiyle
+çalışır. Dış repolar yalnız araştırma kaynağı; GitHub, Context7 veya Vercel gibi
+bağlantılar ise sınırları belli sağlayıcılardır. Divan'ın çekirdeği olmazlar.
 
 **Neden uygulama değiliz?**
 GitHub + `/plugin` dağıtımı sıfır altyapı maliyeti demek. Hosted premium
@@ -24,7 +38,7 @@ Evet. Tek gerçek kaynak repodaki BLUEPRINT.md'dir; durum günlüğü oradadır.
 Herhangi bir ajan/insan o dosyayı okuyup kaldığı yerden sürer.
 
 **Divan kendini nasıl geliştirir?**
-`vezir-yetistirme` skill'i + CONTRIBUTING.md yolu: topluluk yeni skill önerir,
+`vezir-yetistirme` skill'i + CONTRIBUTING.md yolu: topluluk yeni beceri önerir,
 ajan iskeletler, CI teftişi geçen PR birleşir.
 
 **Soru, hata veya güvenlik bildirimi nereye gider?**

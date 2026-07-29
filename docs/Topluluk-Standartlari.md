@@ -5,8 +5,8 @@
 Dogrulama: `python scripts/standards.py --check`
 
 Bu `DCS-*` kurallari Divan repo dagitimini yonetir. Hedef kurulu proje,
-Project OS tarafindan yalniz uygulanabilir `DPS-*` kurallariyla denetlenir.
-Project OS ayrimi ve komutlari: `docs/Project-OS.tr.md`.
+Divan Proje Sozlesmesi tarafindan yalniz uygulanabilir `DPS-*` kurallariyla denetlenir.
+Proje sozlesmesi ayrimi ve komutlari: `docs/Project-Contract.tr.md`.
 
 ## DCS-001 - Bes dakikada ilk basari
 
@@ -146,11 +146,11 @@ Host kurulumu, proje guncellemesi, onarim, arsiv, kurtarma ve geri alma acik, be
 - `scripts/host_journal_scan.py`
 - `scripts/host_journal_transitions.py`
 - `scripts/host_state.py`
-- `plugins/sadrazam/company/project_state.py`
-- `plugins/sadrazam/company/project_lifecycle.py`
-- `plugins/sadrazam/company/project_transactions.py`
-- `plugins/sadrazam/company/goal_archive.py`
-- `plugins/sadrazam/company/adoption.py`
+- `plugins/sadrazam/divan_runtime/project_state.py`
+- `plugins/sadrazam/divan_runtime/project_lifecycle.py`
+- `plugins/sadrazam/divan_runtime/project_transactions.py`
+- `plugins/sadrazam/divan_runtime/goal_archive.py`
+- `plugins/sadrazam/divan_runtime/adoption.py`
 - `scripts/uninstall_codex.ps1`
 - `scripts/uninstall_codex.sh`
 - `tests/test_host_install.py`
@@ -227,21 +227,24 @@ Cekirdek kullanim telemetri gerektirmez; metin ciktilari renksiz calisir, UTF-8/
 
 **Duzey:** required
 
-Kanonik teknik girisler Ingilizce adlandirilir; Turkce yerellestirme korunur ve Company OS her degisikligi rol, framework, paket ve gecis etkilerine baglar.
+Kanonik teknik girisler Ingilizce adlandirilir; Turkce yerellestirme korunur ve Divan Engine her degisikligi rol, framework, paket, modul ve gecis etkilerine baglar.
 
 **Kontroller:**
 - `python scripts/naming.py --check`
-- `python scripts/divan.py company-validate`
+- `python scripts/divan.py validate`
 
 **Kanıt:**
 - `registry/naming-policy.json`
 - `scripts/naming.py`
 - `scripts/divan.py`
-- `plugins/sadrazam/company/roles.json`
-- `plugins/sadrazam/company/workflows.json`
-- `plugins/sadrazam/company/frameworks.json`
-- `plugins/sadrazam/company/impact-graph.json`
+- `plugins/sadrazam/divan_runtime/roles.json`
+- `plugins/sadrazam/divan_runtime/workflows.json`
+- `plugins/sadrazam/divan_runtime/frameworks.json`
+- `plugins/sadrazam/divan_runtime/impact-graph.json`
+- `plugins/sadrazam/divan_runtime/modules.json`
+- `plugins/sadrazam/divan_runtime/governance.json`
 - `tests/test_company_engine.py`
+- `tests/test_divan_runtime.py`
 - `tests/test_naming.py`
 
 **Istisna politikasi:** Eski Turkce teknik adlar yalniz registry/naming-policy.json icindeki sureli uyumluluk kayitlariyla korunabilir.

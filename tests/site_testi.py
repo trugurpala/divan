@@ -25,8 +25,15 @@ with sync_playwright() as p:
         hatalar.append(f"HTTP {yanit.status}")
     if "Divan" not in sayfa.title():
         hatalar.append(f"Baslik hatali: {sayfa.title()}")
-    if not sayfa.get_by_text("Padişah sensin").is_visible():
-        hatalar.append("'Padişah sensin' gorunmuyor")
+    if not sayfa.get_by_text("Hükümdar sensin").is_visible():
+        hatalar.append("'Hükümdar sensin' gorunmuyor")
+    engine_link = sayfa.get_by_role(
+        "link", name="Divan Engine ve Divan Nizamı sözleşmesini incele"
+    )
+    if not engine_link.is_visible():
+        hatalar.append("Divan Engine ve Divan Nizami baglantisi gorunmuyor")
+    if not sayfa.get_by_role("link", name="Divan Proje Sözleşmesini incele").is_visible():
+        hatalar.append("Divan Proje Sozlesmesi baglantisi gorunmuyor")
     repo_link = sayfa.get_by_role("link", name="repo", exact=True)
     if (
         not repo_link.is_visible()

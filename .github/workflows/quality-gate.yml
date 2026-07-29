@@ -25,7 +25,7 @@ jobs:
         run: |
           pip install -r requirements-dev.txt
           python scripts/naming.py --check
-          python scripts/divan.py company-validate
+          python scripts/divan.py validate
           python scripts/standards.py --check
           python scripts/wiki.py --check
           python scripts/candidate_review.py --check
@@ -35,7 +35,7 @@ jobs:
           python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
           ruff check .
           python scripts/clean_code.py --check
-          mypy scripts evals plugins/sadrazam/company
+          mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company
           coverage run -m unittest discover -s tests
           coverage report --fail-under=64
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10

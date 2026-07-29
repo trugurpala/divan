@@ -26,6 +26,19 @@ class WikiTesti(unittest.TestCase):
             self.assertIn("_Sidebar.md", adlar)
             self.assertIn("OpenAI-ve-Codex-Uyumlulugu.md", adlar)
             self.assertIn("Muhurdar.md", adlar)
+            self.assertIn("Divan-Engine.md", adlar)
+            self.assertIn("Project-Contract.md", adlar)
+            self.assertIn("Beceri-Katalogu.md", adlar)
+            self.assertIn("Vezir-Katalogu.md", adlar)
+            sidebar = (pathlib.Path(gecici) / "_Sidebar.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertIn("[[Divan Engine ve Divan Nizamı|Divan-Engine]]", sidebar)
+            self.assertIn("[[Divan Proje Sözleşmesi|Project-Contract]]", sidebar)
+            self.assertIn("[[Beceri Kataloğu|Beceri-Katalogu]]", sidebar)
+            self.assertNotIn("|Company-OS]]", sidebar)
+            self.assertNotIn("|Project-OS]]", sidebar)
+            self.assertNotIn("|Vezir-Katalogu]]", sidebar)
 
     def test_wiki_surumu_ve_baglantilari_tutarlidir(self):
         sonuc = WIKI.denetle(KOK)

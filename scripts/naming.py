@@ -18,7 +18,7 @@ def _read_policy(root: pathlib.Path) -> dict[str, Any]:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise ValueError(f"invalid naming policy: {exc}") from exc
-    if not isinstance(value, dict) or value.get("schema_version") != 1:
+    if not isinstance(value, dict) or value.get("schema_version") != 2:
         raise ValueError("invalid naming policy schema")
     return value
 
@@ -66,11 +66,72 @@ def _policy_shape_errors(policy: dict[str, Any]) -> list[str]:
         ("canonical_entrypoints", str),
         ("legacy_aliases", dict),
         ("disallowed_non_english_tokens", str),
+        ("domain_terms", dict),
+        ("legacy_command_aliases", dict),
     ):
         value = policy.get(key)
         if not isinstance(value, list) or not all(isinstance(item, kind) for item in value):
             errors.append(f"{key} must be a {kind.__name__} list")
+    errors.extend(_domain_term_errors(policy.get("domain_terms")))
+    errors.extend(_command_alias_errors(policy.get("legacy_command_aliases")))
     return errors
+
+
+def _domain_term_errors(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return ["domain_terms must be a dict list"]
+    errors: list[str] = []
+    identifiers: set[str] = set()
+    for row in value:
+        if (
+            not isinstance(row, dict)
+            or set(row) != {"id", "en", "tr"}
+            or not isinstance(row.get("id"), str)
+            or re.fullmatch(r"[a-z][a-z0-9_]*", row["id"]) is None
+            or any(
+                not isinstance(row.get(locale), str) or not row[locale]
+                for locale in ("en", "tr")
+            )
+        ):
+            errors.append("domain_terms rows must use canonical bilingual ids")
+            continue
+        if row["id"] in identifiers:
+            errors.append(f"duplicate domain term: {row['id']}")
+        identifiers.add(row["id"])
+    required = {
+        "owner",
+        "mandate",
+        "governance_model",
+        "orchestrator",
+        "project_contract",
+        "verification",
+        "attestation",
+        "release",
+    }
+    missing = sorted(required - identifiers)
+    if missing:
+        errors.append(f"domain_terms missing required ids: {', '.join(missing)}")
+    return errors
+
+
+def _command_alias_errors(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return ["legacy_command_aliases must be a dict list"]
+    expected = {
+        ("company-validate", "validate"),
+        ("/company", "/divan"),
+    }
+    observed: set[tuple[str, str]] = set()
+    for row in value:
+        if (
+            not isinstance(row, dict)
+            or set(row) != {"alias", "replacement", "remove_no_earlier_than"}
+            or not all(isinstance(row.get(key), str) for key in row)
+            or row["remove_no_earlier_than"] != "2.0.0"
+        ):
+            return ["legacy_command_aliases rows must use the v2 compatibility schema"]
+        observed.add((row["alias"], row["replacement"]))
+    return [] if observed == expected else ["legacy_command_aliases are incomplete"]
 
 
 def _alias_errors(repository: pathlib.Path, aliases: list[dict[str, Any]]) -> tuple[list[str], set[str]]:

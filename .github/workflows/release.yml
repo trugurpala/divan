@@ -12,6 +12,7 @@ on:
       - 'scripts/sbom.py'
       - 'scripts/build_project_runner.py'
       - 'plugins/sadrazam/company/**'
+      - 'plugins/sadrazam/divan_runtime/**'
       - '.github/actions/divan-project/action.yml'
       - '.github/workflows/release.yml'
 

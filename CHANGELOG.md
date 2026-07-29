@@ -10,6 +10,72 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.17.0] - 2026-07-29
+
+### Added
+
+- A canonical stdlib-only `divan_runtime` package with a machine-readable
+  nine-module graph covering kernel, governance, council, evidence, project,
+  records, providers, release, and API/compatibility responsibilities.
+- A bilingual Divan Nizamı authority contract ordered as
+  `owner/Hükümdar → mandate/Ferman → orchestrator/Sadrazam → council/Divan →
+  specialist/Uzman → provider/Sağlayıcı`.
+- `python scripts/divan.py architecture --json` for deterministic inspection
+  of the product, module dependencies, authority chain, and no-external-runtime
+  invariant.
+- A deterministic mutation envelope that binds public CLI arguments to a
+  Ferman id, records the local authority source, and rejects delegated actors
+  attempting `--execute`.
+- Canonical Divan Engine and Divan Project Contract / Divan Proje Sözleşmesi
+  guides plus ADR 0007 for the one-product architecture.
+
+### Changed
+
+- Divan is presented as one product in one repository. Divan Engine names its
+  execution core, Divan Nizamı its governance model, and Divan Project Contract
+  the supervised layer installed into a target repository.
+- Hükümdar is the final authority. Only `owner` may expand scope; every
+  delegated layer receives narrower authority and tool availability never
+  grants permission by itself.
+- Canonical CLI, project runner, quality, Wiki, and public documentation
+  surfaces use `divan_runtime`, `validate`, Divan Engine, and Divan Project
+  Contract terminology.
+
+### Compatibility
+
+- Existing `plugins/sadrazam/company/` Python and JSON paths, `/company`,
+  `company-validate`, Company OS, and Project OS remain bounded compatibility
+  surfaces through v1 and will not be removed before v2.
+- Existing `.divan/` data, DCS/DPS identifiers, generic CLI commands, project
+  ownership records, receipts, hashes, and provider identifiers remain stable.
+
+### Security
+
+- The engine contract rejects missing, duplicate, or cyclic modules and
+  authority rows that let a delegated layer expand scope. Runtime inventory
+  and AST import edges must match the declared graph; undeclared, symlinked,
+  out-of-root, or third-party runtime modules fail closed.
+- Canonical runtime loading is source-bound and isolated from ambient Python
+  module caches, including legacy compatibility and repository validation.
+- Divan Nizamı is local workflow governance, not identity authentication. Host
+  operating-system and repository permissions remain the security boundary.
+- The core remains in the Divan repository and adds no third-party agent
+  runtime or external-repository dependency. Connected providers remain
+  bounded capabilities rather than sources of authority.
+
+### Candidate status
+
+- This section records the v0.17.0 candidate scope, not a publication claim.
+  Local verification passed 538 tests with 7 platform skips and 76% coverage,
+  plus Ruff, mypy, Clean Code, 41 Agent Skills, strict Claude validation, and
+  deterministic runner checks. Final independent re-review reported no open
+  P0-P3 findings. PR checks, merge, immutable tag, GitHub Release, five release
+  assets, checksums, attestations, Pages, and Wiki readback remain separately
+  required.
+- The latest published release remains v0.16.0. This candidate does not close
+  independent-adoption issue #34; v1 readiness remains 7/8 until reproducible,
+  privacy-bounded evidence arrives from a non-owner.
+
 ## [0.16.0] - 2026-07-24
 
 ### Added
