@@ -1,21 +1,26 @@
-# Divan Wiki · v0.16.0
+# Divan Wiki · v0.17.0
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
-**Padişah sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
-kalıcı bir teslim akışına çeviren Agent Skills pazarıdır. Aynı 5 paket/41 vezir
-Claude Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
+**Hükümdar sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
+kalıcı bir teslim akışına çeviren tek üründür. Aynı 5 paket/41 beceri Claude
+Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
 davranış eval'i ve yayın teftişi aynı çatıdadır.
 
-Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. v1
-durumu **7/8** kapıdır: bağımsız kullanıcı kabul kanıtı hâlâ bekleniyor.
+Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
+repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
+Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Divan
+ürününün parçalarıdır. v1 durumu **7/8** kapıdır: bağımsız kullanıcı kabul
+kanıtı hâlâ bekleniyor.
 
-> **Güncel durum:** v0.16.0 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel aday:** v0.17.0 · **son yayımlanan:** v0.16.0 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
-v0.12.1 bakım hattı UTF-8/LF, McCabe 25 ve allowlist tabanlı repo hijyenini
-ekler; kullanıcı/rollback yedekleri ile yayın kanıtlarını temizlikten korur.
+v0.17 adayı dokuz modüllü Divan Engine sözleşmesini, Hükümdar öncelikli yetki
+zincirini ve eski adlar için sınırlı uyumluluğu hazırlamaktadır. PR, CI, tag,
+Release, Pages ve Wiki kanıtı tamamlanmadan yayımlanmış sayılmaz; güncel
+yayımlanmış sürüm v0.16.0 olarak kalır.
 
 ## Fermanını seç
 
@@ -33,8 +38,10 @@ Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 
 - [[Hızlı Başlangıç|Hizli-Baslangic]] — ilk beş dakika
 - [[Kurulum]] — Claude Code, Codex, Cursor ve diğer uyumlu hostlar
+- [[Divan Engine|Divan-Engine]] — tek ürün, dokuz modül ve Hükümdar öncelikli nizam
+- [[Divan Proje Sözleşmesi|Project-Contract]] — hedef repoya kurulan gözetimli sözleşme
 - [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] — kurunca ne değişir?
-- [[Vezir Kataloğu|Vezir-Katalogu]] — 41 skill ve tetikleyicileri
+- [[Beceri Kataloğu|Beceri-Katalogu]] — 41 beceri ve tetikleyicileri
 - [[Aday Meclisi|Aday-Meclisi]] — sürekli keşif ve ADOPT/ADAPT/REFERENCE/REJECT kararları
 - [[Orkestrasyon Kararı|Orkestrasyon-Karari]] — Ocak, Sefer ve Ordu
 - [[Test ve Teftiş|Test-ve-Teftis]] — yerel, CI, tarayıcı ve yayın kanıtı
@@ -49,8 +56,8 @@ Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 
 ## Tek doğru kaynak
 
-- [README Türkçe](https://github.com/trugurpala/divan/blob/main/README.md)
-- [README English](https://github.com/trugurpala/divan/blob/main/README.en.md)
+- [README Türkçe](https://github.com/trugurpala/divan/blob/main/README.tr.md)
+- [README English](https://github.com/trugurpala/divan/blob/main/README.md)
 - [CHANGELOG](https://github.com/trugurpala/divan/blob/main/CHANGELOG.md)
 - [BLUEPRINT](https://github.com/trugurpala/divan/blob/main/BLUEPRINT.md)
 - [Kaynak kod](https://github.com/trugurpala/divan)

@@ -4,8 +4,12 @@
 > projeyi kaldığı yerden sürdürebilir. Sohbet geçmişine bağımlılık yoktur.
 
 ## Vizyon
-Padişah (kullanıcı) fermanı verir; Divan (skill paketleri) işi baştan sona,
-kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
+Hükümdar (owner/kullanıcı) fermanı verir; tek ürün olan Divan işi baştan sona,
+kanıtıyla bitirir. Divan Engine aynı repodaki modüler, stdlib-only icra
+çekirdeğidir. Divan Nizamı yetkinin
+`Hükümdar → Ferman → Sadrazam → Divan → Uzman → Sağlayıcı`
+sırasıyla daralmasını sağlar; kapsamı yalnız Hükümdar genişletebilir. Hedef
+kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 
 ## Mimari Kararlar (ADR)
 1. **Neden skill/plugin, neden MCP değil:** Ürün prosedürel bilgidir (nasıl
@@ -28,10 +32,14 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 6. **Topluluk standartları kod olarak:** DCS-001..DCS-011 makine-okunur tek
    registry'den doğrulanır; framework/host ayrıntıları adaptör sınırında kalır,
    istisnalar dar ve süreli olur. Ayrıntı ADR 0004'tedir.
-7. **Company OS ve küresel teknik dil:** Kullanıcı hedefi doğal dilde verir;
-   Sadrazam rol, akış, framework, paket ve geçişli etki sözleşmelerinden en küçük
-   yetkin ekibi seçer. Teknik girişler İngilizce kanoniktir, Türkçe yerelleştirme
-   birinci sınıftır. Ayrıntı ADR 0005'tedir.
+7. **Tek Divan, modüler çekirdek, Hükümdar öncelikli nizam:** Ürün adı
+   Divan'dır. `plugins/sadrazam/divan_runtime/` kanonik çalışma zamanı paketi;
+   Divan Nizamı yönetişim modeli, Divan Proje Sözleşmesi hedef repoya kurulan
+   katmandır. Dokuz modüllü çekirdek başka bir agent runtime'ına veya dış
+   repoya bağımlı olmaz. Eski Company OS/Project OS adları ve yolları v1 boyunca
+   sınırlı uyumluluk yüzeyidir. Teknik kimlikler İngilizce kanonik, Türkçe
+   sunum birinci sınıftır. Ayrıntı ADR 0007'dedir; ADR 0005 ve 0006 tarihsel
+   bağlam ile kararlı veri/CLI kimlikleri için korunur.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -51,6 +59,14 @@ kanıtıyla bitirir. Hedef kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + etik dışı, popülerliği fark etmez.
 
 ## Yol Haritası
+
+### Etkin yayın adayı
+
+- **v0.17.0 ✓** Local release candidate for one Divan and one repository:
+  canonical stdlib-only Divan Engine, the nine-module acyclic contract,
+  Hükümdar-first Divan Nizamı, Divan Project Contract, and bounded legacy
+  compatibility through v1. This marker records prepared local scope, not a
+  PR, merge, tag, Release, Pages, Wiki, or independent-adoption claim.
 
 ### Yayımlanan temel
 

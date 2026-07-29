@@ -1,26 +1,30 @@
 # Hızlı Başlangıç
 
 Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefini
-söyle, sonra Divan'ın kanıt zincirini izle. Divan yerel bir skill/plugin
-dağıtımıdır; model veya runtime değildir. Güncel v1 karnesi **7/8** kapının
-geçtiğini, bağımsız kullanıcı kanıtının beklediğini gösterir. Ürün sözleşmesi:
+söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
+genişletebilirsin. Divan bir model veya ayrı üçüncü taraf runtime değildir:
+Divan Engine aynı repodaki modüler icra çekirdeği, Divan Nizamı ise yetki
+düzenidir. Güncel v1 karnesi **7/8** kapının geçtiğini, bağımsız kullanıcı
+kanıtının beklediğini gösterir. Ürün sözleşmesi:
 [[Topluluk Standartları|Topluluk-Standartlari]].
 
 ## 1. Beş dakikalık güvenli yolu çalıştır
 
-Önce yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
+v0.17.0 değişmez tag ve GitHub Release oluşana kadar son kararlı ref
+`v0.16.0`dır. Aşağıdaki aday komutları yayın sonrasında geçerli olur. Önce
+yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.16.0
-python scripts/divan.py install --host both --ref v0.16.0 --execute
+python scripts/divan.py install --host both --ref v0.17.0
+python scripts/divan.py install --host both --ref v0.17.0 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.16.0
-python scripts/divan.py update --host both --ref v0.16.0
-python scripts/divan.py update --host both --ref v0.16.0 --execute
+python scripts/divan.py doctor --host both --ref v0.17.0
+python scripts/divan.py update --host both --ref v0.17.0
+python scripts/divan.py update --host both --ref v0.17.0 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
@@ -39,10 +43,23 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 Host'a göre elle kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host
 seçenekleri: [[Kurulum]].
 
-## 2. Hedef projenin sahiplik ve sapmasını denetle
+## 2. Divan Engine düzenini gör
 
-Host güncellemesi Divan eklentilerini; project güncellemesi kurulu Project OS
-yüzeylerini değiştirir. Önce salt-okunur durumu ve dry-run planını gör:
+Dokuz modülü, bağımlılık grafiğini ve Hükümdardan başlayan yetki zincirini
+projeyi değiştirmeden doğrula:
+
+```powershell
+python scripts/divan.py architecture --json
+python scripts/divan.py validate
+```
+
+Ayrıntı: [[Divan Engine|Divan-Engine]].
+
+## 3. Hedef projenin sahiplik ve sapmasını denetle
+
+Host güncellemesi Divan eklentilerini; project güncellemesi kurulu Divan Proje
+Sözleşmesi yüzeylerini değiştirir. Önce salt-okunur durumu ve dry-run planını
+gör:
 
 ```powershell
 python scripts/divan.py project status --project . --json
@@ -53,9 +70,10 @@ python scripts/divan.py project repair --project .
 Yalnız plan doğruysa `--execute` ekle. `project update` kullanıcı değişikliğini
 ezmez; `project repair` yalnız sahiplik kaydındaki eksik tam Divan dosyasını
 geri getirir. Kalite sözleşmesi için `audit`, sahiplik/sapma için
-`project status` kullanılır. Ayrıntı: [[Project OS|Project-OS]].
+`project status` kullanılır. Ayrıntı:
+[[Divan Proje Sözleşmesi|Project-Contract]].
 
-## 3. Niyetini ferman olarak yaz
+## 4. Niyetini ferman olarak yaz
 
 Kopyalayıp doldur:
 
@@ -73,7 +91,7 @@ Kanıtsız “bitti” deme ve sıradaki kesin adımı kaydet.
 - “Landing'i özgün bir görsel yönle yeniden tasarla ve tarayıcıda doğrula.”
 - “Bu repoyu tanı; mimari, risk ve sıradaki işi kalıcı deftere yaz.”
 
-## 4. Teslimde beş kanıtı ara
+## 5. Teslimde beş kanıtı ara
 
 1. Ne istendiği ve hangi varsayımların yapıldığı.
 2. Uygulanan kısa plan.

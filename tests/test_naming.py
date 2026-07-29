@@ -27,6 +27,19 @@ class NamingPolicyTests(unittest.TestCase):
         policy = json.loads(POLICY.read_text(encoding="utf-8"))
         self.assertEqual(policy["canonical_language"], "en")
         self.assertEqual(policy["locales"], ["en", "tr"])
+        self.assertEqual(policy["schema_version"], 2)
+        terms = {row["id"]: row for row in policy["domain_terms"]}
+        self.assertEqual(terms["owner"]["tr"], "Hükümdar")
+        self.assertEqual(terms["mandate"]["tr"], "Ferman")
+        self.assertEqual(terms["governance_model"]["tr"], "Divan Nizamı")
+        aliases = {
+            (row["alias"], row["replacement"])
+            for row in policy["legacy_command_aliases"]
+        }
+        self.assertEqual(
+            aliases,
+            {("company-validate", "validate"), ("/company", "/divan")},
+        )
         replacements = {row["replacement"] for row in policy["legacy_aliases"]}
         for required in (
             "scripts/divan.py",
@@ -68,4 +81,3 @@ class NamingPolicyTests(unittest.TestCase):
             path = ROOT / row["path"]
             errors = naming.legacy_wrapper_errors(path, row["replacement"])
             self.assertEqual(errors, [], row["path"])
-

@@ -1,29 +1,27 @@
-import importlib.util
+import importlib
 import json
 import os
 import pathlib
+import sys
 import tempfile
 import unittest
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-COMPANY = ROOT / "plugins" / "sadrazam" / "company"
-ENGINE_PATH = COMPANY / "engine.py"
+PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
+RUNTIME = PLUGIN_ROOT / "divan_runtime"
+if str(PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_ROOT))
 
 
 def load_engine():
-    spec = importlib.util.spec_from_file_location("divan_company_engine", ENGINE_PATH)
-    if spec is None or spec.loader is None:
-        raise RuntimeError("cannot load Divan company engine")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return importlib.import_module("divan_runtime.engine")
 
 
 class CompanyContractTests(unittest.TestCase):
     def test_contracts_are_bilingual_unique_and_reference_real_skills(self) -> None:
         engine = load_engine()
-        contracts = engine.load_contracts(COMPANY)
+        contracts = engine.load_contracts(RUNTIME)
 
         self.assertEqual(len(contracts.roles), 12)
         self.assertEqual(len(contracts.workflows), 11)
@@ -52,7 +50,7 @@ class CompanyContractTests(unittest.TestCase):
         engine = load_engine()
         with tempfile.TemporaryDirectory() as temporary:
             target = pathlib.Path(temporary)
-            for source in COMPANY.glob("*.json"):
+            for source in RUNTIME.glob("*.json"):
                 (target / source.name).write_text(
                     source.read_text(encoding="utf-8"), encoding="utf-8"
                 )
@@ -67,14 +65,14 @@ class CompanyContractTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "unknown role"):
                 engine.load_contracts(target)
 
-    def test_sadrazam_routes_natural_language_through_company_os(self) -> None:
+    def test_sadrazam_routes_natural_language_through_divan_engine(self) -> None:
         skill = (
             ROOT / "plugins" / "sadrazam" / "skills" / "sadrazam" / "SKILL.md"
         ).read_text(encoding="utf-8")
         command = ROOT / "plugins" / "sadrazam" / "commands" / "company.md"
 
         for required in (
-            "Company OS",
+            "Divan Engine",
             "${CLAUDE_PLUGIN_ROOT}",
             "smallest qualified team",
             "impact",
@@ -94,7 +92,7 @@ class CompanyContractTests(unittest.TestCase):
 class ProjectIntelligenceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.engine = load_engine()
-        self.contracts = self.engine.load_contracts(COMPANY)
+        self.contracts = self.engine.load_contracts(RUNTIME)
 
     def test_nextjs_ui_task_selects_core_ui_and_react_without_zanaat(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1182,7 +1180,7 @@ class ProjectIntelligenceTests(unittest.TestCase):
 class ImpactTests(unittest.TestCase):
     def setUp(self) -> None:
         self.engine = load_engine()
-        self.contracts = self.engine.load_contracts(COMPANY)
+        self.contracts = self.engine.load_contracts(RUNTIME)
 
     def test_skill_change_expands_to_transitive_public_surfaces(self) -> None:
         result = self.engine.calculate_impact(

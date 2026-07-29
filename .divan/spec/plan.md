@@ -1,15 +1,24 @@
-# Etkin plan — v0.13.0 Topluluk Standartları
+# Etkin plan — v0.17.0 One Divan / Modular Engine
 
-Ayrıntılı test-first plan:
-`docs/superpowers/plans/2026-07-21-community-standards.md`.
+Kanonik hedef:
+`.divan/spec/v0.17.0-one-divan-modular-engine.md`.
 
-1. DCS-001..DCS-010 registry, renderer ve doğrulama kapısını kur.
-2. Clean Code borç ratchet'ini kur ve eval sorumluluklarını dar modüllere ayır.
-3. Salt-okunur çift-host doctor ve host adaptör sınırını ekle.
-4. Provenance-gated, journaled ve geri alınabilir upgrade yaşam döngüsünü ekle.
-5. SPDX SBOM, Scorecard, dependency review ve artifact attestation ekle.
-6. Destek, katkı, başlangıç, Wiki, Pages ve iki dil yüzeylerini eşitle.
-7. Tam teftiş, bağımsız review, PR/main/ruleset/Release ve global kurulumu kanıtla.
+1. ADR 0007 ile tek ürün, Hükümdar yetkisi, modül sınırı ve uyumluluk süresini
+   sabitle.
+2. Çalışan çekirdeği aynı klasör derinliğindeki `divan_runtime` paketine taşı;
+   paket-içi importları kullan.
+3. Modül grafiği ve Divan Nizamı sözleşmesini fail-closed kernel ile doğrula.
+4. Eski `company` Python/JSON yollarını ve `company-validate` takma adını v1
+   boyunca davranış eşliğiyle koru.
+5. Deterministik project runner, composite action, etki grafiği, mypy, coverage,
+   Clean Code ve CI yüzeylerini kanonik pakete geçir.
+6. README, kanonik iki dilli rehberler, Wiki, site, CHANGELOG, BLUEPRINT,
+   progress ve release manifestini tek ürün diliyle eşitle.
+7. Odaklı ve tam testleri çalıştır; bağımsız inceleme bulgularını test-first
+   kapat.
+8. v0.17 PR'ını aç, bütün CI kapılarını geçir, `main`e birleştir.
+9. Kanonik release workflow'undan tag/Release/assets/attestations üret; Pages,
+   Wiki ve varlık hash'lerini geri oku.
 
-Yürütme: izole `codex/community-standards-v013` worktree'sinde sıralı Sefer;
-her görev test-first implementer ve bağımsız reviewer kapısından geçer.
+Issue #34 dış kullanıcı gerektirir. v0.17 yayını bu kanıtı üretmez ve v1,
+bağımsız kabul gelene kadar 7/8 kalır.

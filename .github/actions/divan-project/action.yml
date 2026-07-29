@@ -1,5 +1,5 @@
-name: Divan Project OS
-description: Build and run the portable, read-only Project OS verifier
+name: Divan Project Contract
+description: Build and run the portable, read-only Divan Project Contract verifier
 inputs:
   project:
     description: Project path relative to the checked-out workspace
@@ -15,4 +15,4 @@ runs:
       shell: bash
       env:
         DIVAN_PROJECT_INPUT: ${{ inputs.project }}
-      run: python "$GITHUB_ACTION_PATH/../../../plugins/sadrazam/company/cli.py" verify --project "$DIVAN_PROJECT_INPUT" --json
+      run: python "$GITHUB_ACTION_PATH/../../../plugins/sadrazam/divan_runtime/cli.py" verify --project "$DIVAN_PROJECT_INPUT" --json

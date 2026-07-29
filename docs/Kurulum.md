@@ -1,14 +1,18 @@
 # Kurulum
 
-Divan yerel bir skill/plugin dağıtımıdır; model veya runtime değildir. İlk kez
-kullanıyorsanız güncel sabit sürüm için bu sırayı izleyin:
+Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
+runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
+çekirdeğidir; Divan Nizamı Hükümdar öncelikli yetki düzenidir. İlk kez
+kullanıyorsanız bu sırayı izleyin. v0.17.0 değişmez tag ve GitHub Release
+oluşana kadar son kararlı ref `v0.16.0`dır; aşağıdaki v0.17.0 aday komutları
+yayın sonrasında geçerli olur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.16.0
-python scripts/divan.py install --host both --ref v0.16.0 --execute
-python scripts/divan.py doctor --host both --ref v0.16.0
-python scripts/divan.py update --host both --ref v0.16.0
-python scripts/divan.py update --host both --ref v0.16.0 --execute
+python scripts/divan.py install --host both --ref v0.17.0
+python scripts/divan.py install --host both --ref v0.17.0 --execute
+python scripts/divan.py doctor --host both --ref v0.17.0
+python scripts/divan.py update --host both --ref v0.17.0
+python scripts/divan.py update --host both --ref v0.17.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -19,12 +23,27 @@ kaldırır. Host'a göre elle kaldırma için [[Kaldırma|Kaldirma]], soru/hata/
 [SUPPORT.md](../SUPPORT.md), ürün sözleşmesi için
 [[Topluluk Standartları|Topluluk-Standartlari]] sayfasını kullanın.
 
+## Divan Engine sözleşmesini gör
+
+Repo checkout'unda dokuz modülü, bağımlılık grafiğini ve Hükümdardan başlayan
+yetki zincirini hiçbir hedef projeyi değiştirmeden doğrulayabilirsiniz:
+
+```powershell
+python scripts/divan.py architecture --json
+python scripts/divan.py validate
+```
+
+Kanonik mimari [Divan Engine](Divan-Engine.tr.md), hedef repoya kurulan katman
+ise [Divan Proje Sözleşmesi](Project-Contract.tr.md) belgesindedir. Eski
+`Company OS`, `Project OS` ve `company-validate` adları v1 boyunca yalnız
+uyumluluk yüzeyi olarak korunur.
+
 ## Host güncellemesi ile proje güncellemesi
 
 Yukarıdaki `update --host` komutu Claude/Codex içindeki global Divan paketlerini
 değiştirir. Divan'ı bir hedef repoya `init --execute` ile kurduktan sonra
-`.divan/config.json` schema ve sahip olunan yüzeyler ayrı proje yaşam döngüsüne
-girer:
+`.divan/config.json` schema ve sahip olunan Divan Proje Sözleşmesi yüzeyleri
+ayrı proje yaşam döngüsüne girer:
 
 ```powershell
 python scripts/divan.py project status --project . --json
@@ -218,11 +237,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.16.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.17.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.16.0/scripts/install_codex.sh | DIVAN_REF=v0.16.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.17.0/scripts/install_codex.sh | DIVAN_REF=v0.17.0 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
@@ -238,7 +257,7 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 
 | Katman | Claude Code | Codex / Cursor / diğer |
 |---|---|---|
-| Skills (41 vezir) | ✓ yerel plugin ile | ✓ Codex yerel plugin; diğer hostlarda Agent Skills klasörü |
+| Skills (41 beceri) | ✓ yerel plugin ile | ✓ Codex yerel plugin; diğer hostlarda Agent Skills klasörü |
 | Memory (defterdar dosyaları: AGENTS.md, BLUEPRINT, .divan/) | ✓ | ✓ düz dosya + AGENTS.md'yi Codex/Cursor doğal okur |
 | Komutlar (/ferman /sefer /defter /teftis) | ✓ | ✗ Claude Code'a özgü (skill tetikleyicileri yine çalışır) |
 | Subagents (kâşif, müfettiş) | ✓ | ✗ Claude Code'a özgü |
@@ -249,5 +268,5 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 katmanları Claude Code'da tam güçtedir.
 
 `uyumluluk` CI matrisi Claude Code ve Codex pazar/paket şemalarını; fallback
-yolunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41 skill
+yolunu ise Linux, macOS ve Windows'ta geçici, boş skill dizinlerinde 41 beceri
 keşfi ve kayıtlı kaldırma tatbikatıyla sınar.

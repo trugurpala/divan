@@ -1,23 +1,28 @@
 #!/usr/bin/env python3
-"""English canonical CLI for Divan Company OS and host lifecycle."""
+"""Canonical CLI for the Divan runtime and host lifecycle."""
 from __future__ import annotations
 
 import argparse
+import contextlib
 import importlib.util
 import pathlib
 import sys
+from collections.abc import Iterator
 from types import ModuleType
 
 SCRIPTS = pathlib.Path(__file__).resolve().parent
 ROOT = SCRIPTS.parent
+PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import host_lifecycle  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"
-COMPANY_CLI = ROOT / "plugins" / "sadrazam" / "company" / "cli.py"
-COMPANY_COMMANDS = {
+RUNTIME_CLI = PLUGIN_ROOT / "divan_runtime" / "cli.py"
+RUNTIME_PACKAGE = RUNTIME_CLI.parent / "__init__.py"
+DIVAN_COMMANDS = {
+    "architecture",
     "inspect",
     "plan",
     "impact",
@@ -29,16 +34,70 @@ COMPANY_COMMANDS = {
     "release",
     "project",
     "adoption",
+    "validate",
 }
 
 
-def _load_company_cli() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("divan_company_cli_runtime", COMPANY_CLI)
+def _runtime_module_names() -> list[str]:
+    return [
+        name
+        for name in sys.modules
+        if name == "divan_runtime" or name.startswith("divan_runtime.")
+    ]
+
+
+def _load_source_module(
+    name: str,
+    path: pathlib.Path,
+    *,
+    package_directory: pathlib.Path | None = None,
+) -> ModuleType:
+    search_locations = (
+        [str(package_directory)] if package_directory is not None else None
+    )
+    spec = importlib.util.spec_from_file_location(
+        name,
+        path,
+        submodule_search_locations=search_locations,
+    )
     if spec is None or spec.loader is None:
-        raise RuntimeError("cannot load installed Company OS")
+        raise RuntimeError("cannot load the installed Divan runtime")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    sys.modules[name] = module
+    try:
+        spec.loader.exec_module(module)
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    if pathlib.Path(str(module.__file__)).resolve() != path.resolve():
+        sys.modules.pop(name, None)
+        raise RuntimeError("Divan runtime resolved outside the installed source")
     return module
+
+
+@contextlib.contextmanager
+def _load_runtime_cli() -> Iterator[ModuleType]:
+    if not RUNTIME_CLI.is_file() or not RUNTIME_PACKAGE.is_file():
+        raise RuntimeError("cannot load the installed Divan runtime")
+    previous_path = list(sys.path)
+    previous = {
+        name: sys.modules[name]
+        for name in _runtime_module_names()
+    }
+    for name in previous:
+        sys.modules.pop(name, None)
+    try:
+        _load_source_module(
+            "divan_runtime",
+            RUNTIME_PACKAGE,
+            package_directory=RUNTIME_PACKAGE.parent,
+        )
+        yield _load_source_module("divan_runtime.cli", RUNTIME_CLI)
+    finally:
+        for name in _runtime_module_names():
+            sys.modules.pop(name, None)
+        sys.modules.update(previous)
+        sys.path[:] = previous_path
 
 
 def _host_arguments(options: argparse.Namespace) -> list[str]:
@@ -78,7 +137,7 @@ def _add_host_common(parser: argparse.ArgumentParser) -> None:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("inspect", "plan", "impact"):
+    for name in ("architecture", "inspect", "plan", "impact", "validate"):
         command = commands.add_parser(name)
         command.add_argument("company_args", nargs=argparse.REMAINDER)
     commands.add_parser("company-validate").add_argument(
@@ -107,9 +166,10 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
-    if arguments and arguments[0] in {*COMPANY_COMMANDS, "company-validate"}:
+    if arguments and arguments[0] in {*DIVAN_COMMANDS, "company-validate"}:
         command = "validate" if arguments[0] == "company-validate" else arguments[0]
-        return _load_company_cli().main([command, *arguments[1:]])
+        with _load_runtime_cli() as runtime_cli:
+            return runtime_cli.main([command, *arguments[1:]])
     options = _parser().parse_args(arguments)
     return host_lifecycle.main(_host_arguments(options))
 

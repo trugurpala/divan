@@ -6,7 +6,7 @@ Hedef sürüm: v1.0.0
 
 | Kapı | Durum | Kanıt |
 |---|---|---|
-| Kararlı public skill ve komut sözleşmesi | ✅ Geçti | `AGENTS.md`<br>`docs/Standartlar-ve-Limitler.md`<br>`docs/Vezir-Katalogu.md` |
+| Kararlı public skill ve komut sözleşmesi | ✅ Geçti | `AGENTS.md`<br>`docs/Standartlar-ve-Limitler.md`<br>`docs/skill-catalog.md` |
 | Yapısal doğrulama ve davranış eval sözleşmesi yayın kapısı | ✅ Geçti | `.github/workflows/quality-gate.yml`<br>`.github/workflows/codeql.yml`<br>`evals/run.py`<br>`tests/test_eval_runner.py`<br>`tests/test_real_adapters.py` |
 | README, Pages ve Wiki canlı yüzey doğrulaması | ✅ Geçti | `.github/workflows/site-tests.yml`<br>`.github/workflows/wiki-sync.yml`<br>`.divan/evidence/teftis-20260719-v012-release-install.md`<br>[https://github.com/trugurpala/divan/actions/runs/29702535899](https://github.com/trugurpala/divan/actions/runs/29702535899)<br>[https://github.com/trugurpala/divan/actions/runs/29702535867](https://github.com/trugurpala/divan/actions/runs/29702535867) |
 | Claude Code ve Codex native Linux/macOS/Windows temiz-host yaşam döngüsü | ✅ Geçti | `.github/workflows/compatibility.yml`<br>`scripts/host_lifecycle.py`<br>`tests/test_host_install.py`<br>`.divan/evidence/teftis-20260719-v012-release-install.md`<br>[https://github.com/trugurpala/divan/actions/runs/29702535873](https://github.com/trugurpala/divan/actions/runs/29702535873) |

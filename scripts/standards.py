@@ -12,11 +12,11 @@ from datetime import date
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-COMPANY = ROOT / "plugins" / "sadrazam" / "company"
-if str(COMPANY) not in sys.path:
-    sys.path.insert(0, str(COMPANY))
+PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
+if str(PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_ROOT))
 
-import project_os as project_contracts  # noqa: E402
+from divan_runtime import project_os as project_contracts  # noqa: E402
 
 REQUIRED_IDS = tuple(f"DCS-{number:03d}" for number in range(1, 12))
 PROJECT_REQUIRED_IDS = project_contracts.PROJECT_REQUIRED_IDS
@@ -261,8 +261,8 @@ def render_markdown(contract: dict[str, Any]) -> str:
         "Dogrulama: `python scripts/standards.py --check`",
         "",
         "Bu `DCS-*` kurallari Divan repo dagitimini yonetir. Hedef kurulu proje,",
-        "Project OS tarafindan yalniz uygulanabilir `DPS-*` kurallariyla denetlenir.",
-        "Project OS ayrimi ve komutlari: `docs/Project-OS.tr.md`.",
+        "Divan Proje Sozlesmesi tarafindan yalniz uygulanabilir `DPS-*` kurallariyla denetlenir.",
+        "Proje sozlesmesi ayrimi ve komutlari: `docs/Project-Contract.tr.md`.",
         "",
     ]
     for standard_id in REQUIRED_IDS:

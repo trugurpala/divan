@@ -1,36 +1,20 @@
 #!/usr/bin/env python3
-"""Build the deterministic, stdlib-only Divan Project OS zipapp."""
+"""Build the deterministic, stdlib-only Divan project-contract zipapp."""
 from __future__ import annotations
 
 import argparse
 import json
 import pathlib
 import re
+import runpy
 import subprocess
 import zipfile
+from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE_PATTERN = re.compile(r"[0-9a-f]{40}")
-FILES = (
-    "__init__.py",
-    "adoption.py",
-    "cli.py",
-    "engine.py",
-    "frameworks.json",
-    "goal_archive.py",
-    "goals.py",
-    "impact-graph.json",
-    "project_lifecycle.py",
-    "project_os.py",
-    "project_state.py",
-    "project_transactions.py",
-    "providers.py",
-    "receipts.py",
-    "roles.json",
-    "workflows.json",
-)
 DATA_FILES = (
-    ("data/seo-policy.json", "registry/seo-policy.json"),
+    ("divan_runtime/data/seo-policy.json", "registry/seo-policy.json"),
 )
 ENTRYPOINT = (
     "import pathlib\n"
@@ -43,7 +27,7 @@ ENTRYPOINT = (
     "        with zipfile.ZipFile(pathlib.Path(sys.argv[0])) as archive:\n"
     "            archive.extractall(directory)\n"
     "        sys.path.insert(0, directory)\n"
-    "        from cli import main\n"
+    "        from divan_runtime.cli import main\n"
     "        raise SystemExit(main())\n"
 ).encode("utf-8")
 
@@ -95,6 +79,39 @@ def _verified_head(root: pathlib.Path, source_commit: str) -> None:
         raise ValueError("source_commit must exactly match clean repository HEAD")
 
 
+def _source_contract_validator(runtime: pathlib.Path) -> dict[str, Any]:
+    validator_path = runtime / "contract_validation.py"
+    try:
+        return runpy.run_path(
+            str(validator_path),
+            run_name="_divan_project_runner_contract_validation",
+        )
+    except (OSError, SyntaxError, UnicodeError) as error:
+        raise ValueError("Divan runtime contract validator is not loadable") from error
+
+
+def runtime_files(runtime: pathlib.Path) -> tuple[str, ...]:
+    """Derive the runner's Python inventory from the validated module contract."""
+    validator = _source_contract_validator(runtime)
+    loader = validator.get("load_modules")
+    if not callable(loader):
+        raise ValueError("Divan runtime has no module-contract loader")
+    modules: Any = loader(runtime)
+    data_files = validator.get("RUNTIME_DATA_FILES")
+    if (
+        not isinstance(data_files, tuple)
+        or not data_files
+        or any(not isinstance(name, str) or not name for name in data_files)
+    ):
+        raise ValueError("Divan runtime kernel has no canonical data inventory")
+    python_files = {
+        f"{module_name}.py"
+        for row in modules
+        for module_name in row["python_modules"]
+    }
+    return tuple(sorted({"__init__.py", *python_files, *data_files}))
+
+
 def build(output: pathlib.Path, source_commit: str, root: pathlib.Path = ROOT) -> None:
     root = root.resolve()
     _verified_head(root, source_commit)
@@ -106,8 +123,11 @@ def build(output: pathlib.Path, source_commit: str, root: pathlib.Path = ROOT) -
     )
     if re.fullmatch(version_pattern, version) is None:
         raise ValueError("VERSION must contain canonical semantic version text")
-    company = root / "plugins" / "sadrazam" / "company"
-    entries = [_entry(name, (company / name).read_bytes()) for name in FILES]
+    runtime = root / "plugins" / "sadrazam" / "divan_runtime"
+    entries = [
+        _entry(f"divan_runtime/{name}", (runtime / name).read_bytes())
+        for name in runtime_files(runtime)
+    ]
     entries.extend(
         _entry(destination, (root / source).read_bytes())
         for destination, source in DATA_FILES
@@ -116,7 +136,7 @@ def build(output: pathlib.Path, source_commit: str, root: pathlib.Path = ROOT) -
         (
             _entry("__main__.py", ENTRYPOINT),
             _entry(
-                "divan-project-source.json",
+                "divan_runtime/divan-project-source.json",
                 (
                     json.dumps(
                         {

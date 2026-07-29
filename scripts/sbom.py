@@ -239,7 +239,7 @@ def build_spdx(
         ),
         "creationInfo": {
             "created": _commit_created(root, source_commit),
-            "creators": ["Organization: Divan (Mühürdar)"],
+            "creators": ["Organization: Divan"],
             "comment": "Timestamp is the immutable source commit time normalized to UTC.",
         },
         "documentDescribes": described,

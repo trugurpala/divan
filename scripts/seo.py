@@ -11,14 +11,14 @@ import sys
 from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-COMPANY = ROOT / "plugins" / "sadrazam" / "company"
+PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 POLICY_PATH = ROOT / "registry" / "seo-policy.json"
-for module_path in (COMPANY, ROOT / "scripts"):
+for module_path in (PLUGIN_ROOT, ROOT / "scripts"):
     if str(module_path) not in sys.path:
         sys.path.insert(0, str(module_path))
 
-from engine import inspect_project, load_contracts  # noqa: E402
-from project_os import render_plan_command, render_seo_workflow  # noqa: E402,F401
+from divan_runtime.engine import inspect_project, load_contracts  # noqa: E402
+from divan_runtime.project_os import render_plan_command, render_seo_workflow  # noqa: E402,F401
 from seo_evidence import (  # noqa: E402
     command_plan_digest,
     command_plans,
@@ -246,7 +246,7 @@ def audit_project(
             raise ValueError("CLI expected_url does not match managed expected_url")
         expected_url = managed_url
     files = _scan(root)
-    inspection = inspect_project(root, load_contracts(COMPANY))
+    inspection = inspect_project(root, load_contracts(PLUGIN_ROOT / "divan_runtime"))
     applicable = _has_web_entry(root, files, inspection)
     project_types = [
         value

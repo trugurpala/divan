@@ -2,7 +2,7 @@
 description: İşi en küçük güvenli ajan düzeniyle sevk et (tek oturum, subagent veya izole takım)
 argument-hint: yapılacak-iş
 ---
-Padişahın sefer fermanı: $ARGUMENTS
+Hükümdarın sefer fermanı: $ARGUMENTS
 
 `ordu-nizami` ve `sadrazam` skill'lerini yükle. Önce işi bağımlılıklarına ayır,
 sonra Ocak / Sefer / Ordu kademelerinden en küçüğünü gerekçesiyle seç.

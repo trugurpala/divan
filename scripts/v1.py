@@ -234,7 +234,7 @@ def uret(kok: pathlib.Path = KOK) -> str:
 
 
 def yaz(kok: pathlib.Path = KOK) -> None:
-    (kok / HEDEF).write_text(uret(kok), encoding="utf-8")
+    (kok / HEDEF).write_text(uret(kok), encoding="utf-8", newline="\n")
 
 
 def denetle(kok: pathlib.Path = KOK) -> None:

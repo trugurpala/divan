@@ -33,11 +33,16 @@ class CleanCodeTests(unittest.TestCase):
         self.assertEqual(configuration["tool"]["coverage"]["report"]["fail_under"], 64)
         self.assertEqual(
             configuration["tool"]["mypy"]["files"],
-            ["scripts", "evals", "plugins/sadrazam/company"],
+            [
+                "scripts",
+                "evals",
+                "plugins/sadrazam/divan_runtime",
+                "plugins/sadrazam/company",
+            ],
         )
         self.assertEqual(
             configuration["tool"]["coverage"]["run"]["source"],
-            ["scripts", "evals", "plugins/sadrazam/company"],
+            ["scripts", "evals", "plugins/sadrazam/divan_runtime"],
         )
         self.assertEqual(
             configuration["tool"]["ruff"]["extend-exclude"],
@@ -50,7 +55,10 @@ class CleanCodeTests(unittest.TestCase):
         self.assertLess(workflow.index("ruff check ."), workflow.index("clean_code.py --check"))
         self.assertLess(
             workflow.index("clean_code.py --check"),
-            workflow.index("mypy scripts evals plugins/sadrazam/company"),
+            workflow.index(
+                "mypy scripts evals plugins/sadrazam/divan_runtime "
+                "plugins/sadrazam/company"
+            ),
         )
         self.assertIn("coverage report --fail-under=64", workflow)
 
@@ -120,6 +128,7 @@ class CleanCodeTests(unittest.TestCase):
                 "check",
                 "scripts",
                 "evals",
+                "plugins/sadrazam/divan_runtime",
                 "plugins/sadrazam/company",
                 "--select",
                 "C901",

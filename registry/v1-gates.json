@@ -7,7 +7,7 @@
       "id": "public-contract",
       "title": "Kararlı public skill ve komut sözleşmesi",
       "status": "passed",
-      "evidence": ["AGENTS.md", "docs/Standartlar-ve-Limitler.md", "docs/Vezir-Katalogu.md"]
+      "evidence": ["AGENTS.md", "docs/Standartlar-ve-Limitler.md", "docs/skill-catalog.md"]
     },
     {
       "id": "structural-and-eval-ci",

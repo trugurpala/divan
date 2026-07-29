@@ -1,6 +1,6 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-26
+Son güncelleme: 2026-07-29
 
 ## Yayın durumu
 
@@ -12,25 +12,33 @@ Son güncelleme: 2026-07-26
 
 ## Güncel hedef
 
-v0.16.0 is published from immutable commit `5513e73d`; PR #31 is merged and
-the Release page, five recomputed assets, checksum manifests, SPDX SBOM,
-attestations, Pages, and Wiki are bound to tracked evidence. Post-release
-`main` commits now rebuild from the immutable tag and verify all five Release
-assets byte-for-byte without moving the tag or duplicating attestations. The
-remaining v1 product gate is reproducible adoption evidence from a non-owner.
-No canary or transactional global-host update was reproduced in this review.
-v1 remains 7/8.
+The latest published release remains v0.16.0 at immutable commit `5513e73d`;
+its Release assets, checksums, SPDX SBOM, attestations, Pages, and Wiki remain
+bound to tracked evidence.
 
-Issue #33's implementation candidate is on
-`agent/verification-hygiene-stable`. The new `scripts/verify.py` controller
-runs the shared local/CI core sequence with bytecode disabled and tool caches
-outside the repository; it never invokes cleanup. Local verification found 501
-tests across 36 green modules, 74% branch coverage, 62 mypy source files, 94
-release surfaces, and green Ruff, Clean Code, handoff, Wiki, Company OS, and
-final hygiene checks. GitHub PR/CI evidence remains pending.
+The active goal is the v0.17.0 candidate: keep Divan as one product and one
+repository, make Divan Engine the canonical stdlib-only modular core, define
+Divan Nizamı as the owner-first governance model, and name the installed layer
+Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is the final
+authority and only `owner` may expand scope. Legacy Company OS, Project OS,
+`/company`, `company-validate`, and Python/JSON paths remain bounded
+compatibility surfaces through v1. No PR, merge, tag, Release, Pages, Wiki, or
+quality-improvement claim is inferred from the local candidate. Issue #34 is
+still the independent non-owner adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
+- The v0.17.0 candidate passed 538 tests with 7 platform-specific skips and
+  76% coverage. Ruff, mypy, Clean Code, 41/41 Agent Skills, the root
+  marketplace plus five plugins under Claude Code 2.1.212 strict validation,
+  local Chromium site verification, and two byte-identical project-runner
+  builds passed. Independent review findings for ambient module-cache spoofing,
+  pre-resolve runtime path identity, and dynamic imports were addressed
+  test-first. Final independent re-review reported no open P0-P3 findings and
+  approved the local release gate.
+- Issue #33 was closed by merged PR #46 at `5f7f088`. The canonical verifier
+  keeps generated caches outside the checkout and ends with a clean hygiene
+  check on Windows as well as CI hosts.
 - PR #39 merged the issue #38 release-idempotency repair as `da5c2a7c`.
   Main release run `30131579254` passed all three clean hosts, skipped duplicate
   attestation, and verified all five v0.16.0 assets byte-for-byte from the
@@ -288,11 +296,8 @@ final hygiene checks. GitHub PR/CI evidence remains pending.
 - Issue #34 requires a non-owner to install a pinned release, complete a bounded
   real task, export a privacy-bounded adoption receipt, and reproduce the
   result. Maintainer fixtures and owner canaries cannot close this gate.
-- Issue #33 is published as PR #46. Its first Quality Gate proved that CI-only
-  lint/type/coverage commands still wrote caches into the checkout before the
-  canonical runner. A focused regression now requires `${{ runner.temp }}`
-  cache paths on the executable step (not unsupported job scope); replacement
-  CI and merge are the remaining gates.
+- The v0.17.0 candidate still requires PR/CI, merge, and immutable live
+  publication evidence.
 
 ## Tarihsel devam kayıtları
 
@@ -322,7 +327,8 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Re-run PR #46 checks with the CI cache-path regression fixed and merge only
-after every applicable check is green. Then return to merge-ready technical
-work while keeping issue #34 and v1 at 7/8 until reproducible non-owner evidence
-exists.
+Open the focused v0.17.0 PR. Merge only after every required CI check is green;
+publish from the merged commit through the canonical release workflow and
+verify immutable tag, Release assets, checksums, attestations, Pages, and Wiki
+separately. Keep issue #34 and v1 at 7/8 until reproducible, privacy-bounded
+non-owner evidence exists.

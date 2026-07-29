@@ -11,7 +11,12 @@ max-complexity = 25
 
 [tool.mypy]
 python_version = "3.11"
-files = ["scripts", "evals", "plugins/sadrazam/company"]
+files = [
+  "scripts",
+  "evals",
+  "plugins/sadrazam/divan_runtime",
+  "plugins/sadrazam/company",
+]
 check_untyped_defs = true
 ignore_missing_imports = true
 explicit_package_bases = true
@@ -19,7 +24,7 @@ show_error_codes = true
 
 [tool.coverage.run]
 branch = true
-source = ["scripts", "evals", "plugins/sadrazam/company"]
+source = ["scripts", "evals", "plugins/sadrazam/divan_runtime"]
 
 [tool.coverage.report]
 fail_under = 64

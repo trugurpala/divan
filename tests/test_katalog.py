@@ -14,7 +14,7 @@ SPEC.loader.exec_module(KATALOG)
 class KatalogTesti(unittest.TestCase):
     def test_katalog_frontmatterdan_ayrilmiyor(self) -> None:
         beklenen = KATALOG.katalog_uret(KOK)
-        gercek = (KOK / "docs" / "Vezir-Katalogu.md").read_text(encoding="utf-8")
+        gercek = (KOK / "docs" / "skill-catalog.md").read_text(encoding="utf-8")
         self.assertEqual(gercek, beklenen)
 
     def test_tum_skiller_ve_cok_satirli_aciklama_gorunur(self) -> None:
@@ -22,6 +22,12 @@ class KatalogTesti(unittest.TestCase):
         self.assertEqual(metin.count("| **"), 41)
         self.assertIn("Claude API and Anthropic SDK reference", metin)
         self.assertNotIn("| **claude-api** | /-", metin)
+        self.assertIn("# Skill Catalog / Beceri Kataloğu", metin)
+        self.assertNotIn("| Vezir |", metin)
+
+    def test_legacy_katalog_kanonik_katalogu_gosterir(self) -> None:
+        legacy = (KOK / "docs" / "Vezir-Katalogu.md").read_text(encoding="utf-8")
+        self.assertIn("skill-catalog.md", legacy)
 
 
 if __name__ == "__main__":

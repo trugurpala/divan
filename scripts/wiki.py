@@ -9,6 +9,7 @@ import pathlib
 import re
 import shutil
 import tempfile
+from typing import Any
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST = KOK / "wiki-pages.json"
@@ -16,7 +17,20 @@ SLUG = re.compile(r"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
 WIKI_LINK = re.compile(r"\[\[(?:[^]|]+\|)?([^]]+)\]\]")
 
 
-def manifesti_oku(kok: pathlib.Path = KOK) -> list[dict[str, str]]:
+def _validated_page(value: object, index: int) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValueError(f"pages[{index}] nesne olmalı")
+    if not set(value).issubset({"source", "slug", "title", "sidebar"}):
+        raise ValueError(f"pages[{index}] bilinmeyen alan içeriyor")
+    for field in ("source", "slug", "title"):
+        if not isinstance(value.get(field), str) or not value[field].strip():
+            raise ValueError(f"pages[{index}].{field} dolu metin olmalı")
+    if "sidebar" in value and not isinstance(value["sidebar"], bool):
+        raise ValueError(f"pages[{index}].sidebar boolean olmalı")
+    return value
+
+
+def manifesti_oku(kok: pathlib.Path = KOK) -> list[dict[str, Any]]:
     yol = kok / MANIFEST.name
     veri = json.loads(yol.read_text(encoding="utf-8"))
     sayfalar = veri.get("pages")
@@ -26,12 +40,11 @@ def manifesti_oku(kok: pathlib.Path = KOK) -> list[dict[str, str]]:
     kaynaklar: set[str] = set()
     sluglar: set[str] = set()
     basliklar: set[str] = set()
-    for sira, sayfa in enumerate(sayfalar, start=1):
-        if not isinstance(sayfa, dict):
-            raise ValueError(f"pages[{sira}] nesne olmalı")
-        for alan in ("source", "slug", "title"):
-            if not isinstance(sayfa.get(alan), str) or not sayfa[alan].strip():
-                raise ValueError(f"pages[{sira}].{alan} dolu metin olmalı")
+    validated_pages = [
+        _validated_page(page, index)
+        for index, page in enumerate(sayfalar, start=1)
+    ]
+    for sayfa in validated_pages:
         kaynak = sayfa["source"]
         slug = sayfa["slug"]
         baslik = sayfa["title"]
@@ -44,9 +57,9 @@ def manifesti_oku(kok: pathlib.Path = KOK) -> list[dict[str, str]]:
         kaynaklar.add(kaynak)
         sluglar.add(slug)
         basliklar.add(baslik)
-    if sayfalar[0]["slug"] != "Home":
+    if validated_pages[0]["slug"] != "Home":
         raise ValueError("ilk Wiki sayfası Home olmalı")
-    return sayfalar
+    return validated_pages
 
 
 def derle(cikti: pathlib.Path, kok: pathlib.Path = KOK) -> list[pathlib.Path]:
@@ -66,7 +79,11 @@ def derle(cikti: pathlib.Path, kok: pathlib.Path = KOK) -> list[pathlib.Path]:
 
     kenar = cikti / "_Sidebar.md"
     satirlar = ["## Divan Wiki", ""]
-    satirlar.extend(f"- [[{s['title']}|{s['slug']}]]" for s in sayfalar)
+    satirlar.extend(
+        f"- [[{s['title']}|{s['slug']}]]"
+        for s in sayfalar
+        if s.get("sidebar", True)
+    )
     kenar.write_text("\n".join(satirlar) + "\n", encoding="utf-8")
     uretilen.append(kenar)
     return uretilen

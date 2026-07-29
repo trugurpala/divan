@@ -68,7 +68,7 @@
       "level": "required",
       "purpose": "Host kurulumu, proje guncellemesi, onarim, arsiv, kurtarma ve geri alma acik, belgeli ve yalnizca kanitlanmis Divan sahipligini etkileyen islemlerdir.",
       "checks": ["python -m unittest tests.test_host_install -v", "python -m unittest tests/test_host_upgrade.py tests/test_host_upgrade_authority.py tests/test_host_upgrade_locking.py tests/test_host_upgrade_security.py -v", "python -m unittest tests.test_project_lifecycle tests.test_goal_archive tests.test_adoption -v"],
-      "evidence": ["scripts/host_lifecycle.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "plugins/sadrazam/company/project_state.py", "plugins/sadrazam/company/project_lifecycle.py", "plugins/sadrazam/company/project_transactions.py", "plugins/sadrazam/company/goal_archive.py", "plugins/sadrazam/company/adoption.py", "scripts/uninstall_codex.ps1", "scripts/uninstall_codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py", "tests/test_project_lifecycle.py", "tests/test_goal_archive.py", "tests/test_adoption.py"],
+      "evidence": ["scripts/host_lifecycle.py", "scripts/host_upgrade.py", "scripts/host_transactions.py", "scripts/host_install_journal.py", "scripts/host_journal.py", "scripts/host_journal_scan.py", "scripts/host_journal_transitions.py", "scripts/host_state.py", "plugins/sadrazam/divan_runtime/project_state.py", "plugins/sadrazam/divan_runtime/project_lifecycle.py", "plugins/sadrazam/divan_runtime/project_transactions.py", "plugins/sadrazam/divan_runtime/goal_archive.py", "plugins/sadrazam/divan_runtime/adoption.py", "scripts/uninstall_codex.ps1", "scripts/uninstall_codex.sh", "tests/test_host_install.py", "tests/test_host_upgrade.py", "tests/test_host_upgrade_security.py", "tests/test_host_upgrade_authority.py", "tests/test_host_upgrade_locking.py", "tests/test_project_lifecycle.py", "tests/test_goal_archive.py", "tests/test_adoption.py"],
       "exception_policy": "Dar, belgelenmis ve sureli istisnalar standard-exceptions.json kaydiyla sinirlidir."
     },
     {
@@ -106,9 +106,9 @@
       "title_tr": "Ingilizce teknik cekirdek ve izlenebilir etki",
       "title_en": "English technical core and traceable impact",
       "level": "required",
-      "purpose": "Kanonik teknik girisler Ingilizce adlandirilir; Turkce yerellestirme korunur ve Company OS her degisikligi rol, framework, paket ve gecis etkilerine baglar.",
-      "checks": ["python scripts/naming.py --check", "python scripts/divan.py company-validate"],
-      "evidence": ["registry/naming-policy.json", "scripts/naming.py", "scripts/divan.py", "plugins/sadrazam/company/roles.json", "plugins/sadrazam/company/workflows.json", "plugins/sadrazam/company/frameworks.json", "plugins/sadrazam/company/impact-graph.json", "tests/test_company_engine.py", "tests/test_naming.py"],
+      "purpose": "Kanonik teknik girisler Ingilizce adlandirilir; Turkce yerellestirme korunur ve Divan Engine her degisikligi rol, framework, paket, modul ve gecis etkilerine baglar.",
+      "checks": ["python scripts/naming.py --check", "python scripts/divan.py validate"],
+      "evidence": ["registry/naming-policy.json", "scripts/naming.py", "scripts/divan.py", "plugins/sadrazam/divan_runtime/roles.json", "plugins/sadrazam/divan_runtime/workflows.json", "plugins/sadrazam/divan_runtime/frameworks.json", "plugins/sadrazam/divan_runtime/impact-graph.json", "plugins/sadrazam/divan_runtime/modules.json", "plugins/sadrazam/divan_runtime/governance.json", "tests/test_company_engine.py", "tests/test_divan_runtime.py", "tests/test_naming.py"],
       "exception_policy": "Eski Turkce teknik adlar yalniz registry/naming-policy.json icindeki sureli uyumluluk kayitlariyla korunabilir."
     }
   ]

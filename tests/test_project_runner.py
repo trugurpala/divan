@@ -12,7 +12,34 @@ import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 BUILDER = ROOT / "scripts" / "build_project_runner.py"
-COMPANY = ROOT / "plugins" / "sadrazam" / "company"
+RUNTIME = ROOT / "plugins" / "sadrazam" / "divan_runtime"
+CURRENT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+RUNTIME_FILES = (
+    "__init__.py",
+    "adoption.py",
+    "cli.py",
+    "cli_parser.py",
+    "compatibility.py",
+    "contract_validation.py",
+    "engine.py",
+    "frameworks.json",
+    "goal_archive.py",
+    "goals.py",
+    "governance.json",
+    "governance.py",
+    "impact-graph.json",
+    "kernel.py",
+    "modules.json",
+    "project_lifecycle.py",
+    "project_os.py",
+    "project_state.py",
+    "project_transactions.py",
+    "providers.py",
+    "receipts.py",
+    "release.py",
+    "roles.json",
+    "workflows.json",
+)
 
 
 def git(root: pathlib.Path, *arguments: str) -> str:
@@ -25,28 +52,11 @@ def git(root: pathlib.Path, *arguments: str) -> str:
 
 class ProjectRunnerTests(unittest.TestCase):
     def _fixture(self, root: pathlib.Path) -> str:
-        company = root / "plugins" / "sadrazam" / "company"
-        company.mkdir(parents=True)
-        for name in (
-            "__init__.py",
-            "adoption.py",
-            "cli.py",
-            "engine.py",
-            "frameworks.json",
-            "goal_archive.py",
-            "goals.py",
-            "impact-graph.json",
-            "project_lifecycle.py",
-            "project_os.py",
-            "project_state.py",
-            "project_transactions.py",
-            "providers.py",
-            "receipts.py",
-            "roles.json",
-            "workflows.json",
-        ):
-            shutil.copy2(COMPANY / name, company / name)
-        (root / "VERSION").write_text("0.16.0\n", encoding="utf-8")
+        runtime = root / "plugins" / "sadrazam" / "divan_runtime"
+        runtime.mkdir(parents=True)
+        for name in RUNTIME_FILES:
+            shutil.copy2(RUNTIME / name, runtime / name)
+        (root / "VERSION").write_text(CURRENT_VERSION + "\n", encoding="utf-8")
         registry = root / "registry"
         registry.mkdir()
         shutil.copy2(ROOT / "registry" / "seo-policy.json", registry)
@@ -118,18 +128,21 @@ class ProjectRunnerTests(unittest.TestCase):
                         for item in archive.infolist()
                     )
                 )
-                source = json.loads(archive.read("divan-project-source.json"))
+                source = json.loads(
+                    archive.read("divan_runtime/divan-project-source.json")
+                )
                 self.assertEqual(
                     source,
                     {
                         "schema_version": 2,
                         "source_commit": source_commit,
-                        "source_ref": "v0.16.0",
+                        "source_ref": f"v{CURRENT_VERSION}",
                         "source_repository": "https://github.com/trugurpala/divan",
-                        "version": "0.16.0",
+                        "version": CURRENT_VERSION,
                     },
                 )
-                self.assertIn("project_state.py", names)
+                self.assertIn("divan_runtime/project_state.py", names)
+                self.assertIn("divan_runtime/modules.json", names)
 
     def test_dirty_tree_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
@@ -137,7 +150,13 @@ class ProjectRunnerTests(unittest.TestCase):
             repository = base / "repo"
             repository.mkdir()
             source_commit = self._fixture(repository)
-            provider = repository / "plugins" / "sadrazam" / "company" / "providers.py"
+            provider = (
+                repository
+                / "plugins"
+                / "sadrazam"
+                / "divan_runtime"
+                / "providers.py"
+            )
             provider.write_text(provider.read_text(encoding="utf-8") + "\n# dirty\n")
 
             result = self._build(repository, base / "runner.pyz", source_commit)
@@ -157,7 +176,7 @@ class ProjectRunnerTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("HEAD", result.stderr)
 
-    def test_runner_executes_the_canonical_company_cli(self) -> None:
+    def test_runner_executes_the_canonical_divan_runtime(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
             base = pathlib.Path(temporary)
             repository = base / "repo"
@@ -177,7 +196,10 @@ class ProjectRunnerTests(unittest.TestCase):
             )
 
             self.assertEqual(execution.returncode, 0, execution.stderr)
-            self.assertEqual(json.loads(execution.stdout)["status"], "valid")
+            payload = json.loads(execution.stdout)
+            self.assertEqual(payload["status"], "valid")
+            self.assertEqual(payload["product"]["id"], "divan")
+            self.assertEqual(payload["module_count"], 9)
 
     def test_built_runner_initializes_and_audits_public_web_with_ci(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
