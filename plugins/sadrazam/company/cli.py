@@ -16,6 +16,7 @@ import adoption  # noqa: E402
 import engine  # noqa: E402
 import goal_archive  # noqa: E402
 import goals  # noqa: E402
+import planning  # noqa: E402
 import project_lifecycle  # noqa: E402
 import project_os  # noqa: E402
 import providers  # noqa: E402
@@ -30,6 +31,11 @@ TEXT = {
         "packages": "Packages",
         "effects": "Effects",
         "checks": "Checks",
+        "complexity": "Complexity",
+        "context_budget": "Context budget",
+        "recommended_sessions": "Recommended sessions",
+        "orchestration_lane": "Orchestration lane",
+        "safe_parallel_workstreams": "Safe parallel workstreams",
     },
     "tr": {
         "project": "Proje",
@@ -39,6 +45,11 @@ TEXT = {
         "packages": "Paketler",
         "effects": "Etkiler",
         "checks": "Kontroller",
+        "complexity": "Karmaşıklık",
+        "context_budget": "Bağlam bütçesi",
+        "recommended_sessions": "Önerilen oturum",
+        "orchestration_lane": "Orkestrasyon yolu",
+        "safe_parallel_workstreams": "Güvenli paralel iş şeridi",
     },
 }
 
@@ -69,6 +80,22 @@ def _write_json(value: dict[str, Any]) -> None:
     sys.stdout.write(serialized + "\n")
 
 
+def _render_human_value(key: str, value: Any) -> str:
+    safe_value = _safe_output(value, key)
+    if key == "complexity" and isinstance(safe_value, dict):
+        return f"{safe_value.get('band')} (score {safe_value.get('score')})"
+    if key == "context_budget" and isinstance(safe_value, dict):
+        warning = safe_value.get("warning")
+        rendered = (
+            f"{safe_value.get('profile')} · {safe_value.get('context_window_tokens')} "
+            f"tokens · source={safe_value.get('capacity_source')}"
+        )
+        return f"{rendered} · {warning}" if warning else rendered
+    if isinstance(safe_value, list):
+        return ", ".join(str(part) for part in safe_value)
+    return str(safe_value)
+
+
 def _write_human(value: dict[str, Any], language: str) -> None:
     labels = TEXT[language]
     for key in (
@@ -79,22 +106,44 @@ def _write_human(value: dict[str, Any], language: str) -> None:
         "packages",
         "effects",
         "checks",
+        "complexity",
+        "context_budget",
+        "recommended_sessions",
+        "orchestration_lane",
+        "safe_parallel_workstreams",
     ):
         if key not in value:
             continue
-        item = value[key]
-        safe_item = _safe_output(item, key)
-        rendered = (
-            ", ".join(str(part) for part in safe_item)
-            if isinstance(safe_item, list)
-            else str(safe_item)
-        )
-        sys.stdout.write(f"{labels[key]}: {rendered}\n")
+        sys.stdout.write(f"{labels[key]}: {_render_human_value(key, value[key])}\n")
 
 
 def _common_output(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--json", action="store_true", help="write stable JSON")
     parser.add_argument("--lang", choices=("en", "tr"), default="en")
+
+
+def _positive_context_window(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("context window must be a positive integer") from error
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("context window must be a positive integer")
+    return parsed
+
+
+def _planning_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--host-profile",
+        choices=("auto", *planning.profile_ids(DIRECTORY)),
+        default="auto",
+        help="select a conservative host planning profile",
+    )
+    parser.add_argument(
+        "--context-window",
+        type=_positive_context_window,
+        help="declare the exact host-reported context window in tokens",
+    )
 
 
 def _add_adoption_parser(commands: Any) -> None:
@@ -135,6 +184,12 @@ def _parser() -> argparse.ArgumentParser:
     plan = commands.add_parser("plan", help="route an intent to a qualified team")
     plan.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     plan.add_argument("--intent", required=True)
+    plan.add_argument(
+        "--target",
+        choices=("verified", "previewed", "released", "observed"),
+        default="verified",
+    )
+    _planning_options(plan)
     _common_output(plan)
 
     impact = commands.add_parser("impact", help="calculate transitive change impact")
@@ -188,6 +243,7 @@ def _parser() -> argparse.ArgumentParser:
         choices=("verified", "previewed", "released", "observed"),
         default="verified",
     )
+    _planning_options(goal_start)
     goal_start.add_argument("--execute", action="store_true")
     _common_output(goal_start)
     goal_status = goal_commands.add_parser("status")
@@ -235,7 +291,16 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
         return engine.inspect_project(options.project, contracts)
     if options.command == "plan":
         contracts = engine.load_contracts(DIRECTORY)
-        return engine.plan_intent(options.intent, options.project, contracts)
+        route = engine.plan_intent(
+            options.intent, options.project, contracts, options.target
+        )
+        return planning.enrich_plan(
+            route,
+            host_profile=options.host_profile,
+            context_window=options.context_window,
+            target=options.target,
+            directory=DIRECTORY,
+        )
     if options.command == "impact":
         contracts = engine.load_contracts(DIRECTORY)
         return engine.calculate_impact(options.paths, contracts)
@@ -272,7 +337,12 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
     if options.command == "goal":
         if options.goal_command == "start":
             return goals.start_goal(
-                options.project, options.intent, options.target, options.execute
+                options.project,
+                options.intent,
+                options.target,
+                options.execute,
+                host_profile=options.host_profile,
+                context_window=options.context_window,
             )
         if options.goal_command == "status":
             return goals.goal_status(options.project, options.goal)
@@ -313,6 +383,7 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
         "workflow_count": len(contracts.workflows),
         "framework_count": len(contracts.frameworks),
         "impact_rule_count": len(contracts.impact_rules),
+        "host_profile_count": len(planning.profile_ids(DIRECTORY)),
     }
 
 
