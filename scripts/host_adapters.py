@@ -274,10 +274,12 @@ def _doctor_host(
         runner, marketplace_list_command(host)
     )
     if error:
-        return _cli_failure_result(host, "marketplace list", error, cli_status)
+        return host_profiles.cli_failure_result(
+            host, "marketplace list", error, cli_status
+        )
     plugins_value, error, cli_status = _doctor_json(runner, plugin_list_command(host))
     if error:
-        return _cli_failure_result(host, "plugin list", error, cli_status)
+        return host_profiles.cli_failure_result(host, "plugin list", error, cli_status)
     marketplaces = marketplace_rows(host, marketplaces_value)
     plugins = plugin_rows(host, plugins_value)
     marketplace = marketplaces.get("divan")
@@ -291,35 +293,6 @@ def _doctor_host(
         "capabilities": host_profiles.capabilities(host_profiles.NATIVE_MODE),
         "issues": issues,
     }
-
-
-def _cli_failure_result(
-    host: str, operation: str, error: str, cli_status: str
-) -> dict[str, Any]:
-    fallback = host == "codex" and cli_status in host_profiles.FALLBACK_CLI_STATUSES
-    unavailable = cli_status in host_profiles.FALLBACK_CLI_STATUSES
-    if cli_status == "missing":
-        issue = "CLI unavailable"
-    elif cli_status == "access-denied":
-        issue = "CLI access denied"
-    elif cli_status == "not-executable":
-        issue = "CLI not executable"
-    elif cli_status == "invalid-json":
-        issue = f"{operation}: invalid JSON: {error}"
-    else:
-        issue = f"{operation}: {error}"
-    return {
-        "status": "unavailable" if unavailable else "attention",
-        "cli_status": cli_status,
-        "recommended_mode": (
-            host_profiles.FALLBACK_MODE if fallback else host_profiles.BLOCKED_MODE
-        ),
-        "capabilities": host_profiles.capabilities(
-            host_profiles.FALLBACK_MODE if fallback else host_profiles.NATIVE_MODE
-        ),
-        "issues": [issue],
-    }
-
 
 def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
     if not state_dir.is_dir():
@@ -336,43 +309,6 @@ def _unfinished_transaction(state_dir: pathlib.Path) -> pathlib.Path | None:
         }:
             return path
     return None
-
-
-def _next_command(options: Any, results: dict[str, dict[str, Any]]) -> str:
-    codex = results.get("codex")
-    if codex is not None and codex.get("cli_status") == "invalid-json":
-        return subprocess.list2cmdline(marketplace_list_command("codex"))
-    if (
-        codex is not None
-        and codex.get("cli_status") in host_profiles.FALLBACK_CLI_STATUSES
-    ):
-        command = [
-            "python",
-            "scripts/divan.py",
-            "install",
-            "--host",
-            "codex",
-            "--source",
-            options.source,
-            "--ref",
-            options.ref,
-            "--profile",
-            "auto",
-        ]
-        return subprocess.list2cmdline(command)
-    command = [
-        "python",
-        "scripts/divan.py",
-        "install",
-        "--host",
-        options.host,
-        "--source",
-        options.source,
-        "--ref",
-        options.ref,
-    ]
-    return subprocess.list2cmdline(command)
-
 
 def doctor(
     options: Any,
@@ -392,7 +328,9 @@ def doctor(
         issues.append("unfinished transaction")
     statuses = {result["status"] for result in results.values()}
     status = "unavailable" if "unavailable" in statuses else "attention" if issues else "healthy"
-    next_command = _next_command(options, results)
+    next_command = host_profiles.next_command(
+        options, results, marketplace_list_command
+    )
     if transaction is not None:
         next_command = subprocess.list2cmdline(
             ["python", "scripts/divan.py", "recover", str(transaction)]
@@ -404,17 +342,3 @@ def doctor(
         "issues": issues,
         "next_command": next_command,
     }
-
-
-def print_doctor(record: dict[str, Any], json_output: bool) -> None:
-    if json_output:
-        print(json.dumps(record, ensure_ascii=False))
-        return
-    for host, result in record["hosts"].items():
-        suffix = "" if not result["issues"] else " - " + "; ".join(result["issues"])
-        print(f"{host}: {result['status']}{suffix}")
-    host_issues = {issue for result in record["hosts"].values() for issue in result["issues"]}
-    aggregate = [issue for issue in record["issues"] if issue not in host_issues]
-    if aggregate:
-        print(f"STATUS: {record['status']} - {'; '.join(aggregate)}")
-    print(f"NEXT: {record['next_command']}")

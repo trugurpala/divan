@@ -2,7 +2,6 @@
 """Manage Divan host installation, updates, diagnosis, and recovery."""
 from __future__ import annotations
 
-import argparse
 import json
 import os
 import pathlib
@@ -18,10 +17,12 @@ import host_adapters as _host_adapters
 import host_controller as _host_controller
 import host_install_journal as _host_install_journal
 import host_journal as _host_journal
+import host_options as _host_options
 import host_probe as _host_probe
 import host_profiles as _host_profiles
 import host_transactions as _host_transactions
 import host_upgrade as _host_upgrade
+from host_options import Options
 
 PACKAGES = ("sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack")
 Runner = Callable[[list[str]], subprocess.CompletedProcess[str]]
@@ -39,33 +40,7 @@ _owned_marketplaces = _host_transactions.schema1_owned_marketplaces
 
 
 InstallError = _host_transactions.TransactionError
-
-
-class Options:
-    def __init__(
-        self,
-        *,
-        host: str,
-        source: str,
-        ref: str,
-        execute: bool,
-        migrate_legacy: bool,
-        state_dir: pathlib.Path,
-        doctor: bool = False,
-        json_output: bool = False,
-        upgrade: bool = False,
-        profile: str = "native",
-    ) -> None:
-        self.host = host
-        self.source = source
-        self.ref = ref
-        self.execute = execute
-        self.migrate_legacy = migrate_legacy
-        self.state_dir = state_dir
-        self.doctor, self.json_output = doctor, json_output
-        self.upgrade = upgrade
-        self.profile = profile
-        self.hosts = ("claude", "codex") if host == "both" else (host,)
+_parse_options = _host_options.parse_options
 
 
 _subprocess_runner = _host_probe.run
@@ -387,6 +362,58 @@ def _validate_install_options(options: Options) -> None:
         raise InstallError("auto profile supports install, not upgrade")
 
 
+def _auto_install_route(
+    options: Options,
+    repository: pathlib.Path,
+    runner: Runner,
+    fallback_runner: _host_profiles.FallbackRunner,
+) -> tuple[dict[str, Any] | None, str | None, str | None]:
+    if options.profile != "auto":
+        return None, None, None
+    diagnosis = doctor(options, runner=runner, root=repository)
+    host_result = diagnosis["hosts"]["codex"]
+    selected_mode = _host_profiles.select(host_result)
+    cli_status = host_result["cli_status"]
+    if selected_mode == _host_profiles.BLOCKED_MODE:
+        raise InstallError(
+            f"Codex auto-install blocked: {cli_status}; "
+            f"next: {diagnosis['next_command']}"
+        )
+    if selected_mode != _host_profiles.FALLBACK_MODE:
+        return None, selected_mode, cli_status
+    if not options.execute:
+        return (
+            _host_profiles.fallback_plan(options, repository, cli_status),
+            selected_mode,
+            cli_status,
+        )
+    try:
+        record = _host_profiles.execute_fallback(
+            options, repository, cli_status, fallback_runner
+        )
+    except ValueError as exc:
+        raise InstallError(str(exc)) from exc
+    return record, selected_mode, cli_status
+
+
+def _annotate_profile(
+    record: dict[str, Any],
+    options: Options,
+    selected_mode: str | None,
+    cli_status: str | None,
+) -> None:
+    if selected_mode is None:
+        return
+    record.update(
+        {
+            "profile": options.profile,
+            "selected_mode": selected_mode,
+            "cli_status": cli_status,
+            "capabilities": _host_profiles.capabilities(selected_mode),
+        }
+    )
+
+
 def _install_target(
     repository: pathlib.Path, expected_packages: dict[str, dict[str, str]], options: Options, runner: Runner
 ) -> tuple[_host_install_journal.InstallIO, dict[str, Any]]:
@@ -394,6 +421,114 @@ def _install_target(
     versions = {package: row["version"] for package, row in expected_packages.items()}
     return install_io, _host_install_journal.target_evidence(
         repository, options.source, options.ref, versions, install_io)
+
+
+def _install_host(
+    transaction_path: pathlib.Path,
+    record: dict[str, Any],
+    host: str,
+    options: Options,
+    expected_packages: dict[str, dict[str, str]],
+    runner: Runner,
+    install_io: _host_install_journal.InstallIO,
+) -> None:
+    before_marketplaces = _marketplaces(host, runner)
+    before_plugins = _plugins(host, runner)
+    record["before"][host] = {
+        "marketplaces": sorted(before_marketplaces),
+        "plugins": sorted(before_plugins),
+    }
+    _persist_record(transaction_path, record)
+    if "divan" in before_marketplaces:
+        raise InstallError(
+            f"{host}: existing divan marketplace source/ref cannot be proven; "
+            "no existing entry was changed"
+        )
+    orphaned = sorted(
+        plugin for plugin in before_plugins if plugin.endswith("@divan")
+    )
+    if orphaned:
+        raise InstallError(
+            f"{host}: existing divan plugin source/ref cannot be proven: "
+            f"{', '.join(orphaned)}; no existing entry was changed"
+        )
+    _begin_mutation(
+        transaction_path,
+        record,
+        _host_install_journal.intent("forward", "add-marketplace", host),
+    )
+    _run(runner, _add_marketplace_command(host, options.source, options.ref))
+    record["created"]["marketplaces"].append(
+        _host_install_journal.capture_marketplace(record, host, install_io)
+    )
+    _finish_mutation(transaction_path, record)
+    for package in PACKAGES:
+        selector = f"{package}@divan"
+        if selector in before_plugins:
+            continue
+        _begin_mutation(
+            transaction_path,
+            record,
+            _host_install_journal.intent(
+                "forward", "install-plugin", host, selector=selector
+            ),
+        )
+        _run(runner, _install_command(host, package))
+        record["created"]["plugins"].append(
+            _host_install_journal.capture_plugin(record, host, selector, install_io)
+        )
+        _finish_mutation(transaction_path, record)
+    record["verified"][host] = _verify_host(
+        host, options, expected_packages, runner
+    )
+    _persist_record(transaction_path, record)
+
+
+def _migrate_legacy_if_requested(
+    transaction_path: pathlib.Path,
+    record: dict[str, Any],
+    options: Options,
+    repository: pathlib.Path,
+    runner: Runner,
+    stamp: str,
+) -> None:
+    if not options.migrate_legacy:
+        return
+    legacy_journal = (
+        options.state_dir / f"legacy-{stamp}-{uuid.uuid4().hex[:8]}.json"
+    )
+    _begin_mutation(
+        transaction_path,
+        record,
+        _host_install_journal.intent(
+            "forward", "legacy-migration", "codex", journal=str(legacy_journal)
+        ),
+    )
+    record["legacy_migration"] = _migrate_legacy(
+        repository, runner, legacy_journal
+    )
+    _finish_mutation(transaction_path, record)
+
+
+def _start_install_transaction(
+    options: Options, record: dict[str, Any]
+) -> tuple[pathlib.Path, str]:
+    options.state_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    transaction_path = (
+        options.state_dir / f"install-{stamp}-{uuid.uuid4().hex[:8]}.json"
+    )
+    record.update(
+        {
+            "transaction_path": str(transaction_path),
+            "started_at": datetime.now(UTC).isoformat(),
+            "before": {},
+            "status": "in-progress",
+            "pending": None,
+        }
+    )
+    _persist_record(transaction_path, record)
+    return transaction_path, stamp
 
 
 @_host_controller.serialized(_normalize_source, InstallError)
@@ -407,136 +542,41 @@ def install(
     """Plan or execute installation and return the auditable transaction record."""
     _validate_install_options(options)
     repository = root or pathlib.Path(__file__).resolve().parent.parent
-    selected_mode: str | None = None
-    selected_cli_status: str | None = None
-    if options.profile == "auto":
-        diagnosis = doctor(options, runner=runner, root=repository)
-        host_result = diagnosis["hosts"]["codex"]
-        selected_mode = _host_profiles.select(host_result)
-        selected_cli_status = host_result["cli_status"]
-        if selected_mode == _host_profiles.BLOCKED_MODE:
-            raise InstallError(
-                "Codex auto-install blocked: "
-                f"{selected_cli_status}; next: {diagnosis['next_command']}"
-            )
-        if selected_mode == _host_profiles.FALLBACK_MODE:
-            if options.execute:
-                try:
-                    return _host_profiles.execute_fallback(
-                        options,
-                        repository,
-                        selected_cli_status,
-                        fallback_runner,
-                    )
-                except ValueError as exc:
-                    raise InstallError(str(exc)) from exc
-            return _host_profiles.fallback_plan(
-                options, repository, selected_cli_status
-            )
+    routed, selected_mode, selected_cli_status = _auto_install_route(
+        options, repository, runner, fallback_runner
+    )
+    if routed is not None:
+        return routed
     expected_packages = _expected_packages(repository)
     record = _host_install_journal.new_record(
         options.source, options.ref, _hosts(options.host), _planned_commands(options)
     )
     if not options.execute:
-        if selected_mode is not None:
-            record.update(
-                {
-                    "profile": options.profile,
-                    "selected_mode": selected_mode,
-                    "cli_status": selected_cli_status,
-                    "capabilities": _host_profiles.capabilities(selected_mode),
-                }
-            )
+        _annotate_profile(record, options, selected_mode, selected_cli_status)
         return record
     install_io, record["target"] = _install_target(
         repository, expected_packages, options, runner
     )
-    options.state_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    transaction_path = options.state_dir / f"install-{stamp}-{uuid.uuid4().hex[:8]}.json"
-    record["transaction_path"] = str(transaction_path)
-    record["started_at"] = datetime.now(UTC).isoformat()
-    record["before"] = {}
-    record["status"] = "in-progress"
-    record["pending"] = None
-    _persist_record(transaction_path, record)
+    transaction_path, stamp = _start_install_transaction(options, record)
 
     try:
         for host in _hosts(options.host):
-            before_marketplaces = _marketplaces(host, runner)
-            before_plugins = _plugins(host, runner)
-            record["before"][host] = {
-                "marketplaces": sorted(before_marketplaces),
-                "plugins": sorted(before_plugins),
-            }
-            _persist_record(transaction_path, record)
-            if "divan" in before_marketplaces:
-                raise InstallError(
-                    f"{host}: existing divan marketplace source/ref cannot be proven; "
-                    "no existing entry was changed"
-                )
-            orphaned_divan_plugins = sorted(
-                plugin for plugin in before_plugins if plugin.endswith("@divan")
-            )
-            if orphaned_divan_plugins:
-                raise InstallError(
-                    f"{host}: existing divan plugin source/ref cannot be proven: "
-                    f"{', '.join(orphaned_divan_plugins)}; no existing entry was changed"
-                )
-            _begin_mutation(
+            _install_host(
                 transaction_path,
                 record,
-                _host_install_journal.intent("forward", "add-marketplace", host),
+                host,
+                options,
+                expected_packages,
+                runner,
+                install_io,
             )
-            _run(runner, _add_marketplace_command(host, options.source, options.ref))
-            record["created"]["marketplaces"].append(
-                _host_install_journal.capture_marketplace(record, host, install_io)
-            )
-            _finish_mutation(transaction_path, record)
-            for package in PACKAGES:
-                selector = f"{package}@divan"
-                if selector in before_plugins:
-                    continue
-                _begin_mutation(
-                    transaction_path,
-                    record,
-                    _host_install_journal.intent("forward", "install-plugin", host, selector=selector),
-                )
-                _run(runner, _install_command(host, package))
-                record["created"]["plugins"].append(
-                    _host_install_journal.capture_plugin(
-                        record, host, selector, install_io
-                    )
-                )
-                _finish_mutation(transaction_path, record)
-
-            record["verified"][host] = _verify_host(
-                host, options, expected_packages, runner
-            )
-            _persist_record(transaction_path, record)
 
         record["status"] = "verified"
-        if options.migrate_legacy:
-            legacy_journal = options.state_dir / f"legacy-{stamp}-{uuid.uuid4().hex[:8]}.json"
-            _begin_mutation(
-                transaction_path,
-                record,
-                _host_install_journal.intent("forward", "legacy-migration", "codex", journal=str(legacy_journal)),
-            )
-            record["legacy_migration"] = _migrate_legacy(
-                repository, runner, legacy_journal
-            )
-            _finish_mutation(transaction_path, record)
+        _migrate_legacy_if_requested(
+            transaction_path, record, options, repository, runner, stamp
+        )
         record["finished_at"] = datetime.now(UTC).isoformat()
-        if selected_mode is not None:
-            record.update(
-                {
-                    "profile": options.profile,
-                    "selected_mode": selected_mode,
-                    "cli_status": selected_cli_status,
-                    "capabilities": _host_profiles.capabilities(selected_mode),
-                }
-            )
+        _annotate_profile(record, options, selected_mode, selected_cli_status)
         _persist_record(transaction_path, record)
         return record
     except BaseException as exc:
@@ -599,112 +639,10 @@ def doctor(
     return _host_journal.augment_doctor(result, options.state_dir, _normalize_source)
 
 
-def _parse_options(argv: list[str] | None = None) -> Options:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--host", choices=("claude", "codex", "both"), default="both")
-    parser.add_argument("--source", default="https://github.com/trugurpala/divan.git")
-    parser.add_argument("--ref", required=True, help="immutable release tag or commit")
-    operation = parser.add_mutually_exclusive_group()
-    operation.add_argument("--doctor", action="store_true", help="inspect host state without changes")
-    operation.add_argument("--upgrade", action="store_true", help="replace a proven Divan install")
-    parser.add_argument("--execute", action="store_true", help="apply the printed plan")
-    parser.add_argument(
-        "--profile",
-        choices=("native", "auto"),
-        default="native",
-        help="native host install, or explicit Codex auto-selection",
-    )
-    parser.add_argument("--json", action="store_true", help="write machine-readable doctor output")
-    parser.add_argument("--migrate-legacy", action="store_true")
-    parser.add_argument(
-        "--state-dir",
-        type=pathlib.Path,
-        default=pathlib.Path.home() / ".divan" / "transactions",
-    )
-    parsed = parser.parse_args(argv)
-    if parsed.json and not parsed.doctor:
-        parser.error("--json requires --doctor")
-    if parsed.doctor and parsed.execute:
-        parser.error("--doctor does not allow --execute")
-    if parsed.migrate_legacy and not parsed.execute:
-        parser.error("--migrate-legacy requires --execute")
-    if parsed.migrate_legacy and parsed.upgrade:
-        parser.error("--migrate-legacy does not allow --upgrade")
-    if parsed.migrate_legacy and parsed.host == "claude":
-        parser.error("--migrate-legacy requires --host codex or --host both")
-    if parsed.profile == "auto" and parsed.host != "codex":
-        parser.error("--profile auto requires --host codex")
-    if parsed.profile == "auto" and (parsed.doctor or parsed.upgrade):
-        parser.error("--profile auto supports install only")
-    if re.fullmatch(r"[0-9a-f]{40}", parsed.ref) and not pathlib.Path(
-        parsed.source
-    ).expanduser().exists():
-        parser.error("a full commit ref requires a local --source; remote Claude sources need a tag")
-    return Options(
-        host=parsed.host,
-        source=parsed.source,
-        ref=parsed.ref,
-        execute=parsed.execute,
-        migrate_legacy=parsed.migrate_legacy,
-        state_dir=parsed.state_dir,
-        doctor=parsed.doctor,
-        json_output=parsed.json,
-        upgrade=parsed.upgrade,
-        profile=parsed.profile,
-    )
-
-
 def main(argv: list[str] | None = None) -> int:
-    arguments = list(sys.argv[1:] if argv is None else argv)
-    if any(
-        argument == "--rollback-transaction"
-        or argument.startswith("--rollback-transaction=")
-        for argument in arguments
-    ):
-        parser = argparse.ArgumentParser(description="Recover an interrupted Divan install")
-        parser.add_argument("--rollback-transaction", type=pathlib.Path, required=True)
-        recovery = parser.parse_args(arguments)
-        try:
-            record = rollback_transaction(recovery.rollback_transaction)
-        except InstallError as exc:
-            print(f"HATA: {exc}", file=sys.stderr)
-            return 1
-        print(f"RECOVERED - transaction: {record['transaction_path']}")
-        return 0
-    options = _parse_options(arguments)
-    try:
-        if options.doctor:
-            record = doctor(options)
-        elif options.upgrade:
-            record = upgrade(options)
-        else:
-            record = install(options)
-    except InstallError as exc:
-        print(f"HATA: {exc}", file=sys.stderr)
-        return 1
-    if options.doctor:
-        _host_adapters.print_doctor(record, options.json_output)
-        return 0
-    if record["status"] == "dry-run":
-        print("DRY-RUN - no host state changed. Add --execute to apply:")
-        for command in record["planned_commands"]:
-            print("  " + subprocess.list2cmdline(command))
-    elif record["status"] == "no-op":
-        print("NO-OP - installed Divan already matches target.")
-    elif record.get("selected_mode") == _host_profiles.FALLBACK_MODE:
-        print(
-            "VERIFIED SKILL FALLBACK "
-            f"- {record['skill_count']}/41 skills; manifest: {record['manifest']}"
-        )
-        print(
-            "CAPABILITIES - skills/instructions available; "
-            "native commands, agents, hooks, MCP, and lifecycle unavailable."
-        )
-        print(f"ROLLBACK: {record['rollback_command']}")
-        print(f"NEXT: {record['next_command']}")
-    else:
-        print(f"VERIFIED - transaction: {record['transaction_path']}")
-    return 0
+    import host_cli
+
+    return host_cli.main(argv, globals())
 
 
 if __name__ == "__main__":

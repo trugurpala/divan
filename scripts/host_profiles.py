@@ -58,6 +58,56 @@ def select(host_result: dict[str, Any]) -> str:
     return BLOCKED_MODE
 
 
+def cli_failure_result(
+    host: str, operation: str, error: str, cli_status: str
+) -> dict[str, Any]:
+    fallback = host == "codex" and cli_status in FALLBACK_CLI_STATUSES
+    unavailable = cli_status in FALLBACK_CLI_STATUSES
+    labels = {
+        "missing": "CLI unavailable",
+        "access-denied": "CLI access denied",
+        "not-executable": "CLI not executable",
+    }
+    issue = labels.get(cli_status)
+    if issue is None:
+        prefix = f"{operation}: invalid JSON" if cli_status == "invalid-json" else operation
+        issue = f"{prefix}: {error}"
+    mode = FALLBACK_MODE if fallback else BLOCKED_MODE
+    capability_mode = FALLBACK_MODE if fallback else NATIVE_MODE
+    return {
+        "status": "unavailable" if unavailable else "attention",
+        "cli_status": cli_status,
+        "recommended_mode": mode,
+        "capabilities": capabilities(capability_mode),
+        "issues": [issue],
+    }
+
+
+def next_command(
+    options: Any,
+    results: dict[str, dict[str, Any]],
+    marketplace_list: Callable[[str], list[str]],
+) -> str:
+    codex = results.get("codex")
+    if codex is not None and codex.get("cli_status") == "invalid-json":
+        return subprocess.list2cmdline(marketplace_list("codex"))
+    command = [
+        "python",
+        "scripts/divan.py",
+        "install",
+        "--host",
+        options.host,
+        "--source",
+        options.source,
+        "--ref",
+        options.ref,
+    ]
+    if codex is not None and codex.get("cli_status") in FALLBACK_CLI_STATUSES:
+        command[4] = "codex"
+        command.extend(["--profile", "auto"])
+    return subprocess.list2cmdline(command)
+
+
 def fallback_command(root: pathlib.Path) -> list[str]:
     if os.name == "nt":
         return [
@@ -156,6 +206,55 @@ def _expected_skill_names(root: pathlib.Path) -> set[str]:
     }
 
 
+def _single_manifest_value(
+    rows: list[dict[str, str]],
+    key: str,
+    label: str,
+    pattern: str | None = None,
+) -> str:
+    values = {str(row.get(key, "")) for row in rows}
+    if len(values) != 1:
+        raise ValueError(f"fallback manifest {label} is invalid")
+    value = next(iter(values))
+    if not value or (pattern is not None and not re.fullmatch(pattern, value)):
+        raise ValueError(f"fallback manifest {label} is invalid")
+    return value
+
+
+def _manifest_identity(
+    rows: list[dict[str, str]], options: Any
+) -> tuple[str, str, str]:
+    ref = _single_manifest_value(rows, "ref", "ref")
+    if ref != options.ref:
+        raise ValueError("fallback manifest ref does not match the requested ref")
+    commit = _single_manifest_value(
+        rows, "source_commit", "source commit", r"[0-9a-f]{40}"
+    )
+    archive = _single_manifest_value(
+        rows, "archive_sha256", "archive checksum", r"[0-9a-f]{64}"
+    )
+    version = _single_manifest_value(rows, "surum", "version")
+    return version, commit, archive
+
+
+def _verified_skill_trees(
+    rows: list[dict[str, str]], skills_dir: pathlib.Path
+) -> dict[str, str]:
+    installed: dict[str, str] = {}
+    for row in rows:
+        name = str(row["skill"])
+        target = pathlib.Path(str(row.get("hedef", ""))).expanduser().resolve()
+        if target != (skills_dir / name).resolve() or not target.is_dir():
+            raise ValueError(f"fallback skill target is invalid: {name}")
+        checksum = str(row.get("installed_sha256", "")).lower()
+        if not re.fullmatch(r"[0-9a-f]{64}", checksum):
+            raise ValueError(f"fallback skill checksum is invalid: {name}")
+        if legacy_state.tree_digest(target) != checksum:
+            raise ValueError(f"fallback skill checksum does not match: {name}")
+        installed[name] = checksum
+    return installed
+
+
 def _verify_manifest(
     options: Any,
     root: pathlib.Path,
@@ -186,37 +285,15 @@ def _verify_manifest(
         or {row.get("skill") for row in rows} != expected
     ):
         raise ValueError("fallback manifest does not contain exactly 41 Divan skills")
-    installed: dict[str, str] = {}
-    refs = {row.get("ref") for row in rows}
-    commits = {row.get("source_commit") for row in rows}
-    archives = {row.get("archive_sha256") for row in rows}
-    versions = {row.get("surum") for row in rows}
-    if refs != {options.ref}:
-        raise ValueError("fallback manifest ref does not match the requested ref")
-    if len(commits) != 1 or not re.fullmatch(r"[0-9a-f]{40}", str(next(iter(commits)))):
-        raise ValueError("fallback manifest source commit is invalid")
-    if len(archives) != 1 or not re.fullmatch(r"[0-9a-f]{64}", str(next(iter(archives)))):
-        raise ValueError("fallback manifest archive checksum is invalid")
-    if len(versions) != 1 or not next(iter(versions)):
-        raise ValueError("fallback manifest version is invalid")
-    for row in rows:
-        name = str(row["skill"])
-        target = pathlib.Path(str(row.get("hedef", ""))).expanduser().resolve()
-        if target != (skills_dir / name).resolve() or not target.is_dir():
-            raise ValueError(f"fallback skill target is invalid: {name}")
-        checksum = str(row.get("installed_sha256", "")).lower()
-        if not re.fullmatch(r"[0-9a-f]{64}", checksum):
-            raise ValueError(f"fallback skill checksum is invalid: {name}")
-        if legacy_state.tree_digest(target) != checksum:
-            raise ValueError(f"fallback skill checksum does not match: {name}")
-        installed[name] = checksum
+    version, commit, archive = _manifest_identity(rows, options)
+    installed = _verified_skill_trees(rows, skills_dir)
     return {
         "manifest": str(manifest),
         "journal": str(journal),
         "skill_count": len(installed),
-        "version": str(next(iter(versions))),
-        "source_commit": str(next(iter(commits))),
-        "archive_sha256": str(next(iter(archives))),
+        "version": version,
+        "source_commit": commit,
+        "archive_sha256": archive,
         "installed_sha256": installed,
     }
 
