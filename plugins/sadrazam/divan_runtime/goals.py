@@ -302,12 +302,16 @@ def start_goal(
                 "status": "legacy-unchanged",
                 "migration_required": True,
                 "writes": [
-                    (spec_root / name).relative_to(root).as_posix()
-                    for name in ("spec.md", "plan.md", "tasks.md")
+                    path.relative_to(root).as_posix()
+                    for path in (
+                        spec_root / "spec.md",
+                        spec_root / "plan.md",
+                        spec_root / "tasks.md",
+                        receipt_path,
+                    )
                 ],
             }
         )
-        result["writes"].append(receipt_path.relative_to(root).as_posix())
         return result
     if not execute:
         return result
