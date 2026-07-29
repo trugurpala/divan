@@ -17,11 +17,11 @@ CONTEXT_ENV = "DIVAN_CONTEXT_WINDOW"
 CONTEXT_SOURCE_ENV = "DIVAN_CONTEXT_SOURCE"
 
 COMPLEXITY_PHRASES = {
-    "all": 5,
     "baştan sona": 12,
     "bastan sona": 12,
     "büyük düşün": 8,
     "buyuk dusun": 8,
+    "do it all": 5,
     "end to end": 12,
     "from scratch": 10,
     "migration": 10,
@@ -59,6 +59,12 @@ def _normalized(value: str) -> str:
         "".join(character if character.isalnum() else " " for character in text)
         .split()
     )
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    normalized_text = f" {_normalized(text)} "
+    normalized_phrase = _normalized(phrase)
+    return bool(normalized_phrase) and f" {normalized_phrase} " in normalized_text
 
 
 def _positive_int(value: Any, context: str) -> int:
@@ -206,9 +212,9 @@ def _complexity_score(route: dict[str, Any]) -> int:
         score += 10
     if route.get("package_manager_conflicts"):
         score += 12
-    intent = _normalized(str(route.get("intent", "")))
+    intent = str(route.get("intent", ""))
     for phrase, weight in COMPLEXITY_PHRASES.items():
-        if _normalized(phrase) in intent:
+        if _contains_phrase(intent, phrase):
             score += weight
     return min(100, score)
 
@@ -247,17 +253,17 @@ def _stage_evidence(stage: str, required: list[str]) -> list[str]:
     return matched or [f"{stage} completion receipt"]
 
 
-def _partition_stages(stages: list[str], sefer_count: int) -> list[list[str]]:
+def _partition_stages(stages: list[str], campaign_count: int) -> list[list[str]]:
     if not stages:
         return [["brief", "implementation", "verification"]]
-    count = max(1, min(sefer_count, len(stages)))
-    return [
-        stages[start:end]
-        for index in range(count)
-        if (
-            start := math.floor(index * len(stages) / count)
-        ) < (end := math.floor((index + 1) * len(stages) / count))
-    ]
+    count = max(1, min(campaign_count, len(stages)))
+    groups: list[list[str]] = []
+    for index in range(count):
+        start = math.floor(index * len(stages) / count)
+        end = math.floor((index + 1) * len(stages) / count)
+        if start < end:
+            groups.append(stages[start:end])
+    return groups
 
 
 def _publication_obligations(route: dict[str, Any], target: str) -> dict[str, Any]:
@@ -314,11 +320,11 @@ def enrich_plan(
             capacity["max_parallel_workstreams"], len(workflows), 3
         )
     lane = (
-        "tek-sefer"
+        "single-expedition"
         if sessions == 1
-        else "sinirli-ordu"
+        else "bounded-army"
         if safe_parallel > 1
-        else "ardisik-sefer"
+        else "sequential-expeditions"
     )
 
     stages = [str(stage) for stage in route.get("stages", [])]
@@ -326,12 +332,12 @@ def enrich_plan(
     roles = [str(role) for role in route.get("roles", [])]
     required = [str(item) for item in route.get("required_evidence", [])]
     tasks: list[dict[str, Any]] = []
-    sefers: list[dict[str, Any]] = []
+    campaigns: list[dict[str, Any]] = []
     task_index = 0
     previous_task: str | None = None
-    for sefer_index, group in enumerate(stage_groups, start=1):
-        sefer_tasks: list[str] = []
-        owners: list[str] = []
+    for campaign_index, group in enumerate(stage_groups, start=1):
+        campaign_tasks: list[str] = []
+        commanders: list[str] = []
         for stage in group:
             task_index += 1
             task_id = f"task-{task_index:02d}"
@@ -345,18 +351,19 @@ def enrich_plan(
                 "completion_rule": "evidence-recorded",
             }
             tasks.append(task)
-            sefer_tasks.append(task_id)
-            if owner not in owners:
-                owners.append(owner)
+            campaign_tasks.append(task_id)
+            if owner not in commanders:
+                commanders.append(owner)
             previous_task = task_id
-        sefers.append(
+        campaigns.append(
             {
-                "id": f"sefer-{sefer_index:02d}",
-                "ordinal": sefer_index,
+                "id": f"campaign-{campaign_index:02d}",
+                "display_name": f"Sefer {campaign_index:02d}",
+                "ordinal": campaign_index,
                 "stages": group,
-                "task_ids": sefer_tasks,
-                "paşalar": owners,
-                "handoff_required": sefer_index < len(stage_groups),
+                "task_ids": campaign_tasks,
+                "commanders": commanders,
+                "handoff_required": campaign_index < len(stage_groups),
                 "exit_gate": "all tasks have recorded evidence",
             }
         )
@@ -364,6 +371,7 @@ def enrich_plan(
     enriched = dict(route)
     enriched["route_schema_version"] = route.get("schema_version")
     enriched["schema_version"] = 3
+    enriched["planning_contract"] = "nizami-sefer"
     enriched["target"] = normalized_target
     enriched["complexity"] = {
         "score": score,
@@ -375,18 +383,18 @@ def enrich_plan(
     enriched["orchestration_lane"] = lane
     enriched["safe_parallel_workstreams"] = safe_parallel
     enriched["command_structure"] = {
-        "padişah": "user",
-        "sadrazam": "sadrazam",
-        "vezirler": roles,
-        "paşalar": sorted(
-            {owner for sefer in sefers for owner in sefer["paşalar"]}
+        "sovereign": {"id": "user", "display_name": "Padişah"},
+        "grand_vizier": {"id": "sadrazam", "display_name": "Sadrazam"},
+        "council_roles": roles,
+        "field_commanders": sorted(
+            {owner for campaign in campaigns for owner in campaign["commanders"]}
         ),
     }
-    enriched["sefers"] = sefers
+    enriched["campaigns"] = campaigns
     enriched["tasks"] = tasks
     enriched["memory_contract"] = {
         "state_lives_on_disk": True,
-        "checkpoint_after_each_sefer": True,
+        "checkpoint_after_each_campaign": True,
         "handoff_at_percent": capacity["handoff_percent"],
         "resume_requires_last_receipt": True,
         "required_records": [
