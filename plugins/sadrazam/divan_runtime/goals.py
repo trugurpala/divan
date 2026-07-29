@@ -9,6 +9,7 @@ import pathlib
 import re
 import tempfile
 import unicodedata
+from collections.abc import Mapping
 from typing import Any
 
 from . import engine, receipts
@@ -26,22 +27,29 @@ def _inspection(project: pathlib.Path) -> dict[str, Any]:
     return engine.inspect_project(project, contracts)
 
 
-def goal_id(intent: str, target: str, inspection: dict[str, Any]) -> str:
+def goal_id(
+    intent: str,
+    target: str,
+    inspection: dict[str, Any],
+    planning_identity: dict[str, Any] | None = None,
+) -> str:
     """Derive the stable goal ID from normalized inputs and inspection."""
     seed = {
         "intent": _normalized(intent),
         "target": target.upper(),
         "inspection": inspection,
     }
+    if planning_identity is not None:
+        seed["planning"] = planning_identity
     encoded = json.dumps(
         seed, ensure_ascii=False, separators=(",", ":"), sort_keys=True
     ).encode("utf-8")
     return f"goal-{hashlib.sha256(encoded).hexdigest()[:12]}"
 
 
-def _artifact_values(
-    identifier: str, intent: str, target: str, inspection: dict[str, Any]
-) -> dict[str, bytes]:
+def _plan_markdown(
+    identifier: str, target: str, inspection: dict[str, Any], route: dict[str, Any]
+) -> str:
     project_types = ", ".join(inspection.get("project_types", [])) or "unclassified"
     commands = inspection.get("commands", [])
     command_lines = [
@@ -51,32 +59,56 @@ def _artifact_values(
     ]
     if not command_lines:
         command_lines = ["- No project-native command was discovered."]
+    execution = route["execution_plan"]
+    orchestration = execution["orchestration"]
+    model = execution["model_policy"]
+    return (
+        f"# Plan for {identifier}\n\n"
+        f"Target: `{target.upper()}`. Project types: {project_types}.\n\n"
+        f"Complexity: `{execution['complexity']['level']}`. "
+        f"Recommended sefers: `{orchestration['recommended_sefers']}`. "
+        f"Lane: `{orchestration['lane']}`. "
+        f"Model class: `{model['capability_class']}`.\n\n"
+        "## Discovered commands\n\n"
+        + "\n".join(command_lines)
+        + "\n"
+    )
+
+
+def _tasks_markdown(identifier: str, route: dict[str, Any]) -> str:
+    lines = [f"# Tasks for {identifier}", ""]
+    for task in route["execution_plan"]["tasks"]:
+        dependencies = ", ".join(task["depends_on"]) or "none"
+        lines.append(
+            f"- [ ] `{task['id']}` {task['stage']} "
+            f"(owner: `{task['owner_role']}`; depends on: {dependencies})"
+        )
+    return "\n".join(lines) + "\n"
+
+
+def _artifact_values(
+    identifier: str,
+    intent: str,
+    target: str,
+    inspection: dict[str, Any],
+    route: dict[str, Any],
+) -> dict[str, bytes]:
+    project_types = ", ".join(inspection.get("project_types", [])) or "unclassified"
     spec = (
         f"# Goal {identifier}\n\n"
         f"## Intent\n\n{intent.strip()}\n\n"
         f"## Target\n\n{target.upper()}\n\n"
         f"## Inspection\n\nProject types: {project_types}.\n"
     )
-    plan = (
-        f"# Plan for {identifier}\n\n"
-        "1. Confirm the specification and applicable project standards.\n"
-        "2. Implement the smallest authorized change with test-first evidence.\n"
-        f"3. Verify evidence through the `{target.upper()}` target.\n\n"
-        "## Discovered commands\n\n"
-        + "\n".join(command_lines)
-        + "\n"
-    )
-    tasks = (
-        f"# Tasks for {identifier}\n\n"
-        "- [ ] Specify acceptance evidence.\n"
-        "- [ ] Record a failing test or mechanical contract check.\n"
-        "- [ ] Implement the authorized change.\n"
-        "- [ ] Verify and append a phase receipt.\n"
-    )
     return {
         "spec.md": spec.encode("utf-8"),
-        "plan.md": plan.encode("utf-8"),
-        "tasks.md": tasks.encode("utf-8"),
+        "plan.md": _plan_markdown(
+            identifier, target, inspection, route
+        ).encode("utf-8"),
+        "tasks.md": _tasks_markdown(identifier, route).encode("utf-8"),
+        "route.json": (
+            json.dumps(route, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+        ).encode("utf-8"),
     }
 
 
@@ -134,11 +166,54 @@ def _goal_paths(
     return spec_root, evidence_root, receipt_path
 
 
+def _goal_route(
+    root: pathlib.Path,
+    intent: str,
+    target: str,
+    host_profile: str | None,
+    context_window: int | None,
+    environment: Mapping[str, str] | None,
+) -> dict[str, Any]:
+    route_environment = environment
+    if host_profile is None and context_window is None and environment is None:
+        route_environment = {}
+    contracts = engine.load_contracts(pathlib.Path(engine.__file__).resolve().parent)
+    return engine.plan_intent(
+        intent,
+        root,
+        contracts,
+        target.casefold(),
+        host_profile=host_profile,
+        context_window=context_window,
+        environment=route_environment,
+    )
+
+
+def _planning_identity(
+    route: dict[str, Any],
+    host_profile: str | None,
+    context_window: int | None,
+    environment: Mapping[str, str] | None,
+) -> dict[str, Any] | None:
+    if host_profile is None and context_window is None and environment is None:
+        return None
+    execution = route["execution_plan"]
+    return {
+        "schema_version": execution["schema_version"],
+        "host": execution["host"],
+        "context_budget": execution["context_budget"],
+    }
+
+
 def start_goal(
     project: pathlib.Path | str,
     intent: str,
     target: str,
     execute: bool,
+    *,
+    host_profile: str | None = None,
+    context_window: int | None = None,
+    environment: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     """Plan or create deterministic spec/plan/task and initial receipt files."""
     root = pathlib.Path(project).resolve()
@@ -153,9 +228,20 @@ def start_goal(
         )
     snapshot = _inspection(root)
     safe_intent = receipts.redact_text(intent.strip())
-    identifier = goal_id(safe_intent, normalized_target, snapshot)
+    route = _goal_route(
+        root,
+        safe_intent,
+        normalized_target,
+        host_profile,
+        context_window,
+        environment,
+    )
+    identity = _planning_identity(
+        route, host_profile, context_window, environment
+    )
+    identifier = goal_id(safe_intent, normalized_target, snapshot, identity)
     artifacts = _artifact_values(
-        identifier, safe_intent, normalized_target, snapshot
+        identifier, safe_intent, normalized_target, snapshot, route
     )
     spec_root, evidence_root, receipt_path = _goal_paths(root, identifier)
     relative_artifacts = {
@@ -164,7 +250,10 @@ def start_goal(
         for name, content in artifacts.items()
     }
     paths = [
-        *(spec_root / name for name in ("spec.md", "plan.md", "tasks.md")),
+        *(
+            spec_root / name
+            for name in ("spec.md", "plan.md", "tasks.md", "route.json")
+        ),
         receipt_path,
     ]
     result = {

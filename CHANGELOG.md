@@ -6,9 +6,27 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+### Added
+
+- Nizam-i Sefer planning intelligence: deterministic complexity, host/context
+  uncertainty, bounded parallel workstreams, sefer handoffs, stage task graphs,
+  model capability classes, and public-surface obligations.
+- `--host-profile`, `--context-window`, and `--target` planning controls.
+- Goal-local `route.json`, bound into the existing evidence receipt.
+
+### Safety
+
+- Context fallback numbers are explicit planning assumptions, never
+  vendor-verified product limits.
+- Codex GPT-5.6 Luna/Terra/Sol values are candidates chosen by risk class; the
+  host must confirm availability before execution.
+- Planning performs no model call, target-project command, dependency install,
+  daemon startup, or external harness activation.
+
 ### Planned
 
-- Independent adoption evidence and reproducible quality measurements.
+- Native host adapters, clean-host canaries, independent adoption evidence,
+  and reproducible quality measurements.
 
 ## [0.17.1] - 2026-07-29
 

@@ -53,6 +53,22 @@ sözleşmesinin tek kaynağıdır. `python scripts/divan.py architecture --json`
 ikisini birlikte doğrular ve gösterir. Bağımlılıklar döngü kuramaz. Çekirdek
 başka bir repoya veya harici agent runtime'ına bağlı değildir.
 
+## Nizâm-ı Sefer
+
+`council` modülü ayrı bir `planning.py` bileşenine sahiptir. Mevcut schema-2
+rota `execution_plan` ile zenginleşir; onuncu runtime modülü oluşturulmaz.
+
+Plan; hostun açık, ortam ipuçlu, çelişkili veya bilinmeyen oluşunu değerleri
+kaydetmeden gösterir. Bağlam fallback'i daima Divan'ın ihtiyatlı planlama
+varsayımıdır, ürün/model limiti değildir. Yapısal karmaşıklık; ekonomi, dengeli
+veya frontier model sınıfına; deterministik görev grafiğine; seferlere; devir
+kuralına; kanıta ve en fazla üç paralel iş hattına dönüşür.
+
+Codex'te güncel resmî OpenAI rehberi ekonomi için `gpt-5.6-luna`, dengeli için
+`gpt-5.6-terra`, frontier için `gpt-5.6-sol` adayını verir. Bunlar hesapta
+bulunma iddiası değildir; host doğrulamalıdır. `--context-window` değeri de
+Hükümdar beyanıdır, üretici tarafından doğrulanmış limit diye sunulmaz.
+
 ## Kullanım
 
 Normal kullanıcı yalnız sonucu söyler. CLI, bakım ve entegrasyon yüzeyidir:
@@ -61,6 +77,7 @@ Normal kullanıcı yalnız sonucu söyler. CLI, bakım ve entegrasyon yüzeyidir
 python scripts/divan.py architecture --json
 python scripts/divan.py inspect --project .
 python scripts/divan.py plan --project . --intent "Kayıt ekranını erişilebilir yap"
+python scripts/divan.py plan --project . --intent "API'yi güvenli yap ve yayınla" --host-profile codex --context-window 1050000 --target released --json
 python scripts/divan.py impact README.md plugins/sadrazam/skills/sadrazam/SKILL.md
 python scripts/divan.py validate
 python scripts/divan.py init --project . --profile standard

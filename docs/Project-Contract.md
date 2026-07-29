@@ -72,6 +72,22 @@ Do not confuse host and project lifecycle commands:
 | `divan.py audit --project ...` | Applicable DPS standards | Evaluate project-quality evidence |
 | `divan.py project status --project ...` | Ownership and drift | Compare recorded, observed, and desired payloads |
 
+## Goal route and Nizam-i Sefer
+
+`goal start` now creates `route.json` beside `spec.md`, `plan.md`, and
+`tasks.md`. Its hash is part of the receipt, so another session can resume from
+the same host/context assumptions, task dependencies, sefer boundaries, model
+class, evidence, and public-surface obligations without relying on chat history.
+
+```powershell
+python scripts/divan.py goal start --project . --intent "Secure and release the API" --host-profile auto --target released
+python scripts/divan.py goal start --project . --intent "Secure and release the API" --host-profile codex --context-window 1050000 --target released --execute
+```
+
+The first command is a no-write preview. The second records an owner-declared
+context window; it does not prove a vendor limit or model availability. Existing
+goals without `route.json` remain readable and verifiable.
+
 ## Goal and evidence lifecycle
 
 ```text

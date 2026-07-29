@@ -1104,7 +1104,7 @@ class GoalAndReceiptTests(unittest.TestCase):
             )
             self.assertEqual(
                 sorted(item.name for item in spec_dir.iterdir()),
-                ["plan.md", "spec.md", "tasks.md"],
+                ["plan.md", "route.json", "spec.md", "tasks.md"],
             )
             self.assertTrue(receipt_path.is_file())
             verification = receipts.verify_receipt(receipt_path)

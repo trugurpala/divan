@@ -46,6 +46,22 @@ class PortableCompanyCliTests(unittest.TestCase):
             "[REDACTED_SECRET]",
         )
 
+    def test_planning_token_budgets_remain_numeric_without_unmasking_secrets(
+        self,
+    ) -> None:
+        cli = load_module("divan_company_cli_planning_output", COMPANY_CLI)
+        safe = cli._safe_output(
+            {
+                "total_tokens": 32_768,
+                "access_token": 12_345,
+                "reserve_tokens": "not-a-number",
+            }
+        )
+
+        self.assertEqual(safe["total_tokens"], 32_768)
+        self.assertEqual(safe["access_token"], "[REDACTED_SECRET]")
+        self.assertEqual(safe["reserve_tokens"], "[REDACTED_SECRET]")
+
     def test_release_requires_an_explicit_provider(self) -> None:
         cli = load_module("divan_company_cli_provider", COMPANY_CLI)
         with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):

@@ -45,6 +45,14 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
    anlamlı sonucu kısa ve kanıta bağlı biçimde söyler. Plan, kod, test, GitHub,
    merge, yayın ve canlı doğrulama ayrı iddialardır. Bu sözleşme host arayüzünü
    değiştirmez, yeni runtime veya dış bağımlılık eklemez. Ayrıntı ADR 0008'dedir.
+9. **Kanıta bağlı host uyumluluğu:** Tek Divan ayrı host repolarına çatallanmaz.
+   Host sicili, destek seviyesi ve canary kanıtı makine-okunur tutulur; yalnız
+   beceri dosyasını okuyabilmek native veya verified desteği kanıtlamaz.
+   Ayrıntı ADR 0009'dadır.
+10. **Nizâm-ı Sefer:** Planlama zekâsı mevcut `council` modülünün stdlib-only
+    bileşenidir; onuncu runtime modülü veya dış agent harness değildir. Host
+    kanıtı yoksa sıralı çalışır, en fazla üç bağımsız sefer açar ve kesin model
+    kullanılabilirliğini host doğrulamadan iddia etmez. Ayrıntı ADR 0010'dadır.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -67,15 +75,19 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin yayın adayı
 
-- **v0.17.1 ✓** Local patch candidate: one canonical vibe-progress contract,
-  all seven public command entry points, synchronized public guidance, release
-  surface coverage, and focused regression tests. The canonical Windows
-  verifier passed 544 tests with 14 platform-specific skips; independent
-  whole-change review reported no open P0-P3 findings. Runtime architecture
-  and v1 readiness remain unchanged until publication evidence is complete.
+- **v0.18.0 — active development:** Nizâm-ı Sefer turns intent into a
+  deterministic task graph, risk/context policy, at most three bounded
+  workstreams, durable handoffs, and a goal-bound `route.json`. Host and model
+  uncertainty fail safe; no external agent runtime or second repository is
+  introduced. PR/CI, clean-host canaries, merge, tag, Release, Pages, and Wiki
+  remain separate pending evidence.
 
 ### Yayımlanan temel
 
+- **v0.17.1 ✓** Published vibe-progress release: one canonical human progress
+  contract across seven public commands, synchronized public guidance, and
+  focused regressions. PR #52, immutable tag/Release, five assets, checksums,
+  attestations, Pages, and Wiki are bound in the v0.17.1 evidence.
 - **v0.17.0 ✓** Published one-Divan modular-engine release: canonical
   stdlib-only Divan Engine, nine-module acyclic contract, Hükümdar-first Divan
   Nizamı, Divan Project Contract, and bounded legacy compatibility through v1.
@@ -166,14 +178,21 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-29: v0.18 Nizâm-ı Sefer development started from published v0.17.1.
+  The existing council module gained deterministic host detection, explicit
+  planning assumptions, structural risk, model-class policy, a dependency
+  graph, at most three sefers, durable handoff, and goal-bound route evidence.
+  Exact model availability remains host-confirmed. PR/CI, independent review,
+  merge, and publication remain separate pending states.
 - 2026-07-29: v0.17.1 work began from the published v0.17.0 base. ADR 0008,
   the canonical Vibe Progress Protocol, seven public command links, guidance,
   release surfaces, and focused regression tests were added without changing
   the nine-module runtime or adding an external dependency. The clean Windows
   candidate passed the canonical verifier with 544 tests and 14
   platform-specific skips. Independent whole-change review reported no open
-  P0-P3 findings and approved the local release gate. PR/CI, merge, Release,
-  Pages, and Wiki remain separate pending states.
+  P0-P3 findings and approved the local release gate. PR #52, immutable
+  tag/Release, assets, attestations, Pages, and Wiki later completed the
+  publication gate at `4144e096`.
 - 2026-07-29: PR #49 published v0.17.0 from
   `8b711b6f0ebb696ce971d83c90833bb59acf3c34`. All seven PR workflows and nine
   main/publication workflows passed. Tag/Release ID 361750779, five downloaded

@@ -1321,3 +1321,26 @@ class ImpactTests(unittest.TestCase):
                 result["effects"]
             )
         )
+
+    def test_planning_change_forces_focused_and_public_surface_checks(self) -> None:
+        result = self.engine.calculate_impact(
+            ["plugins/sadrazam/divan_runtime/planning.py"],
+            self.contracts,
+        )
+
+        self.assertEqual(result["unclassified_paths"], [])
+        self.assertIn("planning-intelligence", result["matched_rules"])
+        self.assertTrue(
+            {
+                "planning-validation",
+                "company-validation",
+                "documentation",
+                "public-site",
+                "wiki",
+                "release-validation",
+            }.issubset(result["effects"])
+        )
+        self.assertIn(
+            "python -m unittest tests.test_planning_intelligence -v",
+            result["checks"],
+        )

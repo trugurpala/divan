@@ -304,7 +304,7 @@ def _managed_project_os_path(root: pathlib.Path, relative: str) -> bool:
     if len(parts) == 4 and parts[:2] == [".divan", "specs"]:
         allowed = (
             goals.GOAL_ID_PATTERN.fullmatch(parts[2]) is not None
-            and parts[3] in {"spec.md", "plan.md", "tasks.md"}
+            and parts[3] in {"spec.md", "plan.md", "tasks.md", "route.json"}
         )
     elif len(parts) == 4 and parts[:2] == [".divan", "evidence"]:
         goal_id, name = parts[2:]

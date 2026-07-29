@@ -38,6 +38,7 @@ TEXT = {
         "packages": "Packages",
         "effects": "Effects",
         "checks": "Checks",
+        "execution": "Execution",
     },
     "tr": {
         "project": "Proje",
@@ -47,15 +48,30 @@ TEXT = {
         "packages": "Paketler",
         "effects": "Etkiler",
         "checks": "Kontroller",
+        "execution": "Yürütme",
     },
 }
 
 SENSITIVE_OUTPUT_KEYS = ("authorization", "credential", "password", "secret", "token")
+SAFE_NUMERIC_OUTPUT_KEYS = {
+    "at_context_tokens",
+    "estimated_working_set_tokens",
+    "handoff_at_tokens",
+    "reserve_tokens",
+    "total_tokens",
+    "usable_tokens",
+}
 
 
 def _safe_output(value: Any, key: str = "") -> Any:
     """Return a recursively redacted, JSON-compatible public CLI value."""
     if any(marker in key.casefold() for marker in SENSITIVE_OUTPUT_KEYS):
+        if (
+            key in SAFE_NUMERIC_OUTPUT_KEYS
+            and isinstance(value, int)
+            and not isinstance(value, bool)
+        ):
+            return value
         return "[REDACTED_SECRET]"
     if isinstance(value, dict):
         return {
@@ -98,6 +114,16 @@ def _write_human(value: dict[str, Any], language: str) -> None:
             else str(safe_item)
         )
         sys.stdout.write(f"{labels[key]}: {rendered}\n")
+    execution = value.get("execution_plan")
+    if isinstance(execution, dict):
+        orchestration = execution["orchestration"]
+        complexity = execution["complexity"]
+        model = execution["model_policy"]
+        sys.stdout.write(
+            f"{labels['execution']}: {complexity['level']} / "
+            f"{orchestration['recommended_sefers']} sefer / "
+            f"{orchestration['lane']} / {model['capability_class']}\n"
+        )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -110,7 +136,14 @@ def _read_only_result(options: argparse.Namespace) -> dict[str, Any] | None:
         return engine.inspect_project(options.project, contracts)
     if options.command == "plan":
         contracts = engine.load_contracts(DIRECTORY)
-        return engine.plan_intent(options.intent, options.project, contracts)
+        return engine.plan_intent(
+            options.intent,
+            options.project,
+            contracts,
+            options.target,
+            host_profile=options.host_profile,
+            context_window=options.context_window,
+        )
     if options.command == "impact":
         contracts = engine.load_contracts(DIRECTORY)
         return engine.calculate_impact(options.paths, contracts)
@@ -183,7 +216,12 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
     if options.command == "goal":
         if options.goal_command == "start":
             return goals.start_goal(
-                options.project, options.intent, options.target, options.execute
+                options.project,
+                options.intent,
+                options.target,
+                options.execute,
+                host_profile=options.host_profile,
+                context_window=options.context_window,
             )
         if options.goal_command == "status":
             return goals.goal_status(options.project, options.goal)
