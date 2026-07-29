@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import errno
 import hashlib
 import importlib.util
 import json
@@ -14,6 +15,8 @@ from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+import host_probe as HOST_PROBE  # noqa: E402
+
 SPEC = importlib.util.spec_from_file_location(
     "divan_host_install", ROOT / "scripts" / "host_lifecycle.py"
 )
@@ -302,6 +305,48 @@ class HostInstallTests(unittest.TestCase):
             result = HOST_INSTALL._subprocess_runner([sys.executable, "--version"])
 
         self.assertEqual(result.stdout, "Türkçe\n")
+        self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
+        self.assertEqual(run.call_args.kwargs["errors"], "replace")
+
+    def test_host_probe_classifies_missing_executable(self) -> None:
+        with mock.patch.object(HOST_PROBE.shutil, "which", return_value=None):
+            result = HOST_PROBE.run(["codex", "plugin", "list", "--json"])
+
+        self.assertEqual(result.returncode, 127)
+        self.assertEqual(HOST_PROBE.cli_status(result), "missing")
+
+    def test_host_probe_classifies_access_denied_without_crashing(self) -> None:
+        denied = PermissionError(errno.EACCES, "Access is denied")
+        with (
+            mock.patch.object(HOST_PROBE.shutil, "which", return_value="codex.exe"),
+            mock.patch.object(HOST_PROBE.subprocess, "run", side_effect=denied),
+        ):
+            result = HOST_PROBE.run(["codex", "plugin", "list", "--json"])
+
+        self.assertEqual(result.returncode, 126)
+        self.assertEqual(HOST_PROBE.cli_status(result), "access-denied")
+
+    def test_host_probe_classifies_invalid_executable_without_crashing(self) -> None:
+        invalid = OSError(errno.ENOEXEC, "Exec format error")
+        with (
+            mock.patch.object(HOST_PROBE.shutil, "which", return_value="codex"),
+            mock.patch.object(HOST_PROBE.subprocess, "run", side_effect=invalid),
+        ):
+            result = HOST_PROBE.run(["codex", "plugin", "list", "--json"])
+
+        self.assertEqual(result.returncode, 125)
+        self.assertEqual(HOST_PROBE.cli_status(result), "not-executable")
+
+    def test_host_probe_keeps_successful_utf8_process_output(self) -> None:
+        completed = subprocess.CompletedProcess(["codex"], 0, "Türkçe\n", "")
+        with (
+            mock.patch.object(HOST_PROBE.shutil, "which", return_value="codex"),
+            mock.patch.object(HOST_PROBE.subprocess, "run", return_value=completed) as run,
+        ):
+            result = HOST_PROBE.run(["codex", "--version"])
+
+        self.assertEqual(result.stdout, "Türkçe\n")
+        self.assertEqual(HOST_PROBE.cli_status(result), "healthy")
         self.assertEqual(run.call_args.kwargs["encoding"], "utf-8")
         self.assertEqual(run.call_args.kwargs["errors"], "replace")
 

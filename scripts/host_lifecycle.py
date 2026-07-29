@@ -7,7 +7,6 @@ import json
 import os
 import pathlib
 import re
-import shutil
 import subprocess
 import sys
 import uuid
@@ -19,6 +18,7 @@ import host_adapters as _host_adapters
 import host_controller as _host_controller
 import host_install_journal as _host_install_journal
 import host_journal as _host_journal
+import host_probe as _host_probe
 import host_transactions as _host_transactions
 import host_upgrade as _host_upgrade
 
@@ -65,21 +65,7 @@ class Options:
         self.hosts = ("claude", "codex") if host == "both" else (host,)
 
 
-def _subprocess_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
-    resolved = shutil.which(command[0])
-    if resolved is None:
-        return subprocess.CompletedProcess(command, 127, "", f"executable not found: {command[0]}")
-    actual = [resolved, *command[1:]]
-    if os.name == "nt" and pathlib.Path(resolved).suffix.lower() in {".cmd", ".bat"}:
-        actual = ["cmd.exe", "/d", "/s", "/c", resolved, *command[1:]]
-    return subprocess.run(
-        actual,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
+_subprocess_runner = _host_probe.run
 
 
 def _run(runner: Runner, command: list[str]) -> str:
