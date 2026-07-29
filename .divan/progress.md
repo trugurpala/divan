@@ -4,21 +4,21 @@ Son güncelleme: 2026-07-29
 
 ## Yayın durumu
 
-- Latest published release: v0.17.1
-- Published commit: 4144e096fdcdf07f2caab50585a831beb4f3f60b
-- Publication evidence: .divan/evidence/teftis-20260729-v0171-vibe-progress.md
-- Release asset evidence: .divan/evidence/teftis-20260729-v0171-vibe-progress.md
+- Latest published release: v0.18.0
+- Published commit: 3bbbd95881a7c33f64e3e9f8d23824e3eef8977e
+- Publication evidence: .divan/evidence/teftis-20260729-v018-release.md
+- Release asset evidence: .divan/evidence/teftis-20260729-v018-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is v0.17.1 at immutable commit `4144e096`.
-The active v0.18.0 release candidate adds Nizâm-ı Sefer planning intelligence
-inside the existing council module and keeps the evidence-backed host registry
-as its execution boundary. Implementation PR #54 is merged at `7c674874`; the
-versioned release PR, immutable tag/Release, assets, Pages, and Wiki are still
-separate pending evidence. A host may be called verified only after a
-clean-host lifecycle canary records real evidence.
+The latest published release is v0.18.0 at immutable commit `3bbbd958`.
+Nizâm-ı Sefer planning intelligence now ships inside the existing council
+module and keeps the evidence-backed host registry as its execution boundary.
+Implementation PR #54 and release PR #55 are merged; the immutable tag/Release,
+five assets, checksums, SPDX SBOM, release/SLSA attestations, Pages, and Wiki
+were read back from their public surfaces. A host may be called verified only
+after a clean-host lifecycle canary records real evidence.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -30,6 +30,13 @@ adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
+- PR #55 merged the v0.18.0 release preparation to `main` at
+  `3bbbd95881a7c33f64e3e9f8d23824e3eef8977e`. Release workflow
+  `30493811167` published immutable tag/Release v0.18.0. All five downloaded
+  asset digests matched GitHub and both checksum manifests; the ZIP reports
+  0.18.0, the SBOM is SPDX 2.3, and the portable runner validates. Every asset
+  has one verified SLSA provenance record and API-visible release/v0.2 plus
+  SLSA provenance/v1 attestations. All eight main/publication workflows passed.
 - PR #54 merged Nizâm-ı Sefer to `main` at
   `7c674874503853216dc8f2abddaa0459811a5ee6`. Its required CI passed 562 tests
   with 11 expected platform skips and 75% coverage plus the cross-platform
@@ -42,7 +49,7 @@ adoption gate, so v1 remains 7/8.
   `route.json`. Unknown or conflicting hosts fail safe to sequential work;
   environment values are not persisted and exact model availability requires
   host confirmation. Focused tests, public guides, skills, impact obligations,
-  and release surfaces are being synchronized before PR/CI.
+  and release surfaces are synchronized in the published release.
 - ADR 0008 and the v0.17.1 specification define one Vibe Progress Protocol.
   Sadrazam and all seven public chat commands point to the same loaded-plugin
   root contract. README, Wiki, Pages/site source, and the vibe-coder guide
@@ -357,10 +364,8 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Complete the v0.18.0 versioned release PR from the merged, locally verified
-candidate. Require protected merge, all release gates, immutable tag/Release,
-five checksummed and attested assets, Pages/Wiki convergence, live browser
-readback, and a pinned-install smoke test before calling it published. Keep
-every non-canary host below `verified` until its own clean-host lifecycle
-evidence exists. Issue #34 remains separate; keep v1 at 7/8 unless reproducible,
-privacy-bounded non-owner adoption evidence exists.
+Define the next bounded native-host adapter slice from official host contracts.
+Keep one canonical Divan repository, isolate host differences behind adapters,
+and require clean install/discover/update/remove evidence before raising any
+compatibility tier. Issue #34 remains separate; keep v1 at 7/8 unless
+reproducible, privacy-bounded non-owner adoption evidence exists.

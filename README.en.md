@@ -22,7 +22,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v0.18.0 · **Latest published:** v0.17.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.18.0 · **Latest published:** v0.18.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
