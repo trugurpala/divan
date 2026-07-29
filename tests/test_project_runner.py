@@ -30,6 +30,7 @@ RUNTIME_FILES = (
     "impact-graph.json",
     "kernel.py",
     "modules.json",
+    "planning.py",
     "project_lifecycle.py",
     "project_os.py",
     "project_state.py",
