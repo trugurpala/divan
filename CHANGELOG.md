@@ -36,6 +36,18 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Skill fallback never claims native commands, agents, hooks, MCP
   configuration, or native lifecycle support.
 
+### Verification
+
+- The clean Windows candidate passed 580 tests with 13 expected
+  platform-specific skips and 77% branch coverage.
+- Ruff, the Clean Code debt ratchet, and mypy across 90 first-party source
+  files passed. The install function's previous complexity and function-length
+  debt was removed by separating host options and human output from execution.
+- The isolated Windows install/remove canary produced 41 verified Divan skills,
+  preserved an unrelated skill, and restored a quarantined collision.
+- GitHub CI, immutable Release assets, attestations, the checksum-backed remote
+  auto-install canary, and live Pages/Wiki readback remain publication gates.
+
 ## [0.18.0] - 2026-07-29
 
 ### Added
