@@ -417,6 +417,37 @@ class RepositoryDivanCliTests(unittest.TestCase):
             ]
         )
 
+    def test_install_forwards_the_explicit_auto_profile(self) -> None:
+        cli = load_module("repository_divan_cli_auto_profile", DIVAN_CLI)
+        with mock.patch.object(cli.host_lifecycle, "main", return_value=0) as lifecycle:
+            result = cli.main(
+                [
+                    "install",
+                    "--host",
+                    "codex",
+                    "--profile",
+                    "auto",
+                    "--ref",
+                    "v0.18.1",
+                    "--execute",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        lifecycle.assert_called_once_with(
+            [
+                "--host",
+                "codex",
+                "--source",
+                "https://github.com/trugurpala/divan.git",
+                "--ref",
+                "v0.18.1",
+                "--execute",
+                "--profile",
+                "auto",
+            ]
+        )
+
     def test_doctor_and_recover_use_english_subcommands(self) -> None:
         cli = load_module("repository_divan_cli_host", DIVAN_CLI)
         with mock.patch.object(cli.host_lifecycle, "main", return_value=0) as lifecycle:

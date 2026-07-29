@@ -19,6 +19,7 @@ import host_controller as _host_controller
 import host_install_journal as _host_install_journal
 import host_journal as _host_journal
 import host_probe as _host_probe
+import host_profiles as _host_profiles
 import host_transactions as _host_transactions
 import host_upgrade as _host_upgrade
 
@@ -53,6 +54,7 @@ class Options:
         doctor: bool = False,
         json_output: bool = False,
         upgrade: bool = False,
+        profile: str = "native",
     ) -> None:
         self.host = host
         self.source = source
@@ -62,6 +64,7 @@ class Options:
         self.state_dir = state_dir
         self.doctor, self.json_output = doctor, json_output
         self.upgrade = upgrade
+        self.profile = profile
         self.hosts = ("claude", "codex") if host == "both" else (host,)
 
 
@@ -378,6 +381,10 @@ def rollback_transaction(
 def _validate_install_options(options: Options) -> None:
     if options.migrate_legacy and "codex" not in _hosts(options.host):
         raise InstallError("legacy Codex migration requires --host codex or --host both")
+    if options.profile == "auto" and options.host != "codex":
+        raise InstallError("auto profile currently requires --host codex")
+    if options.profile == "auto" and options.upgrade:
+        raise InstallError("auto profile supports install, not upgrade")
 
 
 def _install_target(
@@ -399,11 +406,36 @@ def install(
     """Plan or execute installation and return the auditable transaction record."""
     _validate_install_options(options)
     repository = root or pathlib.Path(__file__).resolve().parent.parent
+    selected_mode: str | None = None
+    selected_cli_status: str | None = None
+    if options.profile == "auto":
+        diagnosis = doctor(options, runner=runner, root=repository)
+        host_result = diagnosis["hosts"]["codex"]
+        selected_mode = _host_profiles.select(host_result)
+        selected_cli_status = host_result["cli_status"]
+        if selected_mode == _host_profiles.BLOCKED_MODE:
+            raise InstallError(
+                "Codex auto-install blocked: "
+                f"{selected_cli_status}; next: {diagnosis['next_command']}"
+            )
+        if selected_mode == _host_profiles.FALLBACK_MODE:
+            return _host_profiles.fallback_plan(
+                options, repository, selected_cli_status
+            )
     expected_packages = _expected_packages(repository)
     record = _host_install_journal.new_record(
         options.source, options.ref, _hosts(options.host), _planned_commands(options)
     )
     if not options.execute:
+        if selected_mode is not None:
+            record.update(
+                {
+                    "profile": options.profile,
+                    "selected_mode": selected_mode,
+                    "cli_status": selected_cli_status,
+                    "capabilities": _host_profiles.capabilities(selected_mode),
+                }
+            )
         return record
     install_io, record["target"] = _install_target(
         repository, expected_packages, options, runner
@@ -485,6 +517,15 @@ def install(
             )
             _finish_mutation(transaction_path, record)
         record["finished_at"] = datetime.now(UTC).isoformat()
+        if selected_mode is not None:
+            record.update(
+                {
+                    "profile": options.profile,
+                    "selected_mode": selected_mode,
+                    "cli_status": selected_cli_status,
+                    "capabilities": _host_profiles.capabilities(selected_mode),
+                }
+            )
         _persist_record(transaction_path, record)
         return record
     except BaseException as exc:
@@ -556,6 +597,12 @@ def _parse_options(argv: list[str] | None = None) -> Options:
     operation.add_argument("--doctor", action="store_true", help="inspect host state without changes")
     operation.add_argument("--upgrade", action="store_true", help="replace a proven Divan install")
     parser.add_argument("--execute", action="store_true", help="apply the printed plan")
+    parser.add_argument(
+        "--profile",
+        choices=("native", "auto"),
+        default="native",
+        help="native host install, or explicit Codex auto-selection",
+    )
     parser.add_argument("--json", action="store_true", help="write machine-readable doctor output")
     parser.add_argument("--migrate-legacy", action="store_true")
     parser.add_argument(
@@ -574,6 +621,10 @@ def _parse_options(argv: list[str] | None = None) -> Options:
         parser.error("--migrate-legacy does not allow --upgrade")
     if parsed.migrate_legacy and parsed.host == "claude":
         parser.error("--migrate-legacy requires --host codex or --host both")
+    if parsed.profile == "auto" and parsed.host != "codex":
+        parser.error("--profile auto requires --host codex")
+    if parsed.profile == "auto" and (parsed.doctor or parsed.upgrade):
+        parser.error("--profile auto supports install only")
     if re.fullmatch(r"[0-9a-f]{40}", parsed.ref) and not pathlib.Path(
         parsed.source
     ).expanduser().exists():
@@ -588,6 +639,7 @@ def _parse_options(argv: list[str] | None = None) -> Options:
         doctor=parsed.doctor,
         json_output=parsed.json,
         upgrade=parsed.upgrade,
+        profile=parsed.profile,
     )
 
 

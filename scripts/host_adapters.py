@@ -11,26 +11,8 @@ from collections.abc import Callable
 from typing import Any
 
 import host_probe
+import host_profiles
 
-_FALLBACK_CLI_STATUSES = {"missing", "not-executable", "access-denied"}
-_NATIVE_CAPABILITIES = {
-    "skills": True,
-    "instructions": True,
-    "commands": True,
-    "agents": True,
-    "hooks": True,
-    "mcp": True,
-    "native_lifecycle": True,
-}
-_SKILL_FALLBACK_CAPABILITIES = {
-    "skills": True,
-    "instructions": True,
-    "commands": False,
-    "agents": False,
-    "hooks": False,
-    "mcp": False,
-    "native_lifecycle": False,
-}
 
 def marketplace_list_command(host: str) -> list[str]:
     return [host, "plugin", "marketplace", "list", "--json"]
@@ -305,8 +287,8 @@ def _doctor_host(
     return {
         "status": "healthy" if not issues else "attention",
         "cli_status": "healthy",
-        "recommended_mode": "native",
-        "capabilities": dict(_NATIVE_CAPABILITIES),
+        "recommended_mode": host_profiles.NATIVE_MODE,
+        "capabilities": host_profiles.capabilities(host_profiles.NATIVE_MODE),
         "issues": issues,
     }
 
@@ -314,8 +296,8 @@ def _doctor_host(
 def _cli_failure_result(
     host: str, operation: str, error: str, cli_status: str
 ) -> dict[str, Any]:
-    fallback = host == "codex" and cli_status in _FALLBACK_CLI_STATUSES
-    unavailable = cli_status in _FALLBACK_CLI_STATUSES
+    fallback = host == "codex" and cli_status in host_profiles.FALLBACK_CLI_STATUSES
+    unavailable = cli_status in host_profiles.FALLBACK_CLI_STATUSES
     if cli_status == "missing":
         issue = "CLI unavailable"
     elif cli_status == "access-denied":
@@ -329,9 +311,11 @@ def _cli_failure_result(
     return {
         "status": "unavailable" if unavailable else "attention",
         "cli_status": cli_status,
-        "recommended_mode": "verified-skill-fallback" if fallback else "blocked",
-        "capabilities": dict(
-            _SKILL_FALLBACK_CAPABILITIES if fallback else _NATIVE_CAPABILITIES
+        "recommended_mode": (
+            host_profiles.FALLBACK_MODE if fallback else host_profiles.BLOCKED_MODE
+        ),
+        "capabilities": host_profiles.capabilities(
+            host_profiles.FALLBACK_MODE if fallback else host_profiles.NATIVE_MODE
         ),
         "issues": [issue],
     }
@@ -360,7 +344,7 @@ def _next_command(options: Any, results: dict[str, dict[str, Any]]) -> str:
         return subprocess.list2cmdline(marketplace_list_command("codex"))
     if (
         codex is not None
-        and codex.get("cli_status") in _FALLBACK_CLI_STATUSES
+        and codex.get("cli_status") in host_profiles.FALLBACK_CLI_STATUSES
     ):
         command = [
             "python",

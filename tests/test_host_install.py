@@ -277,6 +277,31 @@ class InterruptOnceDuringRecoveryRunner(FakeRunner):
         return result
 
 
+class CodexCliStateRunner(FakeRunner):
+    def __init__(self, cli_status: str) -> None:
+        super().__init__()
+        self.cli_status = cli_status
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        if command[0] == "codex":
+            if self.cli_status == "invalid-json":
+                self.commands.append(tuple(command))
+                return subprocess.CompletedProcess(command, 0, "{not-json", "")
+            code = {
+                "missing": 127,
+                "not-executable": 125,
+                "access-denied": 126,
+            }[self.cli_status]
+            self.commands.append(tuple(command))
+            return subprocess.CompletedProcess(
+                command,
+                code,
+                "",
+                f"divan-cli-status:{self.cli_status}: fixture failure",
+            )
+        return super().__call__(command)
+
+
 class HostInstallTests(unittest.TestCase):
     def options(self, state_dir: pathlib.Path, **changes: object):
         values = {
@@ -406,6 +431,108 @@ class HostInstallTests(unittest.TestCase):
             HOST_INSTALL._install_command("codex", "sadrazam"),
             ["codex", "plugin", "add", "sadrazam@divan", "--json"],
         )
+
+    def test_auto_profile_is_explicit_and_native_remains_the_default(self) -> None:
+        native = HOST_INSTALL._parse_options(
+            ["--host", "codex", "--ref", REF]
+        )
+        automatic = HOST_INSTALL._parse_options(
+            ["--host", "codex", "--profile", "auto", "--ref", REF]
+        )
+
+        self.assertEqual(native.profile, "native")
+        self.assertEqual(automatic.profile, "auto")
+
+    def test_auto_profile_accepts_only_codex_install(self) -> None:
+        for arguments in (
+            ["--host", "claude", "--profile", "auto", "--ref", REF],
+            ["--host", "both", "--profile", "auto", "--ref", REF],
+            [
+                "--host",
+                "codex",
+                "--profile",
+                "auto",
+                "--upgrade",
+                "--ref",
+                REF,
+            ],
+        ):
+            with self.subTest(arguments=arguments), mock.patch(
+                "sys.stderr"
+            ), self.assertRaises(SystemExit):
+                HOST_INSTALL._parse_options(arguments)
+
+    def test_plain_install_does_not_probe_or_change_native_plan(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-profile-") as temporary:
+            runner = FakeRunner()
+            record = HOST_INSTALL.install(
+                self.options(
+                    pathlib.Path(temporary),
+                    host="codex",
+                    execute=False,
+                ),
+                runner=runner,
+                root=ROOT,
+            )
+
+        self.assertEqual(record["status"], "dry-run")
+        self.assertNotIn("selected_mode", record)
+        self.assertEqual(runner.commands, [])
+
+    def test_auto_profile_keeps_native_route_when_codex_cli_is_healthy(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-profile-") as temporary:
+            record = HOST_INSTALL.install(
+                self.options(
+                    pathlib.Path(temporary),
+                    host="codex",
+                    execute=False,
+                    profile="auto",
+                ),
+                runner=FakeRunner(),
+                root=ROOT,
+            )
+
+        self.assertEqual(record["status"], "dry-run")
+        self.assertEqual(record["selected_mode"], "native")
+        self.assertEqual(record["cli_status"], "healthy")
+        self.assertEqual(record["planned_commands"][0][0], "codex")
+
+    def test_auto_profile_selects_verified_fallback_for_access_denied(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-profile-") as temporary:
+            record = HOST_INSTALL.install(
+                self.options(
+                    pathlib.Path(temporary),
+                    host="codex",
+                    execute=False,
+                    profile="auto",
+                ),
+                runner=CodexCliStateRunner("access-denied"),
+                root=ROOT,
+            )
+
+        self.assertEqual(record["status"], "dry-run")
+        self.assertEqual(record["selected_mode"], "verified-skill-fallback")
+        self.assertEqual(record["cli_status"], "access-denied")
+        self.assertFalse(record["capabilities"]["commands"])
+        self.assertTrue(record["capabilities"]["skills"])
+        self.assertIn("install_codex", " ".join(record["planned_commands"][0]))
+
+    def test_auto_profile_blocks_invalid_codex_json(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-auto-profile-") as temporary:
+            with self.assertRaisesRegex(
+                HOST_INSTALL.InstallError,
+                "invalid-json",
+            ):
+                HOST_INSTALL.install(
+                    self.options(
+                        pathlib.Path(temporary),
+                        host="codex",
+                        execute=False,
+                        profile="auto",
+                    ),
+                    runner=CodexCliStateRunner("invalid-json"),
+                    root=ROOT,
+                )
         self.assertEqual(
             HOST_INSTALL._remove_plugin_command("claude", "sadrazam@divan"),
             [
