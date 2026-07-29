@@ -47,6 +47,16 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Repository tests prove the contract and publication surfaces, not a new
   real-agent A/B result; real-host transcript evaluation remains separate.
 
+### Verification
+
+- The clean Windows candidate passed the canonical verifier: 544 tests passed,
+  14 platform-specific tests skipped, and final hygiene remained clean.
+- Five packages, 41 skills, 151 release surfaces, the handoff contract, v1
+  scorecard, release consistency, and eval contract passed.
+- Independent whole-change review reported no open P0-P3 findings and approved
+  the local release gate. GitHub PR, protected merge, immutable Release, Pages,
+  and Wiki remain separate delivery states until their identifiers are bound.
+
 ## [0.17.0] - 2026-07-29
 
 ### Added

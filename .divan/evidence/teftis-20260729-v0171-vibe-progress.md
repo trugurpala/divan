@@ -8,7 +8,19 @@ dependency is added.
 
 ## Local verification
 
-Pending final canonical verification and independent review.
+- Implementation commit: `77ebd18ca7746dc17b3aac1c87d879ef4e3a0909`
+- Canonical Windows verifier: passed.
+- Unit tests: 544 passed, 14 platform-specific skips.
+- Repository contract: 5 packages, 41 skills, 151 release surfaces.
+- Hygiene, handoff, catalog, v1 scorecard, release consistency, eval contract,
+  and final post-test hygiene: passed.
+- Focused Windows CLI, Project OS, and provider suite: 129 passed, 7
+  platform-specific skips.
+- Independent whole-change review: no open P0-P3 findings; approved for the
+  local release gate.
+
+The tests establish the skill contract and synchronized publication surfaces.
+They do not establish a new real-agent A/B improvement claim.
 
 ## GitHub delivery
 
