@@ -33,6 +33,59 @@ def load(root: pathlib.Path = ROOT) -> Any:
     return json.loads((root / "registry" / "host-compatibility.json").read_text(encoding="utf-8"))
 
 
+def _tier_errors(label: str, row: dict[str, Any]) -> list[str]:
+    tier, target = row.get("tier"), row.get("target_tier")
+    if tier not in TIERS or target not in TIERS:
+        return [f"{label} has an unknown tier"]
+    if TIERS.index(target) < TIERS.index(tier):
+        return [f"{label}.target_tier cannot be lower than tier"]
+    return []
+
+
+def _capability_errors(label: str, capabilities: Any) -> list[str]:
+    if not isinstance(capabilities, list) or not capabilities:
+        return [f"{label}.capabilities must be a non-empty list"]
+    if len(capabilities) != len(set(capabilities)) or any(
+        capability not in CAPABILITIES for capability in capabilities
+    ):
+        return [f"{label}.capabilities contains duplicates or unknown values"]
+    return []
+
+
+def _evidence_errors(
+    root: pathlib.Path, label: str, tier: Any, evidence: Any
+) -> list[str]:
+    if not isinstance(evidence, list):
+        return [f"{label}.evidence must be a list"]
+    errors: list[str] = []
+    if tier == "verified" and not evidence:
+        errors.append(f"{label}.evidence is required for verified hosts")
+    if tier == "verified":
+        for path in evidence:
+            if not isinstance(path, str) or not (root / path).is_file():
+                errors.append(f"{label}.evidence path is missing: {path}")
+    return errors
+
+
+def _host_errors(root: pathlib.Path, row: Any, index: int) -> list[str]:
+    label = f"hosts[{index}]"
+    if not isinstance(row, dict):
+        return [f"{label} must be an object"]
+    errors: list[str] = []
+    host_id = row.get("id")
+    if not isinstance(host_id, str) or not ID_PATTERN.fullmatch(host_id):
+        errors.append(f"{label}.id must be kebab-case ASCII")
+    errors.extend(_tier_errors(label, row))
+    errors.extend(_capability_errors(label, row.get("capabilities")))
+    docs = row.get("official_docs")
+    if not isinstance(docs, str) or not docs.startswith("https://"):
+        errors.append(f"{label}.official_docs must be an HTTPS URL")
+    errors.extend(_evidence_errors(root, label, row.get("tier"), row.get("evidence")))
+    if not isinstance(row.get("distribution"), str) or not row["distribution"]:
+        errors.append(f"{label}.distribution is required")
+    return errors
+
+
 def validate(root: pathlib.Path = ROOT) -> list[str]:
     try:
         data = load(root)
@@ -56,39 +109,7 @@ def validate(root: pathlib.Path = ROOT) -> list[str]:
     if len(ids) != len(set(ids)):
         errors.append("host ids must be unique")
     for index, row in enumerate(hosts):
-        label = f"hosts[{index}]"
-        if not isinstance(row, dict):
-            errors.append(f"{label} must be an object")
-            continue
-        host_id = row.get("id")
-        if not isinstance(host_id, str) or not ID_PATTERN.fullmatch(host_id):
-            errors.append(f"{label}.id must be kebab-case ASCII")
-        tier, target = row.get("tier"), row.get("target_tier")
-        if tier not in TIERS or target not in TIERS:
-            errors.append(f"{label} has an unknown tier")
-        elif TIERS.index(target) < TIERS.index(tier):
-            errors.append(f"{label}.target_tier cannot be lower than tier")
-        capabilities = row.get("capabilities")
-        if not isinstance(capabilities, list) or not capabilities:
-            errors.append(f"{label}.capabilities must be a non-empty list")
-        elif len(capabilities) != len(set(capabilities)) or any(
-            capability not in CAPABILITIES for capability in capabilities
-        ):
-            errors.append(f"{label}.capabilities contains duplicates or unknown values")
-        docs = row.get("official_docs")
-        if not isinstance(docs, str) or not docs.startswith("https://"):
-            errors.append(f"{label}.official_docs must be an HTTPS URL")
-        evidence = row.get("evidence")
-        if not isinstance(evidence, list):
-            errors.append(f"{label}.evidence must be a list")
-        elif tier == "verified":
-            if not evidence:
-                errors.append(f"{label}.evidence is required for verified hosts")
-            for path in evidence:
-                if not isinstance(path, str) or not (root / path).is_file():
-                    errors.append(f"{label}.evidence path is missing: {path}")
-        if not isinstance(row.get("distribution"), str) or not row["distribution"]:
-            errors.append(f"{label}.distribution is required")
+        errors.extend(_host_errors(root, row, index))
     return errors
 
 
