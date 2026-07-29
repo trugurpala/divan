@@ -10,9 +10,10 @@ kanıtının beklediğini gösterir. Ürün sözleşmesi:
 
 ## 1. Beş dakikalık güvenli yolu çalıştır
 
-v0.17.0 değişmez tag ve GitHub Release oluşana kadar son kararlı ref
-`v0.16.0`dır. Aşağıdaki aday komutları yayın sonrasında geçerli olur. Önce
-yazmayan kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
+Aşağıdaki örnekler Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
+sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
+Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
+kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
 python scripts/divan.py install --host both --ref v0.17.0

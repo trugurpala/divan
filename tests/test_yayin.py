@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import shutil
 import struct
 import tempfile
 import unittest
@@ -260,6 +261,95 @@ class PublicationTests(unittest.TestCase):
                 (root / "README.md").read_text(encoding="utf-8"),
                 "Current v1.2.4\nHistory v1.2.3\nbadge version-1.2.4\n",
             )
+
+    def test_real_manifest_prepare_preserves_published_truth(self) -> None:
+        old = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        major, minor, patch = map(int, old.split("."))
+        new = f"{major}.{minor}.{patch + 1}"
+        manifest = json.loads(
+            (ROOT / "release-manifest.json").read_text(encoding="utf-8")
+        )
+        manifest["public_surfaces"] = [
+            surface
+            for surface in manifest["public_surfaces"]
+            if surface.get("replace_version")
+        ]
+
+        with tempfile.TemporaryDirectory(prefix="divan-real-prepare-") as temporary:
+            root = pathlib.Path(temporary)
+
+            def copy(relative: str) -> None:
+                destination = root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(ROOT / relative, destination)
+
+            for relative in (
+                "VERSION",
+                ".claude-plugin/marketplace.json",
+                ".agents/plugins/marketplace.json",
+            ):
+                copy(relative)
+            for surface in manifest["public_surfaces"]:
+                copy(surface["path"])
+            (root / "release-manifest.json").write_text(
+                json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+            YAYIN.hazirla(new, root)
+
+            self.assertEqual(
+                (root / "VERSION").read_text(encoding="utf-8").strip(), new
+            )
+            texts = {
+                relative: (root / relative).read_text(encoding="utf-8")
+                for relative in (
+                    "README.md",
+                    "README.en.md",
+                    "README.tr.md",
+                    "docs/Hizli-Baslangic.md",
+                    "docs/Kurulum.md",
+                )
+            }
+            english_guard = (
+                "If Current source differs from Latest published, substitute "
+                "Latest published in every `--ref` command."
+            )
+            turkish_guard = (
+                "Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref` "
+                "komutlarında Son yayımlanan sürümü kullan."
+            )
+
+            self.assertIn(f"**Current source:** v{new}", texts["README.md"])
+            self.assertIn(f"**Güncel kaynak:** v{new}", texts["README.tr.md"])
+            self.assertIn(f"**Latest published:** v{old}", texts["README.md"])
+            self.assertIn(f"**Son yayımlanan:** v{old}", texts["README.tr.md"])
+            self.assertNotIn(f"**Latest published:** v{new}", texts["README.md"])
+            self.assertNotIn(f"**Son yayımlanan:** v{new}", texts["README.tr.md"])
+
+            for relative, text in texts.items():
+                normalized = " ".join(text.split())
+                with self.subTest(relative=relative):
+                    self.assertIn(f"--ref v{new}", text)
+                    self.assertIn(
+                        english_guard
+                        if relative in {"README.md", "README.en.md"}
+                        else turkish_guard,
+                        normalized,
+                    )
+            self.assertNotIn(f"Both are v{old}", texts["README.md"])
+            self.assertNotIn(f"ikisi de v{old}", texts["README.tr.md"])
+            self.assertNotIn(
+                "Güncel kararlı ref", texts["docs/Hizli-Baslangic.md"]
+            )
+            self.assertNotIn("Güncel kararlı ref", texts["docs/Kurulum.md"])
+
+            for surface in manifest["public_surfaces"]:
+                text = (root / surface["path"]).read_text(encoding="utf-8")
+                for pattern in surface["version_patterns"]:
+                    with self.subTest(surface=surface["id"], pattern=pattern):
+                        self.assertIn(pattern.format(version=new), text)
+                        self.assertNotIn(pattern.format(version=old), text)
 
     def test_prepare_rolls_back_every_file_when_replace_fails(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-prepare-atomic-") as temporary:

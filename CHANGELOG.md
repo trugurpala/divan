@@ -63,18 +63,21 @@ Versioning while the public API remains in initial development (`0.y.z`).
   runtime or external-repository dependency. Connected providers remain
   bounded capabilities rather than sources of authority.
 
-### Candidate status
+### Published evidence
 
-- This section records the v0.17.0 candidate scope, not a publication claim.
-  Local verification passed 538 tests with 7 platform skips and 76% coverage,
+- Local verification passed 538 tests with 7 platform skips and 76% coverage,
   plus Ruff, mypy, Clean Code, 41 Agent Skills, strict Claude validation, and
   deterministic runner checks. Final independent re-review reported no open
-  P0-P3 findings. PR checks, merge, immutable tag, GitHub Release, five release
-  assets, checksums, attestations, Pages, and Wiki readback remain separately
-  required.
-- The latest published release remains v0.16.0. This candidate does not close
-  independent-adoption issue #34; v1 readiness remains 7/8 until reproducible,
-  privacy-bounded evidence arrives from a non-owner.
+  P0-P3 findings.
+- PR #49 passed all seven required pull-request workflows and merged as
+  `8b711b6f0ebb696ce971d83c90833bb59acf3c34`. The immutable `v0.17.0`
+  tag/Release, five checksummed assets, SPDX 2.3 SBOM, two attestations per
+  asset, Pages, and Wiki were independently read back. Exact identities and
+  digests are recorded in
+  `.divan/evidence/teftis-20260729-v017-release.md`.
+- Publication does not close independent-adoption issue #34; v1 readiness
+  remains 7/8 until reproducible, privacy-bounded evidence arrives from a
+  non-owner.
 
 ## [0.16.0] - 2026-07-24
 

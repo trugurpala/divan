@@ -109,6 +109,50 @@ class DevralTesti(unittest.TestCase):
                 any("repo içinde göreli" in hata for hata in devral.denetle(root))
             )
 
+    def test_public_truth_matches_current_source_and_published_release(self):
+        progress = (KOK / ".divan/progress.md").read_text(encoding="utf-8")
+        section = devral._bolum(progress, "Yayın durumu")
+        self.assertIsNotNone(section)
+        published = devral._alan(section or "", "Latest published release")
+        self.assertIsNotNone(published)
+        version = (KOK / "VERSION").read_text(encoding="utf-8").strip()
+
+        expected = {
+            "README.md": (
+                f"**Current source:** v{version}",
+                f"**Latest published:** {published}",
+            ),
+            "README.en.md": (
+                f"**Current source:** v{version}",
+                f"**Latest published:** {published}",
+            ),
+            "README.tr.md": (
+                f"**Güncel kaynak:** v{version}",
+                f"**Son yayımlanan:** {published}",
+            ),
+            "site/index.html": (
+                f"v{version} güncel kaynak",
+                f"son yayımlanan {published}",
+            ),
+            "docs/index.html": (
+                f"v{version} güncel kaynak",
+                f"son yayımlanan {published}",
+            ),
+            "docs/Home.md": (
+                f"**Güncel kaynak:** v{version}",
+                f"**Son yayımlanan:** {published}",
+            ),
+            "docs/Durum-ve-Yol-Haritasi.md": (
+                f"# Durum ve Yol Haritası · v{version}",
+                f"En güncel yayımlanmış sürüm {published}",
+            ),
+        }
+        for relative, markers in expected.items():
+            text = (KOK / relative).read_text(encoding="utf-8")
+            with self.subTest(relative=relative):
+                for marker in markers:
+                    self.assertIn(marker, text)
+
 
 if __name__ == "__main__":
     unittest.main()

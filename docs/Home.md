@@ -13,14 +13,14 @@ Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Diva
 ürününün parçalarıdır. v1 durumu **7/8** kapıdır: bağımsız kullanıcı kabul
 kanıtı hâlâ bekleniyor.
 
-> **Güncel aday:** v0.17.0 · **son yayımlanan:** v0.16.0 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.17.0 · **Son yayımlanan:** v0.17.0 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
-v0.17 adayı dokuz modüllü Divan Engine sözleşmesini, Hükümdar öncelikli yetki
-zincirini ve eski adlar için sınırlı uyumluluğu hazırlamaktadır. PR, CI, tag,
-Release, Pages ve Wiki kanıtı tamamlanmadan yayımlanmış sayılmaz; güncel
-yayımlanmış sürüm v0.16.0 olarak kalır.
+v0.17.0 dokuz modüllü Divan Engine sözleşmesini, Hükümdar öncelikli yetki
+zincirini ve eski adlar için sınırlı uyumluluğu yayımlar. PR #49, bütün zorunlu
+CI kapıları, değişmez tag/Release, checksum ve attestation bağlı beş varlık,
+Pages ve Wiki yayın kanıtında doğrulanmıştır.
 
 ## Fermanını seç
 
