@@ -2,13 +2,13 @@
 
 Son durum tarihi: 2026-07-29.
 
-> **En güncel yayımlanmış sürüm v0.16.0'dır.** v0.17.0 şu anda yerel adaydır;
-> PR, CI, merge, değişmez tag, GitHub Release, Pages ve Wiki kanıtı tamamlanana
-> kadar yayımlanmış sayılmaz.
+> **En güncel yayımlanmış sürüm v0.17.0'dır.** PR #49, bütün zorunlu CI
+> kapıları, değişmez tag/GitHub Release, beş varlık, checksum, attestations,
+> Pages ve Wiki kanıtıyla tamamlanmıştır.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.16.0` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
+- Değişmez `v0.17.0` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -29,7 +29,7 @@ Son durum tarihi: 2026-07-29.
   karmaşıklık bütçesi ve yalnız yeniden üretilebilir cache'leri silebilen
   allowlist tabanlı repo hijyeni.
 
-## v0.17.0 adayı — tek Divan, modüler çekirdek
+## v0.17.0 — tek Divan, modüler çekirdek
 
 - Ürün adı **Divan** olarak kalır; ikinci bir ürün veya repo oluşturulmaz.
 - **Divan Engine**, bu repodaki stdlib-only icra çekirdeğidir.
@@ -44,32 +44,31 @@ Son durum tarihi: 2026-07-29.
   v1 boyunca uyumluluk yüzeyi olarak korunur.
 - Çekirdek başka bir agent runtime'ına veya dış repoya bağımlı olmaz.
 
-Bu maddeler aday kapsamıdır; test, bağımsız inceleme ve yayın zinciri
-tamamlanmadan sonuç veya kalite artışı iddiası değildir.
+Bu kapsam 538 test, bağımsız inceleme, yedi PR kontrolü ve tam yayın zinciriyle
+yayımlanmıştır. Yayın; hız, gelir veya bağımsız kullanıcı başarısı iddiası
+değildir.
 
 ## Dürüst açıklar
 
 - Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
 - Gerçek Claude/Codex A/B sonucu yayımlandı: skill 0, baseline 1, beraberlik 2.
   Önceden eşik yoktur; kalite artışı iddiası yapılmaz.
-- v0.17 adayının tam yerel doğrulaması 538 test, 7 platform atlaması, %76
+- v0.17.0'ın tam yerel doğrulaması 538 test, 7 platform atlaması, %76
   kapsam, Ruff, mypy, Clean Code, 41 skill, strict plugin doğrulaması ve
   deterministik runner ile tamamlandı. Bağımsız son inceleme açık P0-P3 bulgusu
-  olmadığını doğruladı. PR/CI ve canlı yayın kanıtı henüz tamamlanmış olarak
-  kaydedilmemiştir.
+  olmadığını doğruladı. PR #49, bütün zorunlu CI kapıları ve canlı yayın kanıtı
+  `.divan/evidence/teftis-20260729-v017-release.md` kaydına bağlandı.
 - v0.17 yayını bağımsız kullanıcı kabulü değildir; issue #34 kapanmadan v1
   karnesi **7/8** kalır.
 
 ## Sıradaki ürün kanıtı
 
-1. v0.17 adayında çekirdek, uyumluluk, dokümantasyon ve yayın yüzeylerini tam
-   yerel doğrulamadan geçir.
-2. Bağımsız inceleme sonrası PR aç; bütün zorunlu CI kapıları yeşil olmadan
-   birleştirme.
-3. Birleşen committen değişmez v0.17.0 tag/Release üret; beş varlığı,
-   checksum'ları, attestations, Pages ve Wiki'yi canlı geri oku.
-4. Ayrı kapı olarak, sabitlenmiş release'i deneyen bağımsız kullanıcıdan
+1. Yayımlanan v0.17.0'ı kullanan, repo sahibi olmayan bağımsız kullanıcıdan
    gizlilik sınırlı ve tekrar üretilebilir kabul kanıtı topla.
+2. Kabul kaydını tekrar doğrula; owner canary veya maintainer fixture ile kapıyı
+   geçilmiş sayma.
+3. Kanıt geçerliyse issue #34 ve v1 karnesini ayrı, denetlenebilir değişiklikle
+   güncelle.
 
 ## v1.0 kapıları
 

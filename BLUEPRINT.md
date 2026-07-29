@@ -62,14 +62,15 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin yayın adayı
 
-- **v0.17.0 ✓** Local release candidate for one Divan and one repository:
-  canonical stdlib-only Divan Engine, the nine-module acyclic contract,
-  Hükümdar-first Divan Nizamı, Divan Project Contract, and bounded legacy
-  compatibility through v1. This marker records prepared local scope, not a
-  PR, merge, tag, Release, Pages, Wiki, or independent-adoption claim.
+- Yok. Sıradaki sürüm kapsamı kanıtlanmadan sürüm numarası ayrılmayacaktır.
 
 ### Yayımlanan temel
 
+- **v0.17.0 ✓** Published one-Divan modular-engine release: canonical
+  stdlib-only Divan Engine, nine-module acyclic contract, Hükümdar-first Divan
+  Nizamı, Divan Project Contract, and bounded legacy compatibility through v1.
+  PR #49, all required CI, immutable commit/tag, five checksummed and attested
+  assets, Pages, and Wiki are bound in the v0.17 publication evidence.
 - **v0.16.0 ✓** Published installed-project adoption and drift-control release:
   schema 2 ownership state, read-only lifecycle status, transaction-bound
   update/repair, verified goal archive, redacted adoption receipts, and a
@@ -155,6 +156,13 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-29: PR #49 published v0.17.0 from
+  `8b711b6f0ebb696ce971d83c90833bb59acf3c34`. All seven PR workflows and nine
+  main/publication workflows passed. Tag/Release ID 361750779, five downloaded
+  assets, checksum manifests, SPDX 2.3 SBOM, the schema-2 runner envelope, two
+  attestations per asset, Pages, and Wiki were independently verified. The
+  public status follow-up removes stale candidate/v0.16 wording without moving
+  the immutable tag. Issue #34 remains open and v1 remains 7/8.
 - 2026-07-26: Issue #33's hygiene-stable verification candidate added one
   cross-platform `scripts/verify.py` entrypoint shared by AGENTS and CI. It
   disables bytecode, redirects Python/Ruff/mypy/coverage caches outside the

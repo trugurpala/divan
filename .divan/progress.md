@@ -4,31 +4,38 @@ Son güncelleme: 2026-07-29
 
 ## Yayın durumu
 
-- Latest published release: v0.16.0
-- Published commit: 5513e73d5faa8657a22d813ecfec763a6089bea0
-- Publication evidence: .divan/evidence/teftis-20260725-v016-publication-handoff.md
-- Release asset evidence: .divan/evidence/teftis-20260725-v016-release-assets.md
+- Latest published release: v0.17.0
+- Published commit: 8b711b6f0ebb696ce971d83c90833bb59acf3c34
+- Publication evidence: .divan/evidence/teftis-20260729-v017-release.md
+- Release asset evidence: .divan/evidence/teftis-20260729-v017-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release remains v0.16.0 at immutable commit `5513e73d`;
-its Release assets, checksums, SPDX SBOM, attestations, Pages, and Wiki remain
+The latest published release is v0.17.0 at immutable commit `8b711b6f`. PR #49,
+all required pull-request and main workflows, Release ID `361750779`, five
+downloaded assets, checksums, SPDX 2.3 SBOM, attestations, Pages, and Wiki are
 bound to tracked evidence.
 
-The active goal is the v0.17.0 candidate: keep Divan as one product and one
-repository, make Divan Engine the canonical stdlib-only modular core, define
-Divan Nizamı as the owner-first governance model, and name the installed layer
-Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is the final
-authority and only `owner` may expand scope. Legacy Company OS, Project OS,
-`/company`, `company-validate`, and Python/JSON paths remain bounded
-compatibility surfaces through v1. No PR, merge, tag, Release, Pages, Wiki, or
-quality-improvement claim is inferred from the local candidate. Issue #34 is
-still the independent non-owner adoption gate, so v1 remains 7/8.
+Divan remains one product and one repository. Divan Engine is the canonical
+stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
+installed layer is Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is
+the final authority and only `owner` may expand scope. Legacy Company OS,
+Project OS, `/company`, `company-validate`, and Python/JSON paths remain bounded
+compatibility surfaces through v1. Issue #34 is still the independent non-owner
+adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
-- The v0.17.0 candidate passed 538 tests with 7 platform-specific skips and
+- PR #49 merged v0.17.0 to `main` as
+  `8b711b6f0ebb696ce971d83c90833bb59acf3c34`. Seven PR workflows and nine
+  main/publication workflows completed successfully. Release workflow
+  `30453034011` published immutable tag/Release `v0.17.0`; all five downloaded
+  asset digests, both checksum manifests, SPDX 2.3 metadata, the schema-2 runner
+  envelope, and two attestations per asset matched. Pages returned HTTP 200 and
+  Wiki exposed the Divan Engine and Hükümdar-first contract. Exact evidence is
+  `.divan/evidence/teftis-20260729-v017-release.md`.
+- The v0.17.0 implementation passed 538 tests with 7 platform-specific skips and
   76% coverage. Ruff, mypy, Clean Code, 41/41 Agent Skills, the root
   marketplace plus five plugins under Claude Code 2.1.212 strict validation,
   local Chromium site verification, and two byte-identical project-runner
@@ -296,8 +303,6 @@ still the independent non-owner adoption gate, so v1 remains 7/8.
 - Issue #34 requires a non-owner to install a pinned release, complete a bounded
   real task, export a privacy-bounded adoption receipt, and reproduce the
   result. Maintainer fixtures and owner canaries cannot close this gate.
-- The v0.17.0 candidate still requires PR/CI, merge, and immutable live
-  publication evidence.
 
 ## Tarihsel devam kayıtları
 
@@ -327,8 +332,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Open the focused v0.17.0 PR. Merge only after every required CI check is green;
-publish from the merged commit through the canonical release workflow and
-verify immutable tag, Release assets, checksums, attestations, Pages, and Wiki
-separately. Keep issue #34 and v1 at 7/8 until reproducible, privacy-bounded
-non-owner evidence exists.
+Collect and human-review the reproducible non-owner adoption evidence required
+by issue #34. Run the adoption receipt verifier before changing
+`registry/v1-gates.json`; keep v1 at 7/8 if the evidence is absent, owner-run,
+privacy-unsafe, or not reproducible.

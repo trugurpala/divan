@@ -17,7 +17,7 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
-**Release candidate:** v0.17.0 · **Latest published:** v0.16.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.17.0 · **Latest published:** v0.17.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -105,9 +105,10 @@ plugins. Owner-canary evidence never closes the independent-adoption gate.
 
 ## Install
 
-The commands below target the v0.17.0 candidate and become stable only after
-its immutable tag and GitHub Release exist. Until then, use `--ref v0.16.0`.
-Preview the no-write plan, then install the same pinned release into both hosts:
+The commands below pin Current source. If Current source differs from Latest
+published, substitute Latest published in every `--ref` command. Only install a
+ref whose immutable tag and GitHub Release exist. Preview the no-write plan,
+then install the same pinned release into both hosts:
 
 ```powershell
 python scripts/divan.py install --host both --ref v0.17.0
@@ -231,10 +232,10 @@ community and security files, but it is not v1.0 yet. All 41 skills receive
 structural validation; four original skills provide 13 behavioral cases and a
 provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
 compatibility checks. The first declared real-agent/judge comparison is now
-published; independent user evidence remains the external gate. The v0.17
-candidate makes Divan Engine and Divan Nizamı explicit while preserving old
-paths, but the latest published release remains v0.16.0 until the full
-PR/CI/tag/Release/Pages/Wiki chain is verified. See the
+published; independent user evidence remains the external gate. v0.17.0
+publishes Divan Engine and Divan Nizamı while preserving old paths. PR #49,
+all required CI, immutable tag/Release, five checksummed and attested assets,
+Pages, and Wiki are verified in the publication evidence. See the
 [machine-backed v1 scorecard](docs/V1-Hazirlik.md). Until that evidence exists,
 the project does not claim a speed multiplier, revenue
 increase, or “best in the world” status.

@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
 plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Yayın adayı:** v0.17.0 · **Son yayımlanan:** v0.16.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v0.17.0 · **Son yayımlanan:** v0.17.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -117,10 +117,10 @@ Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-c
 
 ## Kurulum
 
-Aşağıdaki komutlar v0.17.0 adayını hedefler ve yalnız değişmez tag ile GitHub
-Release yayımlandıktan sonra kararlı olur. O zamana kadar `--ref v0.16.0`
-kullan. Önce değişiklik yapmayan planı gör, sonra aynı sabit release'i iki
-hosta kur:
+Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
+sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
+Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce değişiklik
+yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
 python scripts/divan.py install --host both --ref v0.17.0
@@ -256,9 +256,10 @@ ancak henüz v1.0 değildir. 41 beceri yapısal olarak doğrulanır; 4 özgün s
 13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
 yüzeylerini ve temiz-host matrisini otomatikleştirir. İlk güvenilir gerçek
 ajan/hakem karşılaştırması yayımlanmıştır; bağımsız kullanıcı kanıtı hâlâ dış
-kapıdır. v0.17 adayı Divan Engine ile Divan Nizamı'nı açıklaştırır ve eski
-yolları korur; PR/CI/tag/Release/Pages/Wiki zinciri doğrulanana kadar en güncel
-yayımlanmış sürüm v0.16.0'dır. Güncel, makine-okunur durum
+kapıdır. v0.17.0, Divan Engine ile Divan Nizamı'nı açıklaştırır ve eski yolları
+korur. PR #49, bütün zorunlu CI kapıları, değişmez tag/Release, checksum ve
+attestation bağlı beş varlık, Pages ve Wiki yayın kanıtında doğrulanmıştır.
+Güncel, makine-okunur durum
 [v1 hazırlık karnesinde](docs/V1-Hazirlik.md)
 bulunur; bağımsız kanıt gelmeden hız, gelir veya “dünyanın en iyisi” iddiası
 yapılmaz.

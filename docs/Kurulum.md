@@ -3,9 +3,10 @@
 Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
 runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
 çekirdeğidir; Divan Nizamı Hükümdar öncelikli yetki düzenidir. İlk kez
-kullanıyorsanız bu sırayı izleyin. v0.17.0 değişmez tag ve GitHub Release
-oluşana kadar son kararlı ref `v0.16.0`dır; aşağıdaki v0.17.0 aday komutları
-yayın sonrasında geçerli olur:
+kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler Güncel kaynak sürümünü
+sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
+komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
+Release'i bulunan bir ref'i kur:
 
 ```powershell
 python scripts/divan.py install --host both --ref v0.17.0
