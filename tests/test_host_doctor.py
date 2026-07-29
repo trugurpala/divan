@@ -21,7 +21,7 @@ HOST_INSTALL = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(HOST_INSTALL)
 
 PACKAGE_VERSIONS = {
-    "sadrazam": "0.9.1",
+    "sadrazam": "0.9.2",
     "core-pack": "0.5.1",
     "ui-pack": "0.1.0",
     "react-pack": "0.2.1",

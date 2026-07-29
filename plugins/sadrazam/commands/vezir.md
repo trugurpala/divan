@@ -2,6 +2,12 @@
 description: Divan'a standartlara uygun yeni bir skill (vezir) kazandır
 argument-hint: skill-fikri
 ---
+`${CLAUDE_PLUGIN_ROOT}` veya host metadata içindeki eşdeğer loaded-plugin root'u
+çöz; kullanıcının current working directory yolundan çözme. O kökteki
+`skills/sadrazam/references/vibe-progress.md` kanonik Vibe progress protocol
+sözleşmesini substantial işlerde araçlardan önce ve her meaningful phase
+değişiminde uygula.
+
 `vezir-yetistirme` skill'ini yükle ve şu fikri Divan'a vezir olarak yetiştir:
 $ARGUMENTS
 

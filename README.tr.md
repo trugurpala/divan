@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.17.0-1f6feb)
+![version](https://img.shields.io/badge/version-0.17.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -14,7 +14,7 @@ Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim ede
 ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
 plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
-**Güncel kaynak:** v0.17.0 · **Son yayımlanan:** v0.17.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v0.17.1 · **Son yayımlanan:** v0.17.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -38,6 +38,7 @@ aynı turda yayımlanmasını ister.
 | Harici swarm/harness karmaşık ve pahalı | Önce yerel tek oturum; gerekirse sınırlı subagent/worktree |
 | PR hazır ama ürün hâlâ eski | Yayın Kanunu: vitrin + Wiki + CHANGELOG + merge + canlı doğrulama |
 | Bağlı bir araç işin kapsamını büyütüyor | Divan Nizamı: kapsamı yalnız Hükümdar genişletebilir; her devir daha dardır |
+| Sohbette teknik işin takibi zorlaşıyor | Sade ilerleme sözleşmesi: şu an ne olduğunu, neden önemli olduğunu ve sıradakini bildir |
 
 Divan yeni bir model veya ayrı bir üçüncü taraf ajan runtime'ı değildir. Kendi
 modüler icra çekirdeğiyle mevcut kodlama ajanına **çalışma disiplini, uzmanlık
@@ -123,8 +124,8 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce değişi
 yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.17.0
-python scripts/divan.py install --host both --ref v0.17.0 --execute
+python scripts/divan.py install --host both --ref v0.17.1
+python scripts/divan.py install --host both --ref v0.17.1 --execute
 ```
 
 Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
@@ -138,9 +139,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0
-python scripts/divan.py update --host both --ref v0.17.0 --execute
+python scripts/divan.py doctor --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1
+python scripts/divan.py update --host both --ref v0.17.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

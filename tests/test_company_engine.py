@@ -1259,6 +1259,23 @@ class ImpactTests(unittest.TestCase):
                 self.assertTrue(result["matched_rules"])
                 self.assertTrue(result["checks"])
 
+    def test_skill_references_codex_manifests_and_host_fixtures_have_impact(self) -> None:
+        result = self.engine.calculate_impact(
+            [
+                "plugins/sadrazam/skills/sadrazam/references/vibe-progress.md",
+                "plugins/sadrazam/.codex-plugin/plugin.json",
+                "tests/fixtures/host-cli/codex-plugin-list.json",
+            ],
+            self.contracts,
+        )
+
+        self.assertEqual(result["unclassified_paths"], [])
+        self.assertTrue(
+            {"skill-contract", "plugin-inventory", "test-contract"}.issubset(
+                result["matched_rules"]
+            )
+        )
+
     def test_absolute_and_parent_paths_are_rejected(self) -> None:
         for value in ("../README.md", "/etc/passwd", "C:/Windows/system.ini"):
             with self.subTest(value=value):

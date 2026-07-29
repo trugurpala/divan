@@ -2,6 +2,12 @@
 description: Proje hafızası — kur, yaz, oku veya karar kaydet (defterdar nizamı)
 argument-hint: kur | yaz | oku | karar konu
 ---
+`${CLAUDE_PLUGIN_ROOT}` veya host metadata içindeki eşdeğer loaded-plugin root'u
+çöz; kullanıcının current working directory yolundan çözme. O kökteki
+`skills/sadrazam/references/vibe-progress.md` kanonik Vibe progress protocol
+sözleşmesini substantial işlerde araçlardan önce ve her meaningful phase
+değişiminde uygula.
+
 `defterdar` skill'ini yükle ve şu alt komutu uygula: $ARGUMENTS
 
 - **kur**: Önce çakışmaları denetle; kullanıcının onayıyla AGENTS.md +

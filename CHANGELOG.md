@@ -10,6 +10,53 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - Independent adoption evidence and reproducible quality measurements.
 
+## [0.17.1] - 2026-07-29
+
+### Added
+
+- One canonical Vibe Progress Protocol for substantial Divan work, with calm
+  phase language, meaningful update cadence, real-blocker handling, and short
+  `Şu anda` / `Ne öğrendim` / `Sırada` guidance.
+- Focused regression coverage for the Sadrazam contract, all seven public chat
+  entry commands, synchronized public documentation, and Pages source.
+
+### Changed
+
+- Sadrazam and all seven public chat commands now share one progress contract
+  instead of exposing command-by-command activity. Each command resolves the
+  contract from the loaded-plugin root rather than the user working directory.
+- Public English and Turkish surfaces explain that Divan keeps engineering
+  detail in the background while reporting what is happening, why it matters,
+  and what comes next.
+- The Sadrazam package advances to `0.9.2`; the Divan Engine, nine-module graph,
+  authority order, runtime APIs, and bounded v1 compatibility paths are
+  unchanged.
+
+### Trust and accessibility
+
+- Planning, implementation, testing, GitHub delivery, merge, publication, and
+  live verification remain separate evidence claims.
+- Status does not depend only on color, emoji, Ottoman metaphor, or an invented
+  percentage. Secrets, hidden reasoning, raw logs, and private scratch work are
+  excluded from routine progress updates.
+- Semantic progress states have English and Turkish labels and follow the
+  user's language instead of forcing Turkish labels into English conversations.
+- This skill-level communication contract does not claim control over the
+  native Codex or Claude Code interface and adds no runtime, MCP, external
+  repository, hosted service, or third-party dependency.
+- Repository tests prove the contract and publication surfaces, not a new
+  real-agent A/B result; real-host transcript evaluation remains separate.
+
+### Verification
+
+- The clean Windows candidate passed the canonical verifier: 544 tests passed,
+  14 platform-specific tests skipped, and final hygiene remained clean.
+- Five packages, 41 skills, 151 release surfaces, the handoff contract, v1
+  scorecard, release consistency, and eval contract passed.
+- Independent whole-change review reported no open P0-P3 findings and approved
+  the local release gate. GitHub PR, protected merge, immutable Release, Pages,
+  and Wiki remain separate delivery states until their identifiers are bound.
+
 ## [0.17.0] - 2026-07-29
 
 ### Added

@@ -77,6 +77,14 @@ surface through v1, not a second runtime.
   skills, bounded subagents and isolated worktrees; experimental Agent Teams
   requires an explicit user choice.
 
+## Vibe progress protocol
+
+Before tool use in every substantial task, read and follow
+[`references/vibe-progress.md`](references/vibe-progress.md). It is the single
+source for cadence, plain-language message shape, evidence-bounded status
+claims, parallel-work summaries, blocker wording, and chain-of-thought/privacy
+limits. Do not copy a second progress protocol into commands or runtime code.
+
 ## Kayıt nizamı (hafıza — proje tercihiyse)
 
 State context'te değil diskte yaşar. `defterdar` skill'i ile birlikte çalış:

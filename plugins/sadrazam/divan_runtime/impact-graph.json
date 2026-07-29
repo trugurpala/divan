@@ -23,13 +23,13 @@
   "rules": [
     {
       "id": "skill-contract",
-      "patterns": ["plugins/*/skills/*/SKILL.md"],
+      "patterns": ["plugins/*/skills/*/SKILL.md", "plugins/*/skills/*/references/*.md"],
       "effects": ["catalog", "evaluation", "marketplace-validation"],
       "checks": ["python scripts/validate.py"]
     },
     {
       "id": "plugin-inventory",
-      "patterns": ["plugins/*/.claude-plugin/plugin.json", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
+      "patterns": ["plugins/*/.claude-plugin/plugin.json", "plugins/*/.codex-plugin/plugin.json", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
       "effects": ["catalog", "marketplace-validation"],
       "checks": ["python scripts/validate.py"]
     },
@@ -141,7 +141,7 @@
     },
     {
       "id": "test-contract",
-      "patterns": ["tests/test_*.py"],
+      "patterns": ["tests/test_*.py", "tests/fixtures/**"],
       "effects": ["release-validation"],
       "checks": ["python -m unittest discover -s tests -v"]
     },

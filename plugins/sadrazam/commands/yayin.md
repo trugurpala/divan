@@ -5,6 +5,11 @@ argument-hint: "[semver]"
 
 # /yayin — Unutulamaz yayın zinciri
 
+`${CLAUDE_PLUGIN_ROOT}` veya host metadata içindeki eşdeğer loaded-plugin root'u
+çöz; kullanıcının current working directory yolundan çözme. O kökteki
+`skills/sadrazam/references/vibe-progress.md` kanonik Vibe progress protocol
+sözleşmesini araçlardan önce ve her meaningful phase değişiminde uygula.
+
 1. `AGENTS.md`, `BLUEPRINT.md`, `.divan/progress.md`, `VERSION` ve
    `release-manifest.json` dosyalarını oku.
 2. Kullanıcı yeni sürüm istediyse `python scripts/release.py --prepare <semver>`
