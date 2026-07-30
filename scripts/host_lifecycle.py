@@ -83,6 +83,27 @@ def _plugin_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
 
 
 def _expected_packages(root: pathlib.Path) -> dict[str, dict[str, Any]]:
+    bundled = root / "divan-bootstrap-catalog.json"
+    if bundled.is_file():
+        try:
+            catalog = json.loads(bundled.read_text(encoding="utf-8"))
+            expected = catalog["packages"]
+        except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+            raise InstallError("cannot read the bundled native catalog") from exc
+        if not isinstance(expected, dict):
+            raise InstallError("bundled native catalog is invalid")
+        if set(expected) != set(PACKAGES):
+            raise InstallError("bundled native catalog does not define five packages")
+        skill_names = {
+            skill
+            for row in expected.values()
+            if isinstance(row, dict)
+            for skill in row.get("skills", [])
+            if isinstance(skill, str)
+        }
+        if len(skill_names) != 41:
+            raise InstallError("bundled native catalog does not define 41 skills")
+        return expected
     path = root / ".agents" / "plugins" / "marketplace.json"
     try:
         marketplace = json.loads(path.read_text(encoding="utf-8"))

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import importlib.util
+import json
 import pathlib
 import sys
 from collections.abc import Iterator
@@ -19,6 +20,7 @@ if str(SCRIPTS) not in sys.path:
 import host_lifecycle  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"
+BOOTSTRAP_IDENTITY = ROOT / "divan-bootstrap-source.json"
 RUNTIME_CLI = PLUGIN_ROOT / "divan_runtime" / "cli.py"
 RUNTIME_PACKAGE = RUNTIME_CLI.parent / "__init__.py"
 DIVAN_COMMANDS = {
@@ -131,10 +133,33 @@ def _host_arguments(options: argparse.Namespace) -> list[str]:
     return arguments
 
 
+def _bootstrap_identity() -> dict[str, str] | None:
+    if not BOOTSTRAP_IDENTITY.is_file():
+        return None
+    try:
+        value = json.loads(BOOTSTRAP_IDENTITY.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError("cannot read the bundled Divan identity") from error
+    required = ("source_ref", "source_repository", "version")
+    if not isinstance(value, dict) or any(
+        not isinstance(value.get(key), str) or not value[key] for key in required
+    ):
+        raise RuntimeError("bundled Divan identity is invalid")
+    return {key: value[key] for key in required}
+
+
 def _add_host_common(parser: argparse.ArgumentParser) -> None:
+    bundled = _bootstrap_identity()
     parser.add_argument("--host", choices=("claude", "codex", "both"), default="both")
-    parser.add_argument("--source", default=DEFAULT_SOURCE)
-    parser.add_argument("--ref", required=True)
+    parser.add_argument(
+        "--source",
+        default=bundled["source_repository"] if bundled else DEFAULT_SOURCE,
+    )
+    parser.add_argument(
+        "--ref",
+        default=bundled["source_ref"] if bundled else None,
+        required=bundled is None,
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -174,7 +199,18 @@ def main(argv: list[str] | None = None) -> int:
         command = "validate" if arguments[0] == "company-validate" else arguments[0]
         with _load_runtime_cli() as runtime_cli:
             return runtime_cli.main([command, *arguments[1:]])
-    options = _parser().parse_args(arguments)
+    parser = _parser()
+    options = parser.parse_args(arguments)
+    bundled = _bootstrap_identity()
+    if (
+        bundled is not None
+        and options.command != "recover"
+        and options.ref != bundled["source_ref"]
+    ):
+        parser.error(
+            "this bootstrap can use only its bundled release "
+            f"{bundled['source_ref']}"
+        )
     return host_lifecycle.main(_host_arguments(options))
 
 

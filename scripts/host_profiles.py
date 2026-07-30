@@ -92,8 +92,7 @@ def next_command(
     if codex is not None and codex.get("cli_status") == "invalid-json":
         return subprocess.list2cmdline(marketplace_list("codex"))
     command = [
-        "python",
-        "scripts/divan.py",
+        *_cli_prefix(),
         "install",
         "--host",
         options.host,
@@ -103,9 +102,16 @@ def next_command(
         options.ref,
     ]
     if codex is not None and codex.get("cli_status") in FALLBACK_CLI_STATUSES:
-        command[4] = "codex"
+        command[command.index("--host") + 1] = "codex"
         command.extend(["--profile", "auto"])
     return subprocess.list2cmdline(command)
+
+
+def _cli_prefix() -> list[str]:
+    bundled = getattr(sys, "_divan_bootstrap_path", None)
+    if isinstance(bundled, str) and pathlib.Path(bundled).is_file():
+        return [sys.executable, bundled]
+    return ["python", "scripts/divan.py"]
 
 
 def fallback_command(root: pathlib.Path) -> list[str]:
@@ -200,6 +206,21 @@ def _contained(path: pathlib.Path, root: pathlib.Path) -> bool:
 
 
 def _expected_skill_names(root: pathlib.Path) -> set[str]:
+    bundled = root / "divan-bootstrap-catalog.json"
+    if bundled.is_file():
+        try:
+            catalog = json.loads(bundled.read_text(encoding="utf-8"))
+            packages = catalog["packages"]
+            skills = {
+                skill
+                for row in packages.values()
+                for skill in row["skills"]
+            }
+        except (OSError, json.JSONDecodeError, KeyError, TypeError) as error:
+            raise ValueError("bundled skill catalog is invalid") from error
+        if len(skills) != 41:
+            raise ValueError("bundled skill catalog must define 41 skills")
+        return skills
     return {
         path.parent.name
         for path in root.glob("plugins/*/skills/*/SKILL.md")
