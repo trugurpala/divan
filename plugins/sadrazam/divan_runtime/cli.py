@@ -236,6 +236,15 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
                 next_task_id=options.next_task,
                 execute=options.execute,
             )
+        if options.goal_command == "advance":
+            return goals.advance_goal(
+                options.project,
+                options.goal,
+                options.to,
+                options.execute,
+                reason=options.reason,
+                evidence=options.evidence,
+            )
         if options.goal_command == "archive":
             plan = goal_archive.build_archive_plan(
                 options.project, options.goal, options.recorded_on

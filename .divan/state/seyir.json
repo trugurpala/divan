@@ -1,0 +1,10 @@
+{
+  "active_goal_id": "goal-cbaf95a83490",
+  "completed_task_ids": [
+    "task-001"
+  ],
+  "current_task_id": "task-002",
+  "next_task_id": "task-003",
+  "receipt_event_hash": "85818d3994d0bea008b0169a80ff505d508d48fb3191b62e552bf34236f17db1",
+  "schema_version": 1
+}

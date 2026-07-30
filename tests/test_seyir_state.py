@@ -107,6 +107,29 @@ class SeyirStateTests(unittest.TestCase):
                     execute=True,
                 )
 
+    def test_goal_advance_is_dry_run_first_and_updates_receipt_phase(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-seyir-state-") as temporary:
+            project = pathlib.Path(temporary)
+            identifier, _ = self._goal(project)
+
+            planned = goals.advance_goal(
+                project, identifier, "specified", execute=False
+            )
+            before = status.build_snapshot(project, "en")
+            advanced = goals.advance_goal(
+                project,
+                identifier,
+                "specified",
+                execute=True,
+                reason="Design was approved.",
+            )
+            after = status.build_snapshot(project, "en")
+
+        self.assertEqual(planned["status"], "planned")
+        self.assertEqual(before["goal"]["status"], "DISCOVERED")
+        self.assertEqual(advanced["status"], "advanced")
+        self.assertEqual(after["goal"]["status"], "SPECIFIED")
+
 
 if __name__ == "__main__":
     unittest.main()

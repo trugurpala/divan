@@ -6,7 +6,7 @@ import argparse
 import pathlib
 from typing import Any
 
-from . import adoption, planning
+from . import adoption, planning, receipts
 from . import release as release_api
 
 DESCRIPTION = "Portable command-line interface for the Divan runtime."
@@ -205,6 +205,22 @@ def _add_goal_parsers(commands: Any) -> None:
     progress.add_argument("--next", dest="next_task")
     _mutation_control(progress)
     _common_output(progress)
+    advance = goal_commands.add_parser(
+        "advance", help="record one verified goal phase transition"
+    )
+    advance.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    advance.add_argument("--goal", required=True)
+    advance.add_argument(
+        "--to",
+        required=True,
+        choices=tuple(state.casefold() for state in receipts.STATES),
+    )
+    advance.add_argument("--reason", default="")
+    advance.add_argument("--evidence", nargs="*", default=[])
+    _mutation_control(advance)
+    _common_output(advance)
     archive = goal_commands.add_parser("archive")
     archive.add_argument(
         "--project", type=pathlib.Path, default=pathlib.Path.cwd()
