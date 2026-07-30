@@ -11,6 +11,7 @@ on:
       - 'scripts/release.py'
       - 'scripts/sbom.py'
       - 'scripts/build_project_runner.py'
+      - 'scripts/build_bootstrap.py'
       - 'plugins/sadrazam/company/**'
       - 'plugins/sadrazam/divan_runtime/**'
       - '.github/actions/divan-project/action.yml'
@@ -143,6 +144,8 @@ jobs:
           sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"
           runner="$RUNNER_TEMP/divan-project.pyz"
           runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"
+          bootstrap="$RUNNER_TEMP/divan.pyz"
+          bootstrap_checksum="$RUNNER_TEMP/divan.pyz.sha256"
           source_commit="$GITHUB_SHA"
           source_root="$GITHUB_WORKSPACE"
           published_release=false
@@ -164,18 +167,27 @@ jobs:
           git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
           python "$source_root/scripts/build_project_runner.py" --root "$source_root" \
             --output "$runner" --source-commit "$source_commit"
+          python "$source_root/scripts/build_bootstrap.py" --root "$source_root" \
+            --output "$bootstrap" --source-commit "$source_commit"
           runner_sha256="$(sha256sum "$runner" | awk '{print $1}')"
           printf '%s  %s\n' "$runner_sha256" "$(basename "$runner")" > "$runner_checksum"
           runner_checksum_sha256="$(sha256sum "$runner_checksum" | awk '{print $1}')"
+          bootstrap_sha256="$(sha256sum "$bootstrap" | awk '{print $1}')"
+          printf '%s  %s\n' "$bootstrap_sha256" "$(basename "$bootstrap")" > "$bootstrap_checksum"
+          bootstrap_checksum_sha256="$(sha256sum "$bootstrap_checksum" | awk '{print $1}')"
           python "$source_root/scripts/sbom.py" --root "$source_root" \
             --output "$sbom" --source-commit "$source_commit" \
             --artifact "$(basename "$runner")=$runner_sha256" \
-            --artifact "$(basename "$runner_checksum")=$runner_checksum_sha256"
+            --artifact "$(basename "$runner_checksum")=$runner_checksum_sha256" \
+            --artifact "$(basename "$bootstrap")=$bootstrap_sha256" \
+            --artifact "$(basename "$bootstrap_checksum")=$bootstrap_checksum_sha256"
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
           sbom_sha256="$(sha256sum "$sbom" | awk '{print $1}')"
-          printf '%s  %s\n%s  %s\n%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$runner_sha256" "$(basename "$runner")" "$runner_checksum_sha256" "$(basename "$runner_checksum")" "$source_commit" "$tag" > "$checksum"
+          printf '%s  %s\n%s  %s\n%s  %s\n%s  %s\n%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$runner_sha256" "$(basename "$runner")" "$runner_checksum_sha256" "$(basename "$runner_checksum")" "$bootstrap_sha256" "$(basename "$bootstrap")" "$bootstrap_checksum_sha256" "$(basename "$bootstrap_checksum")" "$source_commit" "$tag" > "$checksum"
           {
             echo "archive=$archive"
+            echo "bootstrap=$bootstrap"
+            echo "bootstrap_checksum=$bootstrap_checksum"
             echo "checksum=$checksum"
             echo "notes=$notes"
             echo "runner=$runner"
@@ -194,11 +206,15 @@ jobs:
             ${{ steps.release-assets.outputs.sbom }}
             ${{ steps.release-assets.outputs.runner }}
             ${{ steps.release-assets.outputs.runner_checksum }}
+            ${{ steps.release-assets.outputs.bootstrap }}
+            ${{ steps.release-assets.outputs.bootstrap_checksum }}
             ${{ steps.release-assets.outputs.checksum }}
       - name: Publish or verify immutable GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_ARCHIVE: ${{ steps.release-assets.outputs.archive }}
+          RELEASE_BOOTSTRAP: ${{ steps.release-assets.outputs.bootstrap }}
+          RELEASE_BOOTSTRAP_CHECKSUM: ${{ steps.release-assets.outputs.bootstrap_checksum }}
           RELEASE_CHECKSUM: ${{ steps.release-assets.outputs.checksum }}
           RELEASE_NOTES: ${{ steps.release-assets.outputs.notes }}
           RELEASE_RUNNER: ${{ steps.release-assets.outputs.runner }}
@@ -209,6 +225,8 @@ jobs:
         run: |
           set -euo pipefail
           archive="$RELEASE_ARCHIVE"
+          bootstrap="$RELEASE_BOOTSTRAP"
+          bootstrap_checksum="$RELEASE_BOOTSTRAP_CHECKSUM"
           checksum="$RELEASE_CHECKSUM"
           notes="$RELEASE_NOTES"
           runner="$RELEASE_RUNNER"
@@ -225,16 +243,20 @@ jobs:
               gh release download "$tag" --pattern "$(basename "$sbom")" --dir "$existing"
               gh release download "$tag" --pattern "$(basename "$runner")" --dir "$existing"
               gh release download "$tag" --pattern "$(basename "$runner_checksum")" --dir "$existing"
+              gh release download "$tag" --pattern "$(basename "$bootstrap")" --dir "$existing"
+              gh release download "$tag" --pattern "$(basename "$bootstrap_checksum")" --dir "$existing"
               cmp --silent "$archive" "$existing/$(basename "$archive")"
               cmp --silent "$checksum" "$existing/$(basename "$checksum")"
               cmp --silent "$sbom" "$existing/$(basename "$sbom")"
               cmp --silent "$runner" "$existing/$(basename "$runner")"
               cmp --silent "$runner_checksum" "$existing/$(basename "$runner_checksum")"
+              cmp --silent "$bootstrap" "$existing/$(basename "$bootstrap")"
+              cmp --silent "$bootstrap_checksum" "$existing/$(basename "$bootstrap_checksum")"
               echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
             else
-              gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
+              gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
             fi
           else
             test "$source_commit" = "$GITHUB_SHA"
-            gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" --target "$source_commit" --title "Divan $tag" --notes-file "$notes"
+            gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum" --target "$source_commit" --title "Divan $tag" --notes-file "$notes"
           fi

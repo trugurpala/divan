@@ -172,6 +172,32 @@ class WorkflowHardeningTests(unittest.TestCase):
             text,
         )
 
+    def test_release_publishes_and_reverifies_clean_host_bootstrap(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+
+        self.assertIn('bootstrap="$RUNNER_TEMP/divan.pyz"', text)
+        self.assertIn('bootstrap_checksum="$RUNNER_TEMP/divan.pyz.sha256"', text)
+        self.assertIn(
+            'python "$source_root/scripts/build_bootstrap.py" --root "$source_root"',
+            text,
+        )
+        self.assertIn("${{ steps.release-assets.outputs.bootstrap }}", text)
+        self.assertIn(
+            "${{ steps.release-assets.outputs.bootstrap_checksum }}",
+            text,
+        )
+        self.assertIn('cmp --silent "$bootstrap"', text)
+        self.assertIn('cmp --silent "$bootstrap_checksum"', text)
+        self.assertIn(
+            'gh release download "$tag" --pattern "$(basename "$bootstrap")"',
+            text,
+        )
+        self.assertIn(
+            'gh release create "$tag" "$archive" "$checksum" "$sbom" '
+            '"$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum"',
+            text,
+        )
+
     def test_non_main_dispatch_cannot_reach_publication(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
         publish_job = text[text.index("  publish:") :]
