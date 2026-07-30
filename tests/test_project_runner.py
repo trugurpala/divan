@@ -19,6 +19,7 @@ CURRENT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 RUNTIME_FILES = (
     "__init__.py",
     "adoption.py",
+    "adoption_proof.py",
     "cli.py",
     "cli_parser.py",
     "ci_guard.py",
