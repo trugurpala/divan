@@ -21,6 +21,7 @@ from divan_runtime import (  # noqa: E402
     goals,
     governance,
     kernel,
+    local_server,
     project_lifecycle,
     project_os,
     receipts,
@@ -270,6 +271,16 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     options = _parser().parse_args(argv)
+    if options.command == "status":
+        try:
+            return local_server.serve(
+                options.project,
+                options.lang,
+                options.open_browser,
+            )
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
     try:
         authority = _mutation_authority(options)
         result = _execute(options)

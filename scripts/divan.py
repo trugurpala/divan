@@ -32,6 +32,7 @@ DIVAN_COMMANDS = {
     "goal",
     "receipt",
     "release",
+    "status",
     "project",
     "adoption",
     "validate",

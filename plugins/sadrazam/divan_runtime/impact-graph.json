@@ -8,7 +8,9 @@
     "public-site": ["release-validation"],
     "wiki": ["release-validation"],
     "company-validation": ["documentation"],
-    "planning-validation": ["company-validation"]
+    "planning-validation": ["company-validation"],
+    "local-ui": ["release-validation"],
+    "security": ["release-validation"]
   },
   "effect_checks": {
     "catalog": ["python scripts/catalog.py --check"],
@@ -22,7 +24,9 @@
     "company-validation": ["python scripts/divan.py validate"],
     "planning-validation": [
       "python -m unittest tests.test_planning_intelligence -v"
-    ]
+    ],
+    "local-ui": ["python -m unittest tests.test_seyir_ui -v"],
+    "security": ["python -m unittest tests.test_local_server -v"]
   },
   "rules": [
     {
@@ -133,6 +137,20 @@
       "patterns": ["site/*.html", "site/robots.txt", "site/sitemap.xml", "docs/index.html", "docs/robots.txt", "docs/sitemap.xml"],
       "effects": ["accessibility", "browser-testing", "public-site"],
       "checks": []
+    },
+    {
+      "id": "local-seyir",
+      "patterns": [
+        "plugins/sadrazam/divan_runtime/locales.py",
+        "plugins/sadrazam/divan_runtime/messages.json",
+        "plugins/sadrazam/divan_runtime/status.py",
+        "plugins/sadrazam/divan_runtime/local_server.py",
+        "plugins/sadrazam/divan_runtime/studio/*"
+      ],
+      "effects": ["company-validation", "local-ui", "security"],
+      "checks": [
+        "python -m unittest tests.test_locales tests.test_status_snapshot tests.test_local_server tests.test_seyir_ui -v"
+      ]
     },
     {
       "id": "documentation-source",

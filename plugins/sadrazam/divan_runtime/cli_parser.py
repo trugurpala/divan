@@ -93,6 +93,29 @@ def _add_discovery_parsers(commands: Any) -> None:
     _add_runtime_contract_parsers(commands)
 
 
+def _add_status_parser(commands: Any) -> None:
+    status = commands.add_parser(
+        "status",
+        help="open the local, read-only Seyir progress page",
+    )
+    status.add_argument(
+        "--project",
+        type=pathlib.Path,
+        default=pathlib.Path.cwd(),
+    )
+    status.add_argument(
+        "--open",
+        action="store_true",
+        dest="open_browser",
+        help="open the generated local URL in the default browser",
+    )
+    status.add_argument(
+        "--lang",
+        choices=("auto", "en", "tr"),
+        default="auto",
+    )
+
+
 def _planning_controls(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--host-profile",
@@ -206,6 +229,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     commands = parser.add_subparsers(dest="command", required=True)
     _add_discovery_parsers(commands)
+    _add_status_parser(commands)
     _add_init_parser(commands)
     _add_project_parsers(commands)
     _add_read_only_project_parsers(commands)
