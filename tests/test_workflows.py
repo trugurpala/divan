@@ -211,7 +211,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             text,
         )
         self.assertIn('divan.pyz" _fallback-remove', text)
-        self.assertIn("p['skill_count']==41", text)
+        self.assertIn("'41/41 skills' in text", text)
 
     def test_non_main_dispatch_cannot_reach_publication(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
