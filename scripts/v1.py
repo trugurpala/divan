@@ -7,10 +7,17 @@ import argparse
 import json
 import pathlib
 import re
+import sys
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 KAYNAK = pathlib.Path("registry/v1-gates.json")
 HEDEF = pathlib.Path("docs/V1-Hazirlik.md")
+PLUGIN_ROOT = KOK / "plugins" / "sadrazam"
+if str(PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_ROOT))
+
+from divan_runtime import adoption as adoption_receipts  # noqa: E402
+
 DURUMLAR = {
     "passed": "✅ Geçti",
     "ready": "🟡 Hazır; canlı kanıt bekliyor",
@@ -132,6 +139,71 @@ def _validate_real_agent_evidence(veri: dict, yol: pathlib.Path) -> None:
     _validate_provenance(veri, yol)
 
 
+def _validate_clean_room_evidence(
+    kok: pathlib.Path, kapi: dict
+) -> None:
+    """Require one verifier-backed schema-2 receipt for a passed gate."""
+    kanitlar = kapi.get("evidence", [])
+    json_yollari = [
+        (kok / kanit).resolve()
+        for kanit in kanitlar
+        if isinstance(kanit, str)
+        and kanit.startswith(".divan/evidence/")
+        and kanit.endswith(".json")
+    ]
+    if len(json_yollari) != 1:
+        raise ValueError(
+            "verified-clean-room-adoption: tek schema 2 JSON kanıtı gerekli"
+        )
+    kanit_yolu = json_yollari[0]
+    sonuc = adoption_receipts.verify_adoption(kanit_yolu)
+    if (
+        sonuc.get("schema_version") != 2
+        or sonuc.get("status") != "valid-clean-room-adoption"
+        or sonuc.get("eligible_for_v1") is not True
+    ):
+        raise ValueError(
+            "verified-clean-room-adoption: clean-room kanıtı invalid"
+        )
+    try:
+        makbuz = json.loads(kanit_yolu.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as hata:
+        raise ValueError(
+            "verified-clean-room-adoption: kanıt okunamadı"
+        ) from hata
+    release = kapi.get("release")
+    divan = makbuz.get("divan") if isinstance(makbuz, dict) else None
+    release_alanlari = {"version", "ref", "commit", "runner_sha256"}
+    if (
+        not isinstance(release, dict)
+        or set(release) != release_alanlari
+        or not isinstance(divan, dict)
+        or any(release[alan] != divan.get(alan) for alan in release_alanlari)
+    ):
+        raise ValueError(
+            "verified-clean-room-adoption: release identity kanıtla eşleşmiyor"
+        )
+    kontroller = makbuz.get("checks")
+    if (
+        not isinstance(kontroller, list)
+        or not kontroller
+        or not any(
+            isinstance(kontrol, dict)
+            and kontrol.get("class") in {"test", "regression"}
+            for kontrol in kontroller
+        )
+        or any(
+            not isinstance(kontrol, dict)
+            or kontrol.get("status") != "passed"
+            or kontrol.get("exit_code") != 0
+            for kontrol in kontroller
+        )
+    ):
+        raise ValueError(
+            "verified-clean-room-adoption: test-backed checks geçersiz"
+        )
+
+
 def oku(kok: pathlib.Path = KOK) -> dict:
     veri = json.loads((kok / KAYNAK).read_text(encoding="utf-8"))
     if veri.get("schema_version") != 1 or veri.get("target") != "1.0.0":
@@ -177,6 +249,11 @@ def oku(kok: pathlib.Path = KOK) -> dict:
             if not isinstance(eval_verisi, dict):
                 raise ValueError(f"{kimlik}: eval kanıtı nesne olmalı")
             _validate_real_agent_evidence(eval_verisi, eval_yollari[0])
+        if (
+            kimlik == "verified-clean-room-adoption"
+            and kapi["status"] == "passed"
+        ):
+            _validate_clean_room_evidence(kok, kapi)
     return veri
 
 
@@ -187,7 +264,7 @@ def uret(kok: pathlib.Path = KOK) -> str:
     hazir = sum(k["status"] == "ready" for k in kapilar)
     kalan_metinleri = {
         "real-agent-comparison": "Gerçek bir ajan adaptörü ve bağımsız hakemle aynı vakaları baseline/skill olarak koşup sonucu yayımlamak.",
-        "independent-adoption": "Proje sahibi dışındaki en az bir kullanıcının sabitlenmiş release üzerinden kurulum ve görev kanıtını kabul formuyla göndermesi.",
+        "verified-clean-room-adoption": "Yayımlanmış sabit bir Divan release'iyle gerçek ve ayrı bir projede makinece doğrulanabilir temiz-proje kanıtı üretmek.",
     }
     kalan = [
         kalan_metinleri.get(kapi["id"], kapi["title"])
@@ -219,7 +296,7 @@ def uret(kok: pathlib.Path = KOK) -> str:
             "",
             "- **Geçti:** kanıt üretildi ve tekrar denetlenebilir.",
             "- **Hazır:** uygulama/CI kapısı yazıldı; `main` veya Release üstünde başarılı koşu bekleniyor.",
-            "- **Bekliyor:** ürünün kendi kendine uyduramayacağı gerçek dış kanıt gerekiyor.",
+            "- **Bekliyor:** gerekli gerçek teknik kanıt henüz üretilmedi.",
             "",
             "## v1 için kalan gerçek işler",
             "",
