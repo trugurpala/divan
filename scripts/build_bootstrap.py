@@ -7,6 +7,7 @@ import hashlib
 import json
 import pathlib
 import re
+import stat
 import sys
 import zipfile
 from typing import Any
@@ -70,8 +71,30 @@ if __name__ == "__main__":
 """.encode("utf-8")
 
 
+def _trusted_bytes(root: pathlib.Path, path: pathlib.Path) -> bytes:
+    root = root.resolve()
+    try:
+        details = path.lstat()
+        resolved = path.resolve(strict=True)
+        resolved.relative_to(root)
+    except (OSError, ValueError) as error:
+        raise ValueError(f"bootstrap source escapes the repository: {path}") from error
+    reparse = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    attributes = getattr(details, "st_file_attributes", 0)
+    if (
+        not path.is_file()
+        or path.is_symlink()
+        or (reparse and attributes & reparse)
+    ):
+        raise ValueError(f"bootstrap source is not a regular file: {path}")
+    return path.read_bytes()
+
+
 def _version(root: pathlib.Path) -> str:
-    value = (root / "VERSION").read_text(encoding="utf-8").strip()
+    try:
+        value = _trusted_bytes(root, root / "VERSION").decode("utf-8").strip()
+    except UnicodeError as error:
+        raise ValueError("VERSION must be UTF-8") from error
     pattern = (
         r"(?:0|[1-9][0-9]*)\."
         r"(?:0|[1-9][0-9]*)\."
@@ -85,7 +108,7 @@ def _version(root: pathlib.Path) -> str:
 def _catalog(root: pathlib.Path, version: str) -> dict[str, Any]:
     path = root / ".agents" / "plugins" / "marketplace.json"
     try:
-        raw = path.read_bytes()
+        raw = _trusted_bytes(root, path)
         marketplace = json.loads(raw)
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("cannot read the canonical plugin catalog") from error
@@ -103,10 +126,18 @@ def _catalog(root: pathlib.Path, version: str) -> dict[str, Any]:
             or not isinstance(source.get("path"), str)
         ):
             continue
-        package = root / source["path"]
+        normalized = pathlib.PurePosixPath(source["path"].replace("\\", "/"))
+        if (
+            name in packages
+            or normalized != pathlib.PurePosixPath("plugins") / name
+        ):
+            raise ValueError("plugin catalog contains a duplicate or unsafe package")
+        package = root / normalized
         skills = sorted(
             skill.parent.name for skill in (package / "skills").glob("*/SKILL.md")
         )
+        for skill in (package / "skills").glob("*/SKILL.md"):
+            _trusted_bytes(root, skill)
         packages[name] = {"skills": skills, "version": package_version}
     expected = {"sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack"}
     unique_skills = {
@@ -147,18 +178,20 @@ def _entries(
     catalog = _catalog(root, version)
     runtime = root / "plugins" / "sadrazam" / "divan_runtime"
     entries = {
-        f"scripts/{name}": (root / "scripts" / name).read_bytes()
+        f"scripts/{name}": _trusted_bytes(root, root / "scripts" / name)
         for name in (*HOST_FILES, *PLATFORM_FILES)
     }
     entries.update(
         {
-            f"plugins/sadrazam/divan_runtime/{name}": (runtime / name).read_bytes()
+            f"plugins/sadrazam/divan_runtime/{name}": _trusted_bytes(
+                root, runtime / name
+            )
             for name in _runtime_names(root)
         }
     )
     entries["plugins/sadrazam/divan_runtime/data/seo-policy.json"] = (
-        root / "registry" / "seo-policy.json"
-    ).read_bytes()
+        _trusted_bytes(root, root / "registry" / "seo-policy.json")
+    )
     entries["__main__.py"] = ENTRYPOINT
     entries["VERSION"] = f"{version}\n".encode("utf-8")
     entries["divan-bootstrap-catalog.json"] = (
@@ -189,6 +222,7 @@ def build(
     root = root.resolve()
     build_project_runner._verified_head(root, source_commit)
     entries = _entries(root, source_commit)
+    build_project_runner._verified_head(root, source_commit)
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "w", allowZip64=True) as archive:
         for name in sorted(entries):
