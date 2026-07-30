@@ -81,17 +81,17 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v0.18.1 adayı:** Codex Desktop için açık `auto` profil, güvenli CLI tanısı,
-  native/fallback yetenek sınırı ve checksum-backed 41-skill kurulum doğrulaması
-  uygulanıyor. Issue #57 ancak temiz Windows canary, tam CI, değişmez release,
-  Pages ve Wiki geri okumasıyla kapanır. Issue #34 bağımsız kullanıcı
-  gerektiren ayrı v1 kapısı olarak kalır.
-- **v0.18.1 ✓** Release yüzeyleri hazırlanmış yerel adaydır; bu işaret
-  yayınlandığı anlamına gelmez. Yayın iddiası yalnız immutable tag/Release ve
-  canlı geri okuma kanıtı eklendikten sonra yapılır.
+- Issue #34 bağımsız kullanıcı gerektiren ayrı v1 kapısı olarak kalır.
 
 ### Yayımlanan temel
 
+- **v0.18.1 ✓** Published Codex Desktop auto-install release: explicit `auto`
+  profile, safe CLI diagnosis, honest native/fallback capability boundary, and
+  checksum-backed 41-skill verification. PR #58, all nine main/publication
+  workflows, immutable tag/Release, five checksummed and SLSA-verified assets,
+  SPDX 2.3 SBOM, and a remote Windows install/discovery/remove canary are bound
+  in the v0.18.1 evidence. The canary preserved an unrelated skill and fallback
+  never claimed native commands, agents, hooks, MCP, or lifecycle support.
 - **v0.18.0 ✓** Published Nizâm-ı Sefer release: intent becomes a deterministic
   task graph, risk/context policy, at most three bounded workstreams, durable
   handoffs, and a goal-bound `route.json`. Host and model uncertainty fail

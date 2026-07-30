@@ -4,33 +4,26 @@ Son güncelleme: 2026-07-30
 
 ## Yayın durumu
 
-- Latest published release: v0.18.0
-- Published commit: 3bbbd95881a7c33f64e3e9f8d23824e3eef8977e
-- Publication evidence: .divan/evidence/teftis-20260729-v018-release.md
-- Release asset evidence: .divan/evidence/teftis-20260729-v018-release.md
+- Latest published release: v0.18.1
+- Published commit: f367de92e09b4f56e205d7e2883d988b3b4d2797
+- Publication evidence: .divan/evidence/teftis-20260730-v0181-release.md
+- Release asset evidence: .divan/evidence/teftis-20260730-v0181-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is v0.18.0 at immutable commit `3bbbd958`.
-Nizâm-ı Sefer planning intelligence now ships inside the existing council
-module and keeps the evidence-backed host registry as its execution boundary.
-Implementation PR #54 and release PR #55 are merged; the immutable tag/Release,
-five assets, checksums, SPDX SBOM, release/SLSA attestations, Pages, and Wiki
-were read back from their public surfaces. A host may be called verified only
-after a clean-host lifecycle canary records real evidence.
-
-The active v0.18.1 candidate addresses issue #57. Codex Desktop install now
-has an explicit `auto` profile that separates healthy, missing,
+The latest published release is v0.18.1 at immutable commit `f367de92`.
+Implementation PR #58 is merged. Codex Desktop install now has an explicit
+`auto` profile that separates healthy, missing,
 not-executable, access-denied, and invalid-JSON CLI states. Healthy Codex keeps
 the native plugin route. Proven launch barriers may select the existing
 checksum-backed 41-skill fallback, whose output states that native commands,
 agents, hooks, MCP configuration, and host lifecycle are unavailable. This is
-not published until full CI, immutable release, remote checksum-backed Windows
-canary, Pages, and Wiki readback evidence exist. The local candidate passed 580
-tests with 13 expected platform skips, 77% coverage, Ruff, Clean Code, mypy
-across 90 source files, and the isolated local-source Windows install/remove
-canary.
+published with all nine main/publication workflows green, an immutable
+tag/Release, five checksummed and SLSA-verified assets, SPDX 2.3 SBOM, and a
+remote checksum-backed Windows install/discovery/remove canary. The canary
+found exactly 41 Divan skills in a fresh process, preserved an unrelated skill,
+and removed only Divan-owned files.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -42,13 +35,16 @@ adoption gate, so v1 remains 7/8.
 
 ## Yapıldı
 
-- Issue #57 design and implementation candidate adds safe process probing,
+- Issue #57 adds safe process probing,
   explicit profile selection, canonical fallback execution, exact 41-skill
   manifest verification, per-skill installed SHA-256 verification, a rollback
   command, and user-facing native/fallback limits. Plain native installation
   remains unchanged and invalid host JSON fails closed. Host parsing, output,
   diagnosis, profile policy, and lifecycle execution are separate modules; the
-  registered install-function complexity and length debt was removed.
+  registered install-function complexity and length debt was removed. PR #58
+  merged at `f367de92e09b4f56e205d7e2883d988b3b4d2797`; release workflow
+  `30500376337`, all required workflows, immutable assets, strict SLSA
+  verification, and the isolated remote Windows lifecycle canary passed.
 - PR #55 merged the v0.18.0 release preparation to `main` at
   `3bbbd95881a7c33f64e3e9f8d23824e3eef8977e`. Release workflow
   `30493811167` published immutable tag/Release v0.18.0. All five downloaded

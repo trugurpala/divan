@@ -39,7 +39,7 @@ while preserving the CLI contract.
 - Ruff passed.
 - The Clean Code ratchet passed; no new debt was accepted.
 - Mypy passed across 90 first-party source files.
-- Release consistency passed for v0.18.1 and 179 controlled surfaces.
+- Release consistency passed for v0.18.1 and 180 controlled surfaces.
 - Repository validation reported 5 packages and 41 unique skills.
 - Handoff, catalog, v1 scorecard, eval contracts, and final hygiene passed.
 

@@ -1,14 +1,14 @@
 # Durum ve Yol Haritası · v0.18.1
 
-Son durum tarihi: 2026-07-29.
+Son durum tarihi: 2026-07-30.
 
-> **En güncel yayımlanmış sürüm v0.18.0'dır.** PR #54 uygulamayı, PR #55 sürüm
-> hazırlığını tamamladı. Değişmez tag/GitHub Release, beş varlık, checksum,
-> SPDX SBOM, çift attestation, Pages ve Wiki kanıtıyla yayımlandı.
+> **En güncel yayımlanmış sürüm v0.18.1'dir.** PR #58 Codex Desktop auto-install
+> profilini tamamladı. Değişmez tag/GitHub Release, beş varlık, checksum,
+> SPDX SBOM, SLSA doğrulaması ve Windows yaşam döngüsü canary'siyle yayımlandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.18.0` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
+- Değişmez `v0.18.1` etiketi ve ona bağlı GitHub Release, beş varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -25,6 +25,8 @@ Son durum tarihi: 2026-07-29.
 - Tek komutlu sürüm yüzeyi hazırlığı ve sapma teftişi; `main` sonrası Pages +
   Wiki eşliğinden CHANGELOG kaynaklı tag/GitHub Release'a giden yayın kapısı.
 - Claude Code resmî doğrulaması ve Linux/macOS/Windows Codex kur-keşfet-kaldır matrisi.
+- Codex Desktop için açık `auto` profil; sağlıklı CLI'da native kurulum, kanıtlı
+  çalıştırma engelinde sınırları belirtilen checksum-backed 41-skill fallback.
 - UTF-8/LF metin sözleşmesi, locale-bağımsız subprocess çıktısı, McCabe 25
   karmaşıklık bütçesi ve yalnız yeniden üretilebilir cache'leri silebilen
   allowlist tabanlı repo hijyeni.
@@ -78,6 +80,17 @@ değildir.
   `3bbbd95881a7c33f64e3e9f8d23824e3eef8977e` commit'inde birleşti. Değişmez
   v0.18.0 tag/Release'i, beş varlık, iki attestation türü, Pages ve Wiki
   yeniden okunarak doğrulandı.
+
+## v0.18.1 — yayımlanan Codex Desktop auto-install
+
+- Eksik, çalıştırılamayan, erişimi engellenen, geçersiz JSON döndüren ve sağlıklı
+  Codex CLI durumları birbirinden ayrılır.
+- Açıkça seçilen `auto` profili sağlıklı CLI'da native yolu değiştirmez; kanıtlı
+  Windows çalıştırma engelinde checksum-backed 41-skill fallback'i seçebilir.
+- Fallback; komut, ajan, hook, MCP veya native yaşam döngüsü desteği iddia etmez.
+- PR #58 `f367de92e09b4f56e205d7e2883d988b3b4d2797` commit'inde birleşti. Dokuz
+  yayın kontrolü, beş indirilen varlığın SHA-256 değeri, strict SLSA doğrulaması
+  ve uzak Windows kur-keşfet-kaldır canary'si geçti.
 
 ## Sıradaki ürün kanıtı
 
