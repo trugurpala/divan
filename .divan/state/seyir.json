@@ -5,10 +5,12 @@
     "task-002",
     "task-003",
     "task-004",
-    "task-005"
+    "task-005",
+    "task-006",
+    "task-007"
   ],
-  "current_task_id": "task-006",
-  "next_task_id": "task-007",
-  "receipt_event_hash": "6cc659c5196c7f7744eb74760b6cdcf7b958592d3e796d7964c93ac58f138c0a",
+  "current_task_id": null,
+  "next_task_id": null,
+  "receipt_event_hash": "76825cf31427abd745754c307d5fe71fc71fce8a81215691f12cb075287c6072",
   "schema_version": 1
 }
