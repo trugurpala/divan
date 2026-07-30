@@ -10,6 +10,29 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 - One released clean-room adoption receipt produced by the schema-2 mechanism.
 
+## [0.18.5] - 2026-07-30
+
+### Fixed
+
+- The clean-room Codex/Claude version probe now resolves the runnable Windows
+  `.cmd` or `.exe` launcher before falling back to the portable command name.
+  This avoids an access-denied failure when npm places an extensionless shim
+  before its working `.cmd` launcher on `PATH`.
+
+### Added
+
+- Immutable v0.18.4 publication evidence with workflow, asset, checksum,
+  attestation, Pages, Wiki, and live-readback identifiers.
+- A regression test for the exact Windows launcher ordering reproduced by the
+  released v0.18.4 runner on Codex Desktop.
+
+### Verification
+
+- The released v0.18.4 runner reached the real VERIFIED clean-room goal and
+  bounded native test plan, then failed closed at the host probe. Direct
+  process execution reproduced access denied for `codex` and success for
+  `codex.cmd --version`; the fix selects the latter without using a shell.
+
 ## [0.18.4] - 2026-07-30
 
 ### Added

@@ -90,15 +90,20 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v0.18.4 ✓** Local trust candidate: VERIFIED geçişi gerçek uygulama/test
-  kanıtını atomik bağlar; temiz-proje kanıtı yalnız bu terminal olaydaki
-  dosyaları kabul eder. Genel `VERSION` dosyası ve Divan dışı marketplace
-  yanlış pozitif değildir; bug-fix fermanı gereksiz feature/testing akışlarını
-  çoğaltmaz. PR/main/tag/Release/Pages/Wiki ve yayımlanmış-runner temiz-proje
-  makbuzu henüz ayrı kanıtlanacaktır; v1 dürüstçe 7/8 kalır.
+- **v0.18.5 ✓** Windows trust fix candidate: temiz-proje host sürüm probu,
+  çalıştırılamayan uzantısız npm shim'i yerine çalışan `.cmd` veya `.exe`
+  komutunu platforma göre çözer. v0.18.4 yayımlanmış-runner denemesi bu gerçek
+  son kullanıcı kusurunu buldu; düzeltme release olmadan temiz-proje makbuzu
+  veya v1 8/8 iddiası yapılmaz.
 
 ### Yayımlanan temel
 
+- **v0.18.4 ✓** Published real-evidence boundary: VERIFIED geçişi gerçek
+  uygulama/test kanıtını atomik bağlar; temiz-proje kanıtı yalnız terminal
+  olaydaki dosyaları kabul eder. Genel `VERSION` dosyası ve Divan dışı
+  marketplace yanlış pozitif değildir; bug-fix fermanı odaklı kalır. PR #64
+  `2eb36bdd24e383c90e1e62e53ad1c6c5d5730000` commit'inde birleşti; dokuz
+  workflow, yedi doğrulanmış varlık, attestations, Pages ve Wiki geçti.
 - **v0.18.3 ✓** Published verified clean-room mechanism: `adoption prove`,
   schema-2 privacy-bounded receipts, immutable release authority, one-shot
   bounded checks, source-stability protection, and machine-backed v1

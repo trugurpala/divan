@@ -489,7 +489,7 @@ class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
             return None
 
         resolved = (
-            module.adoption_proof_execution._resolved_host_probe_command(
+            module.adoption_proof_common.resolved_host_probe_command(
                 "codex", platform="nt", which=fake_which
             )
         )
@@ -501,7 +501,7 @@ class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
         module = self.require_module()
 
         resolved = (
-            module.adoption_proof_execution._resolved_host_probe_command(
+            module.adoption_proof_common.resolved_host_probe_command(
                 "claude-code",
                 platform="posix",
                 which=lambda _command: "/ignored",

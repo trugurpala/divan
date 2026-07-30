@@ -1,15 +1,15 @@
-# Durum ve Yol Haritası · v0.18.4
+# Durum ve Yol Haritası · v0.18.5
 
 Son durum tarihi: 2026-07-30.
 
-> **En güncel yayımlanmış sürüm v0.18.3'tür.** PR #63 temiz-proje kanıtı,
-> gizlilik sınırlı schema-2 makbuz ve değişmez release otoritesini tamamladı.
+> **En güncel yayımlanmış sürüm v0.18.4'tür.** PR #64 gerçek hedef kanıtı,
+> ayrı-proje sınıflandırması ve odaklı hata düzeltme planını tamamladı.
 > Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, attestations,
 > Pages ve Wiki ile yayımlandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.18.3` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v0.18.4` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -125,9 +125,24 @@ değildir.
 - Yayımlanmış runner ile üretilip repoya kaydedilmiş temiz-proje makbuzu henüz
   olmadığı için v1 dürüstçe **7/8** kalır.
 
+## v0.18.4 — yayımlanan gerçek kanıt sınırı
+
+- `goal advance --evidence`, uygulama, regresyon testi ve doğrulama dosyalarını
+  VERIFIED geçişine atomik olarak bağlar.
+- `adoption prove`, yalnız gerçek terminal olayındaki spec dışı dosya
+  özetlerini kabul eder; plan-only hedefi tamamlanmış saymaz.
+- Genel `VERSION` dosyası ve Divan dışı marketplace ayrı projeyi yanlışlıkla
+  reddetmez; Divan'a ait tam imzalar kapıyı güvenli biçimde durdurur.
+- PR #64 `2eb36bdd24e383c90e1e62e53ad1c6c5d5730000` commit'inde birleşti.
+  Dokuz ana/yayın workflow'u, 695 test, yedi indirilen varlık, strict
+  attestations, Pages ve Wiki geçti.
+- Gerçek Windows temiz-proje denemesi, çalışan `codex.cmd` yanında uzantısız
+  npm shim'inin erişim hatasına takılan host sürüm probunu buldu. v0.18.5 bu
+  son kullanıcı kusurunu regresyon testiyle düzeltir.
+
 ## Sıradaki ürün kanıtı
 
-1. v0.18.4 gerçek kod/test kanıtı bağlama düzeltmesini değişmez release olarak
+1. v0.18.5 Windows host sürüm probu düzeltmesini değişmez release olarak
    yayımla.
 2. Divan'dan ayrı gerçek projede uygulama ve test kanıtını hedefe bağla:
    `python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-dosyası> --execute`

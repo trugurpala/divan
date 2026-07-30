@@ -4,20 +4,20 @@ Son güncelleme: 2026-07-30
 
 ## Yayın durumu
 
-- Latest published release: v0.18.3
-- Published commit: 294958620e6382fe10296ab15246e100fab84764
-- Publication evidence: .divan/evidence/teftis-20260730-v0183-release.md
-- Release asset evidence: .divan/evidence/teftis-20260730-v0183-release.md
+- Latest published release: v0.18.4
+- Published commit: 2eb36bdd24e383c90e1e62e53ad1c6c5d5730000
+- Publication evidence: .divan/evidence/teftis-20260730-v0184-release.md
+- Release asset evidence: .divan/evidence/teftis-20260730-v0184-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is v0.18.3 at immutable commit `2949586`.
-PR #63 published `adoption prove`, privacy-bounded schema-2 receipts, immutable
-release authority, one-shot bounded checks, source-stability protection, and
-the machine-backed v1 gate. All nine required main/publication workflows
-passed. Seven release assets were downloaded again, their SHA-256 values
-matched, strict attestations passed, and Pages plus Wiki returned v0.18.3.
+The latest published release is v0.18.4 at immutable commit `2eb36bd`.
+PR #64 published real VERIFIED evidence binding, plan-only proof rejection,
+distinct-project policy v2, and focused bug-fix routing. All nine required
+main/publication workflows passed. Seven release assets were downloaded again,
+their SHA-256 values matched, strict attestations passed, and Pages plus Wiki
+returned v0.18.4.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -29,10 +29,11 @@ clean-room evidence rather than operator identity. The schema-2 mechanism is
 published, but no reviewed receipt from the released mechanism is committed,
 so v1 remains 7/8.
 
-v0.18.4 is a local trust candidate. It binds real implementation/test evidence
-on VERIFIED, rejects plan-only proof, removes common-project false positives,
-and keeps bug-fix routing focused. This is not yet a PR, merge, tag, GitHub
-Release, Pages/Wiki publication, or clean-room receipt claim.
+The first released-runner clean-room attempt reached the real goal and bounded
+test plan, then failed closed while observing the Codex version. Windows found
+an extensionless npm shim that returned access denied even though the adjacent
+`codex.cmd --version` command passed. v0.18.5 resolves the runnable Windows
+command shim explicitly before retrying the same released-runner proof.
 
 ## Yapıldı
 
@@ -354,9 +355,9 @@ Release, Pages/Wiki publication, or clean-room receipt claim.
 
 ## Devam ediyor
 
-- v0.18.4 must publish the real-evidence binding fix. After publication, the
-  separate clean-room canary can be initialized with the released runner and
-  re-proven with bounded checks. Only a privacy-reviewed
+- v0.18.5 must publish the Windows host-probe launcher fix. After publication,
+  the separate clean-room canary can be initialized with the released runner
+  and re-proven with bounded checks. Only a privacy-reviewed
   `valid-clean-room-adoption` receipt may move v1 from 7/8 to 8/8.
 
 ## Tarihsel devam kayıtları
@@ -380,14 +381,15 @@ the current execution queue.
 
 ## Bilinen açıklar
 
-- Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
+- Yayımlanmış runner ile tamamlanan doğrulanmış temiz-proje makbuzu henüz yok;
+  başarı veya v1 8/8 iddiası yapılamaz.
 - Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
   manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
   native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
 
 ## Sıradaki kesin adım
 
-Publish v0.18.4, download and verify both portable runners, then rerun
+Publish v0.18.5, download and verify both portable runners, then rerun
 `adoption prove` against the separate clean-room canary. Commit only the
 privacy-reviewed schema-2 receipt and re-verify it before changing the v1
 score from 7/8 to 8/8.
