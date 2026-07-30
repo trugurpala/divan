@@ -15,6 +15,7 @@ if str(PLUGIN_ROOT) not in sys.path:
 
 from divan_runtime import (  # noqa: E402
     adoption,
+    adoption_proof,
     cli_parser,
     engine,
     goal_archive,
@@ -96,6 +97,12 @@ def _write_json(value: dict[str, Any]) -> None:
 
 
 def _write_human(value: dict[str, Any], language: str) -> None:
+    if value.get("kind") == "adoption-proof-preview":
+        _write_proof_preview(value, language)
+        return
+    if value.get("kind") == "adoption-proof-result":
+        _write_proof_result(value, language)
+        return
     labels = TEXT[language]
     for key in (
         "project",
@@ -126,6 +133,115 @@ def _write_human(value: dict[str, Any], language: str) -> None:
             f"{orchestration['recommended_sefers']} sefer / "
             f"{orchestration['lane']} / {model['capability_class']}\n"
         )
+
+
+def _write_proof_preview(value: dict[str, Any], language: str) -> None:
+    project = value["project"]
+    goal = value["goal"]
+    if language == "tr":
+        print("Divan neyi kanıtlayacak?")
+        print(
+            "Proje: Divan'dan ayrı gerçek proje · "
+            f"{project['workspace_count']} çalışma alanı"
+        )
+        print(f"Hedef: {goal['id']} · {goal['state']}")
+        print("Çalışacak kontroller:")
+        for check in value["checks"]:
+            seconds = int(check["timeout_ms"]) // 1000
+            print(
+                f"- {check['name']} [{check['runner']}] · "
+                f"en fazla {seconds} saniye"
+            )
+        print("Henüz hiçbir dosya yazılmadı.")
+        print("Başlatmak için:")
+    else:
+        print("What will Divan prove?")
+        print(
+            "Project: real project distinct from Divan · "
+            f"{project['workspace_count']} workspaces"
+        )
+        print(f"Goal: {goal['id']} · {goal['state']}")
+        print("Checks to run:")
+        for check in value["checks"]:
+            seconds = int(check["timeout_ms"]) // 1000
+            print(
+                f"- {check['name']} [{check['runner']}] · "
+                f"up to {seconds} seconds"
+            )
+        print("No file has been written yet.")
+        print("To start:")
+    print(value["next_command"])
+
+
+def _write_proof_result(value: dict[str, Any], language: str) -> None:
+    if value.get("status") == "passed":
+        if language == "tr":
+            print("Temiz-proje kanıtı geçti.")
+            print(f"Kontroller: {value.get('checks_passed', 0)} geçti.")
+            print(f"Makbuz: {value.get('receipt_status')}")
+        else:
+            print("Clean-room proof passed.")
+            print(f"Checks: {value.get('checks_passed', 0)} passed.")
+            print(f"Receipt: {value.get('receipt_status')}")
+        for path in value.get("files", []):
+            print(f"- {path}")
+        return
+    reason = value.get("reason", "bounded proof did not pass")
+    if language == "tr":
+        print(f"Temiz-proje kanıtı tamamlanmadı: {reason}")
+    else:
+        print(f"Clean-room proof did not complete: {reason}")
+
+
+def _proof_preview_result(
+    plan: dict[str, Any], host: str, operator_role: str
+) -> dict[str, Any]:
+    checks = [
+        {
+            "id": row["id"],
+            "class": row["class"],
+            "runner": row["runner"],
+            "name": row["name"],
+            "command": list(row["argv"]),
+            "timeout_ms": row["timeout_ms"],
+        }
+        for row in plan["checks"]
+    ]
+    goal = {
+        "id": plan["goal"]["id"],
+        "state": plan["goal"]["state"],
+        "target": plan["goal"]["target"],
+    }
+    command = (
+        "python divan-project.pyz adoption prove --project . "
+        f"--goal {goal['id']} --host {host} "
+        f"--operator-role {operator_role} --execute"
+    )
+    return {
+        "schema_version": 1,
+        "kind": "adoption-proof-preview",
+        "status": "ready",
+        "proof_id": plan["proof_id"],
+        "summary": (
+            f"Divan can prove this goal with {len(checks)} bounded checks."
+        ),
+        "divan": plan["divan"],
+        "host_probe": {
+            "command": list(plan["host_probe"]["argv"]),
+            "status": "planned",
+        },
+        "operator": {"role": operator_role},
+        "environment": plan["environment"],
+        "project": {
+            "classification": "external",
+            "types": plan["project"]["types"],
+            "workspace_count": plan["project"]["workspace_count"],
+        },
+        "goal": goal,
+        "checks": checks,
+        "writes": plan["writes"],
+        "next_command": command,
+    }
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -268,6 +384,21 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
     if options.command == "adoption":
         if options.adoption_command == "verify":
             return adoption.verify_adoption(options.path)
+        if options.adoption_command == "prove":
+            proof_plan = adoption_proof.build_proof_plan(
+                options.project,
+                options.goal,
+                options.host,
+                options.operator_role,
+            )
+            if options.execute:
+                return {
+                    "kind": "adoption-proof-result",
+                    **adoption_proof.execute_proof(proof_plan),
+                }
+            return _proof_preview_result(
+                proof_plan, options.host, options.operator_role
+            )
         return adoption.export_adoption(
             options.project,
             options.goal,
@@ -352,7 +483,14 @@ def main(argv: list[str] | None = None) -> int:
         }:
             fallback = "valid" if result.get("ok") else "invalid"
             print(f"Status: {result.get('status', fallback)}")
-    if result.get("ok") is False or result.get("status") in {"FAIL", "BLOCKED"}:
+    if result.get("ok") is False or result.get("status") in {
+        "FAIL",
+        "BLOCKED",
+        "blocked",
+        "failed-checks",
+        "cancelled",
+        "invalid",
+    }:
         return 1
     return 0
 

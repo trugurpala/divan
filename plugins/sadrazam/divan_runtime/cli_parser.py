@@ -6,7 +6,7 @@ import argparse
 import pathlib
 from typing import Any
 
-from . import adoption, planning, receipts
+from . import adoption, adoption_proof, planning, receipts
 from . import release as release_api
 
 DESCRIPTION = "Portable command-line interface for the Divan runtime."
@@ -65,6 +65,26 @@ def _add_adoption_parser(commands: Any) -> None:
     verify = subcommands.add_parser("verify")
     verify.add_argument("path", type=pathlib.Path)
     _common_output(verify)
+    prove = subcommands.add_parser(
+        "prove",
+        help="preview or execute a machine-verifiable clean-room proof",
+    )
+    prove.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    prove.add_argument("--goal", required=True)
+    prove.add_argument(
+        "--host",
+        choices=tuple(sorted(adoption_proof.QUALIFYING_HOSTS)),
+        required=True,
+    )
+    prove.add_argument(
+        "--operator-role",
+        choices=tuple(sorted(adoption_proof.OPERATOR_ROLES)),
+        default="maintainer",
+    )
+    _mutation_control(prove)
+    _common_output(prove)
 
 
 def _add_runtime_contract_parsers(commands: Any) -> None:

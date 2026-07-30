@@ -52,7 +52,7 @@
   - Add schema-2 assembly, verifier, role-equivalence, canonical-order, privacy, hash, and Markdown parity coverage.
 - `tests/test_adoption_proof.py`
   - Add project classification, safe argv, selection, preview, execution, timeout/failure, drift, staging, and atomic-promotion coverage.
-- `tests/test_cli.py`
+- `tests/test_adoption_cli.py`
   - Add parser/routing/human/JSON contract coverage for `adoption prove`.
 - `tests/test_divan_runtime.py`
   - Assert nine top-level modules and the new records capability/module membership.
@@ -452,9 +452,7 @@ git commit -m "feat: execute and seal clean-room proofs"
 **Files:**
 - Modify: `plugins/sadrazam/divan_runtime/cli_parser.py`
 - Modify: `plugins/sadrazam/divan_runtime/cli.py`
-- Modify: `tests/test_cli.py`
-- Modify: `plugins/sadrazam/divan_runtime/locales.py`
-- Modify: `tests/test_locales.py`
+- Create: `tests/test_adoption_cli.py`
 
 **Interfaces:**
 - Consumes: `adoption_proof.build_proof_plan(...)`
@@ -496,7 +494,7 @@ Assert English includes the equivalent bounded wording and neither language clai
 Run:
 
 ```powershell
-python -m unittest tests.test_cli tests.test_locales -v
+python -m unittest tests.test_adoption_cli -v
 ```
 
 Expected: parser rejects `adoption prove`.
@@ -525,7 +523,7 @@ Human output must explain outcomes in vibe-coder language while JSON remains sta
 Run:
 
 ```powershell
-python -m unittest tests.test_cli tests.test_locales tests.test_adoption_proof -v
+python -m unittest tests.test_adoption_cli tests.test_adoption_proof -v
 ```
 
 Expected: all tests pass.
@@ -533,7 +531,7 @@ Expected: all tests pass.
 Commit:
 
 ```powershell
-git add plugins/sadrazam/divan_runtime/cli_parser.py plugins/sadrazam/divan_runtime/cli.py plugins/sadrazam/divan_runtime/locales.py tests/test_cli.py tests/test_locales.py
+git add plugins/sadrazam/divan_runtime/cli_parser.py plugins/sadrazam/divan_runtime/cli.py tests/test_adoption_cli.py
 git commit -m "feat: expose clean-room proof workflow"
 ```
 
@@ -721,7 +719,7 @@ git commit -m "docs: explain verified clean-room adoption"
 Run:
 
 ```powershell
-python -m unittest tests.test_adoption tests.test_adoption_v2 tests.test_adoption_proof tests.test_cli tests.test_divan_runtime tests.test_v1 tests.test_impact_graph -v
+python -m unittest tests.test_adoption tests.test_adoption_v2 tests.test_adoption_proof tests.test_adoption_cli tests.test_divan_runtime tests.test_v1 tests.test_impact_graph -v
 python scripts/handoff.py --check
 python scripts/catalog.py --check
 python scripts/release.py --check
