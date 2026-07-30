@@ -13,6 +13,7 @@ from collections.abc import Sequence
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
+sys.dont_write_bytecode = True
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
