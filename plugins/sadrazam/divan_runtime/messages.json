@@ -1,0 +1,150 @@
+{
+  "app.title": {
+    "en": "Divan Seyir",
+    "tr": "Divan Seyir"
+  },
+  "app.subtitle": {
+    "en": "Local, read-only progress",
+    "tr": "Yerel, salt okunur ilerleme"
+  },
+  "connection.connecting": {
+    "en": "Connecting to Divan…",
+    "tr": "Divan'a bağlanıyor…"
+  },
+  "connection.connected": {
+    "en": "Connected",
+    "tr": "Bağlandı"
+  },
+  "connection.disconnected": {
+    "en": "The local connection was interrupted.",
+    "tr": "Yerel bağlantı kesildi."
+  },
+  "connection.unauthorized": {
+    "en": "This Seyir session is no longer authorized.",
+    "tr": "Bu Seyir oturumunun yetkisi artık geçerli değil."
+  },
+  "progress.request": {
+    "en": "What did you ask for?",
+    "tr": "Ne istedin?"
+  },
+  "progress.current_task": {
+    "en": "What is happening now?",
+    "tr": "Şu an ne yapılıyor?"
+  },
+  "progress.completed": {
+    "en": "What is complete?",
+    "tr": "Neler bitti?"
+  },
+  "progress.checks": {
+    "en": "Which check passed or failed?",
+    "tr": "Hangi kontrol geçti veya kaldı?"
+  },
+  "progress.blocker": {
+    "en": "Is anything blocked?",
+    "tr": "Bir engel var mı?"
+  },
+  "progress.next_action": {
+    "en": "What happens next?",
+    "tr": "Sıradaki adım ne?"
+  },
+  "progress.task_count": {
+    "en": "{complete} / {total} tasks complete",
+    "tr": "{complete} / {total} görev tamamlandı"
+  },
+  "progress.no_blocker": {
+    "en": "No blocker is recorded.",
+    "tr": "Kayıtlı bir engel yok."
+  },
+  "progress.no_active_goal": {
+    "en": "No active goal",
+    "tr": "Etkin hedef yok"
+  },
+  "progress.no_active_goal_hint": {
+    "en": "Give Divan a goal in your agent conversation to begin.",
+    "tr": "Başlamak için ajan konuşmanda Divan'a bir hedef ver."
+  },
+  "progress.no_current_task": {
+    "en": "No current task is recorded.",
+    "tr": "Kayıtlı güncel görev yok."
+  },
+  "progress.no_next_action": {
+    "en": "No next action is recorded.",
+    "tr": "Kayıtlı sıradaki adım yok."
+  },
+  "progress.stale": {
+    "en": "This snapshot may be stale.",
+    "tr": "Bu görüntü güncelliğini yitirmiş olabilir."
+  },
+  "phase.ferman": {
+    "en": "Goal",
+    "tr": "Ferman"
+  },
+  "phase.plan": {
+    "en": "Plan",
+    "tr": "Plan"
+  },
+  "phase.icra": {
+    "en": "Implementation",
+    "tr": "İcra"
+  },
+  "phase.teftis": {
+    "en": "Verification",
+    "tr": "Teftiş"
+  },
+  "phase.yayin": {
+    "en": "Release",
+    "tr": "Yayın"
+  },
+  "state.running": {
+    "en": "Running",
+    "tr": "Çalışıyor"
+  },
+  "state.blocked": {
+    "en": "Blocked",
+    "tr": "Engelli"
+  },
+  "state.failed": {
+    "en": "Failed",
+    "tr": "Başarısız"
+  },
+  "state.complete": {
+    "en": "Complete",
+    "tr": "Tamamlandı"
+  },
+  "state.pending": {
+    "en": "Pending",
+    "tr": "Bekliyor"
+  },
+  "state.passed": {
+    "en": "Passed",
+    "tr": "Geçti"
+  },
+  "state.unknown": {
+    "en": "Not yet verified",
+    "tr": "Henüz doğrulanmadı"
+  },
+  "technical.title": {
+    "en": "Technical details",
+    "tr": "Teknik ayrıntılar"
+  },
+  "technical.branch": {
+    "en": "Branch",
+    "tr": "Dal"
+  },
+  "technical.commit": {
+    "en": "Commit",
+    "tr": "Commit"
+  },
+  "technical.changed": {
+    "en": "Local changes",
+    "tr": "Yerel değişiklikler"
+  },
+  "technical.evidence": {
+    "en": "Evidence",
+    "tr": "Kanıt"
+  },
+  "server.stop": {
+    "en": "Press Ctrl+C in the terminal to stop Seyir.",
+    "tr": "Seyir'i durdurmak için terminalde Ctrl+C'ye bas."
+  }
+}
