@@ -6,6 +6,13 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-30
+
+Divan's first stable release freezes the tested public product contract:
+one repository, five modular packages, 41 skills, Claude Code and Codex host
+lifecycles, the stdlib-only Divan Engine, owner-first Divan Nizamı governance,
+the installed Divan Project Contract, evidence-backed goals, and local Seyir.
+
 ### Added
 
 - A privacy-reviewed schema-2 receipt produced by immutable v0.18.5 on Windows
@@ -904,6 +911,7 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[1.0.0]: https://github.com/trugurpala/divan/releases/tag/v1.0.0
 [0.18.0]: https://github.com/trugurpala/divan/releases/tag/v0.18.0
 [0.17.1]: https://github.com/trugurpala/divan/releases/tag/v0.17.1
 [0.17.0]: https://github.com/trugurpala/divan/releases/tag/v0.17.0

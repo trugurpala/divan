@@ -1,6 +1,6 @@
 {
   "name": "divan",
-  "version": "0.18.5",
+  "version": "1.0.0",
   "interface": {
     "displayName": "Divan Engine"
   },
