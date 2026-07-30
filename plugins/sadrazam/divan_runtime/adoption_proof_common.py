@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import shutil
+from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any
 
@@ -16,6 +19,23 @@ NATIVE_CHECK_PREFIXES = ("bun run ", "npm run ", "pnpm run ", "yarn run ")
 NATIVE_CHECK_COMMANDS = frozenset(
     {"python -m unittest discover", "go test ./...", "cargo test"}
 )
+
+
+def resolved_host_probe_command(
+    host: str,
+    *,
+    platform: str = os.name,
+    which: Callable[[str], str | None] = shutil.which,
+) -> tuple[str, ...]:
+    """Prefer runnable Windows launchers without using a shell."""
+    command = QUALIFYING_HOSTS[host]
+    if platform != "nt":
+        return command
+    executable, *arguments = command
+    for suffix in (".cmd", ".exe"):
+        if resolved := which(executable + suffix):
+            return (resolved, *arguments)
+    return command
 
 
 def canonical_bytes(value: object) -> bytes:

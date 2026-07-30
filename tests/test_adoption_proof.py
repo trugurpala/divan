@@ -476,6 +476,40 @@ class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
             next_action="",
         )
 
+    def test_windows_host_probe_prefers_runnable_command_shim(self) -> None:
+        module = self.require_module()
+        seen: list[str] = []
+
+        def fake_which(command: str) -> str | None:
+            seen.append(command)
+            if command == "codex.cmd":
+                return r"C:\tools\codex.cmd"
+            if command == "codex":
+                return r"C:\tools\codex"
+            return None
+
+        resolved = (
+            module.adoption_proof_common.resolved_host_probe_command(
+                "codex", platform="nt", which=fake_which
+            )
+        )
+
+        self.assertEqual(resolved, (r"C:\tools\codex.cmd", "--version"))
+        self.assertEqual(seen, ["codex.cmd"])
+
+    def test_non_windows_host_probe_preserves_portable_command(self) -> None:
+        module = self.require_module()
+
+        resolved = (
+            module.adoption_proof_common.resolved_host_probe_command(
+                "claude-code",
+                platform="posix",
+                which=lambda _command: "/ignored",
+            )
+        )
+
+        self.assertEqual(resolved, ("claude", "--version"))
+
     def test_success_journals_pending_before_checks_and_promotes_receipts(
         self,
     ) -> None:

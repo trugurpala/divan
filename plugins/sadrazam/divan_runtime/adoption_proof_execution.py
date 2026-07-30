@@ -196,7 +196,7 @@ def _run_host_probe(
 ) -> str | dict[str, Any]:
     root = plan["_private"]["root"]
     result = runner(
-        common.QUALIFYING_HOSTS[host],
+        common.resolved_host_probe_command(host),
         timeouts.resolve_default("fast-check"),
         mutating=False,
         cwd=str(root),
