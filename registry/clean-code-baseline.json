@@ -3,7 +3,7 @@
   "violations": [
     {"kind": "complexity", "target": "evals/run.py:discover_cases", "value": 17},
     {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/adoption.py:_schema_errors", "value": 11},
-    {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/cli.py:_execute", "value": 16},
+    {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/cli.py:_execute", "value": 11},
     {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/engine.py:_python_project_types", "value": 18},
     {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/engine.py:_requirement_name", "value": 13},
     {"kind": "complexity", "target": "plugins/sadrazam/divan_runtime/engine.py:_valid_marker", "value": 21},
@@ -59,9 +59,9 @@
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/goal_archive.py", "value": 489},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/project_lifecycle.py", "value": 435},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/project_os.py", "value": 2932},
-    {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/providers.py", "value": 1238},
+    {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/providers.py", "value": 1233},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/receipts.py", "value": 788},
-    {"kind": "module-lines", "target": "scripts/host_lifecycle.py", "value": 649},
+    {"kind": "module-lines", "target": "scripts/host_lifecycle.py", "value": 635},
     {"kind": "module-lines", "target": "scripts/legacy_state.py", "value": 507},
     {"kind": "module-lines", "target": "scripts/validate.py", "value": 429}
   ]

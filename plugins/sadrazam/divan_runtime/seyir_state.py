@@ -236,3 +236,58 @@ def update(
         _atomic_write(_state_path(root), desired)
         result["status"] = "updated"
     return result
+
+
+def advance_goal(
+    project: pathlib.Path | str,
+    goal_id: str,
+    to_state: str,
+    execute: bool,
+    *,
+    reason: str = "",
+    evidence: list[str] | None = None,
+) -> dict[str, Any]:
+    """Plan or append one receipt-bound goal phase transition."""
+    root = _root(project)
+    path, value = _receipt(root, goal_id)
+    current = str(value["state"])
+    destination = to_state.upper()
+    if current == "BLOCKED":
+        expected = value["events"][-1].get("resume_from")
+        if destination != expected:
+            raise ValueError(f"BLOCKED may resume only to {expected}")
+    elif destination not in receipts.TRANSITIONS.get(current, frozenset()):
+        raise ValueError(f"illegal transition: {current} -> {destination}")
+    supplied_evidence = [] if evidence is None else list(evidence)
+    unknown = sorted(set(supplied_evidence) - set(value["artifacts"]))
+    if unknown:
+        raise ValueError(
+            "goal transition evidence is not receipt-bound: "
+            + ", ".join(unknown)
+        )
+    result = {
+        "schema_version": 1,
+        "status": "planned",
+        "goal_id": goal_id,
+        "from": current,
+        "to": destination,
+        "evidence": supplied_evidence,
+    }
+    if execute:
+        receipts.append_transition(
+            path,
+            destination,
+            reason=reason,
+            evidence=supplied_evidence,
+        )
+        result["status"] = "advanced"
+    return result
+
+
+def valid_managed_file(path: pathlib.Path) -> bool:
+    """Validate a managed Seyir file from its canonical project root."""
+    try:
+        load(path.parents[2])
+    except (IndexError, ValueError):
+        return False
+    return True

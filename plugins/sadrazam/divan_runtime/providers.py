@@ -21,7 +21,7 @@ from urllib.request import (
     build_opener,
 )
 
-from . import execution, goals, project_os, receipts, seyir_state, timeouts
+from . import execution, goals, project_os, receipts, seyir_state
 
 
 class ProviderCapabilityV1(dict[str, Any]):
@@ -270,6 +270,8 @@ def _canonical_remote(value: str) -> str | None:
 
 
 def _valid_project_state_file(path: pathlib.Path, relative: str) -> bool:
+    if relative == ".divan/state/seyir.json":
+        return seyir_state.valid_managed_file(path)
     try:
         size = path.stat().st_size
         if size > MAX_MANAGED_FILE_BYTES:
@@ -277,11 +279,7 @@ def _valid_project_state_file(path: pathlib.Path, relative: str) -> bool:
         content = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError):
         return False
-    root = (
-        path.parents[2]
-        if relative == ".divan/state/seyir.json"
-        else path.parents[1]
-    )
+    root = path.parents[1]
     if relative == ".divan/PROJECT_RULES.md":
         config, errors = project_os._load_config(root)
         if config is None or errors:
@@ -291,12 +289,6 @@ def _valid_project_state_file(path: pathlib.Path, relative: str) -> bool:
     if relative == ".divan/config.json":
         _, errors = project_os._load_config(root)
         return not errors
-    if relative == ".divan/state/seyir.json":
-        try:
-            seyir_state.load(root)
-        except ValueError:
-            return False
-        return True
     _, errors = project_os._load_waivers(root)
     return not errors
 
@@ -527,29 +519,7 @@ def _verification_command(
 
 
 def _default_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
-    observed = execution.run(
-        command,
-        timeouts.resolve_default("provider"),
-        mutating=False,
-    )
-    return_codes = {
-        "TIMEOUT": 124,
-        "CANCELLED": 130,
-    }
-    returncode = observed.returncode
-    if returncode is None:
-        returncode = return_codes.get(observed.status, 125)
-    stderr = observed.stderr
-    if observed.status == "TIMEOUT":
-        stderr = f"divan-timeout: {observed.next_action}"
-    elif observed.status == "CANCELLED":
-        stderr = f"divan-cancelled: {observed.next_action}"
-    return subprocess.CompletedProcess(
-        command,
-        returncode,
-        observed.stdout,
-        stderr,
-    )
+    return execution.run_completed(command)
 
 
 class _VercelRedirectHandler(HTTPRedirectHandler):

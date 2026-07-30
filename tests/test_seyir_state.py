@@ -120,11 +120,11 @@ class SeyirStateTests(unittest.TestCase):
             project = pathlib.Path(temporary)
             identifier, _ = self._goal(project)
 
-            planned = goals.advance_goal(
+            planned = seyir_state.advance_goal(
                 project, identifier, "specified", execute=False
             )
             before = status.build_snapshot(project, "en")
-            advanced = goals.advance_goal(
+            advanced = seyir_state.advance_goal(
                 project,
                 identifier,
                 "specified",

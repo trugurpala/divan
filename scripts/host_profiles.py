@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import csv
-import hashlib
 import json
 import os
 import pathlib
@@ -13,9 +12,9 @@ import sys
 from collections.abc import Callable
 from typing import Any
 
+import bootstrap_contract
 import host_probe
 import legacy_state
-import bootstrap_contract
 
 FALLBACK_CLI_STATUSES = {"missing", "not-executable", "access-denied"}
 NATIVE_MODE = "native"
@@ -374,33 +373,12 @@ def execute_fallback(
 
 def _fallback_environment(options: Any, root: pathlib.Path) -> dict[str, str]:
     """Bind a standalone bootstrap fallback to its embedded immutable source."""
-    environment = {
-        "DIVAN_REF": options.ref,
-        "DIVAN_PYTHON": sys.executable,
-    }
     try:
-        bundled = bootstrap_contract.load(root)
+        return bootstrap_contract.fallback_environment(
+            options,
+            root,
+            getattr(sys, "_divan_bootstrap_path", None),
+            sys.executable,
+        )
     except bootstrap_contract.ContractError as error:
         raise ValueError(str(error)) from error
-    if bundled is None:
-        return environment
-    identity, _ = bundled
-    if (
-        options.source != identity["source_repository"]
-        or options.ref != identity["source_ref"]
-    ):
-        raise ValueError("fallback request does not match bundled release authority")
-    environment.update(
-        {
-            "DIVAN_SOURCE_DIR": str(root.resolve()),
-            "DIVAN_SOURCE_COMMIT": identity["source_commit"],
-        }
-    )
-    bootstrap = getattr(sys, "_divan_bootstrap_path", None)
-    if isinstance(bootstrap, str) and pathlib.Path(bootstrap).is_file():
-        digest = hashlib.sha256()
-        with pathlib.Path(bootstrap).open("rb") as handle:
-            for block in iter(lambda: handle.read(1024 * 1024), b""):
-                digest.update(block)
-        environment["DIVAN_ARCHIVE_SHA256"] = digest.hexdigest()
-    return environment

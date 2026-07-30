@@ -150,3 +150,23 @@ def run(
             else "Diagnose the command failure before retrying."
         ),
     )
+
+
+def run_completed(command: Sequence[str]) -> subprocess.CompletedProcess[str]:
+    """Adapt bounded execution to the provider runner compatibility contract."""
+    observed = run(command, timeouts.resolve_default("provider"), mutating=False)
+    return_codes = {"TIMEOUT": 124, "CANCELLED": 130}
+    returncode = observed.returncode
+    if returncode is None:
+        returncode = return_codes.get(observed.status, 125)
+    stderr = observed.stderr
+    if observed.status == "TIMEOUT":
+        stderr = f"divan-timeout: {observed.next_action}"
+    elif observed.status == "CANCELLED":
+        stderr = f"divan-cancelled: {observed.next_action}"
+    return subprocess.CompletedProcess(
+        list(command),
+        returncode,
+        observed.stdout,
+        stderr,
+    )

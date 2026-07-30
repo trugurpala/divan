@@ -16,8 +16,8 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-import host_lifecycle  # noqa: E402
 import bootstrap_contract  # noqa: E402
+import host_lifecycle  # noqa: E402
 import host_profiles  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"

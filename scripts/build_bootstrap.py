@@ -16,8 +16,8 @@ SCRIPTS = pathlib.Path(__file__).resolve().parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-import build_project_runner
-import bootstrap_contract
+import bootstrap_contract  # noqa: E402
+import build_project_runner  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HOST_FILES = (

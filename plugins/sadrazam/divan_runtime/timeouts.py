@@ -52,6 +52,53 @@ def _positive_integer(value: object, label: str) -> int:
     return value
 
 
+def _validate_margin(value: object) -> None:
+    if not isinstance(value, Mapping) or set(value) != {"numerator", "denominator"}:
+        raise ValueError("timeout safety margin is invalid")
+    _positive_integer(value["numerator"], "margin numerator")
+    _positive_integer(value["denominator"], "margin denominator")
+
+
+def _validate_trusted(value: object) -> None:
+    if not isinstance(value, Mapping) or set(value) != {
+        "repository",
+        "branch",
+        "events",
+    }:
+        raise ValueError("trusted benchmark source is invalid")
+    valid_strings = all(
+        isinstance(value[key], str) and bool(value[key])
+        for key in ("repository", "branch")
+    )
+    events = value["events"]
+    if (
+        not valid_strings
+        or not isinstance(events, list)
+        or not events
+        or any(not isinstance(item, str) or not item for item in events)
+    ):
+        raise ValueError("trusted benchmark source is invalid")
+
+
+def _validate_class(name: object, row: object) -> None:
+    if not isinstance(name, str) or not isinstance(row, Mapping):
+        raise ValueError("timeout class is invalid")
+    if set(row) != CLASS_KEYS:
+        raise ValueError(f"timeout class schema is invalid: {name}")
+    minimum = _positive_integer(row["minimum_seconds"], "minimum timeout")
+    default = _positive_integer(row["default_seconds"], "default timeout")
+    maximum = _positive_integer(row["maximum_seconds"], "maximum timeout")
+    if not minimum <= default <= maximum:
+        raise ValueError(f"timeout class bounds are invalid: {name}")
+    workflows = row["workflows"]
+    if (
+        not isinstance(workflows, list)
+        or len(workflows) != len(set(workflows))
+        or any(not isinstance(item, str) or not item for item in workflows)
+    ):
+        raise ValueError(f"timeout workflows are invalid: {name}")
+
+
 def validate_policy(value: Mapping[str, Any]) -> None:
     expected = {
         "schema_version",
@@ -67,45 +114,55 @@ def validate_policy(value: Mapping[str, Any]) -> None:
     percentile = _positive_integer(value["percentile"], "percentile")
     if percentile > 100:
         raise ValueError("percentile must not exceed 100")
-    margin = value["safety_margin"]
-    if not isinstance(margin, Mapping) or set(margin) != {
-        "numerator",
-        "denominator",
-    }:
-        raise ValueError("timeout safety margin is invalid")
-    _positive_integer(margin["numerator"], "margin numerator")
-    _positive_integer(margin["denominator"], "margin denominator")
-    trusted = value["trusted"]
-    if (
-        not isinstance(trusted, Mapping)
-        or set(trusted) != {"repository", "branch", "events"}
-        or not isinstance(trusted["repository"], str)
-        or not isinstance(trusted["branch"], str)
-        or not isinstance(trusted["events"], list)
-        or not trusted["events"]
-        or any(not isinstance(item, str) or not item for item in trusted["events"])
-    ):
-        raise ValueError("trusted benchmark source is invalid")
+    _validate_margin(value["safety_margin"])
+    _validate_trusted(value["trusted"])
     classes = value["classes"]
     if not isinstance(classes, Mapping) or not classes:
         raise ValueError("timeout classes must be a non-empty object")
     for name, row in classes.items():
-        if not isinstance(name, str) or not isinstance(row, Mapping):
-            raise ValueError("timeout class is invalid")
-        if set(row) != CLASS_KEYS:
-            raise ValueError(f"timeout class schema is invalid: {name}")
-        minimum = _positive_integer(row["minimum_seconds"], "minimum timeout")
-        default = _positive_integer(row["default_seconds"], "default timeout")
-        maximum = _positive_integer(row["maximum_seconds"], "maximum timeout")
-        if not minimum <= default <= maximum:
-            raise ValueError(f"timeout class bounds are invalid: {name}")
-        workflows = row["workflows"]
-        if (
-            not isinstance(workflows, list)
-            or len(workflows) != len(set(workflows))
-            or any(not isinstance(item, str) or not item for item in workflows)
-        ):
-            raise ValueError(f"timeout workflows are invalid: {name}")
+        _validate_class(name, row)
+
+
+def _validate_row_text(row: Mapping[str, Any], key: str, limit: int) -> None:
+    value = row[key]
+    if (
+        not isinstance(value, str)
+        or not value
+        or len(value) > limit
+        or any(character.isspace() for character in value)
+    ):
+        raise ValueError(f"timeout benchmark {key} is invalid")
+
+
+def _validate_benchmark_row(
+    row: object,
+    row_keys: set[str],
+    repository: str,
+    seen: set[int],
+) -> None:
+    if not isinstance(row, Mapping) or set(row) != row_keys:
+        raise ValueError("timeout benchmark row is invalid")
+    run_id = row["run_id"]
+    if type(run_id) is not int or run_id <= 0 or run_id in seen:
+        raise ValueError("timeout benchmark run id is invalid")
+    seen.add(run_id)
+    for key, limit in (
+        ("workflow", 100),
+        ("event", 40),
+        ("conclusion", 40),
+        ("branch", 255),
+    ):
+        _validate_row_text(row, key, limit)
+    duration = _positive_integer(row["duration_seconds"], "benchmark duration")
+    if duration > MAX_BENCHMARK_DURATION_SECONDS:
+        raise ValueError("timeout benchmark duration exceeds safety bound")
+    started = _utc_timestamp(row["started_at"], "started_at")
+    completed = _utc_timestamp(row["completed_at"], "completed_at")
+    if completed < started:
+        raise ValueError("timeout benchmark timestamps are out of order")
+    expected_url = f"https://github.com/{repository}/actions/runs/{run_id}"
+    if row["url"] != expected_url:
+        raise ValueError("timeout benchmark URL is invalid")
 
 
 def _validate_benchmarks(value: Mapping[str, Any]) -> None:
@@ -136,37 +193,7 @@ def _validate_benchmarks(value: Mapping[str, Any]) -> None:
         "url",
     }
     for row in runs:
-        if not isinstance(row, Mapping) or set(row) != row_keys:
-            raise ValueError("timeout benchmark row is invalid")
-        run_id = row["run_id"]
-        if type(run_id) is not int or run_id <= 0 or run_id in seen:
-            raise ValueError("timeout benchmark run id is invalid")
-        seen.add(run_id)
-        for key, limit in (
-            ("workflow", 100),
-            ("event", 40),
-            ("conclusion", 40),
-            ("branch", 255),
-        ):
-            if (
-                not isinstance(row[key], str)
-                or not row[key]
-                or len(row[key]) > limit
-                or any(character.isspace() for character in row[key])
-            ):
-                raise ValueError(f"timeout benchmark {key} is invalid")
-        duration = _positive_integer(row["duration_seconds"], "benchmark duration")
-        if duration > MAX_BENCHMARK_DURATION_SECONDS:
-            raise ValueError("timeout benchmark duration exceeds safety bound")
-        started = _utc_timestamp(row["started_at"], "started_at")
-        completed = _utc_timestamp(row["completed_at"], "completed_at")
-        if completed < started:
-            raise ValueError("timeout benchmark timestamps are out of order")
-        expected_url = (
-            f"https://github.com/{repository}/actions/runs/{run_id}"
-        )
-        if row["url"] != expected_url:
-            raise ValueError("timeout benchmark URL is invalid")
+        _validate_benchmark_row(row, row_keys, repository, seen)
 
 
 def _utc_timestamp(value: object, label: str) -> datetime:
@@ -180,7 +207,8 @@ def _utc_timestamp(value: object, label: str) -> datetime:
         parsed = datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
     except ValueError as error:
         raise ValueError(f"timeout benchmark {label} is invalid") from error
-    if parsed.utcoffset() is None or parsed.utcoffset().total_seconds() != 0:
+    offset = parsed.utcoffset()
+    if offset is None or offset.total_seconds() != 0:
         raise ValueError(f"timeout benchmark {label} is invalid")
     return parsed
 

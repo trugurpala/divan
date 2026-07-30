@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import re
@@ -94,3 +95,80 @@ def load(root: pathlib.Path) -> tuple[dict[str, str], dict[str, dict[str, Any]]]
     if not identity_path.is_file() or not catalog_path.is_file():
         raise ContractError("bundled identity and catalog must both exist")
     return validate(_read(identity_path), _read(catalog_path))
+
+
+def expected_packages(
+    root: pathlib.Path, package_names: set[str]
+) -> dict[str, dict[str, Any]]:
+    """Read either the bundled or native five-package catalog."""
+    bundled = load(root)
+    if bundled is not None:
+        return bundled[1]
+    path = root / ".agents" / "plugins" / "marketplace.json"
+    marketplace = _read(path)
+    expected: dict[str, dict[str, Any]] = {}
+    for plugin in marketplace.get("plugins", []):
+        if not isinstance(plugin, dict):
+            continue
+        name, version, source = plugin.get("name"), plugin.get("version"), plugin.get("source")
+        if not isinstance(name, str) or not isinstance(version, str) or not isinstance(source, dict):
+            continue
+        relative = source.get("path")
+        if not isinstance(relative, str):
+            continue
+        skills = sorted(
+            item.parent.name
+            for item in (root / relative / "skills").glob("*/SKILL.md")
+        )
+        expected[name] = {"version": version, "skills": skills}
+    if set(expected) != package_names:
+        raise ContractError("native catalog does not define the expected five packages")
+    if len({skill for row in expected.values() for skill in row["skills"]}) != 41:
+        raise ContractError("native catalog does not define exactly 41 unique skills")
+    return expected
+
+
+def target_evidence(
+    root: pathlib.Path,
+    versions: dict[str, str],
+) -> dict[str, Any] | None:
+    """Return immutable install evidence when the root is a bundled bootstrap."""
+    bundled = load(root)
+    if bundled is None:
+        return None
+    identity, _ = bundled
+    catalog = _read(root / "divan-bootstrap-catalog.json")
+    return {
+        "source": identity["source_repository"],
+        "ref": identity["source_ref"],
+        "root": str(root.resolve()),
+        "commit": identity["source_commit"],
+        "catalog_digest": catalog["marketplace_digest"],
+        "versions": versions,
+    }
+
+
+def fallback_environment(
+    options: Any,
+    root: pathlib.Path,
+    bootstrap: object,
+    python: str,
+) -> dict[str, str]:
+    """Bind a fallback install to an embedded immutable release authority."""
+    environment = {"DIVAN_REF": options.ref, "DIVAN_PYTHON": python}
+    bundled = load(root)
+    if bundled is None:
+        return environment
+    identity, _ = bundled
+    if options.source != identity["source_repository"] or options.ref != identity["source_ref"]:
+        raise ContractError("fallback request does not match bundled release authority")
+    environment.update(
+        {
+            "DIVAN_SOURCE_DIR": str(root.resolve()),
+            "DIVAN_SOURCE_COMMIT": identity["source_commit"],
+        }
+    )
+    if isinstance(bootstrap, str) and pathlib.Path(bootstrap).is_file():
+        digest = hashlib.sha256(pathlib.Path(bootstrap).read_bytes()).hexdigest()
+        environment["DIVAN_ARCHIVE_SHA256"] = digest
+    return environment

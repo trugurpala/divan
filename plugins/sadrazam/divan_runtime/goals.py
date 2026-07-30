@@ -364,56 +364,6 @@ def goal_status(
     return {"goal_id": identifier, **verification}
 
 
-def advance_goal(
-    project: pathlib.Path | str,
-    identifier: str,
-    to_state: str,
-    execute: bool,
-    *,
-    reason: str = "",
-    evidence: list[str] | None = None,
-) -> dict[str, Any]:
-    """Plan or append one explicit, verified goal phase transition."""
-    root = pathlib.Path(project).resolve()
-    _, _, path = _goal_paths(root, identifier)
-    verification = receipts.verify_receipt(path)
-    if not verification["ok"]:
-        raise ValueError("; ".join(verification["errors"]))
-    value = json.loads(path.read_text(encoding="utf-8"))
-    current = str(value["state"])
-    destination = to_state.upper()
-    if current == "BLOCKED":
-        expected = value["events"][-1].get("resume_from")
-        if destination != expected:
-            raise ValueError(f"BLOCKED may resume only to {expected}")
-    elif destination not in receipts.TRANSITIONS.get(current, frozenset()):
-        raise ValueError(f"illegal transition: {current} -> {destination}")
-    supplied_evidence = [] if evidence is None else list(evidence)
-    unknown = sorted(set(supplied_evidence) - set(value["artifacts"]))
-    if unknown:
-        raise ValueError(
-            "goal transition evidence is not receipt-bound: "
-            + ", ".join(unknown)
-        )
-    result = {
-        "schema_version": 1,
-        "status": "planned",
-        "goal_id": identifier,
-        "from": current,
-        "to": destination,
-        "evidence": supplied_evidence,
-    }
-    if execute:
-        receipts.append_transition(
-            path,
-            destination,
-            reason=reason,
-            evidence=supplied_evidence,
-        )
-        result["status"] = "advanced"
-    return result
-
-
 def resume_goal(project: pathlib.Path | str, identifier: str, execute: bool) -> dict[str, Any]:
     root = pathlib.Path(project).resolve()
     _, _, path = _goal_paths(root, identifier)
