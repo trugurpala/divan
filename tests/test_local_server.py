@@ -5,6 +5,7 @@ import importlib
 import pathlib
 import sys
 import tempfile
+import time
 import unittest
 import urllib.parse
 
@@ -75,15 +76,19 @@ class LocalServerTests(unittest.TestCase):
         self.assertEqual(parsed.path, "/session/")
 
     def test_status_requires_session_header_and_returns_secure_json(self) -> None:
+        before = self.session.server.last_activity
         status, _, _ = request(self.session, "/api/status")
         self.assertEqual(status, 401)
+        self.assertEqual(self.session.server.last_activity, before)
 
+        time.sleep(0.02)
         status, headers, body = request(
             self.session,
             "/api/status",
             token=self.session.token,
         )
         self.assertEqual(status, 200)
+        self.assertGreater(self.session.server.last_activity, before)
         self.assertEqual(headers["Content-Type"], "application/json; charset=utf-8")
         self.assertEqual(headers["Cache-Control"], "no-store")
         self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
@@ -111,6 +116,7 @@ class LocalServerTests(unittest.TestCase):
         self.assertEqual(body, b"")
 
     def test_host_header_mutation_and_traversal_fail_closed(self) -> None:
+        before = self.session.server.last_activity
         self.assertEqual(
             request(
                 self.session,
@@ -120,6 +126,7 @@ class LocalServerTests(unittest.TestCase):
             )[0],
             421,
         )
+        self.assertEqual(self.session.server.last_activity, before)
         self.assertEqual(
             request(
                 self.session,
@@ -129,8 +136,10 @@ class LocalServerTests(unittest.TestCase):
             )[0],
             405,
         )
+        self.assertEqual(self.session.server.last_activity, before)
         self.assertEqual(request(self.session, "/../secrets")[0], 404)
         self.assertEqual(request(self.session, "/%2e%2e/secrets")[0], 404)
+        self.assertEqual(self.session.server.last_activity, before)
 
     def test_close_stops_the_server_thread(self) -> None:
         self.session.close()

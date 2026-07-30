@@ -150,8 +150,32 @@ varsa aynı adresi açar. Adres geçicidir; `Ctrl+C` ile kapatılır. Belgelerde
 
 Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
 sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
-Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce değişiklik
-yapmayan planı gör, sonra aynı sabit release'i iki hosta kur:
+Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur.
+
+### En hızlı ilk kurulum: repo klonlamadan tek doğrulanmış dosya
+
+Eşleşen GitHub Release yayımlandıktan sonra bağımsız kurucuyu ve checksum
+dosyasını indir, bilgisayarında doğrula, yazmayan planı gör ve sonra uygula:
+
+```powershell
+$tag = "v0.18.2"
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
+$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
+$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 eşleşmiyor" }
+python .\divan.pyz doctor --host codex --json
+python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute
+```
+
+Bu tek dosya release'in değişmez kaynak commit'ini, beş paketini ve 41
+becerilik tam kataloğunu taşır; başka kaynak veya ref'i reddeder. `divan.pyz`
+dosyasını sakla: yarım kalan bir işlem olursa doctor, aynı dosyayla çalışacak
+tam recovery komutunu üretir.
+
+Repo checkout'u içinden yazmayan planı görüp aynı sabit release'i iki hosta
+kurmak için:
 
 ```powershell
 python scripts/divan.py install --host both --ref v0.18.2

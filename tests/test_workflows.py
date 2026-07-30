@@ -206,6 +206,12 @@ class WorkflowHardeningTests(unittest.TestCase):
             'python "$RUNNER_TEMP/divan.pyz" doctor --host codex --json',
             text,
         )
+        self.assertIn(
+            'divan.pyz" install --host codex --profile auto --execute --json',
+            text,
+        )
+        self.assertIn('divan.pyz" _fallback-remove', text)
+        self.assertIn("p['skill_count']==41", text)
 
     def test_non_main_dispatch_cannot_reach_publication(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")

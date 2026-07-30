@@ -140,8 +140,32 @@ address when `--open` is present. The address is temporary; stop it with
 
 The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
-ref whose immutable tag and GitHub Release exist. Preview the no-write plan,
-then install the same pinned release into both hosts:
+ref whose immutable tag and GitHub Release exist.
+
+### Fastest first install: one verified file, no repository checkout
+
+After the matching GitHub Release exists, download its standalone bootstrap and
+checksum, verify them locally, inspect the no-write plan, then execute:
+
+```powershell
+$tag = "v0.18.2"
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
+$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
+$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 mismatch" }
+python .\divan.pyz doctor --host codex --json
+python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute
+```
+
+The file contains the exact five-package, 41-skill catalog and immutable source
+commit for that release. It rejects another source or ref. Keep `divan.pyz`;
+doctor uses it to print the exact recovery command if an interrupted operation
+needs attention.
+
+From a repository checkout, preview the no-write plan and install the same
+pinned release into both hosts:
 
 ```powershell
 python scripts/divan.py install --host both --ref v0.18.2

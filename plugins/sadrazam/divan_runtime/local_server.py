@@ -127,6 +127,7 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         if not self._authorized():
             self._send(401, b"Unauthorized\n")
             return
+        self.server.touch()
         snapshot = status.build_snapshot(
             self.server.project,
             self.server.language,
@@ -158,10 +159,10 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         except OSError:
             self._send(404, b"Not found\n")
             return
+        self.server.touch()
         self._send(200, body, content_type=content_type)
 
     def _read(self) -> None:
-        self.server.touch()
         if not self._valid_host():
             self._send(421, b"Misdirected request\n")
             return
@@ -181,7 +182,6 @@ class _Handler(http.server.BaseHTTPRequestHandler):
         self._read()
 
     def _reject_mutation(self) -> None:
-        self.server.touch()
         if not self._valid_host():
             self._send(421, b"Misdirected request\n")
             return

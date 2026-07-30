@@ -5,10 +5,14 @@ from __future__ import annotations
 import json
 import math
 import pathlib
+import re
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from typing import Any, Mapping
 
 SAFE_FALLBACK_SECONDS = 300
+MAX_BENCHMARK_RUNS = 200
+MAX_BENCHMARK_DURATION_SECONDS = 86_400
 DATA_DIRECTORY = pathlib.Path(__file__).resolve().parent / "data"
 CLASS_KEYS = {
     "default_seconds",
@@ -105,35 +109,80 @@ def validate_policy(value: Mapping[str, Any]) -> None:
 
 
 def _validate_benchmarks(value: Mapping[str, Any]) -> None:
-    if (
-        value.get("schema_version") != 1
-        or not isinstance(value.get("source_repository"), str)
-        or not isinstance(value.get("collected_at"), str)
-        or not isinstance(value.get("runs"), list)
-    ):
+    root_keys = {"schema_version", "source_repository", "collected_at", "runs"}
+    if set(value) != root_keys or value.get("schema_version") != 1:
         raise ValueError("timeout benchmark schema is invalid")
+    repository = value.get("source_repository")
+    if (
+        not isinstance(repository, str)
+        or re.fullmatch(r"[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}", repository)
+        is None
+    ):
+        raise ValueError("timeout benchmark repository is invalid")
+    _utc_timestamp(value.get("collected_at"), "collected_at")
+    runs = value.get("runs")
+    if not isinstance(runs, list) or len(runs) > MAX_BENCHMARK_RUNS:
+        raise ValueError("timeout benchmark runs are invalid")
     seen: set[int] = set()
-    for row in value["runs"]:
-        if not isinstance(row, Mapping):
+    row_keys = {
+        "workflow",
+        "run_id",
+        "event",
+        "conclusion",
+        "branch",
+        "duration_seconds",
+        "started_at",
+        "completed_at",
+        "url",
+    }
+    for row in runs:
+        if not isinstance(row, Mapping) or set(row) != row_keys:
             raise ValueError("timeout benchmark row is invalid")
-        required = {
-            "workflow",
-            "run_id",
-            "event",
-            "conclusion",
-            "branch",
-            "duration_seconds",
-        }
-        if not required.issubset(row):
-            raise ValueError("timeout benchmark row is incomplete")
         run_id = row["run_id"]
         if type(run_id) is not int or run_id <= 0 or run_id in seen:
             raise ValueError("timeout benchmark run id is invalid")
         seen.add(run_id)
-        for key in ("workflow", "event", "conclusion", "branch"):
-            if not isinstance(row[key], str) or not row[key]:
+        for key, limit in (
+            ("workflow", 100),
+            ("event", 40),
+            ("conclusion", 40),
+            ("branch", 255),
+        ):
+            if (
+                not isinstance(row[key], str)
+                or not row[key]
+                or len(row[key]) > limit
+                or any(character.isspace() for character in row[key])
+            ):
                 raise ValueError(f"timeout benchmark {key} is invalid")
-        _positive_integer(row["duration_seconds"], "benchmark duration")
+        duration = _positive_integer(row["duration_seconds"], "benchmark duration")
+        if duration > MAX_BENCHMARK_DURATION_SECONDS:
+            raise ValueError("timeout benchmark duration exceeds safety bound")
+        started = _utc_timestamp(row["started_at"], "started_at")
+        completed = _utc_timestamp(row["completed_at"], "completed_at")
+        if completed < started:
+            raise ValueError("timeout benchmark timestamps are out of order")
+        expected_url = (
+            f"https://github.com/{repository}/actions/runs/{run_id}"
+        )
+        if row["url"] != expected_url:
+            raise ValueError("timeout benchmark URL is invalid")
+
+
+def _utc_timestamp(value: object, label: str) -> datetime:
+    if (
+        not isinstance(value, str)
+        or len(value) > 32
+        or not value.endswith("Z")
+    ):
+        raise ValueError(f"timeout benchmark {label} is invalid")
+    try:
+        parsed = datetime.fromisoformat(value.removesuffix("Z") + "+00:00")
+    except ValueError as error:
+        raise ValueError(f"timeout benchmark {label} is invalid") from error
+    if parsed.utcoffset() is None or parsed.utcoffset().total_seconds() != 0:
+        raise ValueError(f"timeout benchmark {label} is invalid")
+    return parsed
 
 
 def _fallback(command_class: str, source: str) -> TimeoutDecision:

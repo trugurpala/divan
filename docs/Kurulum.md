@@ -8,6 +8,30 @@ sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
 komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
 Release'i bulunan bir ref'i kur:
 
+## Repo klonlamadan en hızlı ilk kurulum
+
+Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checksum
+dosyasını indirip doğrula:
+
+```powershell
+$tag = "v0.18.2"
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
+$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
+$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 eşleşmiyor" }
+python .\divan.pyz doctor --host codex --json
+python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute
+```
+
+İlk `install` yalnız planı gösterir; `--execute` aynı sabit release'i uygular.
+Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
+doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
+komutları için sakla.
+
+Repo checkout'u kullanan iki-host yaşam döngüsü:
+
 ```powershell
 python scripts/divan.py install --host both --ref v0.18.2
 python scripts/divan.py install --host both --ref v0.18.2 --execute

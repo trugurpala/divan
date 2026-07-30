@@ -11,6 +11,29 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 
+def benchmark_row(
+    run_id: int,
+    duration: int,
+    *,
+    workflow: str = "quality.yml",
+    event: str = "push",
+    conclusion: str = "success",
+    branch: str = "main",
+    repository: str = "owner/repo",
+) -> dict[str, object]:
+    return {
+        "workflow": workflow,
+        "run_id": run_id,
+        "event": event,
+        "conclusion": conclusion,
+        "branch": branch,
+        "duration_seconds": duration,
+        "started_at": "2026-07-30T00:00:00Z",
+        "completed_at": "2026-07-30T00:10:00Z",
+        "url": f"https://github.com/{repository}/actions/runs/{run_id}",
+    }
+
+
 class TimeoutPolicyTests(unittest.TestCase):
     def setUp(self) -> None:
         from divan_runtime import timeouts
@@ -59,14 +82,7 @@ class TimeoutPolicyTests(unittest.TestCase):
             },
         }
         runs = [
-            {
-                "workflow": "quality.yml",
-                "run_id": index,
-                "event": "push",
-                "conclusion": "success",
-                "branch": "main",
-                "duration_seconds": seconds,
-            }
+            benchmark_row(index, seconds)
             for index, seconds in enumerate((10, 20, 30, 40, 250), start=1)
         ]
         benchmarks = {
@@ -87,30 +103,27 @@ class TimeoutPolicyTests(unittest.TestCase):
         benchmarks = json.loads(json.dumps(self.benchmarks))
         benchmarks["runs"].extend(
             [
-                {
-                    "workflow": "quality-gate.yml",
-                    "run_id": 999001,
-                    "event": "pull_request",
-                    "conclusion": "success",
-                    "branch": "main",
-                    "duration_seconds": 9999,
-                },
-                {
-                    "workflow": "quality-gate.yml",
-                    "run_id": 999002,
-                    "event": "push",
-                    "conclusion": "failure",
-                    "branch": "main",
-                    "duration_seconds": 9999,
-                },
-                {
-                    "workflow": "quality-gate.yml",
-                    "run_id": 999003,
-                    "event": "push",
-                    "conclusion": "success",
-                    "branch": "feature/untrusted",
-                    "duration_seconds": 9999,
-                },
+                benchmark_row(
+                    999001,
+                    9999,
+                    workflow="quality-gate.yml",
+                    event="pull_request",
+                    repository="trugurpala/divan",
+                ),
+                benchmark_row(
+                    999002,
+                    9999,
+                    workflow="quality-gate.yml",
+                    conclusion="failure",
+                    repository="trugurpala/divan",
+                ),
+                benchmark_row(
+                    999003,
+                    9999,
+                    workflow="quality-gate.yml",
+                    branch="feature/untrusted",
+                    repository="trugurpala/divan",
+                ),
             ]
         )
 
@@ -138,6 +151,26 @@ class TimeoutPolicyTests(unittest.TestCase):
         self.assertEqual(corrupt.configured_seconds, 600)
         self.assertEqual(unknown.source, "safe-fallback")
         self.assertEqual(unknown.configured_seconds, 300)
+
+    def test_benchmark_evidence_is_exact_bounded_and_url_bound(self) -> None:
+        extra = json.loads(json.dumps(self.benchmarks))
+        extra["runs"][0]["raw_log"] = "secret"
+        too_many = json.loads(json.dumps(self.benchmarks))
+        too_many["runs"] = [
+            benchmark_row(
+                index,
+                1,
+                repository="trugurpala/divan",
+            )
+            for index in range(1, self.timeouts.MAX_BENCHMARK_RUNS + 2)
+        ]
+        wrong_url = json.loads(json.dumps(self.benchmarks))
+        wrong_url["runs"][0]["url"] = "https://example.invalid/log"
+
+        for invalid in (extra, too_many, wrong_url):
+            with self.subTest(kind=next(iter(invalid))):
+                decision = self.timeouts.resolve("verify", self.policy, invalid)
+                self.assertEqual(decision.source, "default-invalid-benchmark")
 
     def test_override_is_explicit_and_must_remain_inside_class_bounds(self) -> None:
         decision = self.timeouts.resolve(

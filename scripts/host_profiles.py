@@ -348,10 +348,7 @@ def execute_fallback(
     if pathlib.Path(options.source).expanduser().exists():
         raise ValueError("auto fallback requires a checksum-backed release source")
     command = fallback_command(root)
-    environment = {
-        "DIVAN_REF": options.ref,
-        "DIVAN_PYTHON": sys.executable,
-    }
+    environment = _fallback_environment(options, root)
     result = runner(command, environment)
     if result.returncode:
         detail = (result.stderr or result.stdout or "unknown fallback error").strip()
@@ -372,3 +369,30 @@ def execute_fallback(
         "next_command": "Restart Codex, then open a new task.",
         **verified,
     }
+
+
+def _fallback_environment(options: Any, root: pathlib.Path) -> dict[str, str]:
+    """Bind a standalone bootstrap fallback to its embedded immutable source."""
+    environment = {
+        "DIVAN_REF": options.ref,
+        "DIVAN_PYTHON": sys.executable,
+    }
+    try:
+        bundled = bootstrap_contract.load(root)
+    except bootstrap_contract.ContractError as error:
+        raise ValueError(str(error)) from error
+    if bundled is None:
+        return environment
+    identity, _ = bundled
+    if (
+        options.source != identity["source_repository"]
+        or options.ref != identity["source_ref"]
+    ):
+        raise ValueError("fallback request does not match bundled release authority")
+    environment.update(
+        {
+            "DIVAN_SOURCE_DIR": str(root.resolve()),
+            "DIVAN_SOURCE_COMMIT": identity["source_commit"],
+        }
+    )
+    return environment

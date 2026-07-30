@@ -6,6 +6,7 @@ import pathlib
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 VERIFY_PATH = ROOT / "scripts" / "verify.py"
@@ -57,6 +58,36 @@ class VerificationRunnerTests(unittest.TestCase):
                 path = pathlib.Path(environment[name]).resolve()
                 self.assertTrue(path.is_relative_to(pathlib.Path(cache).resolve()))
                 self.assertFalse(path.is_relative_to(pathlib.Path(repo).resolve()))
+
+    def test_every_child_and_the_overall_verify_have_finite_timeouts(self) -> None:
+        verify = load_verify()
+        self.assertIsNotNone(verify)
+        completed = mock.Mock(returncode=0)
+        with tempfile.TemporaryDirectory() as repo, tempfile.TemporaryDirectory() as cache:
+            with (
+                mock.patch.object(verify.subprocess, "run", return_value=completed) as run,
+                mock.patch.object(
+                    verify.timeouts,
+                    "resolve_default",
+                    side_effect=lambda name: mock.Mock(
+                        command_class=name,
+                        configured_seconds=300 if name == "verify" else 120,
+                    ),
+                ) as resolve,
+            ):
+                result = verify.run(
+                    root=pathlib.Path(repo),
+                    commands=(("scripts/probe.py",),),
+                    cache_root=pathlib.Path(cache),
+                )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            [call.args[0] for call in resolve.call_args_list],
+            ["verify", "fast-check"],
+        )
+        self.assertGreater(run.call_args.kwargs["timeout"], 0)
+        self.assertLessEqual(run.call_args.kwargs["timeout"], 120)
 
     def test_child_python_uses_current_interpreter_and_preserves_user_files(self) -> None:
         verify = load_verify()

@@ -117,6 +117,25 @@ class BootstrapAuthorityTests(unittest.TestCase):
         self.assertEqual(recovery, [sys.executable, str(bootstrap), "recover", str(transaction)])
         self.assertEqual(rollback, [sys.executable, str(bootstrap), "_fallback-remove"])
 
+    def test_standalone_fallback_uses_only_its_embedded_release_source(self) -> None:
+        identity, catalog = _contracts()
+        with tempfile.TemporaryDirectory(prefix="divan authority ") as temporary:
+            root = self._root(pathlib.Path(temporary), identity, catalog)
+            options = type(
+                "Options",
+                (),
+                {
+                    "source": identity["source_repository"],
+                    "ref": identity["source_ref"],
+                },
+            )()
+
+            environment = host_profiles._fallback_environment(options, root)
+
+        self.assertEqual(environment["DIVAN_SOURCE_DIR"], str(root.resolve()))
+        self.assertEqual(environment["DIVAN_SOURCE_COMMIT"], identity["source_commit"])
+        self.assertEqual(environment["DIVAN_REF"], identity["source_ref"])
+
 
 if __name__ == "__main__":
     unittest.main()
