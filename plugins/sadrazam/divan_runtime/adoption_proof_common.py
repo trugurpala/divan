@@ -12,6 +12,10 @@ QUALIFYING_HOSTS = {
     "claude-code": ("claude", "--version"),
     "codex": ("codex", "--version"),
 }
+NATIVE_CHECK_PREFIXES = ("bun run ", "npm run ", "pnpm run ", "yarn run ")
+NATIVE_CHECK_COMMANDS = frozenset(
+    {"python -m unittest discover", "go test ./...", "cargo test"}
+)
 
 
 def canonical_bytes(value: object) -> bytes:
@@ -58,7 +62,12 @@ def required_commands(goal_route: dict[str, Any]) -> set[str]:
         or not all(isinstance(item, str) for item in required)
     ):
         raise ValueError("goal route check authority is invalid")
-    return set(required)
+    return {
+        item
+        for item in required
+        if item in NATIVE_CHECK_COMMANDS
+        or item.startswith(NATIVE_CHECK_PREFIXES)
+    }
 
 
 def enforce_check_capacity(
@@ -68,3 +77,23 @@ def enforce_check_capacity(
         raise ValueError(
             "goal route requires more than eight project checks; narrow the goal"
         )
+
+
+def missing_required_commands(
+    required: set[str],
+    commands: list[object],
+    candidates: list[dict[str, Any]],
+) -> set[str]:
+    matched = {
+        str(row["command"])
+        for row in commands
+        if isinstance(row, dict)
+        and row.get("command") in required
+        and any(
+            candidate["workspace"] == row.get("workspace")
+            and candidate["runner"] == row.get("manager")
+            and candidate["name"] == row.get("name")
+            for candidate in candidates
+        )
+    }
+    return required - matched

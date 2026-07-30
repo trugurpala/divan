@@ -379,3 +379,5 @@ yollar [SUPPORT.md](SUPPORT.md) içindedir. Katkı rehberi:
 
 v1 durumu: **7/8** kapı geçti; schema-2 mekanizması hazır, fakat yayımlanmış
 mekanizmanın gerçek makbuzu henüz repoya kaydedilip yeniden doğrulanmadı.
+Checksum yan dosyası indirmeyi korur; geçen v1 kapısı ayrıca incelenmiş release
+runner özetini `registry/v1-gates.json` içinde sabitler ve eşleştirir.

@@ -149,6 +149,14 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                     {"checks": [row["command"] for row in commands]},
                     root,
                 )
+            with self.assertRaisesRegex(
+                ValueError, "unavailable or unsupported"
+            ):
+                module.select_checks(
+                    inspection,
+                    {"checks": ["bun run test:missing"]},
+                    root,
+                )
 
     def test_safe_argv_supports_only_bounded_native_runners(self) -> None:
         module = self.require_module()
@@ -558,6 +566,35 @@ class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
                     return self.result(
                         stdout="after\n" if changed else "before\n"
                     )
+                if not kwargs.get("mutating"):
+                    return self.result(stdout="Claude Code 2.1.220\n")
+                changed = True
+                return self.result(stdout="passed\n")
+
+            result = module.execute_proof(
+                plan, command_runner=fake_runner
+            )
+
+            self.assertEqual(result["status"], "invalid")
+            self.assertIn("tracked source", result["reason"])
+
+    def test_git_head_change_blocks_a_commit_during_checks(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-git-head-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            plan = self.make_plan(root)
+            changed = False
+
+            def fake_runner(command, _decision, **kwargs):
+                nonlocal changed
+                argv = tuple(command)
+                if argv[:3] == ("git", "rev-parse", "--verify"):
+                    return self.result(stdout=("b" if changed else "a") * 40)
+                if argv[0] == "git":
+                    return self.result(stdout="")
                 if not kwargs.get("mutating"):
                     return self.result(stdout="Claude Code 2.1.220\n")
                 changed = True

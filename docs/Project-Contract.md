@@ -147,6 +147,8 @@ verify only as `valid-schema-1-owner-canary` or
 The score is **7/8** until a receipt produced by the released schema-2 mechanism
 is committed and re-verified. The runner and its `.sha256` sidecar must stay
 together, and execution requires a Git repository for tracked-source drift.
+The sidecar proves download integrity; the v1 gate separately pins the reviewed
+release runner digest in `registry/v1-gates.json` and requires an exact match.
 
 For public web projects, the read-only static audit is:
 

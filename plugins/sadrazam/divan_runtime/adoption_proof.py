@@ -244,6 +244,12 @@ def select_checks(
             row["name"],
         )
     )
+    if adoption_proof_common.missing_required_commands(
+        required_commands, commands, candidates
+    ):
+        raise ValueError(
+            "goal route requires unavailable or unsupported project checks"
+        )
     adoption_proof_common.enforce_check_capacity(candidates, MAX_CHECKS)
     selected = candidates[:MAX_CHECKS]
     if not any(row["class"] in adoption.TEST_CLASSES for row in selected):

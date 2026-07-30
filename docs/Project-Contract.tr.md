@@ -146,6 +146,8 @@ uygun olmaz. Yayımlanmış schema-2 mekanizmasının gerçek makbuzu repoya
 kaydedilip yeniden doğrulanana kadar karne **7/8** kalır.
 Runner ile `.sha256` yan dosyası birlikte kalmalı; yürütme, Git tarafından
 izlenen kaynak sapmasını reddedebilmek için bir Git reposu gerektirir.
+Yan dosya indirme bütünlüğünü kanıtlar; v1 kapısı ayrıca incelenmiş release
+runner özetini `registry/v1-gates.json` içinde sabitler ve birebir eşleşme ister.
 
 Public web projesinde salt-okunur denetim:
 

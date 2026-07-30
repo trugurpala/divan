@@ -263,6 +263,7 @@ def _tracked_source_digest(
 ) -> str:
     root = plan["_private"]["root"]
     commands = (
+        ("git", "rev-parse", "--verify", "HEAD"),
         ("git", "diff", "--binary", "HEAD", "--"),
         ("git", "diff", "--cached", "--binary", "HEAD", "--"),
     )

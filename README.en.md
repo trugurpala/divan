@@ -341,3 +341,5 @@ Vercel. Product and compatibility names are descriptive only.
 
 The v1 scorecard remains **7/8**: the schema-2 mechanism is ready, but a receipt
 produced by the released mechanism has not yet been committed and re-verified.
+The checksum sidecar protects the download; a passing v1 gate also pins and
+matches the reviewed release runner digest in `registry/v1-gates.json`.
