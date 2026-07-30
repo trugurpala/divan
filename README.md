@@ -169,7 +169,8 @@ and fails with an actionable error.
 The installer delegates to the official Claude and Codex plugin CLIs, records
 pre-state, and never removes unrelated plugins. Run
 `python scripts/divan.py install --help` for the English host and profile
-options.
+options. The complete Turkish reference remains available in
+[docs/Kurulum.md](docs/Kurulum.md).
 
 The five-minute safe lifecycle continues with:
 
@@ -183,7 +184,8 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 
 Replace the example journal with doctor's exact `recovery_command`. Rolling
 back the `install-...json` journal uninstalls only Divan entries created by that
-transaction; it does not remove unrelated host entries.
+transaction; it does not remove unrelated host entries. The manual,
+host-aware Turkish reference is [docs/Kaldirma.md](docs/Kaldirma.md).
 
 ## Clean development
 

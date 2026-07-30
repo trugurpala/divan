@@ -71,7 +71,7 @@
     {"id": "divan-runtime-cli-parser", "path": "plugins/sadrazam/divan_runtime/cli_parser.py", "marker": "Argument-parser construction for the Divan runtime CLI.", "replace_version": false},
     {"id": "divan-runtime-locales", "path": "plugins/sadrazam/divan_runtime/locales.py", "marker": "Validated Turkish and English reader-facing messages for Divan.", "replace_version": false},
     {"id": "divan-runtime-messages", "path": "plugins/sadrazam/divan_runtime/messages.json", "marker": "\"app.title\"", "replace_version": false},
-    {"id": "divan-runtime-version", "path": "plugins/sadrazam/divan_runtime/version.txt", "marker": "0.18.1", "replace_version": true},
+    {"id": "divan-runtime-version", "path": "plugins/sadrazam/divan_runtime/version.txt", "marker": "{version}", "replace_version": true, "version_patterns": ["{version}"]},
     {"id": "divan-runtime-status", "path": "plugins/sadrazam/divan_runtime/status.py", "marker": "Read-only, evidence-bound status snapshots for Divan Seyir.", "replace_version": false},
     {"id": "divan-runtime-seyir-state", "path": "plugins/sadrazam/divan_runtime/seyir_state.py", "marker": "Canonical active-goal and task progress state for Divan Seyir.", "replace_version": false},
     {"id": "divan-runtime-local-server", "path": "plugins/sadrazam/divan_runtime/local_server.py", "marker": "Loopback-only, read-only HTTP presentation for Divan Seyir.", "replace_version": false},
