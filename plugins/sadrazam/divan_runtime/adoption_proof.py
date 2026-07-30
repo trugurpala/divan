@@ -253,35 +253,6 @@ def select_checks(
     return selected
 
 
-def _goal_verification_digests(
-    goal_receipt: dict[str, Any],
-    artifacts: dict[str, str],
-    goal_id: str,
-) -> list[str]:
-    events = goal_receipt.get("events")
-    if not isinstance(events, list):
-        raise ValueError("goal receipt has no verification evidence")
-    verified_events = [
-        event
-        for event in events
-        if isinstance(event, dict) and event.get("to_state") == "VERIFIED"
-    ]
-    if not verified_events:
-        raise ValueError("goal receipt has no verification evidence")
-    evidence = verified_events[-1].get("evidence")
-    spec_prefix = f".divan/specs/{goal_id}/"
-    qualifying = [
-        item
-        for item in evidence
-        if isinstance(item, str) and not item.startswith(spec_prefix)
-    ] if isinstance(evidence, list) else []
-    if not qualifying or any(item not in artifacts for item in qualifying):
-        raise ValueError(
-            "goal receipt must bind implementation or verification evidence"
-        )
-    return sorted("sha256:" + artifacts[item] for item in qualifying)
-
-
 def build_proof_plan(
     project: pathlib.Path | str,
     goal_id: str,
@@ -318,7 +289,7 @@ def build_proof_plan(
     ):
         raise ValueError("goal receipt must be valid, verified, and artifact-backed")
     goal_receipt = _bounded_json(receipt_path, "goal receipt")
-    verified_artifacts = _goal_verification_digests(
+    verified_artifacts = adoption_proof_common.goal_verification_digests(
         goal_receipt,
         goal_verification["artifacts"],
         goal_id,

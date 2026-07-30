@@ -11,34 +11,17 @@ import tempfile
 from datetime import UTC, datetime
 from typing import Any
 
-STATES = (
-    "DISCOVERED",
-    "SPECIFIED",
-    "PLANNED",
-    "IMPLEMENTING",
-    "VERIFIED",
-    "PREVIEWED",
-    "RELEASED",
-    "OBSERVED",
-    "BLOCKED",
-    "FAILED",
+STATES = tuple(
+    "DISCOVERED SPECIFIED PLANNED IMPLEMENTING VERIFIED PREVIEWED "
+    "RELEASED OBSERVED BLOCKED FAILED".split()
 )
 TARGETS = frozenset({"VERIFIED", "PREVIEWED", "RELEASED", "OBSERVED"})
 RECEIPT_KEYS = frozenset(
     {"schema_version", "goal_id", "intent", "target", "state", "artifacts", "events"}
 )
 EVENT_KEYS_V1 = frozenset(
-    {
-        "sequence",
-        "from_state",
-        "to_state",
-        "reason",
-        "evidence",
-        "results",
-        "resume_from",
-        "previous_hash",
-        "hash",
-    }
+    "sequence from_state to_state reason evidence results resume_from "
+    "previous_hash hash".split()
 )
 EVENT_KEYS_V2 = EVENT_KEYS_V1 | {"recorded_on"}
 RESULT_KEYS = frozenset({"status", "evidence"})
@@ -177,6 +160,20 @@ def _load(path: pathlib.Path) -> dict[str, Any]:
     return value
 
 
+def _merged_artifacts(
+    artifacts: Any,
+    additions: dict[str, str] | None,
+) -> dict[str, str]:
+    if not isinstance(artifacts, dict):
+        raise ValueError("receipt artifacts are invalid")
+    merged = dict(artifacts)
+    for relative, digest in (additions or {}).items():
+        if relative in merged and merged[relative] != digest:
+            raise ValueError(f"receipt artifact changed: {relative}")
+        merged[relative] = digest
+    return dict(sorted(merged.items()))
+
+
 def append_transition(
     path: pathlib.Path | str,
     to_state: str,
@@ -211,16 +208,7 @@ def append_transition(
         resume_from = None
     elif resume_from is not None:
         raise ValueError("resume_from is valid only for BLOCKED")
-    artifacts = value.get("artifacts")
-    if not isinstance(artifacts, dict):
-        raise ValueError("receipt artifacts are invalid")
-    additions = {} if bind_artifacts is None else dict(bind_artifacts)
-    for relative, digest in additions.items():
-        existing = artifacts.get(relative)
-        if existing is not None and existing != digest:
-            raise ValueError(f"receipt artifact changed: {relative}")
-        artifacts[relative] = digest
-    value["artifacts"] = dict(sorted(artifacts.items()))
+    value["artifacts"] = _merged_artifacts(value.get("artifacts"), bind_artifacts)
     events = value.get("events")
     if not isinstance(events, list):
         raise ValueError("receipt events must be an array")

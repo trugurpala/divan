@@ -45,8 +45,10 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ### Verification
 
-- Focused goal-state, adoption-proof, routing, CLI, and portable-runner
-  regressions pass locally.
+- The canonical local verifier passes 695 tests with 14 expected
+  Windows-only symlink/permission skips, plus the five-package/41-skill
+  catalog, v1 registry, 230 release surfaces, Wiki, Ruff, mypy, Clean Code,
+  and final repository hygiene.
 - A separate Git repository reproduced a label-normalization bug, observed the
   regression test fail, applied the smallest fix, observed two tests pass, and
   reached VERIFIED only after the implementation, test, and verification
