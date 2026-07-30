@@ -118,9 +118,20 @@ Host `update` replaces Divan packages in Claude/Codex. Project `update` migrates
 only Divan-owned Project Contract surfaces in a target repository. `audit`
 evaluates DPS quality evidence; `project status` compares ownership
 fingerprints and drift. Verified
-goals can be archived, and a privacy-bounded adoption receipt can be exported
-without exposing usernames, absolute paths, remotes, secrets, or unrelated
-plugins. Owner-canary evidence never closes the independent-adoption gate.
+goals can be archived. The primary v1 evidence path now proves a real task in a
+project distinct from Divan, runs bounded test/regression checks once, observes
+the host version directly, and seals a privacy-bounded schema-2 receipt:
+
+```powershell
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+```
+
+Preview writes nothing and starts no subprocess. Operator identity does not
+change eligibility: maintainer and external users pass the same technical
+gate. Only `valid-clean-room-adoption` can qualify; historical schema-1 export
+receipts remain verifiable but are never v1 evidence.
 
 ## Follow progress locally
 
@@ -304,7 +315,9 @@ community and security files, but it is not v1.0 yet. All 41 skills receive
 structural validation; four original skills provide 13 behavioral cases and a
 provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
 compatibility checks. The first declared real-agent/judge comparison is now
-published; independent user evidence remains the external gate. v0.17.0
+published. The final gate is now one released, machine-verifiable clean-room
+adoption proof; it does not claim an independent user, endorsement, or market
+adoption. v0.17.0
 publishes Divan Engine and Divan Nizamı while preserving old paths. PR #49,
 all required CI, immutable tag/Release, five checksummed and attested assets,
 Pages, and Wiki are verified in the publication evidence. See the
@@ -324,4 +337,5 @@ increase, or “best in the world” status.
 Divan is not affiliated with or endorsed by Anthropic, Claude, OpenAI, or
 Vercel. Product and compatibility names are descriptive only.
 
-The v1 scorecard remains **7/8**: independent-user evidence is still pending.
+The v1 scorecard remains **7/8**: the schema-2 mechanism is ready, but a receipt
+produced by the released mechanism has not yet been committed and re-verified.

@@ -184,7 +184,7 @@ class PortableCompanyCliTests(unittest.TestCase):
             cli.adoption,
             "export_adoption",
             return_value={
-                "status": "valid-owner-canary",
+                "status": "valid-schema-1-owner-canary",
                 "schema_version": 1,
                 "json": '{"product":"divan-adoption"}\n',
                 "markdown": "# Divan Adoption Receipt\n",

@@ -336,3 +336,19 @@ Güncel 11-host matrisi, resmî belge bağlantıları ve desteklenen yetenekler:
 Bugün Claude Code ve Codex temiz-host kurulum yaşam döngüsüyle
 `verified` seviyesindedir. Diğer hostlar, gerçek canary kanıtı oluşana kadar
 daha düşük ve dürüst seviyede kalır.
+
+## v1 temiz-proje kanıtı
+
+Kurulumdan sonra gerçek bir projede doğrulanmış hedef oluştuğunda, v1'in son
+teknik kapısını önce yazmayan planla incele:
+
+```powershell
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+```
+
+İlk komut dosya yazmaz ve subprocess başlatmaz. İkinci komut sabit host sürüm
+probunu ve sınırlı test/regresyon kontrollerini bir kez çalıştırır. Bakımcı ile
+dış kullanıcı aynı teknik sözleşmeye tabidir. Yalnız
+`valid-clean-room-adoption` sonucu v1'e adaydır; gerçek yayımlanmış schema-2
+makbuzu kaydedilene kadar durum **7/8** kalır.

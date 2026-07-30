@@ -59,6 +59,12 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     41-skill fallback'i seçer. Fallback native komut/ajan/hook/MCP/lifecycle
     iddiasında bulunmaz; geçersiz JSON gerçek uyumsuzluk olarak durur. Ayrıntı
     ADR 0011'dedir.
+12. **Doğrulanmış temiz-proje kabulü:** v1'in son kapısı operatörün kimliğini
+    değil; değişmez Divan release'i, Divan'dan ayrı gerçek proje, doğrulanmış
+    hedef, bir kez çalışan sınırlı test/regresyon kontrolleri ve gizlilik
+    sınırlı schema-2 makbuzu ölçer. Bakımcı ile dış kullanıcı aynı teknik kapıya
+    tabidir. Bu kanıt pazar benimsemesi, üçüncü taraf onayı veya verim artışı
+    iddiası değildir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -81,7 +87,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- Issue #34 bağımsız kullanıcı gerektiren ayrı v1 kapısı olarak kalır.
+- v0.18.3, `adoption prove` ile doğrulanmış temiz-proje kanıt mekanizmasını
+  yayımlayacak. Issue #34 kimlik beyanı değil, çevrimdışı doğrulanabilir
+  schema-2 teknik kanıt isteyecek. Gerçek yayımlanmış makbuz oluşana kadar v1
+  dürüstçe 7/8 kalır.
 
 ### Yayımlanan temel
 
@@ -180,15 +189,17 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 1. ✓ v0.12.0 birleştirme/tag/Release/Pages/Wiki ve global kurulum kanıtı.
 2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
-3. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
-4. Bağımsız kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
-   v1 sözleşmesine sabitleme.
+3. v0.18.3 schema-2 temiz-proje mekanizmasını değişmez release olarak yayımla.
+4. Yayımlanmış mekanizmayla Divan'dan ayrı gerçek projede
+   `valid-clean-room-adoption` makbuzu üret, repoya kaydet ve çevrimdışı yeniden
+   doğrula.
 
 ### v1.0 kabul kapıları
 
 - Kararlı ve belgelenmiş public skill/command sözleşmesi.
 - Otomatik davranış eval'leri; başarısız eval'de yayın engeli.
-- En az bir bağımsız kullanıcıdan tekrar üretilebilir kurulum ve görev kanıtı.
+- Yayımlanmış mekanizmayla üretilmiş, tekrar doğrulanabilir bir temiz-proje
+  görev kanıtı.
 - Sürüm etiketi, release notes, kurulum ve geri alma tatbikatı.
 
 Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
@@ -200,6 +211,12 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-30: v0.18.3 verified clean-room adoption implementation began from
+  published v0.18.2. Schema-1 receipts remain compatibility-only; schema-2
+  binds immutable release identity, a project distinct from Divan, a verified
+  goal, observed Claude Code/Codex version, one-shot bounded checks, source
+  stability, privacy limits, and an offline digest. Operator role is provenance,
+  not eligibility. The mechanism is not yet published and v1 remains 7/8.
 - 2026-07-29: v0.18 Nizâm-ı Sefer development started from published v0.17.1.
 - 2026-07-29: PR #54 merged Nizâm-ı Sefer to `main` at `7c674874` after 562
   tests, the cross-platform host matrix, two independent reviews, CodeQL,
@@ -419,7 +436,6 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Collect and human-review the reproducible non-owner adoption evidence in issue
-#34. Verify its privacy-bounded receipt before changing the machine-backed v1
-scorecard. Owner fixtures or canaries do not qualify; without valid evidence,
-v1 remains 7/8.
+Release v0.18.3 mechanism, rebuild both portable runners, then rerun adoption
+prove against the existing verified RSK goal and commit only the
+privacy-reviewed schema-2 receipt before changing the v1 score from 7/8 to 8/8.

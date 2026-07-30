@@ -108,9 +108,21 @@ python scripts/divan.py project repair --project . --execute
 Host `update`, Claude/Codex içindeki Divan paketlerini değiştirir. Project
 `update`, hedef repoda yalnız Divan'ın sahip olduğu yüzeyleri taşır. `audit`,
 DPS kalite kanıtını; `project status`, sahiplik parmak izlerini ve sapmayı
-değerlendirir. Doğrulanmış hedefler arşivlenebilir; kullanıcı adı, mutlak yol,
-remote, secret veya alakasız eklenti açıklamayan sınırlı kabul makbuzu
-üretilebilir. Sahip canary kanıtı bağımsız kabul kapısını kapatmaz.
+değerlendirir. Doğrulanmış hedefler arşivlenebilir. Ana v1 kanıt yolu, Divan'dan
+ayrı gerçek projedeki görevi sınırlı test/regresyon kontrolleriyle bir kez
+çalıştırır, host sürümünü doğrudan gözler ve gizlilik sınırlı schema-2 makbuzu
+mühürler:
+
+```powershell
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+```
+
+Önizleme yazmaz ve subprocess başlatmaz. Bakımcı ile dış kullanıcı aynı teknik
+kapıya tabidir; kişinin sıfatı uygunluğu değiştirmez. Yalnız
+`valid-clean-room-adoption` v1'e aday olabilir. Eski schema-1 export makbuzları
+doğrulanmaya devam eder fakat v1 kanıtı sayılmaz.
 
 ## Kendi kendini nasıl geliştirir?
 
@@ -325,8 +337,10 @@ Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyum
 ancak henüz v1.0 değildir. 41 beceri yapısal olarak doğrulanır; 4 özgün skill için
 13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
 yüzeylerini ve temiz-host matrisini otomatikleştirir. İlk güvenilir gerçek
-ajan/hakem karşılaştırması yayımlanmıştır; bağımsız kullanıcı kanıtı hâlâ dış
-kapıdır. v0.17.0, Divan Engine ile Divan Nizamı'nı açıklaştırır ve eski yolları
+ajan/hakem karşılaştırması yayımlanmıştır. Son kapı artık yayımlanmış
+mekanizmayla üretilen tek bir makinece doğrulanmış temiz-proje kanıtıdır; bu,
+bağımsız kullanıcı, üçüncü taraf onayı veya pazar benimsemesi iddiası değildir.
+v0.17.0, Divan Engine ile Divan Nizamı'nı açıklaştırır ve eski yolları
 korur. PR #49, bütün zorunlu CI kapıları, değişmez tag/Release, checksum ve
 attestation bağlı beş varlık, Pages ve Wiki yayın kanıtında doğrulanmıştır.
 Güncel, makine-okunur durum
@@ -356,8 +370,9 @@ Skill metinlerinin yanında açık kaynak doğrulama/kurulum betikleri ve bazı
 Divan'ın `DCS-001`–`DCS-011` arasındaki on bir zorunlu ürün kuralı
 [Topluluk Standartları](docs/Topluluk-Standartlari.md) sayfasında ve
 `python scripts/standards.py --check` kapısında yaşar. Kullanım sorusu, hata,
-özel güvenlik bildirimi, yetenek önerisi ve bağımsız kabul kanıtı için tek doğru
+özel güvenlik bildirimi, yetenek önerisi ve temiz-proje kabul kanıtı için tek doğru
 yollar [SUPPORT.md](SUPPORT.md) içindedir. Katkı rehberi:
 [Türkçe](CONTRIBUTING.tr.md) · [English](CONTRIBUTING.en.md).
 
-v1 durumu: **7/8** kapı geçti; bağımsız kullanıcı kanıtı hâlâ bekleniyor.
+v1 durumu: **7/8** kapı geçti; schema-2 mekanizması hazır, fakat yayımlanmış
+mekanizmanın gerçek makbuzu henüz repoya kaydedilip yeniden doğrulanmadı.

@@ -59,7 +59,8 @@ değildir.
 
 ## Dürüst açıklar
 
-- Bağımsız kullanıcıdan tekrar üretilebilir benimseme kanıtı yok.
+- Schema-2 temiz-proje mekanizması hazırdır; henüz yayımlanmış mekanizmayla
+  üretilip repoya kaydedilmiş gerçek makbuz yoktur.
 - Gerçek Claude/Codex A/B sonucu yayımlandı: skill 0, baseline 1, beraberlik 2.
   Önceden eşik yoktur; kalite artışı iddiası yapılmaz.
 - v0.17.0'ın tam yerel doğrulaması 538 test, 7 platform atlaması, %76
@@ -67,8 +68,8 @@ değildir.
   deterministik runner ile tamamlandı. Bağımsız son inceleme açık P0-P3 bulgusu
   olmadığını doğruladı. PR #49, bütün zorunlu CI kapıları ve canlı yayın kanıtı
   `.divan/evidence/teftis-20260729-v017-release.md` kaydına bağlandı.
-- v0.17 yayını bağımsız kullanıcı kabulü değildir; issue #34 kapanmadan v1
-  karnesi **7/8** kalır.
+- v0.17 yayını temiz-proje kabul kanıtı değildir; gerçek schema-2 makbuz
+  kaydedilip yeniden doğrulanmadan v1 karnesi **7/8** kalır.
 
 ## v0.18 — yayımlanan Nizâm-ı Sefer
 
@@ -114,20 +115,20 @@ değildir.
 
 ## Sıradaki ürün kanıtı
 
-1. Native host adaptörleri ve tek-komut kurulum profillerini ayrı, kanıtlı
-   dilimler halinde uygula; sahte “her hostta tam uyum” iddiası kurma.
-2. Yayımlanan sabit sürümü kullanan, repo sahibi olmayan bağımsız kullanıcıdan
-   gizlilik sınırlı ve tekrar üretilebilir kabul kanıtı topla.
-3. Kabul kaydını tekrar doğrula; owner canary veya maintainer fixture ile kapıyı
-   geçilmiş sayma.
-4. Kanıt geçerliyse issue #34 ve v1 karnesini ayrı, denetlenebilir değişiklikle
-   güncelle.
+1. Schema-2 mekanizmasını değişmez release olarak yayımla.
+2. Divan'dan ayrı, gerçek ve doğrulanmış hedef içeren projede yazmayan planı gör:
+   `python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex`
+3. Aynı planı `--execute` ile çalıştır; host sürümünü gözle, sınırlı
+   test/regresyon kontrollerini geçir ve gizlilik sınırlı makbuzu mühürle.
+4. `valid-clean-room-adoption` makbuzunu çevrimdışı yeniden doğrula. Yalnız
+   bundan sonra issue #34 ve v1 karnesini ayrı değişiklikle güncelle.
 
 ## v1.0 kapıları
 
 - Kararlı public skill/command sözleşmesi.
 - Başarısız davranış eval'inde yayını durduran gerçek-agent kapısı.
-- En az bir bağımsız, yeniden üretilebilir kullanıcı kanıtı.
+- Yayımlanmış mekanizmayla üretilmiş, makinece doğrulanabilir bir temiz-proje
+  kanıtı.
 - Etiketli release, sabitlenebilir kurulum ve geri alma tatbikatı.
 
 Kararların ayrıntılı kaynağı:

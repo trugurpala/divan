@@ -26,11 +26,18 @@ stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
 installed layer is Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is
 the final authority and only `owner` may expand scope. Legacy Company OS,
 Project OS, `/company`, `company-validate`, and Python/JSON paths remain bounded
-compatibility surfaces through v1. Issue #34 is still the independent non-owner
-adoption gate, so v1 remains 7/8.
+compatibility surfaces through v1. Issue #34 now targets machine-verifiable
+clean-room evidence rather than operator identity. The schema-2 mechanism is
+implemented locally but not yet released, so v1 remains 7/8.
 
 ## Yapıldı
 
+- Schema-1 adoption receipts remain verifiable with explicit non-v1 statuses.
+  Schema-2 adds an immutable-release, distinct-project, verified-goal,
+  observed-host, bounded-check, source-stability, privacy, and offline-digest
+  contract. `adoption prove` previews without writes/processes; `--execute`
+  runs the fixed host probe and safe checks once before atomically sealing
+  evidence. Maintainer/external role does not affect eligibility.
 - Issue #57 adds safe process probing,
   explicit profile selection, canonical fallback execution, exact 41-skill
   manifest verification, per-skill installed SHA-256 verification, a rollback
@@ -343,9 +350,9 @@ adoption gate, so v1 remains 7/8.
 
 ## Devam ediyor
 
-- Issue #34 requires a non-owner to install a pinned release, complete a bounded
-  real task, export a privacy-bounded adoption receipt, and reproduce the
-  result. Maintainer fixtures and owner canaries cannot close this gate.
+- v0.18.3 must publish the schema-2 mechanism. After publication, the existing
+  verified RSK goal can be re-proven with bounded checks. Only a privacy-reviewed
+  `valid-clean-room-adoption` receipt may move v1 from 7/8 to 8/8.
 
 ## Tarihsel devam kayıtları
 
@@ -375,8 +382,6 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Define the next bounded native-host adapter slice from official host contracts.
-Keep one canonical Divan repository, isolate host differences behind adapters,
-and require clean install/discover/update/remove evidence before raising any
-compatibility tier. Issue #34 remains separate; keep v1 at 7/8 unless
-reproducible, privacy-bounded non-owner adoption evidence exists.
+Release v0.18.3 mechanism, rebuild both portable runners, then rerun adoption prove
+against the existing verified RSK goal and commit only the privacy-reviewed schema-2
+receipt before changing the v1 score from 7/8 to 8/8.

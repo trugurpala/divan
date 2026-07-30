@@ -10,8 +10,17 @@ davranış eval'i ve yayın teftişi aynı çatıdadır.
 Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
 repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
 Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Divan
-ürününün parçalarıdır. v1 durumu **7/8** kapıdır: bağımsız kullanıcı kabul
-kanıtı hâlâ bekleniyor.
+ürününün parçalarıdır. v1 durumu **7/8** kapıdır: schema-2 temiz-proje kanıt
+mekanizması hazırdır; yayımlanmış mekanizmayla üretilmiş gerçek makbuz henüz
+kaydedilmemiştir.
+
+Son kapı kişinin kimliğini değil, Divan'dan ayrı gerçek projedeki makine
+kanıtını ölçer. Önce yazmayan planı gör, sonra aynı planı uygula:
+
+```powershell
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+```
 
 Yeni Sadrazam sözleşmesi, host ajanını başlangıçta ve anlamlı aşama
 değişimlerinde şu an ne olduğunu, neden önemli olduğunu ve sırada ne bulunduğunu

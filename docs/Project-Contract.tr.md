@@ -121,20 +121,29 @@ python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on 
 python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD --execute
 ```
 
-Doğrulanmış hedeften sınırlı JSON makbuzu ve Markdown özeti üretilebilir:
+Doğrulanmış hedeften sonra ana v1 yolu, işi Divan'dan ayrı bir projede
+makinece kanıtlar. Önizleme salt okunurdur ve subprocess başlatmaz. Uygulama;
+sabit host sürüm probunu çalıştırır, sınırlı test/regresyon planını bir kez
+yürütür, kaynak sapmasını denetler ve schema-2 JSON/Markdown makbuzlarını atomik
+olarak mühürler:
 
 ```powershell
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> > adoption-receipt.json
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> --markdown > adoption-receipt.md
-python scripts/divan.py adoption verify adoption-receipt.json
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
+python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
-Dışa aktarım salt okunurdur: seçilen taşınabilir belgeyi stdout'a yazar ve
-kullanıcı yönlendirmedikçe projede dosya oluşturmaz. Secret, e-posta, kullanıcı
-adı, mutlak yol, remote URL, alakasız eklenti envanteri ve komut çıktısı
-gövdesini reddeder. Bakımcı kanıtı `valid-owner-canary`, bağımsız beyan
-`valid-independent-declaration` sonucunu verir. İnsan incelemesi olmadan v1
-bağımsız kabul kapısı otomatik kapanmaz.
+Operatör rolü yalnız açıklayıcıdır; bakımcı ve dış kullanıcı aynı teknik kapıya
+tabidir. Makbuz; hash, kaba sonuç, süre, kontrol sınıfı ve gözlenen host sürümünü
+tutar; secret, e-posta, kullanıcı adı, mutlak yol, remote URL, alakasız eklenti
+envanteri, ham argv ve komut çıktısı gövdesini reddeder. Yalnız
+`valid-clean-room-adoption` ve `eligible_for_v1: true` sonucu kapıya adaydır.
+
+`adoption export` schema-1 uyumluluğu için kalır. Bu makbuzlar yalnız
+`valid-schema-1-owner-canary` veya
+`valid-schema-1-independent-declaration` olarak doğrulanır ve v1'e hiçbir zaman
+uygun olmaz. Yayımlanmış schema-2 mekanizmasının gerçek makbuzu repoya
+kaydedilip yeniden doğrulanana kadar karne **7/8** kalır.
 
 Public web projesinde salt-okunur denetim:
 
