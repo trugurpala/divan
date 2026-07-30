@@ -2,14 +2,14 @@
 
 Son durum tarihi: 2026-07-30.
 
-> **En güncel yayımlanmış sürüm v0.18.4'tür.** PR #64 gerçek hedef kanıtı,
-> ayrı-proje sınıflandırması ve odaklı hata düzeltme planını tamamladı.
+> **En güncel yayımlanmış sürüm v0.18.5'tir.** PR #65 Windows'ta çalışan
+> `.cmd` host girişini güvenli biçimde seçerek temiz-proje kanıtını tamamladı.
 > Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, attestations,
 > Pages ve Wiki ile yayımlandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.18.4` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v0.18.5` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -140,18 +140,26 @@ değildir.
   npm shim'inin erişim hatasına takılan host sürüm probunu buldu. v0.18.5 bu
   son kullanıcı kusurunu regresyon testiyle düzeltir.
 
-## Sıradaki ürün kanıtı
+## v0.18.5 — yayımlanan Windows güven düzeltmesi ve 8/8 hazırlık
 
-1. v0.18.5 Windows host sürüm probu düzeltmesini değişmez release olarak
-   yayımla.
-2. Divan'dan ayrı gerçek projede uygulama ve test kanıtını hedefe bağla:
-   `python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-dosyası> --execute`
-3. Aynı projede yazmayan temiz-proje planını gör:
-   `python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex`
-4. Aynı planı `--execute` ile çalıştır; host sürümünü gözle, sınırlı
-   test/regresyon kontrollerini geçir ve gizlilik sınırlı makbuzu mühürle.
-5. `valid-clean-room-adoption` makbuzunu çevrimdışı yeniden doğrula. Yalnız
-   bundan sonra issue #34 ve v1 karnesini ayrı değişiklikle güncelle.
+- Windows host sürüm probu, shell açmadan `.cmd`, `.exe` ve taşınabilir
+  fallback sırasını kullanır; Linux/macOS mantıksal komut sözleşmesi değişmez.
+- PR #65 `f65d62a857e744dce0b370414e6686b9c49258d7` commit'inde birleşti.
+  Ana dal kalite, CodeQL, uyumluluk, Pages, Wiki, site ve release kapıları
+  geçti; yedi yayın varlığı yeniden indirilip SHA-256 ve attestations ile
+  doğrulandı.
+- Değişmez v0.18.5 runner'ı, Windows 11 ve Codex `0.146.0` üzerinde Divan'dan
+  ayrı gerçek projedeki VERIFIED hedef için sınırlı testi geçirdi.
+- Gizlilik incelemeli schema-2 makbuz hem JSON hem Markdown olarak çevrimdışı
+  yeniden doğrulandı. v1 hazırlık karnesi bu sınırlı teknik kanıtla **8/8**'dir;
+  bağımsız kullanıcı, pazar benimsemesi, hız veya kalite artışı iddia edilmez.
+
+## Sıradaki ürün adımı
+
+1. 8/8 kanıt PR'ını bütün kalite kapılarından geçirip `main`e birleştir.
+2. Canlı README, Pages, Wiki ve v1 karnesini varsayılan daldan geri oku.
+3. v1.0.0 yayın adayını ayrı sürüm değişikliği olarak hazırla; paket
+   sözleşmesini dondur, tam doğrulamayı çalıştır ve değişmez Release üret.
 
 ## v1.0 kapıları
 

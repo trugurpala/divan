@@ -90,14 +90,19 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v0.18.5 ✓** Windows trust fix candidate: temiz-proje host sürüm probu,
-  çalıştırılamayan uzantısız npm shim'i yerine çalışan `.cmd` veya `.exe`
-  komutunu platforma göre çözer. v0.18.4 yayımlanmış-runner denemesi bu gerçek
-  son kullanıcı kusurunu buldu; düzeltme release olmadan temiz-proje makbuzu
-  veya v1 8/8 iddiası yapılmaz.
+- **v1.0.0 adayı:** v0.18.5'in makinece doğrulanmış temiz-proje makbuzunu
+  `main`, Pages ve Wiki üstünde 8/8 olarak yeniden doğrula; ardından donmuş ürün
+  sözleşmesini kanonik yayın yoluyla etiketle.
 
 ### Yayımlanan temel
 
+- **v0.18.5 ✓** Published Windows trust fix: temiz-proje host sürüm probu,
+  çalıştırılamayan uzantısız npm shim'i yerine çalışan `.cmd` veya `.exe`
+  komutunu platforma göre çözer. PR #65 `f65d62a857e744dce0b370414e6686b9c49258d7`
+  commit'inde birleşti; sekiz tetiklenen ana/yayın workflow'u, yedi doğrulanmış
+  ve strict-attested varlık, Pages ve Wiki geçti. Değişmez runner Windows 11,
+  Codex `0.146.0` ve Divan'dan ayrı gerçek projede test-backed schema-2 makbuz
+  üretti; v1 hazırlık karnesi 8/8'e ulaştı.
 - **v0.18.4 ✓** Published real-evidence boundary: VERIFIED geçişi gerçek
   uygulama/test kanıtını atomik bağlar; temiz-proje kanıtı yalnız terminal
   olaydaki dosyaları kabul eder. Genel `VERSION` dosyası ve Divan dışı
@@ -110,7 +115,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   validation. PR #63 merged at `294958620e6382fe10296ab15246e100fab84764`;
   all nine main/publication workflows, seven checksummed and strictly attested
   assets, immutable tag/Release, Pages, and Wiki are bound in the v0.18.3
-  evidence. A released-runner receipt is still absent, so v1 remains 7/8.
+  evidence. At v0.18.3 publication time a released-runner receipt was absent,
+  so that release correctly remained at 7/8.
 - **v0.18.2 ✓** Published Seyir and clean-host bootstrap release: bilingual
   loopback-only progress UI, deterministic single-file `divan.pyz`, exact
   source/catalog authority, evidence-backed timeouts, repeated-failure circuit
@@ -207,8 +213,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 1. ✓ v0.12.0 birleştirme/tag/Release/Pages/Wiki ve global kurulum kanıtı.
 2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
 3. ✓ v0.18.3 schema-2 temiz-proje mekanizmasını değişmez release olarak yayımla.
-4. v0.18.4 gerçek-kanıt bağlama düzeltmesini değişmez release olarak yayımla.
-5. Yayımlanmış mekanizmayla Divan'dan ayrı gerçek projede
+4. ✓ v0.18.4 gerçek-kanıt bağlama düzeltmesini değişmez release olarak yayımla.
+5. ✓ v0.18.5 Windows host-probe düzeltmesini değişmez release olarak yayımla.
+6. ✓ Yayımlanmış mekanizmayla Divan'dan ayrı gerçek projede
    `valid-clean-room-adoption` makbuzu üret, repoya kaydet ve çevrimdışı yeniden
    doğrula.
 
@@ -221,7 +228,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - Sürüm etiketi, release notes, kurulum ve geri alma tatbikatı.
 
 Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
-`docs/V1-Hazirlik.md` dosyasındadır. Bütün kapılar `passed` olmadan v1 denmez.
+`docs/V1-Hazirlik.md` dosyasındadır. Sekiz kapı da `passed` durumundadır; bu
+hazırlık kanıtı v1.0.0 tag/Release yayımlanmadan sürümün çıktığı anlamına gelmez.
 
 ### Uzun vade
 
@@ -229,6 +237,13 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-30: v0.18.5 PR #65 ile `f65d62a857e744dce0b370414e6686b9c49258d7`
+  commit'inde yayımlandı. Windows/Linux/macOS yaşam döngüsü, kalite, CodeQL,
+  Pages, Wiki, site ve release kapıları geçti; yedi varlık indirildi, SHA-256,
+  sidecar, master manifest ve strict attestations yeniden doğrulandı. Değişmez
+  runner ayrı gerçek projede Codex `0.146.0` ve bir test-backed VERIFIED hedef
+  için `valid-clean-room-adoption` üretti. Gizlilik incelemeli makbuz çevrimdışı
+  doğrulandı ve v1 hazırlık karnesi 8/8'e ulaştı.
 - 2026-07-30: v0.18.3 PR #63 ile `294958620e6382fe10296ab15246e100fab84764`
   commit'inde yayımlandı. Dokuz ana/yayın workflow'u, yedi indirilen varlık,
   checksum, sıkı attestation, Pages ve Wiki doğrulandı. Sonraki temiz-proje
@@ -461,7 +476,6 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Publish v0.18.4, download and verify both portable runners, then rerun
-`adoption prove` against the separate clean-room canary. Commit only the
-privacy-reviewed schema-2 receipt and re-verify it before changing the v1
-score from 7/8 to 8/8.
+Validate and merge the v0.18.5 clean-room evidence PR, read the 8/8 state back
+from `main`, Pages, and Wiki, then prepare v1.0.0 through the canonical release
+path without expanding the frozen product contract.

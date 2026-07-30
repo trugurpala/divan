@@ -4,9 +4,9 @@ Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefin
 söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
 genişletebilirsin. Divan bir model veya ayrı üçüncü taraf runtime değildir:
 Divan Engine aynı repodaki modüler icra çekirdeği, Divan Nizamı ise yetki
-düzenidir. Güncel v1 karnesi **7/8** kapının geçtiğini; schema-2 temiz-proje
-mekanizmasının hazır, gerçek yayımlanmış makbuzun ise henüz beklemede olduğunu
-gösterir. Ürün sözleşmesi:
+düzenidir. Güncel v1 hazırlık karnesi **8/8** kapının geçtiğini gösterir:
+değişmez v0.18.5 ile Divan'dan ayrı gerçek projede üretilen schema-2 makbuz
+çevrimdışı yeniden doğrulandı. Ürün sözleşmesi:
 [[Topluluk Standartları|Topluluk-Standartlari]].
 
 Sadrazam'ın ilerleme sözleşmesi, çalışma uzadığında host ajanını ham teknik

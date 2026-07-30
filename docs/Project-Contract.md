@@ -153,9 +153,9 @@ unrelated plugin inventory, raw argv, and command-output bodies. Only
 `adoption export` remains available for schema-1 compatibility. Those receipts
 verify only as `valid-schema-1-owner-canary` or
 `valid-schema-1-independent-declaration`, and always remain ineligible for v1.
-The score is **7/8** until a receipt produced by the released schema-2 mechanism
-is committed and re-verified. The runner and its `.sha256` sidecar must stay
-together, and execution requires a Git repository for tracked-source drift.
+The v1 readiness score is **8/8** because a receipt produced by immutable
+v0.18.5 was committed and re-verified. The runner and its `.sha256` sidecar
+must stay together, and execution requires a Git repository for tracked-source drift.
 The sidecar proves download integrity; the v1 gate separately pins the reviewed
 release runner digest in `registry/v1-gates.json` and requires an exact match.
 Preview obtains that digest from the fixed public GitHub Release API; if the

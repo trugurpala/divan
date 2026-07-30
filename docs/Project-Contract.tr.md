@@ -151,8 +151,8 @@ envanteri, ham argv ve komut çıktısı gövdesini reddeder. Yalnız
 `adoption export` schema-1 uyumluluğu için kalır. Bu makbuzlar yalnız
 `valid-schema-1-owner-canary` veya
 `valid-schema-1-independent-declaration` olarak doğrulanır ve v1'e hiçbir zaman
-uygun olmaz. Yayımlanmış schema-2 mekanizmasının gerçek makbuzu repoya
-kaydedilip yeniden doğrulanana kadar karne **7/8** kalır.
+uygun olmaz. Değişmez v0.18.5 ile üretilen gerçek schema-2 makbuzu repoya
+kaydedilip yeniden doğrulandığı için v1 hazırlık karnesi **8/8**'dir.
 Runner ile `.sha256` yan dosyası birlikte kalmalı; yürütme, Git tarafından
 izlenen kaynak sapmasını reddedebilmek için bir Git reposu gerektirir.
 Yan dosya indirme bütünlüğünü kanıtlar; v1 kapısı ayrıca incelenmiş release

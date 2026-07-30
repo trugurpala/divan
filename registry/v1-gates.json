@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "target": "1.0.0",
-  "updated": "2026-07-19",
+  "updated": "2026-07-30",
   "gates": [
     {
       "id": "public-contract",
@@ -48,20 +48,17 @@
     {
       "id": "verified-clean-room-adoption",
       "title": "Doğrulanmış temiz-proje kullanımı",
-      "status": "ready",
+      "status": "passed",
       "evidence": [
-        ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
-        "plugins/sadrazam/divan_runtime/adoption_common.py",
-        "plugins/sadrazam/divan_runtime/adoption_legacy.py",
-        "plugins/sadrazam/divan_runtime/adoption_schema2.py",
-        "plugins/sadrazam/divan_runtime/adoption_runner.py",
-        "plugins/sadrazam/divan_runtime/adoption.py",
-        "plugins/sadrazam/divan_runtime/adoption_proof_common.py",
-        "plugins/sadrazam/divan_runtime/adoption_proof_execution.py",
-        "plugins/sadrazam/divan_runtime/adoption_proof.py",
-        "tests/test_adoption_v2.py",
-        "tests/test_adoption_proof.py"
-      ]
+        ".divan/evidence/verified-clean-room-adoption-v0185.json",
+        ".divan/evidence/verified-clean-room-adoption-v0185.md"
+      ],
+      "release": {
+        "version": "0.18.5",
+        "ref": "v0.18.5",
+        "commit": "f65d62a857e744dce0b370414e6686b9c49258d7",
+        "runner_sha256": "sha256:a949277c371ad245ed48d4e992056eeaf807a5d6e7c601719739b89a8b4e5870"
+      }
     }
   ]
 }

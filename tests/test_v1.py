@@ -30,20 +30,27 @@ class V1GateTests(unittest.TestCase):
         passed = sum(gate["status"] == "passed" for gate in gates.values())
         text = (ROOT / "docs/V1-Hazirlik.md").read_text(encoding="utf-8")
         self.assertIn(f"{passed}/{len(gates)} kapı", text)
-        self.assertIn("1 kapının otomasyonu hazır", text)
-        self.assertIn("Bütün kapılar geçmeden", text)
+        if passed == len(gates):
+            self.assertIn("Bütün v1 hazırlık kapıları tamamlandı", text)
+            self.assertNotIn("canlı kanıtı henüz kaydedilmedi", text)
+        else:
+            self.assertIn("Bütün kapılar geçmeden", text)
         if gates["real-agent-comparison"]["status"] == "passed":
             self.assertNotIn("Gerçek bir ajan adaptörü", text)
         else:
             self.assertIn("Gerçek bir ajan adaptörü", text)
         self.assertIn("makinece doğrulanabilir temiz-proje", text)
 
-    def test_real_agent_evidence_passes_and_clean_room_gate_is_ready(self) -> None:
+    def test_real_agent_and_clean_room_evidence_pass(self) -> None:
         gates = {gate["id"]: gate for gate in V1.oku(ROOT)["gates"]}
         self.assertEqual(gates["native-clean-host-matrix"]["status"], "passed")
         self.assertNotIn("independent-adoption", gates)
         self.assertEqual(
-            gates["verified-clean-room-adoption"]["status"], "ready"
+            gates["verified-clean-room-adoption"]["status"], "passed"
+        )
+        self.assertEqual(
+            gates["verified-clean-room-adoption"]["release"]["ref"],
+            "v0.18.5",
         )
 
     def write_clean_room_registry(

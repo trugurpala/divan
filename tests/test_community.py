@@ -93,7 +93,7 @@ class CommunityContractTests(unittest.TestCase):
             content = read(relative)
             with self.subTest(relative=relative):
                 self.assertRegex(content, r"Topluluk-Standartlari(?:\.md)?")
-                self.assertIn("7/8", content)
+                self.assertIn("8/8", content)
                 lowered = content.lower()
                 if "not a model" not in lowered and "not model" not in lowered:
                     self.assertIn("model veya", lowered)
@@ -115,7 +115,7 @@ class CommunityContractTests(unittest.TestCase):
             content = read(relative)
             with self.subTest(relative=relative):
                 self.assertIn("adoption prove", content)
-                self.assertIn("7/8", content)
+                self.assertIn("8/8", content)
 
         for relative in (
             "README.md",
@@ -234,7 +234,7 @@ class CommunityContractTests(unittest.TestCase):
             self.assertIn('data-homepage="https://trugurpala.github.io/divan/"', html)
             self.assertIn("yerel skill/plugin dağıtımı", html)
             self.assertIn("model veya runtime değildir", html)
-            self.assertIn("v1: 7/8", html)
+            self.assertIn("v1 hazırlık: 8/8", html)
             self.assertIn("Topluluk Standartları", html)
             visible = unescape(html)
             self.assertNotRegex(visible, r"--rollback-transaction\s+<[^>]+>")

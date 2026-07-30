@@ -10,9 +10,9 @@ davranış eval'i ve yayın teftişi aynı çatıdadır.
 Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
 repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
 Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Divan
-ürününün parçalarıdır. v1 durumu **7/8** kapıdır: schema-2 temiz-proje kanıt
-mekanizması hazırdır; yayımlanmış mekanizmayla üretilmiş gerçek makbuz henüz
-kaydedilmemiştir.
+ürününün parçalarıdır. v1 hazırlık durumu **8/8** kapıdır: değişmez v0.18.5,
+Windows 11, Codex ve Divan'dan ayrı gerçek projede makinece doğrulanabilir
+temiz-proje kanıtı üretti; gizlilik incelemeli makbuz çevrimdışı doğrulandı.
 
 Son kapı kişinin kimliğini değil, Divan'dan ayrı gerçek projedeki makine
 kanıtını ölçer. Önce yazmayan planı gör, sonra aynı planı uygula:
@@ -40,7 +40,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v0.18.5 · **Son yayımlanan:** v0.18.4 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.18.5 · **Son yayımlanan:** v0.18.5 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

@@ -4,36 +4,32 @@ Son güncelleme: 2026-07-30
 
 ## Yayın durumu
 
-- Latest published release: v0.18.4
-- Published commit: 2eb36bdd24e383c90e1e62e53ad1c6c5d5730000
-- Publication evidence: .divan/evidence/teftis-20260730-v0184-release.md
-- Release asset evidence: .divan/evidence/teftis-20260730-v0184-release.md
+- Latest published release: v0.18.5
+- Published commit: f65d62a857e744dce0b370414e6686b9c49258d7
+- Publication evidence: .divan/evidence/teftis-20260730-v0185-release.md
+- Release asset evidence: .divan/evidence/teftis-20260730-v0185-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is v0.18.4 at immutable commit `2eb36bd`.
-PR #64 published real VERIFIED evidence binding, plan-only proof rejection,
-distinct-project policy v2, and focused bug-fix routing. All nine required
-main/publication workflows passed. Seven release assets were downloaded again,
-their SHA-256 values matched, strict attestations passed, and Pages plus Wiki
-returned v0.18.4.
+The latest published release is v0.18.5 at immutable commit `f65d62a`.
+PR #65 resolves Windows npm command shims without using a shell: `.cmd` is
+preferred before `.exe` and the portable fallback while non-Windows hosts keep
+their logical command. Required PR and main/publication workflows passed. Seven
+release assets were downloaded again; SHA-256, sidecars, the master manifest,
+strict attestations, embedded runner identity, Pages, and Wiki were verified.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
 installed layer is Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is
 the final authority and only `owner` may expand scope. Legacy Company OS,
 Project OS, `/company`, `company-validate`, and Python/JSON paths remain bounded
-compatibility surfaces through v1. Issue #34 now targets machine-verifiable
-clean-room evidence rather than operator identity. The schema-2 mechanism is
-published, but no reviewed receipt from the released mechanism is committed,
-so v1 remains 7/8.
-
-The first released-runner clean-room attempt reached the real goal and bounded
-test plan, then failed closed while observing the Codex version. Windows found
-an extensionless npm shim that returned access denied even though the adjacent
-`codex.cmd --version` command passed. v0.18.5 resolves the runnable Windows
-command shim explicitly before retrying the same released-runner proof.
+compatibility surfaces through v1. The released v0.18.5 runner completed one
+machine-verifiable clean-room adoption on Windows 11, Codex `0.146.0`, and a
+real project distinct from Divan. One bounded test passed; the privacy-reviewed
+schema-2 JSON and Markdown receipts re-verified offline as
+`valid-clean-room-adoption`. The v1 readiness score is now 8/8. This is not an
+independent-user count, endorsement, market-adoption, speed, or quality claim.
 
 ## Yapıldı
 
@@ -355,10 +351,10 @@ command shim explicitly before retrying the same released-runner proof.
 
 ## Devam ediyor
 
-- v0.18.5 must publish the Windows host-probe launcher fix. After publication,
-  the separate clean-room canary can be initialized with the released runner
-  and re-proven with bounded checks. Only a privacy-reviewed
-  `valid-clean-room-adoption` receipt may move v1 from 7/8 to 8/8.
+- The v0.18.5 release and clean-room proof are complete. The evidence branch
+  must pass review/CI, merge to `main`, and be read back from README, Pages,
+  Wiki, and the generated v1 scorecard before the v1.0.0 release candidate is
+  prepared.
 
 ## Tarihsel devam kayıtları
 
@@ -381,15 +377,14 @@ the current execution queue.
 
 ## Bilinen açıklar
 
-- Yayımlanmış runner ile tamamlanan doğrulanmış temiz-proje makbuzu henüz yok;
-  başarı veya v1 8/8 iddiası yapılamaz.
+- v1 hazırlık kanıtı 8/8 olsa da `v1.0.0` etiketi ve GitHub Release henüz yoktur;
+  hazırlık karnesi sürümün yayımlandığı anlamına gelmez.
 - Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
   manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
   native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
 
 ## Sıradaki kesin adım
 
-Publish v0.18.5, download and verify both portable runners, then rerun
-`adoption prove` against the separate clean-room canary. Commit only the
-privacy-reviewed schema-2 receipt and re-verify it before changing the v1
-score from 7/8 to 8/8.
+Validate and merge the v0.18.5 clean-room evidence PR, read the 8/8 claim back
+from `main`, Pages, and Wiki, then prepare v1.0.0 through the canonical release
+path without expanding the frozen product contract.
