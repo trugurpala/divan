@@ -129,9 +129,9 @@ selected host through its fixed version probe, runs a bounded test/regression
 plan once, detects source drift, and atomically seals schema-2 JSON and Markdown:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
-python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
 Operator role is descriptive and does not change eligibility: maintainer and
@@ -145,7 +145,8 @@ unrelated plugin inventory, raw argv, and command-output bodies. Only
 verify only as `valid-schema-1-owner-canary` or
 `valid-schema-1-independent-declaration`, and always remain ineligible for v1.
 The score is **7/8** until a receipt produced by the released schema-2 mechanism
-is committed and re-verified.
+is committed and re-verified. The runner and its `.sha256` sidecar must stay
+together, and execution requires a Git repository for tracked-source drift.
 
 For public web projects, the read-only static audit is:
 

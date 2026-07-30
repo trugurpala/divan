@@ -114,15 +114,18 @@ ayrı gerçek projedeki görevi sınırlı test/regresyon kontrolleriyle bir kez
 mühürler:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
-python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
 Önizleme yazmaz ve subprocess başlatmaz. Bakımcı ile dış kullanıcı aynı teknik
 kapıya tabidir; kişinin sıfatı uygunluğu değiştirmez. Yalnız
 `valid-clean-room-adoption` v1'e aday olabilir. Eski schema-1 export makbuzları
 doğrulanmaya devam eder fakat v1 kanıtı sayılmaz.
+İndirilen `divan-project.pyz` ile `divan-project.pyz.sha256` aynı klasörde
+kalmalıdır. Kanıt yürütmesi, izlenen kaynak sapmasını güvenli biçimde
+reddedebilmek için bir Git reposu da gerektirir.
 
 ## Kendi kendini nasıl geliştirir?
 

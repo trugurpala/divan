@@ -343,8 +343,8 @@ Kurulumdan sonra gerçek bir projede doğrulanmış hedef oluştuğunda, v1'in s
 teknik kapısını önce yazmayan planla incele:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
 
 İlk komut dosya yazmaz ve subprocess başlatmaz. İkinci komut sabit host sürüm
@@ -352,3 +352,6 @@ probunu ve sınırlı test/regresyon kontrollerini bir kez çalıştırır. Bak�
 dış kullanıcı aynı teknik sözleşmeye tabidir. Yalnız
 `valid-clean-room-adoption` sonucu v1'e adaydır; gerçek yayımlanmış schema-2
 makbuzu kaydedilene kadar durum **7/8** kalır.
+`divan-project.pyz.sha256` dosyasını runner ile aynı klasörde tutun. Yürütme,
+Git tarafından izlenen kaynak sapmasını reddedebilmek için bir Git reposu
+gerektirir.

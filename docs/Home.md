@@ -18,8 +18,8 @@ Son kapı kişinin kimliğini değil, Divan'dan ayrı gerçek projedeki makine
 kanıtını ölçer. Önce yazmayan planı gör, sonra aynı planı uygula:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
 
 Yeni Sadrazam sözleşmesi, host ajanını başlangıçta ve anlamlı aşama

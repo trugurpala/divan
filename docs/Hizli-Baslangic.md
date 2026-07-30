@@ -124,8 +124,8 @@ Doğrulanmış hedefin varsa önce hiçbir şey yazmayan planı gör. Plan doğr
 uygula; bakımcı veya dış kullanıcı olman teknik sonucu değiştirmez:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
 
 Yalnız `valid-clean-room-adoption` sonucu v1'e adaydır. Bu kayıt bağımsız

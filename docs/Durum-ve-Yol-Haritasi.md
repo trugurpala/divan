@@ -117,7 +117,7 @@ değildir.
 
 1. Schema-2 mekanizmasını değişmez release olarak yayımla.
 2. Divan'dan ayrı, gerçek ve doğrulanmış hedef içeren projede yazmayan planı gör:
-   `python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex`
+   `python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex`
 3. Aynı planı `--execute` ile çalıştır; host sürümünü gözle, sınırlı
    test/regresyon kontrollerini geçir ve gizlilik sınırlı makbuzu mühürle.
 4. `valid-clean-room-adoption` makbuzunu çevrimdışı yeniden doğrula. Yalnız

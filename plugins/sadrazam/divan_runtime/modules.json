@@ -79,7 +79,13 @@
       "python_modules": [
         "goals",
         "goal_archive",
+        "adoption_common",
+        "adoption_legacy",
+        "adoption_schema2",
+        "adoption_runner",
         "adoption",
+        "adoption_proof_common",
+        "adoption_proof_execution",
         "adoption_proof",
         "seyir_state",
         "ci_guard"
@@ -134,6 +140,7 @@
       "python_modules": [
         "compatibility",
         "cli_parser",
+        "cli_dispatch",
         "cli",
         "locales",
         "status",

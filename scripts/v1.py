@@ -204,6 +204,29 @@ def _validate_clean_room_evidence(
         )
 
 
+def _validate_passed_gate_evidence(
+    kok: pathlib.Path, kapi: dict, kanitlar: list[str]
+) -> None:
+    kimlik = kapi["id"]
+    if kimlik == "real-agent-comparison":
+        eval_yollari = [
+            (kok / kanit).resolve()
+            for kanit in kanitlar
+            if kanit.startswith("evals/results/") and kanit.endswith(".json")
+        ]
+        if len(eval_yollari) != 1:
+            raise ValueError(f"{kimlik}: tek yayımlanmış JSON kanıtı gerekli")
+        try:
+            eval_verisi = json.loads(eval_yollari[0].read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as hata:
+            raise ValueError(f"{kimlik}: eval kanıtı okunamadı: {hata}") from hata
+        if not isinstance(eval_verisi, dict):
+            raise ValueError(f"{kimlik}: eval kanıtı nesne olmalı")
+        _validate_real_agent_evidence(eval_verisi, eval_yollari[0])
+    elif kimlik == "verified-clean-room-adoption":
+        _validate_clean_room_evidence(kok, kapi)
+
+
 def oku(kok: pathlib.Path = KOK) -> dict:
     veri = json.loads((kok / KAYNAK).read_text(encoding="utf-8"))
     if veri.get("schema_version") != 1 or veri.get("target") != "1.0.0":
@@ -234,26 +257,8 @@ def oku(kok: pathlib.Path = KOK) -> dict:
             yol = (kok / kanit).resolve()
             if not yol.is_relative_to(kok.resolve()) or not yol.exists():
                 raise ValueError(f"{kimlik}: kanıt bulunamadı: {kanit}")
-        if kimlik == "real-agent-comparison" and kapi["status"] == "passed":
-            eval_yollari = [
-                (kok / kanit).resolve()
-                for kanit in kanitlar
-                if kanit.startswith("evals/results/") and kanit.endswith(".json")
-            ]
-            if len(eval_yollari) != 1:
-                raise ValueError(f"{kimlik}: tek yayımlanmış JSON kanıtı gerekli")
-            try:
-                eval_verisi = json.loads(eval_yollari[0].read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError) as hata:
-                raise ValueError(f"{kimlik}: eval kanıtı okunamadı: {hata}") from hata
-            if not isinstance(eval_verisi, dict):
-                raise ValueError(f"{kimlik}: eval kanıtı nesne olmalı")
-            _validate_real_agent_evidence(eval_verisi, eval_yollari[0])
-        if (
-            kimlik == "verified-clean-room-adoption"
-            and kapi["status"] == "passed"
-        ):
-            _validate_clean_room_evidence(kok, kapi)
+        if kapi["status"] == "passed":
+            _validate_passed_gate_evidence(kok, kapi, kanitlar)
     return veri
 
 

@@ -128,9 +128,9 @@ yürütür, kaynak sapmasını denetler ve schema-2 JSON/Markdown makbuzlarını
 olarak mühürler:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
-python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
 Operatör rolü yalnız açıklayıcıdır; bakımcı ve dış kullanıcı aynı teknik kapıya
@@ -144,6 +144,8 @@ envanteri, ham argv ve komut çıktısı gövdesini reddeder. Yalnız
 `valid-schema-1-independent-declaration` olarak doğrulanır ve v1'e hiçbir zaman
 uygun olmaz. Yayımlanmış schema-2 mekanizmasının gerçek makbuzu repoya
 kaydedilip yeniden doğrulanana kadar karne **7/8** kalır.
+Runner ile `.sha256` yan dosyası birlikte kalmalı; yürütme, Git tarafından
+izlenen kaynak sapmasını reddedebilmek için bir Git reposu gerektirir.
 
 Public web projesinde salt-okunur denetim:
 

@@ -77,6 +77,10 @@ adoption, not independent market adoption or third-party endorsement.
 - Schema-2 adoption receipt and offline verifier.
 - Dry-run-first `adoption prove` workflow.
 - Bounded execution of discovered project checks.
+- Adjacent release-checksum and embedded runner-source verification.
+- Fresh-plan execution, goal-bound check priority, and Git-tracked source-drift
+  rejection.
+- Canonical Markdown rendering bound exactly to the JSON envelope.
 - Operator provenance without an eligibility effect.
 - Existing schema-1 receipt verification for compatibility.
 - Machine-backed v1 registry evaluation from committed schema-2 evidence.

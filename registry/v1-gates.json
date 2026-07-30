@@ -51,7 +51,13 @@
       "status": "ready",
       "evidence": [
         ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
+        "plugins/sadrazam/divan_runtime/adoption_common.py",
+        "plugins/sadrazam/divan_runtime/adoption_legacy.py",
+        "plugins/sadrazam/divan_runtime/adoption_schema2.py",
+        "plugins/sadrazam/divan_runtime/adoption_runner.py",
         "plugins/sadrazam/divan_runtime/adoption.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof_common.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof_execution.py",
         "plugins/sadrazam/divan_runtime/adoption_proof.py",
         "tests/test_adoption_v2.py",
         "tests/test_adoption_proof.py"

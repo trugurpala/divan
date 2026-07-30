@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import sys
 import tempfile
 import unittest
+import zipfile
 from datetime import datetime, timezone
 from unittest import mock
 
@@ -72,7 +74,16 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
         for state in ("SPECIFIED", "PLANNED", "IMPLEMENTING", "VERIFIED"):
             receipts.append_transition(receipt_path, state)
         runner = root.parent / "divan-project.pyz"
-        runner.write_bytes(b"released-divan-project-runner")
+        with zipfile.ZipFile(runner, "w") as archive:
+            archive.writestr(
+                "divan_runtime/divan-project-source.json",
+                json.dumps({"schema_version": 2, **source}, sort_keys=True)
+                + "\n",
+            )
+        digest = hashlib.sha256(runner.read_bytes()).hexdigest()
+        runner.with_name(runner.name + ".sha256").write_text(
+            f"{digest}  {runner.name}\n", encoding="utf-8"
+        )
         return result["goal_id"], runner
 
     def test_preview_plan_is_bounded_test_backed_and_write_free(self) -> None:
@@ -106,6 +117,38 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                 sorted(row["id"] for row in plan["checks"]),
             )
             self.assertFalse((root / ".divan" / "adoption").exists())
+
+    def test_goal_bound_check_survives_the_eight_check_cap(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-priority-"
+        ) as temporary:
+            root = pathlib.Path(temporary)
+            commands = [
+                {
+                    "workspace": ".",
+                    "manager": "bun",
+                    "name": f"test:{letter}",
+                    "command": f"bun run test:{letter}",
+                }
+                for letter in "abcdefghi"
+            ]
+            inspection = {
+                "package_manager_conflicts": [],
+                "commands": commands,
+            }
+            selected = module.select_checks(
+                inspection, {"checks": ["bun run test:i"]}, root
+            )
+
+            self.assertEqual(len(selected), 8)
+            self.assertIn("test:i", {row["name"] for row in selected})
+            with self.assertRaisesRegex(ValueError, "more than eight"):
+                module.select_checks(
+                    inspection,
+                    {"checks": [row["command"] for row in commands]},
+                    root,
+                )
 
     def test_safe_argv_supports_only_bounded_native_runners(self) -> None:
         module = self.require_module()
@@ -248,6 +291,41 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                     "codex",
                     "independent",
                     runner_path=runner,
+                )
+
+    def test_preflight_rejects_missing_checksum_and_forged_runner_identity(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-runner-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            goal_id, runner = self.create_verified_project(root)
+            checksum = runner.with_name(runner.name + ".sha256")
+            checksum.unlink()
+            with self.assertRaisesRegex(ValueError, "checksum"):
+                module.build_proof_plan(
+                    root, goal_id, "codex", runner_path=runner
+                )
+
+            forged_source = {**SOURCE, "source_commit": "b" * 40}
+            with zipfile.ZipFile(runner, "w") as archive:
+                archive.writestr(
+                    "divan_runtime/divan-project-source.json",
+                    json.dumps(
+                        {"schema_version": 2, **forged_source}, sort_keys=True
+                    )
+                    + "\n",
+                )
+            digest = hashlib.sha256(runner.read_bytes()).hexdigest()
+            checksum.write_text(
+                f"{digest}  {runner.name}\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "source identity"):
+                module.build_proof_plan(
+                    root, goal_id, "codex", runner_path=runner
                 )
 
 
@@ -462,6 +540,67 @@ class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
                     / str(plan["proof_id"])
                 ).exists()
             )
+
+    def test_git_tracked_source_drift_blocks_receipt(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-git-drift-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            plan = self.make_plan(root)
+            changed = False
+
+            def fake_runner(command, _decision, **kwargs):
+                nonlocal changed
+                argv = tuple(command)
+                if argv[0] == "git":
+                    return self.result(
+                        stdout="after\n" if changed else "before\n"
+                    )
+                if not kwargs.get("mutating"):
+                    return self.result(stdout="Claude Code 2.1.220\n")
+                changed = True
+                return self.result(stdout="passed\n")
+
+            result = module.execute_proof(
+                plan, command_runner=fake_runner
+            )
+
+            self.assertEqual(result["status"], "invalid")
+            self.assertIn("tracked source", result["reason"])
+
+    def test_execution_uses_fresh_private_commands_after_preview(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-fresh-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            plan = self.make_plan(root)
+            plan["_private"]["checks"][0]["argv"] = (
+                "powershell",
+                "-Command",
+                "Write-Output substituted",
+            )
+            executed: list[tuple[str, ...]] = []
+
+            def fake_runner(command, _decision, **kwargs):
+                argv = tuple(command)
+                if argv[0] == "git":
+                    return self.result(stdout="")
+                if not kwargs.get("mutating"):
+                    return self.result(stdout="Claude Code 2.1.220\n")
+                executed.append(argv)
+                return self.result(stdout="passed\n")
+
+            result = module.execute_proof(
+                plan, command_runner=fake_runner
+            )
+
+            self.assertEqual(result["status"], "passed")
+            self.assertNotIn("powershell", executed[0])
+            self.assertIn(("bun", "run", "test"), executed)
 
     def test_existing_final_proof_is_never_overwritten(self) -> None:
         module = self.require_module()

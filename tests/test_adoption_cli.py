@@ -191,6 +191,7 @@ class AdoptionProofCliTests(unittest.TestCase):
         self.assertIn("Çalışacak kontroller", rendered)
         self.assertIn("Henüz hiçbir dosya yazılmadı.", rendered)
         self.assertIn("Başlatmak için:", rendered)
+        self.assertIn(". · bun run test", rendered)
         self.assertNotIn("identity_sha256", rendered)
 
         success = {

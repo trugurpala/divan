@@ -123,15 +123,17 @@ project distinct from Divan, runs bounded test/regression checks once, observes
 the host version directly, and seals a privacy-bounded schema-2 receipt:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
-python scripts/divan.py adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
 Preview writes nothing and starts no subprocess. Operator identity does not
 change eligibility: maintainer and external users pass the same technical
 gate. Only `valid-clean-room-adoption` can qualify; historical schema-1 export
-receipts remain verifiable but are never v1 evidence.
+receipts remain verifiable but are never v1 evidence. Keep the downloaded
+`divan-project.pyz` and `divan-project.pyz.sha256` together; proof execution
+also requires a Git repository so tracked-source drift can fail closed.
 
 ## Follow progress locally
 

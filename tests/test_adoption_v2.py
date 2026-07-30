@@ -188,6 +188,25 @@ class CleanRoomAdoptionReceiptTests(unittest.TestCase):
         self.assertEqual(result["status"], "invalid")
         self.assertTrue(result["errors"])
 
+    def test_markdown_visible_summary_must_match_embedded_json(self) -> None:
+        value = adoption.build_clean_room_receipt(**clean_room_parts())
+        with tempfile.TemporaryDirectory(
+            prefix="divan-adoption-markdown-"
+        ) as temporary:
+            path = pathlib.Path(temporary) / "receipt.md"
+            document = adoption.serialize_adoption_markdown(value).decode(
+                "utf-8"
+            )
+            path.write_text(
+                document.replace("claude-code 2.1.220", "codex 99.99"),
+                encoding="utf-8",
+            )
+
+            result = adoption.verify_adoption(path)
+
+        self.assertEqual(result["status"], "invalid")
+        self.assertIn("canonical", " ".join(result["errors"]))
+
     def test_rejects_false_distinctness_unobserved_host_and_source_drift(
         self,
     ) -> None:

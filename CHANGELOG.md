@@ -45,6 +45,12 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Execute uses only fixed host-version probes and allowlisted native project
   checks; it never evaluates caller-supplied shell strings, retries failed
   checks, or continues after timeout, cancellation, or source drift.
+- The project runner must match its adjacent release checksum and embedded
+  source identity before planning; execution rebuilds the private plan before
+  launch and rejects Git-tracked source drift.
+- Goal-bound checks receive priority inside the eight-check ceiling, and
+  Markdown verification requires the visible summary to be the canonical
+  rendering of its embedded JSON envelope.
 - A durable staging journal records pending state before each check. Receipt
   files are promoted atomically only after both JSON and Markdown verify
   offline.
@@ -57,10 +63,12 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Schema-1 compatibility, schema-2 validation, proof planning/execution, CLI
   presentation, v1 registry, impact graph, bilingual public-copy, and release
   surface tests cover the new contract.
-- The runtime remains nine-module and Python-standard-library-only; no daemon,
+- The runtime remains nine-module and Python-standard-library-only; internal
+  receipt, runner, proof-execution, and CLI dispatch helpers keep each new
+  source below the clean-code ceiling. No daemon,
   database, telemetry service, external agent runtime, or second repository was
   added.
-- The publication manifest tracks 222 synchronized surfaces before final
+- The publication manifest tracks 229 synchronized surfaces before final
   release verification.
 
 ## [0.18.2] - 2026-07-30

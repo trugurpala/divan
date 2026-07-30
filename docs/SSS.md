@@ -12,8 +12,8 @@ ayrı gerçek projede doğrulanmış hedef için önce yazmayan plan, sonra uygu
 çalıştırılır:
 
 ```powershell
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex
-python scripts/divan.py adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
 
 Yalnız `valid-clean-room-adoption` geçerlidir; bu sonuç üçüncü taraf onayı veya
