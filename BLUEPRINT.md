@@ -90,9 +90,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v1.0.0 adayı:** v0.18.5'in makinece doğrulanmış temiz-proje makbuzunu
-  `main`, Pages ve Wiki üstünde 8/8 olarak yeniden doğrula; ardından donmuş ürün
-  sözleşmesini kanonik yayın yoluyla etiketle.
+- **v1.0.0 ✓** Release candidate surfaces prepared; PR #66, v0.18.5'in
+  makinece doğrulanmış temiz-proje
+  makbuzunu `main`e taşıdı; README, Pages, Wiki ve makine karnesi 8/8 olarak
+  geri okundu. Donmuş ürün sözleşmesi kanonik yayın yolunda hazırlanıyor;
+  tag/Release henüz yayımlanmadı.
 
 ### Yayımlanan temel
 
@@ -237,6 +239,12 @@ hazırlık kanıtı v1.0.0 tag/Release yayımlanmadan sürümün çıktığı an
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-30: PR #66 `afedaeeee87f6c065820833dc19e4434225f8494`
+  commit'inde birleşti. Yerelde 697 test ve son hijyen; PR'da kalite, CodeQL,
+  bağımlılık, Wiki ve iki Playwright kapısı; `main`de sekiz yayın akışı geçti.
+  README, Pages, Wiki ve `registry/v1-gates.json` 8/8 olarak geri okundu.
+  Issue #34, kimlik beyanı yerine makinece doğrulanabilir temiz-proje
+  sözleşmesi ve sınırlandırılmış iddia ile kapandı.
 - 2026-07-30: v0.18.5 PR #65 ile `f65d62a857e744dce0b370414e6686b9c49258d7`
   commit'inde yayımlandı. Windows/Linux/macOS yaşam döngüsü, kalite, CodeQL,
   Pages, Wiki, site ve release kapıları geçti; yedi varlık indirildi, SHA-256,
@@ -476,6 +484,7 @@ hazırlık kanıtı v1.0.0 tag/Release yayımlanmadan sürümün çıktığı an
 
 ## Sıradaki Kesin Adım
 
-Validate and merge the v0.18.5 clean-room evidence PR, read the 8/8 state back
-from `main`, Pages, and Wiki, then prepare v1.0.0 through the canonical release
-path without expanding the frozen product contract.
+Validate and merge the v1.0.0 release PR without expanding the frozen product
+contract. Then verify the immutable tag, GitHub Release, seven downloaded
+assets, checksums, strict attestations, README, Pages, Wiki, and install
+readback before declaring v1 published.

@@ -12,12 +12,12 @@ Son güncelleme: 2026-07-30
 
 ## Güncel hedef
 
-The latest published release is v0.18.5 at immutable commit `f65d62a`.
-PR #65 resolves Windows npm command shims without using a shell: `.cmd` is
-preferred before `.exe` and the portable fallback while non-Windows hosts keep
-their logical command. Required PR and main/publication workflows passed. Seven
-release assets were downloaded again; SHA-256, sidecars, the master manifest,
-strict attestations, embedded runner identity, Pages, and Wiki were verified.
+The latest published release remains v0.18.5 at immutable commit `f65d62a`.
+PR #66 merged the privacy-reviewed clean-room receipts at
+`afedaeeee87f6c065820833dc19e4434225f8494`. Its PR checks and eight triggered
+main/publication workflows passed. README, Pages, Wiki, and the parsed gate
+registry were read back at 8/8. Issue #34 is closed with the bounded
+machine-verifiable claim.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -351,10 +351,9 @@ independent-user count, endorsement, market-adoption, speed, or quality claim.
 
 ## Devam ediyor
 
-- The v0.18.5 release and clean-room proof are complete. The evidence branch
-  must pass review/CI, merge to `main`, and be read back from README, Pages,
-  Wiki, and the generated v1 scorecard before the v1.0.0 release candidate is
-  prepared.
+- The canonical release tool prepared the frozen v1.0.0 source surfaces. The
+  candidate still requires full local verification, PR checks, merge, immutable
+  tag/Release publication, downloaded-asset verification, and live readback.
 
 ## Tarihsel devam kayıtları
 
@@ -385,6 +384,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Validate and merge the v0.18.5 clean-room evidence PR, read the 8/8 claim back
-from `main`, Pages, and Wiki, then prepare v1.0.0 through the canonical release
-path without expanding the frozen product contract.
+Validate and merge the v1.0.0 release PR without expanding the frozen product
+contract. Then verify the immutable tag, GitHub Release, seven downloaded
+assets, checksums, strict attestations, README, Pages, Wiki, and install
+readback before declaring v1 published.
