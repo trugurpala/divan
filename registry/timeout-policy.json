@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "minimum_trusted_samples": 5,
+  "percentile": 95,
+  "safety_margin": {
+    "numerator": 3,
+    "denominator": 2
+  },
+  "trusted": {
+    "repository": "trugurpala/divan",
+    "branch": "main",
+    "events": [
+      "push",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  "classes": {
+    "browser": {
+      "default_seconds": 180,
+      "minimum_seconds": 60,
+      "maximum_seconds": 300,
+      "workflows": [
+        "site-tests.yml"
+      ]
+    },
+    "fast-check": {
+      "default_seconds": 120,
+      "minimum_seconds": 30,
+      "maximum_seconds": 300,
+      "workflows": [
+        "candidate-review.yml",
+        "wiki-sync.yml"
+      ]
+    },
+    "provider": {
+      "default_seconds": 300,
+      "minimum_seconds": 30,
+      "maximum_seconds": 600,
+      "workflows": [
+        "compatibility.yml"
+      ]
+    },
+    "release": {
+      "default_seconds": 1200,
+      "minimum_seconds": 600,
+      "maximum_seconds": 1500,
+      "workflows": [
+        "release.yml"
+      ]
+    },
+    "security": {
+      "default_seconds": 600,
+      "minimum_seconds": 300,
+      "maximum_seconds": 900,
+      "workflows": [
+        "codeql.yml"
+      ]
+    },
+    "test": {
+      "default_seconds": 600,
+      "minimum_seconds": 60,
+      "maximum_seconds": 1200,
+      "workflows": []
+    },
+    "verify": {
+      "default_seconds": 600,
+      "minimum_seconds": 300,
+      "maximum_seconds": 900,
+      "workflows": [
+        "quality-gate.yml"
+      ]
+    }
+  }
+}

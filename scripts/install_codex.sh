@@ -3,13 +3,18 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 set -Eeuo pipefail
 
-REF="${DIVAN_REF:-v0.18.1}"
+REF="${DIVAN_REF:-v0.18.2}"
 DST="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/divan-kur.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
-ARCHIVE_SHA256="local-source"
+ARCHIVE_SHA256="${DIVAN_ARCHIVE_SHA256:-local-source}"
+ARCHIVE_SHA256="$(printf '%s' "$ARCHIVE_SHA256" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
+if [[ "$ARCHIVE_SHA256" != "local-source" && ! "$ARCHIVE_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+  echo "HATA: Gecersiz yerel kaynak SHA-256 kaydi: $ARCHIVE_SHA256" >&2
+  exit 1
+fi
 SOURCE_COMMIT="${DIVAN_SOURCE_COMMIT:-}"
 if [[ -n "${DIVAN_SOURCE_DIR:-}" ]]; then
   SOURCE="$DIVAN_SOURCE_DIR"
@@ -32,11 +37,11 @@ else
     curl -fsSL "https://github.com/trugurpala/divan/releases/download/$REF/divan-$REF.zip" -o "$archive"
   fi
   if [[ -n "${DIVAN_ARCHIVE_SHA256:-}" ]]; then
-    expected_sha256="${DIVAN_ARCHIVE_SHA256,,}"
+    expected_sha256="$(printf '%s' "$DIVAN_ARCHIVE_SHA256" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
   else
     curl -fsSL "https://github.com/trugurpala/divan/releases/download/$REF/divan-$REF.sha256" -o "$checksum"
     read -r expected_sha256 _ < "$checksum"
-    expected_sha256="${expected_sha256,,}"
+    expected_sha256="$(printf '%s' "$expected_sha256" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
     if [[ -z "$SOURCE_COMMIT" ]]; then
       SOURCE_COMMIT="$(sed -n 's/^source_commit=//p' "$checksum" | head -n 1)"
     fi
@@ -64,7 +69,9 @@ else
     if [[ -z "$tag_commit" ]]; then
       tag_commit="$(printf '%s\n' "$remote_refs" | awk 'NR==1 {print $1}')"
     fi
-    if [[ -z "$tag_commit" || "${tag_commit,,}" != "${SOURCE_COMMIT,,}" ]]; then
+    tag_commit_lower="$(printf '%s' "$tag_commit" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
+    source_commit_lower="$(printf '%s' "$SOURCE_COMMIT" | LC_ALL=C tr '[:upper:]' '[:lower:]')"
+    if [[ -z "$tag_commit" || "$tag_commit_lower" != "$source_commit_lower" ]]; then
       echo "HATA: Etiket/source_commit uyusmazligi: ${tag_commit:-missing} != $SOURCE_COMMIT" >&2
       exit 1
     fi

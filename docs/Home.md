@@ -1,4 +1,4 @@
-# Divan Wiki · v0.18.1
+# Divan Wiki · v0.18.2
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -25,7 +25,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v0.18.1 · **Son yayımlanan:** v0.18.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.18.2 · **Son yayımlanan:** v0.18.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -43,7 +43,8 @@ oluşturmaz.
 | Bir bug düzelt | [[Test ve Teftiş|Test-ve-Teftis]] | Kök neden → regresyon testi → dar düzeltme |
 | Arayüz tasarla | [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] | Estetik yön → sistem → tarayıcı kanıtı |
 | Divan'ı kur | [[Kurulum]] | Hostuna uygun en küçük kurulum yolu |
-| Projenin durumunu gör | [[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] | Yayımlanan, açık ve sıradaki iş ayrımı |
+| Projenin ilerlemesini izle | [[Hızlı Başlangıç|Hizli-Baslangic]] | Yerel Seyir → şu anki görev → sıradaki adım |
+| Divan'ın sürüm durumunu gör | [[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] | Yayımlanan, açık ve sıradaki sürüm ayrımı |
 
 Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 

@@ -6,7 +6,7 @@ import argparse
 import pathlib
 from typing import Any
 
-from . import adoption, planning
+from . import adoption, planning, receipts
 from . import release as release_api
 
 DESCRIPTION = "Portable command-line interface for the Divan runtime."
@@ -93,6 +93,29 @@ def _add_discovery_parsers(commands: Any) -> None:
     _add_runtime_contract_parsers(commands)
 
 
+def _add_status_parser(commands: Any) -> None:
+    status = commands.add_parser(
+        "status",
+        help="open the local, read-only Seyir progress page",
+    )
+    status.add_argument(
+        "--project",
+        type=pathlib.Path,
+        default=pathlib.Path.cwd(),
+    )
+    status.add_argument(
+        "--open",
+        action="store_true",
+        dest="open_browser",
+        help="open the generated local URL in the default browser",
+    )
+    status.add_argument(
+        "--lang",
+        choices=("auto", "en", "tr"),
+        default="auto",
+    )
+
+
 def _planning_controls(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--host-profile",
@@ -170,6 +193,34 @@ def _add_goal_parsers(commands: Any) -> None:
     goal_resume.add_argument("--goal", required=True)
     _mutation_control(goal_resume)
     _common_output(goal_resume)
+    progress = goal_commands.add_parser(
+        "progress", help="record the active goal task cursor"
+    )
+    progress.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    progress.add_argument("--goal", required=True)
+    progress.add_argument("--completed", nargs="*", default=[])
+    progress.add_argument("--current")
+    progress.add_argument("--next", dest="next_task")
+    _mutation_control(progress)
+    _common_output(progress)
+    advance = goal_commands.add_parser(
+        "advance", help="record one verified goal phase transition"
+    )
+    advance.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    advance.add_argument("--goal", required=True)
+    advance.add_argument(
+        "--to",
+        required=True,
+        choices=tuple(state.casefold() for state in receipts.STATES),
+    )
+    advance.add_argument("--reason", default="")
+    advance.add_argument("--evidence", nargs="*", default=[])
+    _mutation_control(advance)
+    _common_output(advance)
     archive = goal_commands.add_parser("archive")
     archive.add_argument(
         "--project", type=pathlib.Path, default=pathlib.Path.cwd()
@@ -206,6 +257,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     commands = parser.add_subparsers(dest="command", required=True)
     _add_discovery_parsers(commands)
+    _add_status_parser(commands)
     _add_init_parser(commands)
     _add_project_parsers(commands)
     _add_read_only_project_parsers(commands)

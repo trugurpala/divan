@@ -8,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import urllib.parse
+import urllib.request
 import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -19,9 +21,11 @@ RUNTIME_FILES = (
     "adoption.py",
     "cli.py",
     "cli_parser.py",
+    "ci_guard.py",
     "compatibility.py",
     "contract_validation.py",
     "engine.py",
+    "execution.py",
     "frameworks.json",
     "goal_archive.py",
     "goals.py",
@@ -29,6 +33,9 @@ RUNTIME_FILES = (
     "governance.py",
     "impact-graph.json",
     "kernel.py",
+    "local_server.py",
+    "locales.py",
+    "messages.json",
     "modules.json",
     "planning.py",
     "planning_policy.py",
@@ -40,6 +47,15 @@ RUNTIME_FILES = (
     "receipts.py",
     "release.py",
     "roles.json",
+    "seyir_state.py",
+    "status.py",
+    "timeouts.py",
+    "data/timeout-benchmarks.json",
+    "data/timeout-policy.json",
+    "studio/index.html",
+    "studio/studio.css",
+    "studio/studio.js",
+    "version.txt",
     "workflows.json",
 )
 
@@ -57,6 +73,7 @@ class ProjectRunnerTests(unittest.TestCase):
         runtime = root / "plugins" / "sadrazam" / "divan_runtime"
         runtime.mkdir(parents=True)
         for name in RUNTIME_FILES:
+            (runtime / name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(RUNTIME / name, runtime / name)
         (root / "VERSION").write_text(CURRENT_VERSION + "\n", encoding="utf-8")
         registry = root / "registry"
@@ -145,6 +162,14 @@ class ProjectRunnerTests(unittest.TestCase):
                 )
                 self.assertIn("divan_runtime/project_state.py", names)
                 self.assertIn("divan_runtime/modules.json", names)
+                self.assertIn("divan_runtime/messages.json", names)
+                self.assertIn("divan_runtime/studio/index.html", names)
+                self.assertIn("divan_runtime/studio/studio.css", names)
+                self.assertIn("divan_runtime/studio/studio.js", names)
+                self.assertEqual(
+                    archive.read("divan_runtime/version.txt").decode("utf-8").strip(),
+                    CURRENT_VERSION,
+                )
 
     def test_dirty_tree_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
@@ -202,6 +227,64 @@ class ProjectRunnerTests(unittest.TestCase):
             self.assertEqual(payload["status"], "valid")
             self.assertEqual(payload["product"]["id"], "divan")
             self.assertEqual(payload["module_count"], 9)
+
+    def test_built_runner_serves_the_complete_seyir_session(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
+            base = pathlib.Path(temporary)
+            repository = base / "repo"
+            repository.mkdir()
+            source_commit = self._fixture(repository)
+            output = base / "divan-project.pyz"
+            result = self._build(repository, output, source_commit)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(output),
+                    "status",
+                    "--project",
+                    str(repository),
+                    "--lang",
+                    "tr",
+                ],
+                cwd=base,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+            )
+            self.addCleanup(
+                lambda: process.kill() if process.poll() is None else None
+            )
+            assert process.stdout is not None
+            session_url = process.stdout.readline().strip()
+            parsed = urllib.parse.urlsplit(session_url)
+            self.assertEqual(parsed.hostname, "127.0.0.1")
+            self.assertTrue(parsed.fragment)
+            origin = f"http://127.0.0.1:{parsed.port}"
+
+            for path in (
+                "/session/",
+                "/session/studio.css",
+                "/session/studio.js",
+            ):
+                with urllib.request.urlopen(origin + path, timeout=5) as response:
+                    self.assertEqual(response.status, 200)
+                    self.assertTrue(response.read())
+            request = urllib.request.Request(
+                origin + "/api/status",
+                headers={"X-Divan-Session": parsed.fragment},
+            )
+            with urllib.request.urlopen(request, timeout=5) as response:
+                payload = json.load(response)
+            self.assertEqual(payload["product"]["name"], "Divan")
+            self.assertEqual(payload["locale"], "tr")
+            process.terminate()
+            process.wait(timeout=5)
+            process.stdout.close()
+            assert process.stderr is not None
+            process.stderr.close()
 
     def test_built_runner_initializes_and_audits_public_web_with_ci(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:

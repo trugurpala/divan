@@ -21,9 +21,11 @@ from divan_runtime import (  # noqa: E402
     goals,
     governance,
     kernel,
+    local_server,
     project_lifecycle,
     project_os,
     receipts,
+    seyir_state,
 )
 from divan_runtime import (  # noqa: E402
     release as release_api,
@@ -179,6 +181,66 @@ def _mutation_authority(options: argparse.Namespace) -> dict[str, Any] | None:
     )
 
 
+def _execute_project(options: argparse.Namespace) -> dict[str, Any]:
+    if options.project_command == "status":
+        return project_lifecycle.project_status(options.project)
+    if options.project_command == "update":
+        plan = project_lifecycle.build_update_plan(options.project)
+        return (
+            project_lifecycle.apply_update_plan(plan)
+            if options.execute and plan.get("status") == "PLANNED"
+            else plan
+        )
+    plan = project_lifecycle.build_repair_plan(options.project)
+    return (
+        project_lifecycle.apply_repair_plan(plan)
+        if options.execute and plan.get("status") == "PLANNED"
+        else plan
+    )
+
+
+def _execute_goal(options: argparse.Namespace) -> dict[str, Any]:
+    if options.goal_command == "start":
+        return goals.start_goal(
+            options.project,
+            options.intent,
+            options.target,
+            options.execute,
+            host_profile=options.host_profile,
+            context_window=options.context_window,
+        )
+    if options.goal_command == "status":
+        return goals.goal_status(options.project, options.goal)
+    if options.goal_command == "progress":
+        return seyir_state.update(
+            options.project,
+            options.goal,
+            completed_task_ids=options.completed,
+            current_task_id=options.current,
+            next_task_id=options.next_task,
+            execute=options.execute,
+        )
+    if options.goal_command == "advance":
+        return seyir_state.advance_goal(
+            options.project,
+            options.goal,
+            options.to,
+            options.execute,
+            reason=options.reason,
+            evidence=options.evidence,
+        )
+    if options.goal_command == "archive":
+        plan = goal_archive.build_archive_plan(
+            options.project, options.goal, options.recorded_on
+        )
+        return (
+            goal_archive.apply_archive_plan(plan)
+            if options.execute and plan.get("status") == "PLANNED"
+            else plan
+        )
+    return goals.resume_goal(options.project, options.goal, options.execute)
+
+
 def _execute(options: argparse.Namespace) -> dict[str, Any]:
     read_only = _read_only_result(options)
     if read_only is not None:
@@ -194,47 +256,13 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
         )
         return project_os.apply_init_plan(plan) if options.execute else plan
     if options.command == "project":
-        if options.project_command == "status":
-            return project_lifecycle.project_status(options.project)
-        if options.project_command == "update":
-            plan = project_lifecycle.build_update_plan(options.project)
-            return (
-                project_lifecycle.apply_update_plan(plan)
-                if options.execute and plan.get("status") == "PLANNED"
-                else plan
-            )
-        plan = project_lifecycle.build_repair_plan(options.project)
-        return (
-            project_lifecycle.apply_repair_plan(plan)
-            if options.execute and plan.get("status") == "PLANNED"
-            else plan
-        )
+        return _execute_project(options)
     if options.command == "audit":
         return project_os.audit_project(options.project)
     if options.command == "verify":
         return project_os.verify_project(options.project)
     if options.command == "goal":
-        if options.goal_command == "start":
-            return goals.start_goal(
-                options.project,
-                options.intent,
-                options.target,
-                options.execute,
-                host_profile=options.host_profile,
-                context_window=options.context_window,
-            )
-        if options.goal_command == "status":
-            return goals.goal_status(options.project, options.goal)
-        if options.goal_command == "archive":
-            plan = goal_archive.build_archive_plan(
-                options.project, options.goal, options.recorded_on
-            )
-            return (
-                goal_archive.apply_archive_plan(plan)
-                if options.execute and plan.get("status") == "PLANNED"
-                else plan
-            )
-        return goals.resume_goal(options.project, options.goal, options.execute)
+        return _execute_goal(options)
     if options.command == "receipt":
         return receipts.verify_receipt(options.path)
     if options.command == "adoption":
@@ -268,8 +296,22 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def _serve_status(options: argparse.Namespace) -> int:
+    try:
+        return local_server.serve(
+            options.project,
+            options.lang,
+            options.open_browser,
+        )
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+
+
 def main(argv: list[str] | None = None) -> int:
     options = _parser().parse_args(argv)
+    if options.command == "status":
+        return _serve_status(options)
     try:
         authority = _mutation_authority(options)
         result = _execute(options)

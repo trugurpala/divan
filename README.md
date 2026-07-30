@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.18.1-1f6feb)
+![version](https://img.shields.io/badge/version-0.18.2-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -17,12 +17,14 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
+## Host compatibility
+
 Host support is evidence-graded rather than advertised as a single yes/no
 claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v0.18.1 · **Latest published:** v0.18.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.18.2 · **Latest published:** v0.18.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -120,24 +122,62 @@ goals can be archived, and a privacy-bounded adoption receipt can be exported
 without exposing usernames, absolute paths, remotes, secrets, or unrelated
 plugins. Owner-canary evidence never closes the independent-adoption gate.
 
+## Follow progress locally
+
+Seyir turns Divan's existing goal, task, Git, check, and receipt evidence into a
+calm local page. It is read-only, uses no cloud service or API key, and binds
+only to `127.0.0.1`. Start it from the project you want to follow:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Divan selects a free port, prints the exact working address, and opens the same
+address when `--open` is present. The address is temporary; stop it with
+`Ctrl+C`. Do not reuse an example port from documentation.
+
 ## Install
 
 The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
-ref whose immutable tag and GitHub Release exist. Preview the no-write plan,
-then install the same pinned release into both hosts:
+ref whose immutable tag and GitHub Release exist.
+
+### Fastest first install: one verified file, no repository checkout
+
+After the matching GitHub Release exists, download its standalone bootstrap and
+checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.1
-python scripts/divan.py install --host both --ref v0.18.1 --execute
+$tag = "v0.18.2"
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
+$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
+$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 mismatch" }
+python .\divan.pyz doctor --host codex --json
+python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute
+```
+
+The file contains the exact five-package, 41-skill catalog and immutable source
+commit for that release. It rejects another source or ref. Keep `divan.pyz`;
+doctor uses it to print the exact recovery command if an interrupted operation
+needs attention.
+
+From a repository checkout, preview the no-write plan and install the same
+pinned release into both hosts:
+
+```powershell
+python scripts/divan.py install --host both --ref v0.18.2
+python scripts/divan.py install --host both --ref v0.18.2 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.1
-python scripts/divan.py install --host codex --profile auto --ref v0.18.1 --execute
+python scripts/divan.py install --host codex --profile auto --ref v0.18.2
+python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
@@ -151,24 +191,25 @@ For safety, the installer never overwrites an existing `divan` marketplace or
 and fails with an actionable error.
 
 The installer delegates to the official Claude and Codex plugin CLIs, records
-pre-state, and never removes unrelated plugins. See
-[installation options](docs/Kurulum.md) for single-host, manual, legacy
-migration, and removal paths.
+pre-state, and never removes unrelated plugins. Run
+`python scripts/divan.py install --help` for the English host and profile
+options. The complete Turkish reference remains available in
+[docs/Kurulum.md](docs/Kurulum.md).
 
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.18.1
-python scripts/divan.py update --host both --ref v0.18.1
-python scripts/divan.py update --host both --ref v0.18.1 --execute
+python scripts/divan.py doctor --host both --ref v0.18.2
+python scripts/divan.py update --host both --ref v0.18.2
+python scripts/divan.py update --host both --ref v0.18.2 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
 Replace the example journal with doctor's exact `recovery_command`. Rolling
 back the `install-...json` journal uninstalls only Divan entries created by that
-transaction. See [docs/Kaldirma.md](docs/Kaldirma.md) for host-aware manual
-removal and ownership boundaries.
+transaction; it does not remove unrelated host entries. The manual,
+host-aware Turkish reference is [docs/Kaldirma.md](docs/Kaldirma.md).
 
 ## Clean development
 

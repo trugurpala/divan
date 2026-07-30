@@ -133,6 +133,11 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn("gh release create", release)
         self.assertNotIn("--clobber", release)
 
+    def test_shell_installer_avoids_bash_4_case_conversion(self) -> None:
+        text = (ROOT / "scripts" / "install_codex.sh").read_text(encoding="utf-8")
+        self.assertNotRegex(text, r"\$\{[^}]+(?:,,|\^\^)\}")
+        self.assertIn("LC_ALL=C tr '[:upper:]' '[:lower:]'", text)
+
     @unittest.skipIf(os.name == "nt", "Shell installer coverage runs on POSIX hosts")
     def test_shell_installer_backs_up_collisions(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-installer-test-") as temporary:

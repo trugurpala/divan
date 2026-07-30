@@ -8,28 +8,65 @@ sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
 komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
 Release'i bulunan bir ref'i kur:
 
+## Repo klonlamadan en hızlı ilk kurulum
+
+Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checksum
+dosyasını indirip doğrula:
+
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.1
-python scripts/divan.py install --host both --ref v0.18.1 --execute
-python scripts/divan.py doctor --host both --ref v0.18.1
-python scripts/divan.py update --host both --ref v0.18.1
-python scripts/divan.py update --host both --ref v0.18.1 --execute
+$tag = "v0.18.2"
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
+$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
+$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 eşleşmiyor" }
+python .\divan.pyz doctor --host codex --json
+python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute
+```
+
+İlk `install` yalnız planı gösterir; `--execute` aynı sabit release'i uygular.
+Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
+doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
+komutları için sakla.
+
+Repo checkout'u kullanan iki-host yaşam döngüsü:
+
+```powershell
+python scripts/divan.py install --host both --ref v0.18.2
+python scripts/divan.py install --host both --ref v0.18.2 --execute
+python scripts/divan.py doctor --host both --ref v0.18.2
+python scripts/divan.py update --host both --ref v0.18.2
+python scripts/divan.py update --host both --ref v0.18.2 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+## Kurulumdan sonra yerel Seyir
+
+İzlemek istediğiniz proje klasöründe:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Divan işletim sisteminden boş bir port ister, çalışan adresi terminale yazar ve
+`--open` ile aynı adresi açar. Sunucu yalnız `127.0.0.1` üzerinde, salt okunur
+ve geçici çalışır; `Ctrl+C` ile kapanır. Bulut servisi, veritabanı veya API
+anahtarı kullanılmaz.
 
 ## Codex Desktop için tek komutluk güvenli seçim
 
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.1
+python scripts/divan.py install --host codex --profile auto --ref v0.18.2
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.1 --execute
+python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -269,11 +306,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.18.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v0.18.2 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.18.1/scripts/install_codex.sh | DIVAN_REF=v0.18.1 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.18.2/scripts/install_codex.sh | DIVAN_REF=v0.18.2 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

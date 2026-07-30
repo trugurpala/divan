@@ -1,0 +1,75 @@
+{
+  "artifacts": {
+    ".divan/specs/goal-cbaf95a83490/plan.md": "06d8c505f0d9e62005eae1362730bc793b7567554997802b4c9eb6161ff402a7",
+    ".divan/specs/goal-cbaf95a83490/route.json": "8890dff7089c71908166bac58ac749171a7fd1366ab51ae435f0e522e3f93f90",
+    ".divan/specs/goal-cbaf95a83490/spec.md": "78f98a7d98feba4da8e07b12b4faedadaa9217fc360cd66bd5138ab749be4822",
+    ".divan/specs/goal-cbaf95a83490/tasks.md": "bac29cdff6097470f21c9c6bbf488a9984a259ba63b2463b82c99be96c204c47"
+  },
+  "events": [
+    {
+      "evidence": [],
+      "from_state": null,
+      "hash": "85818d3994d0bea008b0169a80ff505d508d48fb3191b62e552bf34236f17db1",
+      "previous_hash": null,
+      "reason": "",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 1,
+      "to_state": "DISCOVERED"
+    },
+    {
+      "evidence": [],
+      "from_state": "DISCOVERED",
+      "hash": "767ea95cfebc464a761cb33e40d0533564de83677e870d7eb54857c54bf4801e",
+      "previous_hash": "85818d3994d0bea008b0169a80ff505d508d48fb3191b62e552bf34236f17db1",
+      "reason": "Hukumdar approved the v0.18.2 Seyir design.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 2,
+      "to_state": "SPECIFIED"
+    },
+    {
+      "evidence": [],
+      "from_state": "SPECIFIED",
+      "hash": "5c341f1b50dfef326131cc682de4650729096d400fcefa8688cff2aaef8da0b9",
+      "previous_hash": "767ea95cfebc464a761cb33e40d0533564de83677e870d7eb54857c54bf4801e",
+      "reason": "The modular implementation and release plan is committed.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 3,
+      "to_state": "PLANNED"
+    },
+    {
+      "evidence": [],
+      "from_state": "PLANNED",
+      "hash": "6cc659c5196c7f7744eb74760b6cdcf7b958592d3e796d7964c93ac58f138c0a",
+      "previous_hash": "5c341f1b50dfef326131cc682de4650729096d400fcefa8688cff2aaef8da0b9",
+      "reason": "Test-first implementation is in progress.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 4,
+      "to_state": "IMPLEMENTING"
+    },
+    {
+      "evidence": [],
+      "from_state": "IMPLEMENTING",
+      "hash": "76825cf31427abd745754c307d5fe71fc71fce8a81215691f12cb075287c6072",
+      "previous_hash": "6cc659c5196c7f7744eb74760b6cdcf7b958592d3e796d7964c93ac58f138c0a",
+      "reason": "v0.18.2 local integrated verification passed: 645 tests, 14 platform skips, final hygiene clean",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 5,
+      "to_state": "VERIFIED"
+    }
+  ],
+  "goal_id": "goal-cbaf95a83490",
+  "intent": "Divan'ı geçmiş GitHub ve kurulum sorunları temizlenmiş, Türkçe ve İngilizce kimliği tutarlı, modüler stdlib çekirdeği korunan ve vibe coder'ın yerel Seyir URL'sinden gerçek ilerlemeyi takip edebildiği kullanıcı dostu v0.18.2 sürümüne ulaştır; temiz kurulum, akıllı timeout, CI, bağımsız inceleme ve canlı yayın kanıtlarını tamamla.",
+  "schema_version": 2,
+  "state": "VERIFIED",
+  "target": "RELEASED"
+}

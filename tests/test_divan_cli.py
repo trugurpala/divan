@@ -25,6 +25,88 @@ def load_module(name: str, path: pathlib.Path):
 
 
 class PortableCompanyCliTests(unittest.TestCase):
+    def test_goal_progress_is_dry_run_first_and_explicit(self) -> None:
+        cli = load_module("divan_company_cli_progress", COMPANY_CLI)
+        response = {
+            "status": "planned",
+            "schema_version": 1,
+            "active_goal_id": "goal-0123456789ab",
+        }
+        output = io.StringIO()
+        with mock.patch.object(
+            cli.seyir_state,
+            "update",
+            return_value=response,
+        ) as update, contextlib.redirect_stdout(output):
+            result = cli.main(
+                [
+                    "goal",
+                    "progress",
+                    "--project",
+                    str(ROOT),
+                    "--goal",
+                    "goal-0123456789ab",
+                    "--completed",
+                    "task-001",
+                    "--current",
+                    "task-002",
+                    "--next",
+                    "task-003",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        update.assert_called_once_with(
+            ROOT,
+            "goal-0123456789ab",
+            completed_task_ids=["task-001"],
+            current_task_id="task-002",
+            next_task_id="task-003",
+            execute=False,
+        )
+
+    def test_status_route_is_forwarded_to_local_server(self) -> None:
+        cli = load_module("divan_company_cli_status", COMPANY_CLI)
+        with mock.patch.object(
+            cli.local_server,
+            "serve",
+            return_value=0,
+        ) as serve:
+            result = cli.main(
+                [
+                    "status",
+                    "--project",
+                    str(ROOT),
+                    "--lang",
+                    "tr",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        serve.assert_called_once_with(ROOT, "tr", False)
+
+    def test_status_route_accepts_auto_language_and_browser_opening(self) -> None:
+        cli = load_module("divan_company_cli_status_open", COMPANY_CLI)
+        with mock.patch.object(
+            cli.local_server,
+            "serve",
+            return_value=0,
+        ) as serve:
+            result = cli.main(
+                [
+                    "status",
+                    "--project",
+                    str(ROOT),
+                    "--open",
+                    "--lang",
+                    "auto",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        serve.assert_called_once_with(ROOT, "auto", True)
+
     def test_json_output_recursively_redacts_secrets_and_sensitive_keys(self) -> None:
         cli = load_module("divan_company_cli_redaction", COMPANY_CLI)
         output = io.StringIO()
@@ -181,6 +263,11 @@ class PortableCompanyCliTests(unittest.TestCase):
 
 
 class RepositoryDivanCliTests(unittest.TestCase):
+    def test_repository_cli_forwards_the_status_command(self) -> None:
+        cli = load_module("repository_divan_status_cli", DIVAN_CLI)
+
+        self.assertIn("status", cli.DIVAN_COMMANDS)
+
     def test_project_status_is_forwarded_and_read_only(self) -> None:
         cli = load_module("repository_divan_lifecycle_cli", DIVAN_CLI)
         with tempfile.TemporaryDirectory(prefix="divan-cli-status-") as temporary:

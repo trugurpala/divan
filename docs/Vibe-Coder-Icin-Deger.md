@@ -49,6 +49,17 @@ Project OS adları yalnız v1 uyumluluğu için korunur.
 
 **Önde sakin ve anlaşılır Divan; arkada bütün mühendislik ağırlığı.**
 
+Sohbetin yanında yerel bir ilerleme ekranı istersen Seyir'i aç:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Divan boş bir port seçip gerçek adresi terminale yazar. Sayfa salt okunur;
+yalnız `127.0.0.1` üzerinde çalışır, bulut hesabı veya API anahtarı istemez ve
+`Ctrl+C` ile kapanır. Hedef, şu anki görev, tamamlanan işler, kontroller, engel
+ve sıradaki adım Türkçe veya İngilizce gösterilir.
+
 Sadrazam'ın kanonik sözleşmesi host ajanını her komutu, dosyayı ve alt ajanı
 sohbet ekranına dökmemeye yönlendirir. İşe başlarken ve anlamlı bir aşama
 değiştiğinde şimdi ne yapıldığını, bunun neden önemli olduğunu ve sırada ne

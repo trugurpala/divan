@@ -21,7 +21,7 @@ from urllib.request import (
     build_opener,
 )
 
-from . import goals, project_os, receipts
+from . import execution, goals, project_os, receipts, seyir_state
 
 
 class ProviderCapabilityV1(dict[str, Any]):
@@ -118,6 +118,7 @@ MUTABLE_RESOURCE_IDS = {"head", "latest", "main", "master", "preview", "producti
 PROJECT_STATE_FILES = {
     ".divan/PROJECT_RULES.md",
     ".divan/config.json",
+    ".divan/state/seyir.json",
     ".divan/waivers.json",
 }
 MAX_MANAGED_FILES = 128
@@ -269,6 +270,8 @@ def _canonical_remote(value: str) -> str | None:
 
 
 def _valid_project_state_file(path: pathlib.Path, relative: str) -> bool:
+    if relative == ".divan/state/seyir.json":
+        return seyir_state.valid_managed_file(path)
     try:
         size = path.stat().st_size
         if size > MAX_MANAGED_FILE_BYTES:
@@ -516,15 +519,7 @@ def _verification_command(
 
 
 def _default_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="strict",
-        timeout=30,
-        check=False,
-    )
+    return execution.run_completed(command)
 
 
 class _VercelRedirectHandler(HTTPRedirectHandler):

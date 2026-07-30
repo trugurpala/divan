@@ -12,6 +12,7 @@ import sys
 from collections.abc import Callable
 from typing import Any
 
+import bootstrap_contract
 import host_probe
 import legacy_state
 
@@ -92,8 +93,7 @@ def next_command(
     if codex is not None and codex.get("cli_status") == "invalid-json":
         return subprocess.list2cmdline(marketplace_list("codex"))
     command = [
-        "python",
-        "scripts/divan.py",
+        *_cli_prefix(),
         "install",
         "--host",
         options.host,
@@ -103,9 +103,16 @@ def next_command(
         options.ref,
     ]
     if codex is not None and codex.get("cli_status") in FALLBACK_CLI_STATUSES:
-        command[4] = "codex"
+        command[command.index("--host") + 1] = "codex"
         command.extend(["--profile", "auto"])
     return subprocess.list2cmdline(command)
+
+
+def _cli_prefix() -> list[str]:
+    bundled = getattr(sys, "_divan_bootstrap_path", None)
+    if isinstance(bundled, str) and pathlib.Path(bundled).is_file():
+        return [sys.executable, bundled]
+    return ["python", "scripts/divan.py"]
 
 
 def fallback_command(root: pathlib.Path) -> list[str]:
@@ -121,7 +128,7 @@ def fallback_command(root: pathlib.Path) -> list[str]:
     return ["bash", str(root / "scripts" / "install_codex.sh")]
 
 
-def rollback_command(root: pathlib.Path) -> list[str]:
+def _fallback_uninstall_command(root: pathlib.Path) -> list[str]:
     if os.name == "nt":
         return [
             "powershell.exe",
@@ -139,6 +146,32 @@ def rollback_command(root: pathlib.Path) -> list[str]:
         "--python",
         sys.executable,
     ]
+
+
+def rollback_command(root: pathlib.Path) -> list[str]:
+    bundled = getattr(sys, "_divan_bootstrap_path", None)
+    if isinstance(bundled, str) and pathlib.Path(bundled).is_file():
+        return [sys.executable, bundled, "_fallback-remove"]
+    return _fallback_uninstall_command(root)
+
+
+def recovery_command(transaction: pathlib.Path) -> list[str]:
+    return [*_cli_prefix(), "recover", str(transaction)]
+
+
+def execute_fallback_remove(root: pathlib.Path) -> int:
+    environment = os.environ.copy()
+    environment["DIVAN_PYTHON"] = sys.executable
+    result = host_probe.run(_fallback_uninstall_command(root), env=environment)
+    if result.stdout:
+        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+    if result.stderr:
+        print(
+            result.stderr,
+            end="" if result.stderr.endswith("\n") else "\n",
+            file=sys.stderr,
+        )
+    return result.returncode
 
 
 def fallback_plan(options: Any, root: pathlib.Path, cli_status: str) -> dict[str, Any]:
@@ -200,6 +233,14 @@ def _contained(path: pathlib.Path, root: pathlib.Path) -> bool:
 
 
 def _expected_skill_names(root: pathlib.Path) -> set[str]:
+    try:
+        bundled = bootstrap_contract.load(root)
+    except bootstrap_contract.ContractError as error:
+        raise ValueError(str(error)) from error
+    if bundled is not None:
+        return {
+            skill for row in bundled[1].values() for skill in row["skills"]
+        }
     return {
         path.parent.name
         for path in root.glob("plugins/*/skills/*/SKILL.md")
@@ -307,10 +348,7 @@ def execute_fallback(
     if pathlib.Path(options.source).expanduser().exists():
         raise ValueError("auto fallback requires a checksum-backed release source")
     command = fallback_command(root)
-    environment = {
-        "DIVAN_REF": options.ref,
-        "DIVAN_PYTHON": sys.executable,
-    }
+    environment = _fallback_environment(options, root)
     result = runner(command, environment)
     if result.returncode:
         detail = (result.stderr or result.stdout or "unknown fallback error").strip()
@@ -331,3 +369,16 @@ def execute_fallback(
         "next_command": "Restart Codex, then open a new task.",
         **verified,
     }
+
+
+def _fallback_environment(options: Any, root: pathlib.Path) -> dict[str, str]:
+    """Bind a standalone bootstrap fallback to its embedded immutable source."""
+    try:
+        return bootstrap_contract.fallback_environment(
+            options,
+            root,
+            getattr(sys, "_divan_bootstrap_path", None),
+            sys.executable,
+        )
+    except bootstrap_contract.ContractError as error:
+        raise ValueError(str(error)) from error

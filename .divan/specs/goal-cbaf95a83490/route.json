@@ -1,0 +1,708 @@
+{
+  "checks": [
+    "project-native build",
+    "project-native tests",
+    "python -m unittest discover"
+  ],
+  "commands": [
+    {
+      "command": "python -m unittest discover",
+      "manager": "python",
+      "name": "test",
+      "workspace": "."
+    },
+    {
+      "command": "python -m unittest discover",
+      "manager": "python",
+      "name": "test",
+      "workspace": "plugins/zanaat-pack/skills/slack-gif-creator"
+    },
+    {
+      "command": "python -m unittest discover",
+      "manager": "python",
+      "name": "test",
+      "workspace": "tests/fixtures/projects/library"
+    },
+    {
+      "command": "python -m unittest discover",
+      "manager": "python",
+      "name": "test",
+      "workspace": "tests/fixtures/projects/python-api"
+    }
+  ],
+  "execution_plan": {
+    "complexity": {
+      "estimated_working_set_tokens": 17950,
+      "level": "high",
+      "score": 8,
+      "signals": {
+        "critical_risk_terms": [],
+        "high_risk_terms": [],
+        "high_risk_workflows": [],
+        "moderate_risk_workflows": [],
+        "package_manager_conflicts": 0,
+        "provider_count": 1,
+        "role_count": 5,
+        "target": "released",
+        "workflow_count": 1,
+        "workspace_count": 7
+      }
+    },
+    "context_budget": {
+      "authority": "planning-assumption",
+      "handoff_at_tokens": 18432,
+      "reserve_tokens": 8192,
+      "source": "fallback",
+      "total_tokens": 32768,
+      "usable_tokens": 24576,
+      "verified_product_limit": false
+    },
+    "handoff": {
+      "at_context_tokens": 18432,
+      "at_each_sefer_boundary": true,
+      "durable_artifact": "route.json",
+      "record": [
+        "completed task ids",
+        "evidence",
+        "blockers",
+        "next task id"
+      ]
+    },
+    "host": {
+      "confidence": "declared",
+      "hint_keys": [],
+      "id": "codex",
+      "source": "explicit"
+    },
+    "model_policy": {
+      "capability_class": "frontier",
+      "fallback": "host-selects-an-available-equivalent",
+      "host_candidate": {
+        "availability": "host-confirmation-required",
+        "evidence_source": "official-openai-model-guide-2026-07-29",
+        "model": "gpt-5.6-sol",
+        "status": "candidate"
+      },
+      "reasoning_effort": "high",
+      "selection": "risk-based"
+    },
+    "obligations": {
+      "canonical_sources": [
+        "implementation",
+        "tests",
+        "goal route"
+      ],
+      "public_surfaces": [
+        "release artifacts",
+        "remote readback"
+      ],
+      "required_checks": [
+        "project-native build",
+        "project-native tests",
+        "python -m unittest discover"
+      ],
+      "required_providers": [
+        "local"
+      ]
+    },
+    "orchestration": {
+      "external_agent_harness_required": false,
+      "lane": "sequential",
+      "max_parallel_workstreams": 1,
+      "recommended_sefers": 2,
+      "sefer_semantics": "sequential-context-windows",
+      "workstream_semantics": "dependency-graph-lanes"
+    },
+    "policy_id": "nizam-i-sefer-v1",
+    "route_id": "route-9822a4133fe804a0",
+    "schema_version": 1,
+    "sefers": [
+      {
+        "depends_on": [],
+        "id": "sefer-001",
+        "order": 1,
+        "task_ids": [
+          "task-001",
+          "task-002",
+          "task-003"
+        ]
+      },
+      {
+        "depends_on": [
+          "sefer-001"
+        ],
+        "id": "sefer-002",
+        "order": 2,
+        "task_ids": [
+          "task-004",
+          "task-005",
+          "task-006",
+          "task-007"
+        ]
+      }
+    ],
+    "status": "estimated",
+    "tasks": [
+      {
+        "commands": [],
+        "depends_on": [],
+        "id": "task-001",
+        "owner_role": "product-strategist",
+        "required_evidence": [
+          "verification result"
+        ],
+        "stage": "brief",
+        "workflow": "feature-delivery"
+      },
+      {
+        "commands": [],
+        "depends_on": [
+          "task-001"
+        ],
+        "id": "task-002",
+        "owner_role": "product-strategist",
+        "required_evidence": [
+          "approved brief"
+        ],
+        "stage": "design",
+        "workflow": "feature-delivery"
+      },
+      {
+        "commands": [],
+        "depends_on": [
+          "task-002"
+        ],
+        "id": "task-003",
+        "owner_role": "product-strategist",
+        "required_evidence": [
+          "live readback"
+        ],
+        "stage": "plan",
+        "workflow": "feature-delivery"
+      },
+      {
+        "commands": [
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "."
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "plugins/zanaat-pack/skills/slack-gif-creator"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/library"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/python-api"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native build",
+            "kind": "project-check"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native tests",
+            "kind": "project-check"
+          }
+        ],
+        "depends_on": [
+          "task-003"
+        ],
+        "id": "task-004",
+        "owner_role": "qa-engineer",
+        "required_evidence": [
+          "project inspection"
+        ],
+        "stage": "test-first implementation",
+        "workflow": "feature-delivery"
+      },
+      {
+        "commands": [
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "."
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "plugins/zanaat-pack/skills/slack-gif-creator"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/library"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/python-api"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native build",
+            "kind": "project-check"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native tests",
+            "kind": "project-check"
+          }
+        ],
+        "depends_on": [
+          "task-004"
+        ],
+        "id": "task-005",
+        "owner_role": "independent-reviewer",
+        "required_evidence": [
+          "project-native verification"
+        ],
+        "stage": "independent review",
+        "workflow": "feature-delivery"
+      },
+      {
+        "commands": [
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "."
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "plugins/zanaat-pack/skills/slack-gif-creator"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/library"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/python-api"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native build",
+            "kind": "project-check"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native tests",
+            "kind": "project-check"
+          }
+        ],
+        "depends_on": [
+          "task-005"
+        ],
+        "id": "task-006",
+        "owner_role": "qa-engineer",
+        "required_evidence": [
+          "provider release evidence"
+        ],
+        "stage": "verification",
+        "workflow": "feature-delivery"
+      },
+      {
+        "commands": [
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "."
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "plugins/zanaat-pack/skills/slack-gif-creator"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/library"
+          },
+          {
+            "argv": [
+              "python",
+              "-m",
+              "unittest",
+              "discover"
+            ],
+            "auto_execute": false,
+            "display": "python -m unittest discover",
+            "kind": "project-check",
+            "shell": false,
+            "workspace": "tests/fixtures/projects/python-api"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native build",
+            "kind": "project-check"
+          },
+          {
+            "auto_execute": false,
+            "display": "project-native tests",
+            "kind": "project-check"
+          }
+        ],
+        "depends_on": [
+          "task-006"
+        ],
+        "id": "task-007",
+        "owner_role": "qa-engineer",
+        "required_evidence": [
+          "approved brief",
+          "live readback",
+          "project inspection",
+          "project-native verification",
+          "provider release evidence",
+          "red-green evidence",
+          "verification result"
+        ],
+        "stage": "integrated verification",
+        "workflow": "integrated-delivery"
+      }
+    ],
+    "workstreams": [
+      {
+        "id": "workstream-001",
+        "parallel_ready": true,
+        "task_ids": [
+          "task-001",
+          "task-002",
+          "task-003",
+          "task-004",
+          "task-005",
+          "task-006"
+        ],
+        "workflow": "feature-delivery"
+      }
+    ]
+  },
+  "frameworks": [
+    "documentation",
+    "fastapi",
+    "nextjs",
+    "python",
+    "react",
+    "static-web",
+    "vite"
+  ],
+  "intent": "Divan'ı geçmiş GitHub ve kurulum sorunları temizlenmiş, Türkçe ve İngilizce kimliği tutarlı, modüler stdlib çekirdeği korunan ve vibe coder'ın yerel Seyir URL'sinden gerçek ilerlemeyi takip edebildiği kullanıcı dostu v0.18.2 sürümüne ulaştır; temiz kurulum, akıllı timeout, CI, bağımsız inceleme ve canlı yayın kanıtlarını tamamla.",
+  "package_manager_conflicts": [],
+  "package_managers": [],
+  "packages": [
+    "core-pack",
+    "react-pack",
+    "sadrazam"
+  ],
+  "primary_workflow": "feature-delivery",
+  "project": "v0182-seyir",
+  "project_types": [
+    "application",
+    "documentation",
+    "monorepo",
+    "public-web",
+    "service"
+  ],
+  "providers": [
+    "local"
+  ],
+  "required_evidence": [
+    "approved brief",
+    "live readback",
+    "project inspection",
+    "project-native verification",
+    "provider release evidence",
+    "red-green evidence",
+    "verification result"
+  ],
+  "roles": [
+    "product-strategist",
+    "frontend-engineer",
+    "backend-engineer",
+    "qa-engineer",
+    "independent-reviewer"
+  ],
+  "schema_version": 2,
+  "skills": [
+    {
+      "package": "core-pack",
+      "skill": "brainstorming"
+    },
+    {
+      "package": "core-pack",
+      "skill": "kural-hazinesi"
+    },
+    {
+      "package": "core-pack",
+      "skill": "requesting-code-review"
+    },
+    {
+      "package": "core-pack",
+      "skill": "systematic-debugging"
+    },
+    {
+      "package": "core-pack",
+      "skill": "test-driven-development"
+    },
+    {
+      "package": "core-pack",
+      "skill": "verification-before-completion"
+    },
+    {
+      "package": "core-pack",
+      "skill": "writing-plans"
+    },
+    {
+      "package": "react-pack",
+      "skill": "vercel-composition-patterns"
+    },
+    {
+      "package": "react-pack",
+      "skill": "vercel-react-best-practices"
+    },
+    {
+      "package": "react-pack",
+      "skill": "web-design-guidelines"
+    },
+    {
+      "package": "sadrazam",
+      "skill": "musavir"
+    }
+  ],
+  "stages": [
+    "brief",
+    "design",
+    "plan",
+    "test-first implementation",
+    "independent review",
+    "verification"
+  ],
+  "workflow": "feature-delivery",
+  "workflow_contracts": [
+    {
+      "id": "feature-delivery",
+      "roles": [
+        "product-strategist",
+        "frontend-engineer",
+        "backend-engineer",
+        "qa-engineer",
+        "independent-reviewer"
+      ],
+      "stages": [
+        "brief",
+        "design",
+        "plan",
+        "test-first implementation",
+        "independent review",
+        "verification"
+      ]
+    }
+  ],
+  "workflows": [
+    "feature-delivery"
+  ],
+  "workspaces": [
+    {
+      "frameworks": [
+        "documentation",
+        "python",
+        "static-web"
+      ],
+      "package_managers": [],
+      "path": ".",
+      "project_types": [
+        "documentation",
+        "public-web"
+      ]
+    },
+    {
+      "frameworks": [
+        "python"
+      ],
+      "package_managers": [],
+      "path": "plugins/zanaat-pack/skills/slack-gif-creator",
+      "project_types": []
+    },
+    {
+      "frameworks": [
+        "python"
+      ],
+      "package_managers": [],
+      "path": "tests/fixtures/projects/library",
+      "project_types": []
+    },
+    {
+      "frameworks": [],
+      "package_managers": [],
+      "path": "tests/fixtures/projects/monorepo",
+      "project_types": []
+    },
+    {
+      "frameworks": [
+        "nextjs",
+        "react"
+      ],
+      "package_managers": [],
+      "path": "tests/fixtures/projects/nextjs",
+      "project_types": [
+        "application",
+        "public-web"
+      ]
+    },
+    {
+      "frameworks": [
+        "fastapi",
+        "python"
+      ],
+      "package_managers": [],
+      "path": "tests/fixtures/projects/python-api",
+      "project_types": [
+        "application",
+        "service"
+      ]
+    },
+    {
+      "frameworks": [
+        "react",
+        "static-web",
+        "vite"
+      ],
+      "package_managers": [],
+      "path": "tests/fixtures/projects/vite-react",
+      "project_types": [
+        "application",
+        "public-web"
+      ]
+    }
+  ]
+}

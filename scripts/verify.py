@@ -8,9 +8,17 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import time
 from collections.abc import Sequence
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
+sys.dont_write_bytecode = True
+if str(PLUGIN_ROOT) not in sys.path:
+    sys.path.insert(0, str(PLUGIN_ROOT))
+
+from divan_runtime import timeouts  # noqa: E402
+
 Command = tuple[str, ...]
 CORE_COMMANDS: tuple[Command, ...] = (
     ("scripts/hygiene.py", "--check"),
@@ -23,6 +31,13 @@ CORE_COMMANDS: tuple[Command, ...] = (
     ("-m", "unittest", "discover", "-s", "tests", "-v"),
     ("scripts/hygiene.py", "--check"),
 )
+
+
+def command_class(arguments: Command) -> str:
+    """Map one fixed verification child to its bounded timeout class."""
+    if arguments[:3] == ("-m", "unittest", "discover"):
+        return "test"
+    return "fast-check"
 
 
 def verification_environment(
@@ -53,17 +68,44 @@ def _run(
     cache_root: pathlib.Path,
 ) -> int:
     environment = verification_environment(root, cache_root)
+    verify_decision = timeouts.resolve_default("verify")
+    deadline = time.monotonic() + verify_decision.configured_seconds
     for arguments in commands:
+        child_decision = timeouts.resolve_default(command_class(arguments))
+        remaining = max(0, deadline - time.monotonic())
+        timeout_seconds = min(child_decision.configured_seconds, remaining)
+        if timeout_seconds <= 0:
+            print(
+                "VERIFY TIMEOUT: overall verify limit reached "
+                f"({verify_decision.configured_seconds}s)",
+                file=sys.stderr,
+                flush=True,
+            )
+            return 124
         printable = " ".join((sys.executable, "-B", *arguments))
-        print(f"VERIFY: {printable}", flush=True)
-        completed = subprocess.run(
-            [sys.executable, "-B", *arguments],
-            cwd=root,
-            env=environment,
-            check=False,
-            text=True,
-            encoding="utf-8",
+        print(
+            f"VERIFY [{command_class(arguments)} <= {timeout_seconds:.0f}s]: "
+            f"{printable}",
+            flush=True,
         )
+        try:
+            completed = subprocess.run(
+                [sys.executable, "-B", *arguments],
+                cwd=root,
+                env=environment,
+                check=False,
+                text=True,
+                encoding="utf-8",
+                timeout=timeout_seconds,
+            )
+        except subprocess.TimeoutExpired:
+            print(
+                "VERIFY TIMEOUT: command exceeded its evidence-backed limit "
+                f"({timeout_seconds:.0f}s): {printable}",
+                file=sys.stderr,
+                flush=True,
+            )
+            return 124
         if completed.returncode:
             return completed.returncode
     return 0

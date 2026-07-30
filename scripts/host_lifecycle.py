@@ -13,6 +13,7 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
+import bootstrap_contract as _bootstrap_contract
 import host_adapters as _host_adapters
 import host_controller as _host_controller
 import host_install_journal as _host_install_journal
@@ -83,31 +84,10 @@ def _plugin_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
 
 
 def _expected_packages(root: pathlib.Path) -> dict[str, dict[str, Any]]:
-    path = root / ".agents" / "plugins" / "marketplace.json"
     try:
-        marketplace = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
-        raise InstallError(f"cannot read expected native catalog: {path}") from exc
-    expected: dict[str, dict[str, Any]] = {}
-    for plugin in marketplace.get("plugins", []):
-        if not isinstance(plugin, dict):
-            continue
-        name, version, source = plugin.get("name"), plugin.get("version"), plugin.get("source")
-        if not isinstance(name, str) or not isinstance(version, str) or not isinstance(source, dict):
-            continue
-        relative = source.get("path")
-        if not isinstance(relative, str):
-            continue
-        skill_names = sorted(
-            path.parent.name
-            for path in (root / relative / "skills").glob("*/SKILL.md")
-        )
-        expected[name] = {"version": version, "skills": skill_names}
-    if set(expected) != set(PACKAGES):
-        raise InstallError("native catalog does not define the expected five packages")
-    if len({skill for row in expected.values() for skill in row["skills"]}) != 41:
-        raise InstallError("native catalog does not define exactly 41 unique skills")
-    return expected
+        return _bootstrap_contract.expected_packages(root, set(PACKAGES))
+    except _bootstrap_contract.ContractError as exc:
+        raise InstallError(str(exc)) from exc
 
 
 def _normalize_source(source: str) -> str:
@@ -419,6 +399,12 @@ def _install_target(
 ) -> tuple[_host_install_journal.InstallIO, dict[str, Any]]:
     install_io = _install_io(runner)
     versions = {package: row["version"] for package, row in expected_packages.items()}
+    try:
+        bundled = _bootstrap_contract.target_evidence(repository, versions)
+    except _bootstrap_contract.ContractError as exc:
+        raise InstallError(str(exc)) from exc
+    if bundled is not None:
+        return install_io, bundled
     return install_io, _host_install_journal.target_evidence(
         repository, options.source, options.ref, versions, install_io)
 

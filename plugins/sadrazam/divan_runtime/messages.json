@@ -1,0 +1,223 @@
+{
+  "app.title": {
+    "en": "Divan Seyir",
+    "tr": "Divan Seyir"
+  },
+  "app.subtitle": {
+    "en": "Local, read-only progress",
+    "tr": "Yerel, salt okunur ilerleme"
+  },
+  "connection.connecting": {
+    "en": "Connecting to Divan…",
+    "tr": "Divan'a bağlanıyor…"
+  },
+  "connection.connected": {
+    "en": "Connected",
+    "tr": "Bağlandı"
+  },
+  "connection.disconnected": {
+    "en": "The local connection was interrupted.",
+    "tr": "Yerel bağlantı kesildi."
+  },
+  "connection.unauthorized": {
+    "en": "This Seyir session is no longer authorized.",
+    "tr": "Bu Seyir oturumunun yetkisi artık geçerli değil."
+  },
+  "progress.request": {
+    "en": "What did you ask for?",
+    "tr": "Ne istedin?"
+  },
+  "progress.current_task": {
+    "en": "What is happening now?",
+    "tr": "Şu an ne yapılıyor?"
+  },
+  "progress.completed": {
+    "en": "What is complete?",
+    "tr": "Neler bitti?"
+  },
+  "progress.checks": {
+    "en": "Which check passed or failed?",
+    "tr": "Hangi kontrol geçti veya başarısız oldu?"
+  },
+  "progress.blocker": {
+    "en": "Is anything blocked?",
+    "tr": "Bir engel var mı?"
+  },
+  "progress.next_action": {
+    "en": "What happens next?",
+    "tr": "Sıradaki adım ne?"
+  },
+  "progress.task_count": {
+    "en": "{complete} / {total} tasks complete",
+    "tr": "{complete} / {total} görev tamamlandı"
+  },
+  "progress.no_blocker": {
+    "en": "No blocker is recorded.",
+    "tr": "Kayıtlı bir engel yok."
+  },
+  "progress.no_active_goal": {
+    "en": "No active goal",
+    "tr": "Etkin hedef yok"
+  },
+  "progress.no_active_goal_hint": {
+    "en": "Give Divan a goal in your agent conversation to begin.",
+    "tr": "Başlamak için ajan konuşmanda Divan'a bir hedef ver."
+  },
+  "progress.no_current_task": {
+    "en": "No current task is recorded.",
+    "tr": "Kayıtlı güncel görev yok."
+  },
+  "progress.no_next_action": {
+    "en": "No next action is recorded.",
+    "tr": "Kayıtlı sıradaki adım yok."
+  },
+  "progress.stale": {
+    "en": "This snapshot may be stale.",
+    "tr": "Bu görüntü güncelliğini yitirmiş olabilir."
+  },
+  "phase.ferman": {
+    "en": "Goal",
+    "tr": "Ferman"
+  },
+  "phase.plan": {
+    "en": "Plan",
+    "tr": "Plan"
+  },
+  "phase.icra": {
+    "en": "Implementation",
+    "tr": "İcra"
+  },
+  "phase.teftis": {
+    "en": "Verification",
+    "tr": "Teftiş"
+  },
+  "phase.yayin": {
+    "en": "Release",
+    "tr": "Yayın"
+  },
+  "state.running": {
+    "en": "Running",
+    "tr": "Çalışıyor"
+  },
+  "state.blocked": {
+    "en": "Blocked",
+    "tr": "Engellendi"
+  },
+  "state.failed": {
+    "en": "Failed",
+    "tr": "Başarısız"
+  },
+  "state.complete": {
+    "en": "Complete",
+    "tr": "Tamamlandı"
+  },
+  "state.pending": {
+    "en": "Pending",
+    "tr": "Bekliyor"
+  },
+  "state.passed": {
+    "en": "Passed",
+    "tr": "Geçti"
+  },
+  "state.unknown": {
+    "en": "Not yet verified",
+    "tr": "Henüz doğrulanmadı"
+  },
+  "state.current": {
+    "en": "Current",
+    "tr": "Şu an"
+  },
+  "task.accessibility_review": {"en": "accessibility review", "tr": "erişilebilirlik incelemesi"},
+  "task.applicability": {"en": "applicability", "tr": "uygulanabilirlik"},
+  "task.brief": {"en": "brief", "tr": "ön çalışma"},
+  "task.browser_verification": {"en": "browser verification", "tr": "tarayıcı doğrulaması"},
+  "task.canonical_edit": {"en": "canonical edit", "tr": "kanonik düzenleme"},
+  "task.ci": {"en": "CI", "tr": "sürekli entegrasyon"},
+  "task.contract": {"en": "contract", "tr": "sözleşme"},
+  "task.crawl_evidence": {"en": "crawl evidence", "tr": "tarama kanıtı"},
+  "task.creative_direction": {"en": "creative direction", "tr": "yaratıcı yön"},
+  "task.design": {"en": "design", "tr": "tasarım"},
+  "task.design_system": {"en": "design system", "tr": "tasarım sistemi"},
+  "task.dry_run": {"en": "dry run", "tr": "prova çalıştırması"},
+  "task.evaluation": {"en": "evaluation", "tr": "değerlendirme"},
+  "task.format_validation": {"en": "format validation", "tr": "biçim doğrulaması"},
+  "task.green_evidence": {"en": "green evidence", "tr": "başarı kanıtı"},
+  "task.implementation": {"en": "implementation", "tr": "uygulama"},
+  "task.independent_review": {"en": "independent review", "tr": "bağımsız inceleme"},
+  "task.integrated_verification": {"en": "integrated verification", "tr": "bütünleşik doğrulama"},
+  "task.interaction_contract": {"en": "interaction contract", "tr": "etkileşim sözleşmesi"},
+  "task.link_validation": {"en": "link validation", "tr": "bağlantı doğrulaması"},
+  "task.live_readback": {"en": "live readback", "tr": "canlı geri okuma"},
+  "task.locale_sync": {"en": "locale sync", "tr": "dil eşitleme"},
+  "task.minimal_fix": {"en": "minimal fix", "tr": "en küçük doğru düzeltme"},
+  "task.minimal_implementation": {"en": "minimal implementation", "tr": "en küçük doğru uygulama"},
+  "task.original_production": {"en": "original production", "tr": "özgün üretim"},
+  "task.plan": {"en": "plan", "tr": "plan"},
+  "task.preflight": {"en": "preflight", "tr": "ön kontrol"},
+  "task.preview": {"en": "preview", "tr": "ön izleme"},
+  "task.promotion_readback": {"en": "promotion readback", "tr": "yayına alma geri okuması"},
+  "task.provider_preflight": {"en": "provider preflight", "tr": "sağlayıcı ön kontrolü"},
+  "task.public_surface_sync": {"en": "public surface sync", "tr": "genel yüzey eşitleme"},
+  "task.publication": {"en": "publication", "tr": "yayınlama"},
+  "task.red_evidence": {"en": "red evidence", "tr": "hata kanıtı"},
+  "task.regression": {"en": "regression", "tr": "gerileme kontrolü"},
+  "task.regression_test": {"en": "regression test", "tr": "gerileme testi"},
+  "task.reproduce": {"en": "reproduce", "tr": "yeniden üretme"},
+  "task.root_cause": {"en": "root cause", "tr": "kök neden"},
+  "task.security_review": {"en": "security review", "tr": "güvenlik incelemesi"},
+  "task.source_audit": {"en": "source audit", "tr": "kaynak denetimi"},
+  "task.technical_audit": {"en": "technical audit", "tr": "teknik denetim"},
+  "task.test_contract": {"en": "test contract", "tr": "test sözleşmesi"},
+  "task.test_first_implementation": {"en": "test-first implementation", "tr": "test öncelikli uygulama"},
+  "task.threat_model": {"en": "threat model", "tr": "tehdit modeli"},
+  "task.threat_review": {"en": "threat review", "tr": "tehdit incelemesi"},
+  "task.verification": {"en": "verification", "tr": "doğrulama"},
+  "technical.title": {
+    "en": "Technical details",
+    "tr": "Teknik ayrıntılar"
+  },
+  "technical.branch": {
+    "en": "Branch",
+    "tr": "Dal"
+  },
+  "technical.commit": {
+    "en": "Commit",
+    "tr": "Commit"
+  },
+  "technical.changed": {
+    "en": "Local changes",
+    "tr": "Yerel değişiklikler"
+  },
+  "technical.evidence": {
+    "en": "Evidence",
+    "tr": "Kanıt"
+  },
+  "technical.tasks": {
+    "en": "Tasks",
+    "tr": "Görevler"
+  },
+  "navigation.skip": {
+    "en": "Skip to progress",
+    "tr": "İlerlemeye geç"
+  },
+  "navigation.progress": {
+    "en": "Divan progress",
+    "tr": "Divan ilerlemesi"
+  },
+  "progress.summary": {
+    "en": "Progress summary",
+    "tr": "İlerleme özeti"
+  },
+  "progress.live_summary": {
+    "en": "{complete} of {total} tasks complete. Current: {current}. Next: {next}.",
+    "tr": "{total} görevin {complete} tanesi tamamlandı. Şu an: {current}. Sırada: {next}."
+  },
+  "connection.missing_capability": {
+    "en": "This local session link is incomplete.",
+    "tr": "Bu yerel oturum bağlantısı eksik."
+  },
+  "server.stop": {
+    "en": "Press Ctrl+C in the terminal to stop Seyir.",
+    "tr": "Seyir'i durdurmak için terminalde Ctrl+C'ye bas."
+  }
+}

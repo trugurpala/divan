@@ -2,7 +2,7 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 $ErrorActionPreference = "Stop"
 
-$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v0.18.1" }
+$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v0.18.2" }
 $dst = if ($env:CODEX_SKILLS_DIR) {
   $env:CODEX_SKILLS_DIR
 } else {
@@ -17,7 +17,14 @@ $work = Join-Path ([IO.Path]::GetTempPath()) ("divan-kur-" + [Guid]::NewGuid())
 
 try {
   New-Item -ItemType Directory -Force -Path $work | Out-Null
-  $archiveSha256 = "local-source"
+  $archiveSha256 = if ($env:DIVAN_ARCHIVE_SHA256) {
+    $env:DIVAN_ARCHIVE_SHA256.Trim().ToLowerInvariant()
+  } else {
+    "local-source"
+  }
+  if ($archiveSha256 -ne "local-source" -and $archiveSha256 -notmatch '^[0-9a-f]{64}$') {
+    throw "Gecersiz yerel kaynak SHA-256 kaydi: $archiveSha256"
+  }
   $sourceCommit = if ($env:DIVAN_SOURCE_COMMIT) { $env:DIVAN_SOURCE_COMMIT } else { "" }
   if ($env:DIVAN_SOURCE_DIR) {
     $source = $env:DIVAN_SOURCE_DIR
