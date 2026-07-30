@@ -166,6 +166,7 @@ def _execution_context(
         host,
         plan["operator"]["role"],
         runner_path=runner_path,
+        expected_runner_sha256=plan["divan"]["runner_sha256"],
     )
     if fresh["plan_digest"] != plan.get("plan_digest"):
         raise ValueError("proof inputs changed after preview")

@@ -148,6 +148,8 @@ Runner ile `.sha256` yan dosyası birlikte kalmalı; yürütme, Git tarafından
 izlenen kaynak sapmasını reddedebilmek için bir Git reposu gerektirir.
 Yan dosya indirme bütünlüğünü kanıtlar; v1 kapısı ayrıca incelenmiş release
 runner özetini `registry/v1-gates.json` içinde sabitler ve birebir eşleşme ister.
+Önizleme bu özeti sabit public GitHub Release API'sinden okur; yayın otoritesi
+ulaşılamazsa veya farklıysa hiçbir proje komutu başlamaz.
 
 Public web projesinde salt-okunur denetim:
 

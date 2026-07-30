@@ -64,7 +64,9 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     hedef, bir kez çalışan sınırlı test/regresyon kontrolleri ve gizlilik
     sınırlı schema-2 makbuzu ölçer. Bakımcı ile dış kullanıcı aynı teknik kapıya
     tabidir. Bu kanıt pazar benimsemesi, üçüncü taraf onayı veya verim artışı
-    iddiası değildir.
+    iddiası değildir. Runner yan dosyası yalnız taşıma bütünlüğüdür; kanıt
+    önizlemesi sabit public GitHub Release API digest'ini ayrı otorite olarak
+    okur ve v1 defteri aynı digest'i sabitler.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,

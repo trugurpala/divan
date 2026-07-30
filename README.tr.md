@@ -381,3 +381,5 @@ v1 durumu: **7/8** kapı geçti; schema-2 mekanizması hazır, fakat yayımlanm�
 mekanizmanın gerçek makbuzu henüz repoya kaydedilip yeniden doğrulanmadı.
 Checksum yan dosyası indirmeyi korur; geçen v1 kapısı ayrıca incelenmiş release
 runner özetini `registry/v1-gates.json` içinde sabitler ve eşleştirir.
+Önizleme bu özeti önce public GitHub Release API'sinden okur; yayın otoritesi
+doğrulanamazsa proje komutları başlamadan kapalı başarısız olur.

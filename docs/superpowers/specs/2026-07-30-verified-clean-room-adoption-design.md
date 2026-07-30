@@ -1,6 +1,6 @@
 # Verified Clean-Room Adoption Design
 
-**Target:** v0.18.3  
+**Target:** v0.18.3
 **Status:** Approved product direction; written specification awaiting review
 
 ## Purpose
@@ -239,9 +239,8 @@ With `--execute`, Divan:
 8. records exit status, duration class, timeout decision, normalized-output
    digest, and result;
 9. stops scheduling new checks after the first failure;
-10. proves that tracked project source did not change during the checks when
-   Git evidence is available, and otherwise rechecks the bounded project
-   identity inputs;
+10. requires Git and proves that HEAD, index, worktree, and bounded project
+   identity inputs did not change during the checks;
 11. assembles the schema-2 receipt only when all checks pass;
 12. verifies the staged receipt with the public offline verifier;
 13. atomically promotes the staging directory to
@@ -254,6 +253,12 @@ Project checks may create their ordinary ignored test caches or build outputs.
 Divan neither cleans those outputs nor calls them source changes. A tracked
 source/configuration change, project-identity drift, or check that rewrites a
 managed Divan contract fails the proof.
+
+The adjacent checksum sidecar protects download integrity. Before preview,
+Divan also reads the exact `divan-project.pyz` digest from the fixed public
+GitHub Release API for the installed immutable tag. The local runner must match
+that independent release authority. The v1 gate later pins the same reviewed
+digest in `registry/v1-gates.json`.
 
 ## Check Selection
 

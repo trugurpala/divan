@@ -45,11 +45,15 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Execute uses only fixed host-version probes and allowlisted native project
   checks; it never evaluates caller-supplied shell strings, retries failed
   checks, or continues after timeout, cancellation, or source drift.
-- The project runner must match its adjacent release checksum and embedded
-  source identity before planning; execution rebuilds the private plan before
-  launch and rejects Git-tracked source drift.
+- The project runner must match its adjacent checksum, embedded source identity,
+  and the digest read independently from the immutable GitHub Release API
+  before planning; execution rebuilds the private plan before launch and
+  rejects worktree, index, or HEAD drift.
 - Goal-bound checks receive priority inside the eight-check ceiling, and
-  Markdown verification requires the visible summary to be the canonical
+  missing native goal checks now fail closed. Canonical verification also
+  reserves the complete test-class timeout instead of truncating it with a
+  shorter overall workflow budget.
+- Markdown verification requires the visible summary to be the canonical
   rendering of its embedded JSON envelope.
 - A durable staging journal records pending state before each check. Receipt
   files are promoted atomically only after both JSON and Markdown verify

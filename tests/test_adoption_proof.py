@@ -36,6 +36,10 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
             self.fail("adoption_proof module is not implemented")
         return adoption_proof
 
+    @staticmethod
+    def runner_digest(path: pathlib.Path) -> str:
+        return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
     def create_verified_project(
         self,
         root: pathlib.Path,
@@ -101,6 +105,7 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                 "claude-code",
                 "maintainer",
                 runner_path=runner,
+                expected_runner_sha256=self.runner_digest(runner),
             )
 
             self.assertEqual(plan["status"], "ready")
@@ -188,6 +193,41 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
             with self.subTest(command=command):
                 with self.assertRaises(ValueError):
                     module.safe_argv(command)
+
+    def test_release_authority_requires_exact_tag_asset_url_and_digest(
+        self,
+    ) -> None:
+        module = self.require_module()
+        payload = {
+            "tag_name": SOURCE["source_ref"],
+            "draft": False,
+            "assets": [
+                {
+                    "name": "divan-project.pyz",
+                    "browser_download_url": (
+                        "https://github.com/trugurpala/divan/releases/download/"
+                        f"{SOURCE['source_ref']}/divan-project.pyz"
+                    ),
+                    "digest": "sha256:" + "c" * 64,
+                }
+            ],
+        }
+
+        self.assertEqual(
+            module.adoption_runner._release_asset_digest(payload, SOURCE),
+            "sha256:" + "c" * 64,
+        )
+        for key, value in (
+            ("tag_name", "v9.9.9"),
+            ("draft", True),
+            ("assets", []),
+        ):
+            with self.subTest(key=key):
+                forged = {**payload, key: value}
+                with self.assertRaisesRegex(ValueError, "authority"):
+                    module.adoption_runner._release_asset_digest(
+                        forged, SOURCE
+                    )
 
     def test_distinct_project_policy_blocks_complete_and_partial_divan_signatures(
         self,
@@ -311,6 +351,7 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
             root = pathlib.Path(temporary) / "project"
             root.mkdir()
             goal_id, runner = self.create_verified_project(root)
+            original_digest = self.runner_digest(runner)
             checksum = runner.with_name(runner.name + ".sha256")
             checksum.unlink()
             with self.assertRaisesRegex(ValueError, "checksum"):
@@ -331,9 +372,21 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
             checksum.write_text(
                 f"{digest}  {runner.name}\n", encoding="utf-8"
             )
+            with self.assertRaisesRegex(ValueError, "release authority"):
+                module.build_proof_plan(
+                    root,
+                    goal_id,
+                    "codex",
+                    runner_path=runner,
+                    expected_runner_sha256=original_digest,
+                )
             with self.assertRaisesRegex(ValueError, "source identity"):
                 module.build_proof_plan(
-                    root, goal_id, "codex", runner_path=runner
+                    root,
+                    goal_id,
+                    "codex",
+                    runner_path=runner,
+                    expected_runner_sha256=self.runner_digest(runner),
                 )
 
 
@@ -349,6 +402,7 @@ class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
             host,
             "maintainer",
             runner_path=runner,
+            expected_runner_sha256=self.runner_digest(runner),
         )
 
     @staticmethod

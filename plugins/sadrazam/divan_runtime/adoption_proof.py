@@ -265,6 +265,7 @@ def build_proof_plan(
     operator_role: str = "maintainer",
     *,
     runner_path: pathlib.Path | None = None,
+    expected_runner_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Build a complete read-only clean-room proof preview."""
     root = _real_directory(project, "project")
@@ -297,7 +298,11 @@ def build_proof_plan(
     goal_route = _bounded_json(spec_root / "route.json", "goal route")
     checks = select_checks(inspection, goal_route, root)
     candidate = pathlib.Path(sys.argv[0]) if runner_path is None else runner_path
-    resolved_runner, runner_sha256 = adoption_runner.verify(candidate, source)
+    resolved_runner, runner_sha256 = adoption_runner.verify(
+        candidate,
+        source,
+        expected_digest=expected_runner_sha256,
+    )
     public_checks = [
         {
             key: value

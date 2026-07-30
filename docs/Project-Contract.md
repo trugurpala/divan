@@ -149,6 +149,8 @@ is committed and re-verified. The runner and its `.sha256` sidecar must stay
 together, and execution requires a Git repository for tracked-source drift.
 The sidecar proves download integrity; the v1 gate separately pins the reviewed
 release runner digest in `registry/v1-gates.json` and requires an exact match.
+Preview obtains that digest from the fixed public GitHub Release API; if the
+release authority is unavailable or differs, no project command starts.
 
 For public web projects, the read-only static audit is:
 
