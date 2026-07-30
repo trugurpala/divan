@@ -18,6 +18,7 @@ if str(SCRIPTS) not in sys.path:
 
 import host_lifecycle  # noqa: E402
 import bootstrap_contract  # noqa: E402
+import host_profiles  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"
 RUNTIME_CLI = PLUGIN_ROOT / "divan_runtime" / "cli.py"
@@ -182,6 +183,7 @@ def _parser() -> argparse.ArgumentParser:
 
     recover = commands.add_parser("recover", help="recover an interrupted transaction")
     recover.add_argument("transaction", type=pathlib.Path)
+    commands.add_parser("_fallback-remove", help=argparse.SUPPRESS)
     return parser
 
 
@@ -193,6 +195,8 @@ def main(argv: list[str] | None = None) -> int:
             return runtime_cli.main([command, *arguments[1:]])
     parser = _parser()
     options = parser.parse_args(arguments)
+    if options.command == "_fallback-remove":
+        return host_profiles.execute_fallback_remove(ROOT)
     bundled = _bootstrap_identity()
     if (
         bundled is not None

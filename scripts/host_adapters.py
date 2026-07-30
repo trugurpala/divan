@@ -333,7 +333,7 @@ def doctor(
     )
     if transaction is not None:
         next_command = subprocess.list2cmdline(
-            ["python", "scripts/divan.py", "recover", str(transaction)]
+            host_profiles.recovery_command(transaction)
         )
     return {
         "status": status,

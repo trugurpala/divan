@@ -128,7 +128,7 @@ def fallback_command(root: pathlib.Path) -> list[str]:
     return ["bash", str(root / "scripts" / "install_codex.sh")]
 
 
-def rollback_command(root: pathlib.Path) -> list[str]:
+def _fallback_uninstall_command(root: pathlib.Path) -> list[str]:
     if os.name == "nt":
         return [
             "powershell.exe",
@@ -146,6 +146,32 @@ def rollback_command(root: pathlib.Path) -> list[str]:
         "--python",
         sys.executable,
     ]
+
+
+def rollback_command(root: pathlib.Path) -> list[str]:
+    bundled = getattr(sys, "_divan_bootstrap_path", None)
+    if isinstance(bundled, str) and pathlib.Path(bundled).is_file():
+        return [sys.executable, bundled, "_fallback-remove"]
+    return _fallback_uninstall_command(root)
+
+
+def recovery_command(transaction: pathlib.Path) -> list[str]:
+    return [*_cli_prefix(), "recover", str(transaction)]
+
+
+def execute_fallback_remove(root: pathlib.Path) -> int:
+    environment = os.environ.copy()
+    environment["DIVAN_PYTHON"] = sys.executable
+    result = host_probe.run(_fallback_uninstall_command(root), env=environment)
+    if result.stdout:
+        print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+    if result.stderr:
+        print(
+            result.stderr,
+            end="" if result.stderr.endswith("\n") else "\n",
+            file=sys.stderr,
+        )
+    return result.returncode
 
 
 def fallback_plan(options: Any, root: pathlib.Path, cli_status: str) -> dict[str, Any]:

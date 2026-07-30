@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import bootstrap_contract  # noqa: E402
 import host_lifecycle  # noqa: E402
+import host_profiles  # noqa: E402
 
 
 def _contracts() -> tuple[dict[str, object], dict[str, object]]:
@@ -96,6 +97,25 @@ class BootstrapAuthorityTests(unittest.TestCase):
             root = self._root(pathlib.Path(temporary), identity, broken)
             with self.assertRaises(host_lifecycle.InstallError):
                 host_lifecycle._expected_packages(root)
+
+    def test_recovery_and_fallback_removal_keep_the_original_pyz_path(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan authority ") as temporary:
+            bootstrap = pathlib.Path(temporary) / "Divan Bootstrap.pyz"
+            bootstrap.write_bytes(b"fixture")
+            transaction = pathlib.Path(temporary) / "install journal.json"
+            previous = getattr(sys, "_divan_bootstrap_path", None)
+            sys._divan_bootstrap_path = str(bootstrap)
+            try:
+                recovery = host_profiles.recovery_command(transaction)
+                rollback = host_profiles.rollback_command(pathlib.Path(temporary))
+            finally:
+                if previous is None:
+                    del sys._divan_bootstrap_path
+                else:
+                    sys._divan_bootstrap_path = previous
+
+        self.assertEqual(recovery, [sys.executable, str(bootstrap), "recover", str(transaction)])
+        self.assertEqual(rollback, [sys.executable, str(bootstrap), "_fallback-remove"])
 
 
 if __name__ == "__main__":
