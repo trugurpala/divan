@@ -3,6 +3,7 @@
 - Version: v0.18.1
 - Source commit: f367de92e09b4f56e205d7e2883d988b3b4d2797
 - Implementation PR: https://github.com/trugurpala/divan/pull/58
+- Publication-truth PR: https://github.com/trugurpala/divan/pull/59
 - Release: https://github.com/trugurpala/divan/releases/tag/v0.18.1
 - Release workflow: https://github.com/trugurpala/divan/actions/runs/30500376337
 - Evidence date: 2026-07-30
