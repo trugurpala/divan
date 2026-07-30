@@ -127,6 +127,14 @@ class BootstrapRunnerTests(unittest.TestCase):
                     "plugins/sadrazam/divan_runtime/studio/index.html",
                     names,
                 )
+                skill_manifests = [
+                    name
+                    for name in names
+                    if name.startswith("plugins/")
+                    and "/skills/" in name
+                    and name.endswith("/SKILL.md")
+                ]
+                self.assertEqual(len(skill_manifests), 41)
 
     def test_bootstrap_runs_doctor_without_checkout_or_ref(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-bootstrap-") as temporary:

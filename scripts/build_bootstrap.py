@@ -52,6 +52,8 @@ GENERATED_FILES = (
     "divan-bootstrap-catalog.json",
     "divan-bootstrap-source.json",
 )
+MAX_SKILL_FILES = 2_000
+MAX_SKILL_BYTES = 20 * 1024 * 1024
 ENTRYPOINT = """\
 import pathlib
 import runpy
@@ -159,16 +161,53 @@ def _runtime_names(root: pathlib.Path) -> tuple[str, ...]:
     return build_project_runner.runtime_files(runtime)
 
 
+def _skill_entries(
+    root: pathlib.Path,
+    catalog: dict[str, Any],
+) -> dict[str, bytes]:
+    """Return the exact bounded skill payload required by offline fallback."""
+    entries: dict[str, bytes] = {}
+    total_bytes = 0
+    for package_name, package in sorted(catalog["packages"].items()):
+        for skill_name in package["skills"]:
+            skill_root = root / "plugins" / package_name / "skills" / skill_name
+            if not (skill_root / "SKILL.md").is_file():
+                raise ValueError(f"bootstrap skill is missing SKILL.md: {skill_name}")
+            files = sorted(
+                (path for path in skill_root.rglob("*") if path.is_file()),
+                key=lambda path: path.relative_to(root).as_posix(),
+            )
+            if not files:
+                raise ValueError(f"bootstrap skill is empty: {skill_name}")
+            for path in files:
+                name = path.relative_to(root).as_posix()
+                if name in entries:
+                    raise ValueError(f"bootstrap skill file is duplicated: {name}")
+                payload = _trusted_bytes(root, path)
+                entries[name] = payload
+                total_bytes += len(payload)
+                if (
+                    len(entries) > MAX_SKILL_FILES
+                    or total_bytes > MAX_SKILL_BYTES
+                ):
+                    raise ValueError("bootstrap skill payload exceeds safety bounds")
+    return entries
+
+
 def archive_names(root: pathlib.Path = ROOT) -> tuple[str, ...]:
     """Return the exact bounded bootstrap inventory."""
     root = root.resolve()
+    catalog = _catalog(root, _version(root))
     runtime = (
         f"plugins/sadrazam/divan_runtime/{name}"
         for name in _runtime_names(root)
     )
     data = ("plugins/sadrazam/divan_runtime/data/seo-policy.json",)
     scripts = (f"scripts/{name}" for name in (*HOST_FILES, *PLATFORM_FILES))
-    return tuple(sorted({*GENERATED_FILES, *runtime, *data, *scripts}))
+    skills = _skill_entries(root, catalog)
+    return tuple(
+        sorted({*GENERATED_FILES, *runtime, *data, *scripts, *skills})
+    )
 
 
 def _entries(
@@ -192,6 +231,7 @@ def _entries(
     entries["plugins/sadrazam/divan_runtime/data/seo-policy.json"] = (
         _trusted_bytes(root, root / "registry" / "seo-policy.json")
     )
+    entries.update(_skill_entries(root, catalog))
     entries["__main__.py"] = ENTRYPOINT
     entries["VERSION"] = f"{version}\n".encode("utf-8")
     entries["divan-bootstrap-catalog.json"] = (
