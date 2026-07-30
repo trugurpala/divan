@@ -17,11 +17,47 @@
       "resume_from": null,
       "sequence": 1,
       "to_state": "DISCOVERED"
+    },
+    {
+      "evidence": [],
+      "from_state": "DISCOVERED",
+      "hash": "767ea95cfebc464a761cb33e40d0533564de83677e870d7eb54857c54bf4801e",
+      "previous_hash": "85818d3994d0bea008b0169a80ff505d508d48fb3191b62e552bf34236f17db1",
+      "reason": "Hukumdar approved the v0.18.2 Seyir design.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 2,
+      "to_state": "SPECIFIED"
+    },
+    {
+      "evidence": [],
+      "from_state": "SPECIFIED",
+      "hash": "5c341f1b50dfef326131cc682de4650729096d400fcefa8688cff2aaef8da0b9",
+      "previous_hash": "767ea95cfebc464a761cb33e40d0533564de83677e870d7eb54857c54bf4801e",
+      "reason": "The modular implementation and release plan is committed.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 3,
+      "to_state": "PLANNED"
+    },
+    {
+      "evidence": [],
+      "from_state": "PLANNED",
+      "hash": "6cc659c5196c7f7744eb74760b6cdcf7b958592d3e796d7964c93ac58f138c0a",
+      "previous_hash": "5c341f1b50dfef326131cc682de4650729096d400fcefa8688cff2aaef8da0b9",
+      "reason": "Test-first implementation is in progress.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 4,
+      "to_state": "IMPLEMENTING"
     }
   ],
   "goal_id": "goal-cbaf95a83490",
   "intent": "Divan'ı geçmiş GitHub ve kurulum sorunları temizlenmiş, Türkçe ve İngilizce kimliği tutarlı, modüler stdlib çekirdeği korunan ve vibe coder'ın yerel Seyir URL'sinden gerçek ilerlemeyi takip edebildiği kullanıcı dostu v0.18.2 sürümüne ulaştır; temiz kurulum, akıllı timeout, CI, bağımsız inceleme ve canlı yayın kanıtlarını tamamla.",
   "schema_version": 2,
-  "state": "DISCOVERED",
+  "state": "IMPLEMENTING",
   "target": "RELEASED"
 }

@@ -1,10 +1,12 @@
 {
   "active_goal_id": "goal-cbaf95a83490",
   "completed_task_ids": [
-    "task-001"
+    "task-001",
+    "task-002",
+    "task-003"
   ],
-  "current_task_id": "task-002",
-  "next_task_id": "task-003",
-  "receipt_event_hash": "85818d3994d0bea008b0169a80ff505d508d48fb3191b62e552bf34236f17db1",
+  "current_task_id": "task-004",
+  "next_task_id": "task-005",
+  "receipt_event_hash": "6cc659c5196c7f7744eb74760b6cdcf7b958592d3e796d7964c93ac58f138c0a",
   "schema_version": 1
 }
