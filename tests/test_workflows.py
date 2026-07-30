@@ -207,7 +207,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            'divan.pyz" install --host codex --profile auto --execute --json',
+            'divan.pyz" install --host codex --profile auto --execute',
             text,
         )
         self.assertIn('divan.pyz" _fallback-remove', text)

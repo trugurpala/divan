@@ -46,7 +46,7 @@ jobs:
           python scripts/build_bootstrap.py --output "$RUNNER_TEMP/divan.pyz" \
             --source-commit "$(git rev-parse HEAD)"
           python "$RUNNER_TEMP/divan.pyz" doctor --host codex --json
-          python "$RUNNER_TEMP/divan.pyz" install --host codex --profile auto --execute --json \
+          python "$RUNNER_TEMP/divan.pyz" install --host codex --profile auto --execute \
             > "$RUNNER_TEMP/bootstrap-install.json"
           python -c "import json,pathlib; p=json.loads(pathlib.Path(r'$RUNNER_TEMP/bootstrap-install.json').read_text(encoding='utf-8')); assert p['selected_mode']=='verified-skill-fallback' and p['skill_count']==41"
           python -c "import pathlib,os; assert len(list(pathlib.Path(os.environ['CODEX_SKILLS_DIR']).glob('*/SKILL.md')))==41"
