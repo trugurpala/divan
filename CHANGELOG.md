@@ -6,9 +6,19 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
-### Planned
+### Added
 
-- One released clean-room adoption receipt produced by the schema-2 mechanism.
+- A privacy-reviewed schema-2 receipt produced by immutable v0.18.5 on Windows
+  11, Codex `0.146.0`, and a real project distinct from Divan. JSON and Markdown
+  both re-verify offline as `valid-clean-room-adoption`.
+- The machine-backed v1 readiness score now records 8/8 completed gates while
+  keeping the bounded claim separate from independent-user, endorsement,
+  market-adoption, speed, or quality-improvement claims.
+
+### Fixed
+
+- README, Pages, Wiki, roadmap, and progress copy now names v0.18.5 as the
+  latest published release instead of retaining the previous release label.
 
 ## [0.18.5] - 2026-07-30
 

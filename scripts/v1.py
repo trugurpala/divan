@@ -279,14 +279,26 @@ def uret(kok: pathlib.Path = KOK) -> str:
     kalan_satirlari = [f"{sira}. {metin}" for sira, metin in enumerate(kalan, start=1)]
     if not kalan_satirlari:
         kalan_satirlari = ["Bütün v1 kapıları kanıtla geçti."]
+    if gecen == len(kapilar):
+        sonuc = (
+            f"> **Bugünkü sonuç:** {gecen}/{len(kapilar)} kapı kanıtla geçti. "
+            "Bütün v1 hazırlık kapıları tamamlandı. Sekizinci kapı, yayımlanmış "
+            "runner ile makinece doğrulanabilir temiz-proje kanıtına bağlıdır. "
+            "Bu kayıt tek başına pazar benimsenmesi, üçüncü taraf onayı veya "
+            "kalite artışı iddiası değildir."
+        )
+    else:
+        sonuc = (
+            f"> **Bugünkü sonuç:** {gecen}/{len(kapilar)} kapı kanıtla geçti; "
+            f"{hazir} kapının otomasyonu hazır fakat canlı kanıtı henüz kaydedilmedi. "
+            "Bütün kapılar geçmeden Divan v1 veya ‘dünya standardı’ ilan edilmez."
+        )
     satirlar = [
         "# v1 Hazırlık Karnesi",
         "",
         "Hedef sürüm: v1.0.0",
         "",
-        f"> **Bugünkü sonuç:** {gecen}/{len(kapilar)} kapı kanıtla geçti; "
-        f"{hazir} kapının otomasyonu hazır fakat canlı kanıtı henüz kaydedilmedi. "
-        "Bütün kapılar geçmeden Divan v1 veya ‘dünya standardı’ ilan edilmez.",
+        sonuc,
         "",
         "| Kapı | Durum | Kanıt |",
         "|---|---|---|",

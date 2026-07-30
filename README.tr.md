@@ -19,7 +19,7 @@ yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların 
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 
-**Güncel kaynak:** v0.18.5 · **Son yayımlanan:** v0.18.4 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v0.18.5 · **Son yayımlanan:** v0.18.5 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -177,7 +177,7 @@ Eşleşen GitHub Release yayımlandıktan sonra bağımsız kurucuyu ve checksum
 dosyasını indir, bilgisayarında doğrula, yazmayan planı gör ve sonra uygula:
 
 ```powershell
-$tag = "v0.18.2"
+$tag = "v0.18.5"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -381,9 +381,10 @@ Divan'ın `DCS-001`–`DCS-011` arasındaki on bir zorunlu ürün kuralı
 yollar [SUPPORT.md](SUPPORT.md) içindedir. Katkı rehberi:
 [Türkçe](CONTRIBUTING.tr.md) · [English](CONTRIBUTING.en.md).
 
-v1 durumu: **7/8** kapı geçti; schema-2 mekanizması hazır, fakat yayımlanmış
-mekanizmanın gerçek makbuzu henüz repoya kaydedilip yeniden doğrulanmadı.
-Checksum yan dosyası indirmeyi korur; geçen v1 kapısı ayrıca incelenmiş release
-runner özetini `registry/v1-gates.json` içinde sabitler ve eşleştirir.
+v1 hazırlık durumu: **8/8** kapı geçti. Değişmez v0.18.5, Windows 11, Codex ve
+Divan'dan ayrı gerçek bir projede makinece doğrulanabilir bir temiz-proje kanıtı
+üretti; gizlilik incelemesinden geçen makbuz repoya kaydedilip çevrimdışı yeniden
+doğrulandı. Bu sınırlı teknik kanıt; bağımsız kullanıcı sayısı, üçüncü taraf
+onayı, pazar benimsemesi, hız veya kalite artışı iddiası değildir.
 Önizleme bu özeti önce public GitHub Release API'sinden okur; yayın otoritesi
 doğrulanamazsa proje komutları başlamadan kapalı başarısız olur.

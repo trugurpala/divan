@@ -3,10 +3,10 @@
 Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
 runtime değildir. Kendi modüler Divan Engine çekirdeği aynı repoda yaşar. On
 bir zorunlu ürün kuralı [[Topluluk Standartları|Topluluk-Standartlari]]
-sayfasındadır. v1 durumu **7/8** kapıdır; schema-2 temiz-proje mekanizması hazır,
-fakat yayımlanmış mekanizmayla üretilmiş gerçek makbuz beklenmektedir.
+sayfasındadır. v1 hazırlık durumu **8/8** kapıdır; yayımlanmış v0.18.5 ile
+üretilen schema-2 temiz-proje makbuzu repoda ve çevrimdışı doğrulanabilir.
 
-**Son v1 kanıtını kim verebilir?**
+**Sekizinci v1 kapısı nasıl geçti?**
 Kişinin bakımcı veya dış kullanıcı olması teknik sonucu değiştirmez. Divan'dan
 ayrı gerçek projede doğrulanmış hedef için önce yazmayan plan, sonra uygulama
 çalıştırılır:
@@ -22,7 +22,8 @@ python divan-project.pyz adoption prove --project . --goal <goal-id> --host code
 VERIFIED saymaz.
 
 Yalnız `valid-clean-room-adoption` geçerlidir; bu sonuç üçüncü taraf onayı veya
-pazar benimsemesi iddia etmez.
+pazar benimsemesi iddia etmez. Kayıt Windows 11, Codex ve Divan'dan ayrı gerçek
+bir projedeki tek makinece doğrulanmış kullanımı kanıtlar.
 
 **Neden repoları tek tek fork'lamadık?**
 Marketplace tek repo olmak zorunda: `/plugin marketplace add` tek depo okur.

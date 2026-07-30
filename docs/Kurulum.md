@@ -14,7 +14,7 @@ Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checks
 dosyasını indirip doğrula:
 
 ```powershell
-$tag = "v0.18.2"
+$tag = "v0.18.5"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -350,8 +350,9 @@ python divan-project.pyz adoption prove --project . --goal <goal-id> --host code
 İlk komut dosya yazmaz ve subprocess başlatmaz. İkinci komut sabit host sürüm
 probunu ve sınırlı test/regresyon kontrollerini bir kez çalıştırır. Bakımcı ile
 dış kullanıcı aynı teknik sözleşmeye tabidir. Yalnız
-`valid-clean-room-adoption` sonucu v1'e adaydır; gerçek yayımlanmış schema-2
-makbuzu kaydedilene kadar durum **7/8** kalır.
+`valid-clean-room-adoption` sonucu v1'e adaydır. v0.18.5 ile üretilen gerçek
+schema-2 makbuzu kaydedilip yeniden doğrulandığı için v1 hazırlık durumu
+**8/8**'dir.
 `divan-project.pyz.sha256` dosyasını runner ile aynı klasörde tutun. Yürütme,
 Git tarafından izlenen kaynak sapmasını reddedebilmek için bir Git reposu
 gerektirir.

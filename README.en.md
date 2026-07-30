@@ -24,7 +24,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v0.18.5 · **Latest published:** v0.18.4 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.18.5 · **Latest published:** v0.18.5 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -165,7 +165,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v0.18.2"
+$tag = "v0.18.5"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -343,9 +343,10 @@ increase, or “best in the world” status.
 Divan is not affiliated with or endorsed by Anthropic, Claude, OpenAI, or
 Vercel. Product and compatibility names are descriptive only.
 
-The v1 scorecard remains **7/8**: the schema-2 mechanism is ready, but a receipt
-produced by the released mechanism has not yet been committed and re-verified.
-The checksum sidecar protects the download; a passing v1 gate also pins and
-matches the reviewed release runner digest in `registry/v1-gates.json`.
-Preview first reads that digest from the public GitHub Release API and fails
-closed before project commands if the published authority cannot be verified.
+The v1 readiness scorecard is now **8/8**: immutable v0.18.5 produced one
+machine-verifiable clean-room adoption on Windows 11, Codex, and a real external
+project; the privacy-reviewed receipt was committed and re-verified offline.
+This is bounded technical evidence, not an independent-user count, endorsement,
+market-adoption claim, speed gain, or quality win. The checksum sidecar protects
+the download; the v1 gate separately pins and matches the reviewed release
+runner digest in `registry/v1-gates.json`.
