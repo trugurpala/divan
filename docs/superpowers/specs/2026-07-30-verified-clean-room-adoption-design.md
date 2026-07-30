@@ -197,8 +197,8 @@ Both preview and execution:
 6. require a cryptographically valid goal receipt in `VERIFIED`, `RELEASED`,
    or `OBSERVED`;
 7. require at least one hashed goal artifact;
-8. observe the selected supported host's version through a fixed shell-free
-   probe and reject caller-supplied version claims;
+8. validate the selected supported host and plan its fixed shell-free version
+   probe without accepting a caller-supplied version claim;
 9. apply the packaged distinct-project rule and reject the Divan source tree
    itself;
 10. discover project workspaces and commands without executing project code;
@@ -210,9 +210,11 @@ Both preview and execution:
 Without `--execute`, Divan:
 
 - performs no project command;
+- starts no subprocess, including the planned host probe;
 - creates no proof directory, journal, receipt, log, or cache inside the
   project;
 - reports every selected check and timeout;
+- reports the exact fixed host-version probe that execution will run;
 - reports blockers before any mutation;
 - prints the exact execute command.
 
@@ -221,22 +223,24 @@ Without `--execute`, Divan:
 With `--execute`, Divan:
 
 1. re-runs the complete preflight;
-2. compares the new proof plan with the preview inputs where a preview digest
+2. observes the supported host version through the planned fixed shell-free
+   probe and rejects unsafe or ambiguous output;
+3. compares the new proof plan with the preview inputs where a preview digest
    is supplied;
-3. creates an atomic proof staging directory under
+4. creates an atomic proof staging directory under
    `.divan/adoption/.staging/<proof-id>`;
-4. records the pending check intent before each subprocess;
-5. runs each selected check once through the existing bounded executor;
-6. redacts and summarizes output before persistence;
-7. records exit status, duration class, timeout decision, normalized-output
+5. records the pending check intent before each project-check subprocess;
+6. runs each selected check once through the existing bounded executor;
+7. redacts and summarizes output before persistence;
+8. records exit status, duration class, timeout decision, normalized-output
    digest, and result;
-8. stops scheduling new checks after the first failure;
-9. proves that tracked project source did not change during the checks when
+9. stops scheduling new checks after the first failure;
+10. proves that tracked project source did not change during the checks when
    Git evidence is available, and otherwise rechecks the bounded project
    identity inputs;
-10. assembles the schema-2 receipt only when all checks pass;
-11. verifies the staged receipt with the public offline verifier;
-12. atomically promotes the staging directory to
+11. assembles the schema-2 receipt only when all checks pass;
+12. verifies the staged receipt with the public offline verifier;
+13. atomically promotes the staging directory to
     `.divan/adoption/<proof-id>`.
 
 An interrupted run remains resumable or removable through its journal. It is
