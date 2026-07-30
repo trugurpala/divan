@@ -9,7 +9,12 @@ STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/divan-kur.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 
-ARCHIVE_SHA256="local-source"
+ARCHIVE_SHA256="${DIVAN_ARCHIVE_SHA256:-local-source}"
+ARCHIVE_SHA256="${ARCHIVE_SHA256,,}"
+if [[ "$ARCHIVE_SHA256" != "local-source" && ! "$ARCHIVE_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+  echo "HATA: Gecersiz yerel kaynak SHA-256 kaydi: $ARCHIVE_SHA256" >&2
+  exit 1
+fi
 SOURCE_COMMIT="${DIVAN_SOURCE_COMMIT:-}"
 if [[ -n "${DIVAN_SOURCE_DIR:-}" ]]; then
   SOURCE="$DIVAN_SOURCE_DIR"

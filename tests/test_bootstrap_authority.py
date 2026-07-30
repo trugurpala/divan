@@ -121,6 +121,8 @@ class BootstrapAuthorityTests(unittest.TestCase):
         identity, catalog = _contracts()
         with tempfile.TemporaryDirectory(prefix="divan authority ") as temporary:
             root = self._root(pathlib.Path(temporary), identity, catalog)
+            bootstrap = pathlib.Path(temporary) / "divan.pyz"
+            bootstrap.write_bytes(b"standalone fixture")
             options = type(
                 "Options",
                 (),
@@ -129,12 +131,23 @@ class BootstrapAuthorityTests(unittest.TestCase):
                     "ref": identity["source_ref"],
                 },
             )()
-
-            environment = host_profiles._fallback_environment(options, root)
+            previous = getattr(sys, "_divan_bootstrap_path", None)
+            sys._divan_bootstrap_path = str(bootstrap)
+            try:
+                environment = host_profiles._fallback_environment(options, root)
+            finally:
+                if previous is None:
+                    del sys._divan_bootstrap_path
+                else:
+                    sys._divan_bootstrap_path = previous
 
         self.assertEqual(environment["DIVAN_SOURCE_DIR"], str(root.resolve()))
         self.assertEqual(environment["DIVAN_SOURCE_COMMIT"], identity["source_commit"])
         self.assertEqual(environment["DIVAN_REF"], identity["source_ref"])
+        self.assertEqual(
+            environment["DIVAN_ARCHIVE_SHA256"],
+            hashlib.sha256(b"standalone fixture").hexdigest(),
+        )
 
 
 if __name__ == "__main__":
