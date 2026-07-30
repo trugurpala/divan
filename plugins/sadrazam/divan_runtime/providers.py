@@ -21,7 +21,7 @@ from urllib.request import (
     build_opener,
 )
 
-from . import execution, goals, project_os, receipts, timeouts
+from . import execution, goals, project_os, receipts, seyir_state, timeouts
 
 
 class ProviderCapabilityV1(dict[str, Any]):
@@ -118,6 +118,7 @@ MUTABLE_RESOURCE_IDS = {"head", "latest", "main", "master", "preview", "producti
 PROJECT_STATE_FILES = {
     ".divan/PROJECT_RULES.md",
     ".divan/config.json",
+    ".divan/state/seyir.json",
     ".divan/waivers.json",
 }
 MAX_MANAGED_FILES = 128
@@ -276,7 +277,11 @@ def _valid_project_state_file(path: pathlib.Path, relative: str) -> bool:
         content = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError):
         return False
-    root = path.parents[1]
+    root = (
+        path.parents[2]
+        if relative == ".divan/state/seyir.json"
+        else path.parents[1]
+    )
     if relative == ".divan/PROJECT_RULES.md":
         config, errors = project_os._load_config(root)
         if config is None or errors:
@@ -286,6 +291,12 @@ def _valid_project_state_file(path: pathlib.Path, relative: str) -> bool:
     if relative == ".divan/config.json":
         _, errors = project_os._load_config(root)
         return not errors
+    if relative == ".divan/state/seyir.json":
+        try:
+            seyir_state.load(root)
+        except ValueError:
+            return False
+        return True
     _, errors = project_os._load_waivers(root)
     return not errors
 
