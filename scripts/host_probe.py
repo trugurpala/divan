@@ -42,6 +42,18 @@ def _os_error_status(exc: OSError) -> str:
     return "not-executable"
 
 
+def _windows_search_path(
+    command: str,
+    directories: list[str],
+) -> str | None:
+    """Resolve Windows launchers without applying POSIX executable-bit rules."""
+    for directory in directories:
+        candidate = pathlib.Path(directory) / command
+        if candidate.is_file():
+            return str(candidate)
+    return None
+
+
 def resolve_executable(
     command: str,
     environment: Mapping[str, str] | None = None,
@@ -58,13 +70,6 @@ def resolve_executable(
     if suffix:
         if suffix not in _WINDOWS_SUFFIXES:
             return None
-        resolved = shutil.which(command, path=active.get("PATH"))
-        if (
-            resolved
-            and pathlib.Path(resolved).suffix.casefold() in _WINDOWS_SUFFIXES
-        ):
-            return resolved
-        return None
     directories = [
         item for item in active.get("PATH", "").split(os.pathsep) if item
     ]
@@ -73,9 +78,10 @@ def resolve_executable(
         npm_home = str(pathlib.Path(appdata) / "npm")
         if npm_home not in directories:
             directories.append(npm_home)
-    search_path = os.pathsep.join(directories)
+    if suffix:
+        return _windows_search_path(command, directories)
     for extension in _WINDOWS_SUFFIXES:
-        resolved = shutil.which(f"{command}{extension}", path=search_path)
+        resolved = _windows_search_path(f"{command}{extension}", directories)
         if resolved is not None:
             return resolved
     return None
