@@ -81,6 +81,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
+- **v0.18.2 ✓** Local candidate / publication pending: Yerel Seyir, tek dosyalık
+  deterministik `divan.pyz` temiz-host kurucusu, kanıta dayalı akıllı timeout,
+  iki kanıtlı düzeltmeden sonra devre kesici, güvenli Windows `.cmd` çözümleme
+  ve iki dilli kamusal yüzeyler tamamlandı. Çekirdek dokuz modül ve stdlib-only
+  kaldı; bağımsız inceleme ile GitHub yayın kapıları sıradaki aşamadır.
 - Issue #34 bağımsız kullanıcı gerektiren ayrı v1 kapısı olarak kalır.
 
 ### Yayımlanan temel

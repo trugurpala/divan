@@ -8,8 +8,55 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ### Planned
 
-- Native host adapters, clean-host canaries, independent adoption evidence,
-  and reproducible quality measurements.
+- More verified native host adapters and independent adoption evidence.
+
+## [0.18.2] - 2026-07-30
+
+### Added
+
+- Seyir, a bilingual read-only local progress page backed by the active Divan
+  goal, task graph, Git state, checks, and receipt evidence.
+- A separate deterministic `divan.pyz` clean-host bootstrap that can diagnose
+  Claude Code and Codex without a repository checkout or a manually supplied
+  release ref.
+- Evidence-backed timeout classes, packaged benchmark data, one-shot command
+  execution, and a CI circuit breaker that blocks after two distinct
+  evidence-backed fixes repeat the same failure fingerprint.
+
+### Changed
+
+- Goal execution records the active, completed, and next task so a new session
+  and Seyir can resume from verified state rather than chat history.
+- Windows host discovery prefers safe `.cmd`/`.exe` shims, searches the npm
+  profile directory, and never selects a PowerShell `.ps1` shim.
+- English and Turkish public surfaces now explain the same product identity,
+  local progress path, installation boundary, and lifecycle.
+- The immutable release workflow now builds, checksums, describes in SPDX,
+  attests, publishes, downloads, and byte-compares seven assets, including the
+  clean-host bootstrap and its checksum.
+
+### Safety
+
+- Seyir binds only to loopback, uses an unguessable session capability, removes
+  the capability from the visible URL, performs no mutation, and fails closed
+  on stale or ambiguous evidence.
+- The bootstrap is locked to its canonical source, exact release tag, exact
+  source commit, five-package catalog digest, and 41-skill inventory.
+- Bootstrap recovery commands retain the original `.pyz` path after temporary
+  extraction ends; alternate remote or local sources are rejected before host
+  mutation.
+- Timeout expiry never retries mutation automatically, and raw failure text or
+  secrets are not persisted in the CI retry ledger.
+
+### Verification
+
+- The clean Windows candidate passed 642 tests with 14 expected
+  platform-specific skips.
+- Bootstrap builds are byte-identical with a sorted, fixed-timestamp,
+  allowlisted inventory; repo-free doctor, bundled authority, durable recovery,
+  Windows shim resolution, timeout policy, and circuit-breaker tests pass.
+- The nine-module stdlib-only runtime remains intact and the publication
+  manifest tracks 212 synchronized surfaces before final release preparation.
 
 ## [0.18.1] - 2026-07-30
 
