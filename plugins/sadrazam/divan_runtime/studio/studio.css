@@ -382,6 +382,11 @@ dd {
       radial-gradient(circle at top right, rgba(210, 167, 85, 0.1), transparent 32rem),
       var(--canvas);
   }
+
+  .phase-rail,
+  .technical-grid div {
+    background: var(--surface);
+  }
 }
 
 @media (max-width: 700px) {

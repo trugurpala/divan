@@ -18,6 +18,19 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-202607
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
+## Kurulumdan sonra yerel Seyir
+
+İzlemek istediğiniz proje klasöründe:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Divan işletim sisteminden boş bir port ister, çalışan adresi terminale yazar ve
+`--open` ile aynı adresi açar. Sunucu yalnız `127.0.0.1` üzerinde, salt okunur
+ve geçici çalışır; `Ctrl+C` ile kapanır. Bulut servisi, veritabanı veya API
+anahtarı kullanılmaz.
+
 ## Codex Desktop için tek komutluk güvenli seçim
 
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:

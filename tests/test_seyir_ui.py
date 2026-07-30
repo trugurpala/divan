@@ -31,7 +31,7 @@ class SeyirUiTests(unittest.TestCase):
         script = read("studio.js")
 
         self.assertIn("window.location.hash.slice(1)", script)
-        self.assertIn('history.replaceState(null, "", window.location.pathname)', script)
+        self.assertNotIn("history.replaceState", script)
         self.assertIn('"X-Divan-Session": token', script)
         self.assertIn("textContent", script)
         self.assertNotIn("innerHTML", script)
@@ -49,6 +49,12 @@ class SeyirUiTests(unittest.TestCase):
         self.assertIn("@media (max-width: 480px)", stylesheet)
         self.assertIn("@media (prefers-reduced-motion: reduce)", stylesheet)
         self.assertIn("color-scheme: light dark", stylesheet)
+        dark_block = stylesheet.split(
+            "@media (prefers-color-scheme: dark)",
+            maxsplit=1,
+        )[1]
+        self.assertIn(".phase-rail", dark_block)
+        self.assertIn("background: var(--surface)", dark_block)
 
     def test_interface_has_five_named_phases_and_non_color_status_text(self) -> None:
         document = read("index.html")

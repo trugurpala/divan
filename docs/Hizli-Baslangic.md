@@ -13,6 +13,18 @@ günlük yerine işe başlarken ve anlamlı aşama değişimlerinde ne yaptığ�
 neden önemli olduğunu ve sırada ne bulunduğunu kısa biçimde söylemeye
 yönlendirir.
 
+## Yerel Seyir ekranını aç
+
+Divan'ın ne yaptığını tarayıcıda sade biçimde izlemek için:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Komut kullanılabilir bir portu kendisi seçer ve gerçek adresi yazdırır. Seyir
+salt okunurdur, yalnız `127.0.0.1` üzerinde çalışır ve `Ctrl+C` ile kapanır.
+Sabit bir örnek URL'yi açmak yerine her zaman komutun ürettiği adresi kullan.
+
 ## 1. Beş dakikalık güvenli yolu çalıştır
 
 Aşağıdaki örnekler Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan

@@ -120,6 +120,20 @@ goals can be archived, and a privacy-bounded adoption receipt can be exported
 without exposing usernames, absolute paths, remotes, secrets, or unrelated
 plugins. Owner-canary evidence never closes the independent-adoption gate.
 
+## Follow progress locally
+
+Seyir turns Divan's existing goal, task, Git, check, and receipt evidence into a
+calm local page. It is read-only, uses no cloud service or API key, and binds
+only to `127.0.0.1`. Start it from the project you want to follow:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Divan selects a free port, prints the exact working address, and opens the same
+address when `--open` is present. The address is temporary; stop it with
+`Ctrl+C`. Do not reuse an example port from documentation.
+
 ## Install
 
 The commands below pin Current source. If Current source differs from Latest

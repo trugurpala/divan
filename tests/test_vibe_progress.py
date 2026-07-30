@@ -109,6 +109,14 @@ class VibeProgressContractTests(unittest.TestCase):
         self.assertIn("gerçek-ajan A/B sonucu", value_guide)
         self.assertEqual(pages, site)
         self.assertIn("İlerleme dili", pages)
+        for name, surface in (
+            ("readme-en", readme_en),
+            ("readme-tr", readme_tr),
+            ("value-guide", value_guide),
+        ):
+            with self.subTest(name=name):
+                self.assertIn("scripts/divan.py status", surface)
+                self.assertNotIn("127.0.0.1:49152", surface)
         current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         progress = (ROOT / ".divan" / "progress.md").read_text(encoding="utf-8")
         prefix = "- Latest published release: v"

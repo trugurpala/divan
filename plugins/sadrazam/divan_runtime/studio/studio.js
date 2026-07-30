@@ -1,7 +1,6 @@
 "use strict";
 
 const token = window.location.hash.slice(1);
-history.replaceState(null, "", window.location.pathname);
 
 const phaseOrder = ["FERMAN", "PLAN", "ICRA", "TEFTIS", "YAYIN"];
 let copy = {};

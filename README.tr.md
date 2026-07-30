@@ -132,6 +132,20 @@ Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
 
 Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-claude-repo-kurasyonu.md).
 
+## İlerlemeyi yerelde izle
+
+Seyir; Divan'ın mevcut hedef, görev, Git, kontrol ve makbuz kanıtını sakin bir
+yerel sayfada gösterir. Salt okunurdur, bulut servisi veya API anahtarı
+kullanmaz ve yalnız `127.0.0.1` adresine bağlanır. İzlemek istediğin projede:
+
+```powershell
+python scripts/divan.py status --project . --open --lang auto
+```
+
+Divan boş bir port seçer, çalışan adresin tamamını terminale yazar ve `--open`
+varsa aynı adresi açar. Adres geçicidir; `Ctrl+C` ile kapatılır. Belgelerdeki
+örnek bir portu yeniden kullanma.
+
 ## Kurulum
 
 Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
