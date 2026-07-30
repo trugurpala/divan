@@ -1,7 +1,9 @@
 """One-shot execution and sealing for a precomputed clean-room proof plan."""
 from __future__ import annotations
 
+import os
 import pathlib
+import shutil
 from collections.abc import Callable
 from datetime import datetime
 from typing import Any, cast
@@ -188,6 +190,22 @@ def _initial_journal(plan: dict[str, Any], host: str) -> dict[str, Any]:
     }
 
 
+def _resolved_host_probe_command(
+    host: str,
+    *,
+    platform: str = os.name,
+    which: Callable[[str], str | None] = shutil.which,
+) -> tuple[str, ...]:
+    command = common.QUALIFYING_HOSTS[host]
+    if platform != "nt":
+        return command
+    executable, *arguments = command
+    for suffix in (".cmd", ".exe"):
+        if resolved := which(executable + suffix):
+            return (resolved, *arguments)
+    return command
+
+
 def _run_host_probe(
     plan: dict[str, Any],
     journal: dict[str, Any],
@@ -196,7 +214,7 @@ def _run_host_probe(
 ) -> str | dict[str, Any]:
     root = plan["_private"]["root"]
     result = runner(
-        common.QUALIFYING_HOSTS[host],
+        _resolved_host_probe_command(host),
         timeouts.resolve_default("fast-check"),
         mutating=False,
         cwd=str(root),
