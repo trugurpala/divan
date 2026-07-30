@@ -45,8 +45,13 @@ Versioning while the public API remains in initial development (`0.y.z`).
   debt was removed by separating host options and human output from execution.
 - The isolated Windows install/remove canary produced 41 verified Divan skills,
   preserved an unrelated skill, and restored a quarantined collision.
-- GitHub CI, immutable Release assets, attestations, the checksum-backed remote
-  auto-install canary, and live Pages/Wiki readback remain publication gates.
+- All nine main/publication workflows passed. The immutable Release, five
+  downloaded assets, checksum manifests, SPDX 2.3 SBOM, and strict SLSA
+  verification were read back successfully.
+- A checksum-backed remote Windows auto-install canary discovered all 41
+  skills in a fresh process, preserved an unrelated skill, and removed only
+  Divan-owned files during rollback. Pages/Wiki publication truth is recorded
+  in the immutable release evidence.
 
 ## [0.18.0] - 2026-07-29
 
