@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import locale
 import os
 import pathlib
 import string
@@ -58,6 +59,8 @@ def load_messages(directory: pathlib.Path) -> dict[str, dict[str, str]]:
 def resolve_language(
     requested: str | None,
     environment: Mapping[str, str] | None = None,
+    *,
+    system_locale: str | None = None,
 ) -> str:
     """Resolve an explicit or bounded environment language."""
     value = "auto" if requested is None else requested.casefold()
@@ -66,10 +69,22 @@ def resolve_language(
     if value != "auto":
         raise ValueError("language must be auto, en, or tr")
     source = os.environ if environment is None else environment
-    observed = " ".join(
-        source.get(name, "") for name in ("LC_ALL", "LC_MESSAGES", "LANG")
-    ).casefold()
-    return "tr" if observed.startswith("tr") or " tr_" in observed else "en"
+    observed_values = [
+        source.get(name, "").strip().casefold()
+        for name in ("LC_ALL", "LC_MESSAGES", "LANG")
+    ]
+    if any(item.startswith("tr") for item in observed_values):
+        return "tr"
+    neutral = {"", "c", "c.utf-8", "c_utf-8", "posix"}
+    if any(item not in neutral for item in observed_values):
+        return "en"
+    fallback = system_locale
+    if fallback is None and environment is None:
+        try:
+            fallback = locale.getlocale()[0]
+        except (ValueError, TypeError):
+            fallback = None
+    return "tr" if str(fallback or "").casefold().startswith("tr") else "en"
 
 
 def message(

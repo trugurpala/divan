@@ -26,6 +26,15 @@ class LocaleTests(unittest.TestCase):
         catalog = module.load_messages(RUNTIME)
 
         self.assertIn("progress.current_task", catalog)
+        for key in (
+            "navigation.skip",
+            "navigation.progress",
+            "progress.summary",
+            "progress.live_summary",
+            "technical.tasks",
+            "connection.missing_capability",
+        ):
+            self.assertIn(key, catalog)
         for key, translations in catalog.items():
             with self.subTest(key=key):
                 self.assertEqual(set(translations), {"en", "tr"})
@@ -48,6 +57,14 @@ class LocaleTests(unittest.TestCase):
             "en",
         )
         self.assertEqual(module.resolve_language(None, {}), "en")
+        self.assertEqual(
+            module.resolve_language(
+                "auto",
+                {"LANG": "C.UTF-8"},
+                system_locale="tr_TR",
+            ),
+            "tr",
+        )
         with self.assertRaisesRegex(ValueError, "language must be auto, en, or tr"):
             module.resolve_language("de")
 

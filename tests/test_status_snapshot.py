@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -132,6 +133,35 @@ class StatusSnapshotTests(unittest.TestCase):
 
         self.assertEqual(module.snapshot_etag(first), module.snapshot_etag(second))
         self.assertNotEqual(module.snapshot_etag(second), module.snapshot_etag(changed))
+
+    def test_git_probe_disables_locks_fsmonitor_and_interactive_stdin(self) -> None:
+        module = load_status()
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="main\n",
+            stderr="",
+        )
+        with mock.patch.object(
+            module.subprocess,
+            "run",
+            return_value=completed,
+        ) as run:
+            value = module._git_value(ROOT, ["branch", "--show-current"])
+
+        self.assertEqual(value, "main")
+        arguments = run.call_args.args[0]
+        self.assertIn("core.fsmonitor=false", arguments)
+        self.assertEqual(run.call_args.kwargs["env"]["GIT_OPTIONAL_LOCKS"], "0")
+        self.assertIs(run.call_args.kwargs["stdin"], subprocess.DEVNULL)
+
+    def test_runtime_version_uses_the_bundled_identity_file(self) -> None:
+        module = load_status()
+        with tempfile.TemporaryDirectory(prefix="divan-version-") as temporary:
+            runtime = pathlib.Path(temporary)
+            (runtime / "version.txt").write_text("0.18.2\n", encoding="utf-8")
+
+            self.assertEqual(module._version(runtime), "0.18.2")
 
 
 if __name__ == "__main__":

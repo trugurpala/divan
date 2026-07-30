@@ -1,10 +1,23 @@
 "use strict";
 
-const token = window.location.hash.slice(1);
+const CAPABILITY_KEY = "divan-seyir-capability";
+const STALE_AFTER_MS = 10000;
+const fragmentToken = window.location.hash.slice(1);
+let token = fragmentToken;
+try {
+  if (fragmentToken) sessionStorage.setItem(CAPABILITY_KEY, fragmentToken);
+  else token = sessionStorage.getItem(CAPABILITY_KEY) ?? "";
+} catch {
+  token = fragmentToken;
+}
+if (fragmentToken) {
+  history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+}
 
 const phaseOrder = ["FERMAN", "PLAN", "ICRA", "TEFTIS", "YAYIN"];
 let copy = {};
 let currentEtag = null;
+let lastSuccessfulAt = 0;
 
 function setText(id, value) {
   const node = document.getElementById(id);
@@ -65,8 +78,18 @@ function renderLabels() {
     "commit-label": "technical.commit",
     "changed-label": "technical.changed",
     "evidence-label": "technical.evidence",
+    "task-list-label": "technical.tasks",
+    "skip-link": "navigation.skip",
   };
   for (const [id, key] of Object.entries(labels)) setText(id, translated(key));
+  document.getElementById("phase-rail").setAttribute(
+    "aria-label",
+    translated("navigation.progress"),
+  );
+  document.getElementById("progress-summary").setAttribute(
+    "aria-label",
+    translated("progress.summary"),
+  );
   document.title = translated("app.title", "Divan Seyir");
   for (const phase of phaseOrder) {
     const item = document.querySelector(`[data-phase="${phase}"]`);
@@ -138,6 +161,15 @@ function render(snapshot) {
     "next-action",
     snapshot.next_action ?? translated("progress.no_next_action"),
   );
+  setText(
+    "progress-announcer",
+    format(translated("progress.live_summary"), {
+      complete,
+      total: snapshot.tasks.length,
+      current: snapshot.current.task ?? translated("progress.no_current_task"),
+      next: snapshot.next_action ?? translated("progress.no_next_action"),
+    }),
+  );
 
   setText("branch", snapshot.project.branch);
   setText("commit", snapshot.project.head);
@@ -165,32 +197,63 @@ function render(snapshot) {
   }
 
   renderPhases(snapshot);
+  markConnected();
+}
+
+function markConnected() {
+  lastSuccessfulAt = Date.now();
   const connection = document.getElementById("connection-state");
   connection.dataset.state = "connected";
   setText("connection-label", translated("connection.connected"));
 }
 
+function markFailure(error) {
+  const connection = document.getElementById("connection-state");
+  const unauthorized = error.message === "unauthorized";
+  if (unauthorized) {
+    try {
+      sessionStorage.removeItem(CAPABILITY_KEY);
+    } catch {
+      // The page remains safely unauthorized when storage is unavailable.
+    }
+  }
+  const stale = !unauthorized && lastSuccessfulAt > 0 &&
+    Date.now() - lastSuccessfulAt >= STALE_AFTER_MS;
+  connection.dataset.state = stale ? "stale" : "disconnected";
+  const key = unauthorized ? "connection.unauthorized" :
+    stale ? "progress.stale" : "connection.disconnected";
+  setText(
+    "connection-label",
+    translated(key, "The local connection was interrupted."),
+  );
+}
+
 async function refresh() {
   if (!token) {
     document.getElementById("connection-state").dataset.state = "disconnected";
-    setText("connection-label", "Missing session capability");
+    setText(
+      "connection-label",
+      translated(
+        "connection.missing_capability",
+        "This local session link is incomplete.",
+      ),
+    );
     return;
   }
   const headers = {"X-Divan-Session": token};
   if (currentEtag) headers["If-None-Match"] = currentEtag;
   try {
     const response = await fetch("/api/status", {cache: "no-store", headers});
-    if (response.status === 304) return;
+    if (response.status === 304) {
+      markConnected();
+      return;
+    }
     if (response.status === 401) throw new Error("unauthorized");
     if (!response.ok) throw new Error(`status ${response.status}`);
     currentEtag = response.headers.get("ETag");
     render(await response.json());
   } catch (error) {
-    const connection = document.getElementById("connection-state");
-    connection.dataset.state = "disconnected";
-    const key = error.message === "unauthorized" ?
-      "connection.unauthorized" : "connection.disconnected";
-    setText("connection-label", translated(key, "The local connection was interrupted."));
+    markFailure(error);
   }
 }
 

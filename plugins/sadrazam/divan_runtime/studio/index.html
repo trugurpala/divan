@@ -9,7 +9,7 @@
     <script src="/session/studio.js" defer></script>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to progress</a>
+    <a class="skip-link" id="skip-link" href="#main-content">Skip to progress</a>
     <header class="masthead">
       <div class="brand">
         <span class="brand-mark" aria-hidden="true">D</span>
@@ -33,7 +33,7 @@
         <p class="status-pill" id="goal-status">Pending</p>
       </section>
 
-      <nav class="phase-rail" aria-label="Divan progress">
+      <nav class="phase-rail" id="phase-rail" aria-label="Divan progress">
         <ol>
           <li data-phase="FERMAN">
             <span class="phase-index">1</span>
@@ -63,7 +63,7 @@
         </ol>
       </nav>
 
-      <section class="answer-grid" aria-label="Progress summary">
+      <section class="answer-grid" id="progress-summary" aria-label="Progress summary">
         <article class="answer-card answer-card--primary">
           <p class="question" id="current-task-label">What is happening now?</p>
           <p class="answer" id="current-task">—</p>
@@ -85,6 +85,7 @@
           <p class="answer" id="next-action">—</p>
         </article>
       </section>
+      <p class="visually-hidden" id="progress-announcer" aria-live="polite"></p>
 
       <details class="technical" id="technical-details">
         <summary id="technical-title">Technical details</summary>

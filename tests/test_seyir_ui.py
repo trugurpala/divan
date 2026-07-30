@@ -20,6 +20,7 @@ class SeyirUiTests(unittest.TestCase):
 
         self.assertEqual(document.count("<main"), 1)
         self.assertIn('aria-live="polite"', document)
+        self.assertIn('id="progress-announcer"', document)
         self.assertIn('id="connection-state"', document)
         self.assertIn('id="goal-title"', document)
         self.assertIn('id="current-task"', document)
@@ -31,12 +32,25 @@ class SeyirUiTests(unittest.TestCase):
         script = read("studio.js")
 
         self.assertIn("window.location.hash.slice(1)", script)
-        self.assertNotIn("history.replaceState", script)
+        self.assertIn("sessionStorage.setItem", script)
+        self.assertIn("sessionStorage.getItem", script)
+        self.assertIn("sessionStorage.removeItem", script)
+        self.assertIn("history.replaceState", script)
         self.assertIn('"X-Divan-Session": token', script)
         self.assertIn("textContent", script)
         self.assertNotIn("innerHTML", script)
         self.assertNotIn("document.write", script)
         self.assertNotIn("eval(", script)
+
+    def test_unchanged_poll_is_a_successful_heartbeat_and_staleness_is_visible(
+        self,
+    ) -> None:
+        script = read("studio.js")
+
+        self.assertIn("response.status === 304", script)
+        self.assertIn("markConnected()", script)
+        self.assertIn('"progress.stale"', script)
+        self.assertIn("STALE_AFTER_MS", script)
 
     def test_ui_supports_small_screens_focus_and_reduced_motion(self) -> None:
         document = read("index.html")
@@ -64,6 +78,13 @@ class SeyirUiTests(unittest.TestCase):
                 self.assertIn(f'data-phase="{phase}"', document)
         self.assertIn('class="phase-state"', document)
         self.assertIn('id="goal-status"', document)
+        for identifier in (
+            "skip-link",
+            "phase-rail",
+            "progress-summary",
+            "task-list-label",
+        ):
+            self.assertIn(f'id="{identifier}"', document)
 
 
 if __name__ == "__main__":

@@ -50,6 +50,7 @@ RUNTIME_FILES = (
     "studio/index.html",
     "studio/studio.css",
     "studio/studio.js",
+    "version.txt",
     "workflows.json",
 )
 
@@ -160,6 +161,10 @@ class ProjectRunnerTests(unittest.TestCase):
                 self.assertIn("divan_runtime/studio/index.html", names)
                 self.assertIn("divan_runtime/studio/studio.css", names)
                 self.assertIn("divan_runtime/studio/studio.js", names)
+                self.assertEqual(
+                    archive.read("divan_runtime/version.txt").decode("utf-8").strip(),
+                    CURRENT_VERSION,
+                )
 
     def test_dirty_tree_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:

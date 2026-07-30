@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime
 import hashlib
 import json
+import os
 import pathlib
 import subprocess
 from collections.abc import Mapping
@@ -31,7 +32,18 @@ def _runtime_root() -> pathlib.Path:
     return pathlib.Path(__file__).resolve().parents[3]
 
 
-def _version() -> str:
+def _version(runtime_directory: pathlib.Path | None = None) -> str:
+    runtime = (
+        pathlib.Path(__file__).resolve().parent
+        if runtime_directory is None
+        else pathlib.Path(runtime_directory)
+    )
+    try:
+        bundled = (runtime / "version.txt").read_text(encoding="utf-8").strip()
+    except OSError:
+        bundled = ""
+    if bundled:
+        return bundled
     try:
         value = (_runtime_root() / "VERSION").read_text(encoding="utf-8").strip()
     except OSError:
@@ -45,13 +57,17 @@ def _safe_text(value: Any) -> str:
 
 def _git_value(root: pathlib.Path, arguments: list[str]) -> str | None:
     try:
+        environment = os.environ.copy()
+        environment["GIT_OPTIONAL_LOCKS"] = "0"
         completed = subprocess.run(
-            ["git", "-C", str(root), *arguments],
+            ["git", "-c", "core.fsmonitor=false", "-C", str(root), *arguments],
             check=False,
             capture_output=True,
+            stdin=subprocess.DEVNULL,
             text=True,
             encoding="utf-8",
             errors="replace",
+            env=environment,
             timeout=GIT_TIMEOUT_SECONDS,
         )
     except (OSError, subprocess.TimeoutExpired):

@@ -143,6 +143,30 @@
     "en": "Evidence",
     "tr": "Kanıt"
   },
+  "technical.tasks": {
+    "en": "Tasks",
+    "tr": "Görevler"
+  },
+  "navigation.skip": {
+    "en": "Skip to progress",
+    "tr": "İlerlemeye geç"
+  },
+  "navigation.progress": {
+    "en": "Divan progress",
+    "tr": "Divan ilerlemesi"
+  },
+  "progress.summary": {
+    "en": "Progress summary",
+    "tr": "İlerleme özeti"
+  },
+  "progress.live_summary": {
+    "en": "{complete} of {total} tasks complete. Current: {current}. Next: {next}.",
+    "tr": "{total} görevin {complete} tanesi tamamlandı. Şu an: {current}. Sırada: {next}."
+  },
+  "connection.missing_capability": {
+    "en": "This local session link is incomplete.",
+    "tr": "Bu yerel oturum bağlantısı eksik."
+  },
   "server.stop": {
     "en": "Press Ctrl+C in the terminal to stop Seyir.",
     "tr": "Seyir'i durdurmak için terminalde Ctrl+C'ye bas."
