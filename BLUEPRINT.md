@@ -81,15 +81,18 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v0.18.2 ✓** Local candidate / publication pending: Yerel Seyir, tek dosyalık
-  deterministik `divan.pyz` temiz-host kurucusu, kanıta dayalı akıllı timeout,
-  iki kanıtlı düzeltmeden sonra devre kesici, güvenli Windows `.cmd` çözümleme
-  ve iki dilli kamusal yüzeyler tamamlandı. Çekirdek dokuz modül ve stdlib-only
-  kaldı; bağımsız inceleme ile GitHub yayın kapıları sıradaki aşamadır.
 - Issue #34 bağımsız kullanıcı gerektiren ayrı v1 kapısı olarak kalır.
 
 ### Yayımlanan temel
 
+- **v0.18.2 ✓** Published Seyir and clean-host bootstrap release: bilingual
+  loopback-only progress UI, deterministic single-file `divan.pyz`, exact
+  source/catalog authority, evidence-backed timeouts, repeated-failure circuit
+  breaker, and portable Windows launcher resolution. PR #60, all required
+  main/publication workflows, immutable tag/Release, seven checksummed and
+  attested assets, SPDX 2.3 SBOM, Pages, Wiki, and Linux/macOS/Windows lifecycle
+  canaries are bound in the v0.18.2 evidence. The core remains nine-module and
+  stdlib-only.
 - **v0.18.1 ✓** Published Codex Desktop auto-install release: explicit `auto`
   profile, safe CLI diagnosis, honest native/fallback capability boundary, and
   checksum-backed 41-skill verification. PR #58, all nine main/publication

@@ -25,15 +25,14 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v0.18.2 · **Son yayımlanan:** v0.18.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.18.2 · **Son yayımlanan:** v0.18.2 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
-v0.18.1, v0.18.0'ın Nizâm-ı Sefer planlama zekâsını ve v0.17.1'in vibe coder
-ilerleme sözleşmesini korur. Codex Desktop'ta açıkça seçilen `auto` profili,
-native CLI çalışmıyorsa sınırlarını dürüstçe gösteren, checksum ile doğrulanmış
-41-skill yolunu seçebilir; ikinci ürün, repo veya üçüncü taraf runtime
-oluşturmaz.
+v0.18.2, önceki planlama ve Codex Desktop kurulum sınırlarını korurken yerel
+Seyir ekranını, tek dosyalık doğrulanabilir `divan.pyz` kurucusunu, kanıta
+dayalı timeout politikasını ve Linux/macOS/Windows yaşam döngüsü kanıtını
+yayımlar. İkinci ürün, repo veya üçüncü taraf runtime oluşturmaz.
 
 ## Fermanını seç
 

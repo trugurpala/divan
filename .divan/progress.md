@@ -4,24 +4,22 @@ Son güncelleme: 2026-07-30
 
 ## Yayın durumu
 
-- Latest published release: v0.18.1
-- Published commit: f367de92e09b4f56e205d7e2883d988b3b4d2797
-- Publication evidence: .divan/evidence/teftis-20260730-v0181-release.md
-- Release asset evidence: .divan/evidence/teftis-20260730-v0181-release.md
+- Latest published release: v0.18.2
+- Published commit: d3a2a41f9b88c3639f9832c24dd898fd8b88cbe4
+- Publication evidence: .divan/evidence/teftis-20260730-v0182-release.md
+- Release asset evidence: .divan/evidence/teftis-20260730-v0182-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release remains v0.18.1 at immutable commit `f367de92`.
-The active v0.18.2 candidate is on `feat/v0182-seyir-implementation`. It adds a
-read-only bilingual local Seyir page, evidence-bound task progress, a separate
-deterministic `divan.pyz` clean-host bootstrap, exact source-commit/catalog
-authority, durable recovery commands, safe Windows npm shim discovery,
-evidence-backed timeout decisions, and a repeated-CI-failure circuit breaker.
-The clean candidate currently passes 642 tests with 14 expected
-platform-specific skips. It is not yet merged, tagged, or published; GitHub
-review, required checks, merge, tag/Release, seven-asset readback, Pages, and
-Wiki verification remain.
+The latest published release is v0.18.2 at immutable commit `d3a2a41`.
+PR #60 merged the read-only bilingual local Seyir page, evidence-bound task
+progress, deterministic `divan.pyz` clean-host bootstrap, exact
+source-commit/catalog authority, durable recovery commands, safe Windows npm
+shim discovery, evidence-backed timeout decisions, and the repeated-CI-failure
+circuit breaker. All required main workflows passed. Seven release assets were
+downloaded again, their SHA-256 values matched, strict attestations passed, and
+Pages plus Wiki returned the published version.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
