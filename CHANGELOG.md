@@ -8,7 +8,72 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ### Planned
 
-- More verified native host adapters and independent adoption evidence.
+- More verified native host adapters and one released clean-room adoption
+  receipt produced by the schema-2 mechanism.
+
+## [0.18.3] - 2026-07-30
+
+### Added
+
+- `adoption prove`, a dry-run-first command that plans and executes bounded
+  clean-room evidence for an existing verified goal.
+- Schema-2 JSON and Markdown adoption receipts that bind an immutable Divan
+  release, a project distinct from Divan, observed Claude Code or Codex
+  version, test-backed checks, source stability, privacy limits, and an offline
+  integrity digest.
+- A machine-backed v1 gate that accepts only one repository-contained,
+  privacy-reviewed `valid-clean-room-adoption` receipt whose release identity
+  matches the gate registry.
+
+### Changed
+
+- The eighth v1 gate now measures verifiable technical evidence rather than an
+  unprovable declaration that the operator is outside the maintainer group.
+- Maintainer and external operator roles are retained as provenance but pass
+  the same technical eligibility contract.
+- GitHub intake, README, Project Contract, Wiki, Pages, progress, and impact
+  rules now lead with `adoption prove` and keep v1 honestly at 7/8 until a real
+  receipt from the released mechanism is committed and re-verified.
+- Historical schema-1 receipts remain readable and now return explicit
+  `valid-schema-1-owner-canary` or
+  `valid-schema-1-independent-declaration` compatibility statuses; neither is
+  eligible for v1.
+
+### Safety
+
+- Preview performs no writes and starts no subprocess.
+- Execute uses only fixed host-version probes and allowlisted native project
+  checks; it never evaluates caller-supplied shell strings, retries failed
+  checks, or continues after timeout, cancellation, or source drift.
+- The project runner must match its adjacent checksum, embedded source identity,
+  and the digest read independently from the immutable GitHub Release API
+  before planning; execution rebuilds the private plan before launch and
+  rejects worktree, index, or HEAD drift.
+- Goal-bound checks receive priority inside the eight-check ceiling, and
+  missing native goal checks now fail closed. Canonical verification also
+  reserves the complete test-class timeout instead of truncating it with a
+  shorter overall workflow budget.
+- Markdown verification requires the visible summary to be the canonical
+  rendering of its embedded JSON envelope.
+- A durable staging journal records pending state before each check. Receipt
+  files are promoted atomically only after both JSON and Markdown verify
+  offline.
+- Receipts reject usernames, e-mail addresses, absolute paths, remote URLs,
+  secrets, raw argv, command-output bodies, unrelated plugin inventory, unknown
+  keys, boolean integers, and recomputed-digest schema tampering.
+
+### Verification
+
+- Schema-1 compatibility, schema-2 validation, proof planning/execution, CLI
+  presentation, v1 registry, impact graph, bilingual public-copy, and release
+  surface tests cover the new contract.
+- The runtime remains nine-module and Python-standard-library-only; internal
+  receipt, runner, proof-execution, and CLI dispatch helpers keep each new
+  source below the clean-code ceiling. No daemon,
+  database, telemetry service, external agent runtime, or second repository was
+  added.
+- The publication manifest tracks 229 synchronized surfaces before final
+  release verification.
 
 ## [0.18.2] - 2026-07-30
 

@@ -13,8 +13,10 @@ PLUGIN_ROOT = DIRECTORY.parent
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import (  # noqa: E402
+from divan_runtime import (  # noqa: E402,F401
     adoption,
+    adoption_proof,
+    cli_dispatch,
     cli_parser,
     engine,
     goal_archive,
@@ -96,6 +98,12 @@ def _write_json(value: dict[str, Any]) -> None:
 
 
 def _write_human(value: dict[str, Any], language: str) -> None:
+    if value.get("kind") == "adoption-proof-preview":
+        _write_proof_preview(value, language)
+        return
+    if value.get("kind") == "adoption-proof-result":
+        _write_proof_result(value, language)
+        return
     labels = TEXT[language]
     for key in (
         "project",
@@ -128,121 +136,124 @@ def _write_human(value: dict[str, Any], language: str) -> None:
         )
 
 
+def _write_proof_preview(value: dict[str, Any], language: str) -> None:
+    project = value["project"]
+    goal = value["goal"]
+    if language == "tr":
+        print("Divan neyi kanıtlayacak?")
+        print(
+            "Proje: Divan'dan ayrı gerçek proje · "
+            f"{project['workspace_count']} çalışma alanı"
+        )
+        print(f"Hedef: {goal['id']} · {goal['state']}")
+        print("Çalışacak kontroller:")
+        for check in value["checks"]:
+            seconds = int(check["timeout_ms"]) // 1000
+            command = " ".join(check["command"])
+            print(
+                f"- {check['workspace']} · {command} · "
+                f"en fazla {seconds} saniye"
+            )
+        print("Henüz hiçbir dosya yazılmadı.")
+        print("Başlatmak için:")
+    else:
+        print("What will Divan prove?")
+        print(
+            "Project: real project distinct from Divan · "
+            f"{project['workspace_count']} workspaces"
+        )
+        print(f"Goal: {goal['id']} · {goal['state']}")
+        print("Checks to run:")
+        for check in value["checks"]:
+            seconds = int(check["timeout_ms"]) // 1000
+            command = " ".join(check["command"])
+            print(
+                f"- {check['workspace']} · {command} · "
+                f"up to {seconds} seconds"
+            )
+        print("No file has been written yet.")
+        print("To start:")
+    print(value["next_command"])
+
+
+def _write_proof_result(value: dict[str, Any], language: str) -> None:
+    if value.get("status") == "passed":
+        if language == "tr":
+            print("Temiz-proje kanıtı geçti.")
+            print(f"Kontroller: {value.get('checks_passed', 0)} geçti.")
+            print(f"Makbuz: {value.get('receipt_status')}")
+        else:
+            print("Clean-room proof passed.")
+            print(f"Checks: {value.get('checks_passed', 0)} passed.")
+            print(f"Receipt: {value.get('receipt_status')}")
+        for path in value.get("files", []):
+            print(f"- {path}")
+        return
+    reason = value.get("reason", "bounded proof did not pass")
+    if language == "tr":
+        print(f"Temiz-proje kanıtı tamamlanmadı: {reason}")
+    else:
+        print(f"Clean-room proof did not complete: {reason}")
+
+
+def _proof_preview_result(
+    plan: dict[str, Any], host: str, operator_role: str
+) -> dict[str, Any]:
+    checks = [
+        {
+            "id": row["id"],
+            "class": row["class"],
+            "runner": row["runner"],
+            "name": row["name"],
+            "workspace": row["workspace"],
+            "command": list(row["argv"]),
+            "timeout_ms": row["timeout_ms"],
+        }
+        for row in plan["checks"]
+    ]
+    goal = {
+        "id": plan["goal"]["id"],
+        "state": plan["goal"]["state"],
+        "target": plan["goal"]["target"],
+    }
+    command = (
+        "python divan-project.pyz adoption prove --project . "
+        f"--goal {goal['id']} --host {host} "
+        f"--operator-role {operator_role} --execute"
+    )
+    return {
+        "schema_version": 1,
+        "kind": "adoption-proof-preview",
+        "status": "ready",
+        "proof_id": plan["proof_id"],
+        "summary": (
+            f"Divan can prove this goal with {len(checks)} bounded checks."
+        ),
+        "divan": plan["divan"],
+        "host_probe": {
+            "command": list(plan["host_probe"]["argv"]),
+            "status": "planned",
+        },
+        "operator": {"role": operator_role},
+        "environment": plan["environment"],
+        "project": {
+            "classification": "external",
+            "types": plan["project"]["types"],
+            "workspace_count": plan["project"]["workspace_count"],
+        },
+        "goal": goal,
+        "checks": checks,
+        "writes": plan["writes"],
+        "next_command": command,
+    }
+
+
 def _parser() -> argparse.ArgumentParser:
     return cli_parser.build_parser()
 
 
-def _read_only_result(options: argparse.Namespace) -> dict[str, Any] | None:
-    if options.command == "inspect":
-        contracts = engine.load_contracts(DIRECTORY)
-        return engine.inspect_project(options.project, contracts)
-    if options.command == "plan":
-        contracts = engine.load_contracts(DIRECTORY)
-        return engine.plan_intent(
-            options.intent,
-            options.project,
-            contracts,
-            options.target,
-            host_profile=options.host_profile,
-            context_window=options.context_window,
-        )
-    if options.command == "impact":
-        contracts = engine.load_contracts(DIRECTORY)
-        return engine.calculate_impact(options.paths, contracts)
-    if options.command == "architecture":
-        return kernel.load_architecture(DIRECTORY)
-    return None
-
-
-def _mutation_authority(options: argparse.Namespace) -> dict[str, Any] | None:
-    if not getattr(options, "execute", False):
-        return None
-    excluded = {"actor", "execute", "json", "lang"}
-    scope = {
-        key: str(value) if isinstance(value, pathlib.Path) else value
-        for key, value in vars(options).items()
-        if key not in excluded and value is not None
-    }
-    operation = ".".join(
-        str(value)
-        for value in (
-            options.command,
-            getattr(options, "project_command", None),
-            getattr(options, "goal_command", None),
-        )
-        if value is not None
-    )
-    return governance.authorize_mutation(
-        options.actor,
-        operation,
-        scope,
-        explicit_authority=True,
-        directory=DIRECTORY,
-    )
-
-
-def _execute_project(options: argparse.Namespace) -> dict[str, Any]:
-    if options.project_command == "status":
-        return project_lifecycle.project_status(options.project)
-    if options.project_command == "update":
-        plan = project_lifecycle.build_update_plan(options.project)
-        return (
-            project_lifecycle.apply_update_plan(plan)
-            if options.execute and plan.get("status") == "PLANNED"
-            else plan
-        )
-    plan = project_lifecycle.build_repair_plan(options.project)
-    return (
-        project_lifecycle.apply_repair_plan(plan)
-        if options.execute and plan.get("status") == "PLANNED"
-        else plan
-    )
-
-
-def _execute_goal(options: argparse.Namespace) -> dict[str, Any]:
-    if options.goal_command == "start":
-        return goals.start_goal(
-            options.project,
-            options.intent,
-            options.target,
-            options.execute,
-            host_profile=options.host_profile,
-            context_window=options.context_window,
-        )
-    if options.goal_command == "status":
-        return goals.goal_status(options.project, options.goal)
-    if options.goal_command == "progress":
-        return seyir_state.update(
-            options.project,
-            options.goal,
-            completed_task_ids=options.completed,
-            current_task_id=options.current,
-            next_task_id=options.next_task,
-            execute=options.execute,
-        )
-    if options.goal_command == "advance":
-        return seyir_state.advance_goal(
-            options.project,
-            options.goal,
-            options.to,
-            options.execute,
-            reason=options.reason,
-            evidence=options.evidence,
-        )
-    if options.goal_command == "archive":
-        plan = goal_archive.build_archive_plan(
-            options.project, options.goal, options.recorded_on
-        )
-        return (
-            goal_archive.apply_archive_plan(plan)
-            if options.execute and plan.get("status") == "PLANNED"
-            else plan
-        )
-    return goals.resume_goal(options.project, options.goal, options.execute)
-
-
 def _execute(options: argparse.Namespace) -> dict[str, Any]:
-    read_only = _read_only_result(options)
+    read_only = cli_dispatch.read_only_result(options)
     if read_only is not None:
         return read_only
     if options.command == "init":
@@ -256,25 +267,17 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
         )
         return project_os.apply_init_plan(plan) if options.execute else plan
     if options.command == "project":
-        return _execute_project(options)
+        return cli_dispatch.execute_project(options)
     if options.command == "audit":
         return project_os.audit_project(options.project)
     if options.command == "verify":
         return project_os.verify_project(options.project)
     if options.command == "goal":
-        return _execute_goal(options)
+        return cli_dispatch.execute_goal(options)
     if options.command == "receipt":
         return receipts.verify_receipt(options.path)
     if options.command == "adoption":
-        if options.adoption_command == "verify":
-            return adoption.verify_adoption(options.path)
-        return adoption.export_adoption(
-            options.project,
-            options.goal,
-            options.host,
-            options.host_version,
-            options.submitter,
-        )
+        return cli_dispatch.execute_adoption(options, _proof_preview_result)
     if options.command == "release":
         return release_api.release_project(
             options.project,
@@ -313,7 +316,7 @@ def main(argv: list[str] | None = None) -> int:
     if options.command == "status":
         return _serve_status(options)
     try:
-        authority = _mutation_authority(options)
+        authority = cli_dispatch.mutation_authority(options)
         result = _execute(options)
         if authority is not None:
             result = {**result, "authority": authority}
@@ -352,7 +355,14 @@ def main(argv: list[str] | None = None) -> int:
         }:
             fallback = "valid" if result.get("ok") else "invalid"
             print(f"Status: {result.get('status', fallback)}")
-    if result.get("ok") is False or result.get("status") in {"FAIL", "BLOCKED"}:
+    if result.get("ok") is False or result.get("status") in {
+        "FAIL",
+        "BLOCKED",
+        "blocked",
+        "failed-checks",
+        "cancelled",
+        "invalid",
+    }:
         return 1
     return 0
 

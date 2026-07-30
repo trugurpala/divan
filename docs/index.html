@@ -130,10 +130,10 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Niyetten doğrulanmış yayına</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Hükümdar sensin.</b> Divan tek üründür: Claude Code ve Codex için <b>modüler, denetimli teslim framework'ü ve yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Divan Nizamı ürünün yönetim modelidir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.18.2 güncel kaynak · son yayımlanan v0.18.2 · 41 beceri · 5 paket · v1: 7/8.</p>
+    <p class="tez"><b>Hükümdar sensin.</b> Divan tek üründür: Claude Code ve Codex için <b>modüler, denetimli teslim framework'ü ve yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Divan Nizamı ürünün yönetim modelidir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.18.3 güncel kaynak · son yayımlanan v0.18.2 · 41 beceri · 5 paket · v1: 7/8.</p>
     <div class="ferman">
-      <p class="ferman-etiket">Güncel yayın · yazmayan önizleme</p>
-      <code>python scripts/divan.py install --host both --ref v0.18.2</code>
+      <p class="ferman-etiket">Yerel aday · yalnız tag/Release sonrası kullan</p>
+      <code>python scripts/divan.py install --host both --ref v0.18.3</code>
     </div>
   </div>
 </header>
@@ -221,11 +221,11 @@ footer p+p{margin-top:10px}
     <p class="bab-etiket">Güvenli yol</p>
     <h2>Yayın sonrasında beş dakikada ilk başarı</h2>
     <ol class="yasam">
-      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v0.18.2 --execute</code></div></li>
-      <li><div><b>Codex Desktop en güçlü güvenli yolu seçsin</b><code>python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --execute</code></div></li>
-      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v0.18.2</code></div></li>
-      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v0.18.2</code></div></li>
-      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v0.18.2 --execute</code></div></li>
+      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v0.18.3 --execute</code></div></li>
+      <li><div><b>Codex Desktop en güçlü güvenli yolu seçsin</b><code>python scripts/divan.py install --host codex --profile auto --ref v0.18.3 --execute</code></div></li>
+      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v0.18.3</code></div></li>
+      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v0.18.3</code></div></li>
+      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v0.18.3 --execute</code></div></li>
       <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
       <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>
@@ -278,7 +278,8 @@ footer p+p{margin-top:10px}
       <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.tr.md">Katkı rehberi · Türkçe</a>
       <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.md">Contribution guide · English</a>
     </div>
-    <p style="margin-top:18px">v1 henüz ilan edilmedi: 8 kapının 7'si geçti; bağımsız kullanıcı kabul kanıtı bekleniyor.</p>
+    <p style="margin-top:18px">v1 henüz ilan edilmedi: 8 kapının 7'si geçti. Schema-2 temiz-proje mekanizması hazır; yayımlanmış mekanizmayla üretilmiş gerçek makbuz henüz kaydedilmedi.</p>
+    <p><code>python divan-project.pyz adoption prove --project . --goal &lt;goal-id&gt; --host codex</code></p>
   </div>
 </section>
 

@@ -1,4 +1,4 @@
-# Divan Wiki · v0.18.2
+# Divan Wiki · v0.18.3
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -10,8 +10,17 @@ davranış eval'i ve yayın teftişi aynı çatıdadır.
 Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
 repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
 Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Divan
-ürününün parçalarıdır. v1 durumu **7/8** kapıdır: bağımsız kullanıcı kabul
-kanıtı hâlâ bekleniyor.
+ürününün parçalarıdır. v1 durumu **7/8** kapıdır: schema-2 temiz-proje kanıt
+mekanizması hazırdır; yayımlanmış mekanizmayla üretilmiş gerçek makbuz henüz
+kaydedilmemiştir.
+
+Son kapı kişinin kimliğini değil, Divan'dan ayrı gerçek projedeki makine
+kanıtını ölçer. Önce yazmayan planı gör, sonra aynı planı uygula:
+
+```powershell
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+```
 
 Yeni Sadrazam sözleşmesi, host ajanını başlangıçta ve anlamlı aşama
 değişimlerinde şu an ne olduğunu, neden önemli olduğunu ve sırada ne bulunduğunu
@@ -25,7 +34,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v0.18.2 · **Son yayımlanan:** v0.18.2 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.18.3 · **Son yayımlanan:** v0.18.2 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

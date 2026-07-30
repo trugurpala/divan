@@ -1306,9 +1306,14 @@ class ImpactTests(unittest.TestCase):
         result = self.engine.calculate_impact(
             [
                 "plugins/sadrazam/company/project_lifecycle.py",
+                "plugins/sadrazam/divan_runtime/adoption.py",
+                "plugins/sadrazam/divan_runtime/adoption_proof.py",
                 ".divan/install-state.json",
                 ".divan/archive/2026-07-24-goal-0123456789ab/archive.json",
                 ".divan/evidence/goal-0123456789ab/adoption-receipt.md",
+                ".divan/evidence/verified-clean-room-adoption-v0183.json",
+                "registry/v1-gates.json",
+                ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
                 "canary/README.md",
             ],
             self.contracts,
@@ -1320,6 +1325,11 @@ class ImpactTests(unittest.TestCase):
             {"company-validation", "documentation", "release-validation"}.issubset(
                 result["effects"]
             )
+        )
+        self.assertIn(
+            "python -m unittest tests.test_adoption tests.test_adoption_v2 "
+            "tests.test_adoption_proof tests.test_v1 -v",
+            result["checks"],
         )
 
     def test_planning_change_forces_focused_and_public_surface_checks(self) -> None:

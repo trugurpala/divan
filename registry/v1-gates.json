@@ -46,10 +46,22 @@
       "evidence": ["evals/results/claude-codex-baglam-muhafizi-v012.json", "evals/README.md", "evals/adapters/claude_agent.py", "evals/adapters/codex_judge.py", "tests/test_real_adapters.py"]
     },
     {
-      "id": "independent-adoption",
-      "title": "Bağımsız kullanıcıdan tekrar üretilebilir kurulum ve görev kanıtı",
-      "status": "pending",
-      "evidence": [".github/ISSUE_TEMPLATE/kabul-kaniti.yml"]
+      "id": "verified-clean-room-adoption",
+      "title": "Doğrulanmış temiz-proje kullanımı",
+      "status": "ready",
+      "evidence": [
+        ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
+        "plugins/sadrazam/divan_runtime/adoption_common.py",
+        "plugins/sadrazam/divan_runtime/adoption_legacy.py",
+        "plugins/sadrazam/divan_runtime/adoption_schema2.py",
+        "plugins/sadrazam/divan_runtime/adoption_runner.py",
+        "plugins/sadrazam/divan_runtime/adoption.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof_common.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof_execution.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof.py",
+        "tests/test_adoption_v2.py",
+        "tests/test_adoption_proof.py"
+      ]
     }
   ]
 }
