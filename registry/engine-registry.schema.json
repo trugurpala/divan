@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://divan.dev/schemas/engine-registry.schema.json",
+  "title": "Divan Engine Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "engines"],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "engines": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/engine" }
+    }
+  },
+  "$defs": {
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "category",
+        "status",
+        "decision",
+        "capabilities",
+        "constraints",
+        "supported_hosts",
+        "installation_mode",
+        "license",
+        "source",
+        "pin_policy",
+        "quality_profile",
+        "escape_plan",
+        "adapter_contract_version"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "category": {
+          "enum": [
+            "portal",
+            "monorepo",
+            "web",
+            "api",
+            "internal-app",
+            "cms-data",
+            "automation",
+            "analytics",
+            "desktop",
+            "quality",
+            "documentation"
+          ]
+        },
+        "status": { "enum": ["candidate", "accepted", "adapted", "deprecated", "blocked"] },
+        "decision": { "enum": ["REFERENCE", "ADAPT", "ADOPT", "FORK"] },
+        "capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "supported_hosts": {
+          "type": "array",
+          "items": { "enum": ["claude", "codex", "standalone"] },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "installation_mode": { "enum": ["none", "provider", "dependency", "sidecar", "vendored", "fork"] },
+        "license": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spdx", "evidence_url"],
+          "properties": {
+            "spdx": { "type": "string", "minLength": 1 },
+            "evidence_url": { "type": "string", "format": "uri" },
+            "scope_note": { "type": "string" }
+          }
+        },
+        "source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["canonical_url"],
+          "properties": {
+            "canonical_url": { "type": "string", "format": "uri" },
+            "reviewed_commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "fork_url": { "type": "string", "format": "uri" }
+          }
+        },
+        "pin_policy": { "enum": ["immutable-commit", "release-tag-and-checksum", "lockfile", "metadata-only"] },
+        "quality_profile": { "type": "string", "minLength": 1 },
+        "escape_plan": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "database_owned_by_project",
+            "business_logic_outside_engine",
+            "export_test_required",
+            "uninstall_test_required"
+          ],
+          "properties": {
+            "database_owned_by_project": { "type": "boolean" },
+            "business_logic_outside_engine": { "type": "boolean" },
+            "export_test_required": { "type": "boolean" },
+            "uninstall_test_required": { "type": "boolean" },
+            "notes": { "type": "string" }
+          }
+        },
+        "adapter_contract_version": { "type": "integer", "minimum": 1 },
+        "risk_notes": { "type": "string" },
+        "next_review": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}
