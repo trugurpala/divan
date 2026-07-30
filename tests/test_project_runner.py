@@ -19,8 +19,15 @@ CURRENT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 RUNTIME_FILES = (
     "__init__.py",
     "adoption.py",
+    "adoption_common.py",
+    "adoption_legacy.py",
     "adoption_proof.py",
+    "adoption_proof_common.py",
+    "adoption_proof_execution.py",
+    "adoption_runner.py",
+    "adoption_schema2.py",
     "cli.py",
+    "cli_dispatch.py",
     "cli_parser.py",
     "ci_guard.py",
     "compatibility.py",
@@ -162,6 +169,7 @@ class ProjectRunnerTests(unittest.TestCase):
                     },
                 )
                 self.assertIn("divan_runtime/project_state.py", names)
+                self.assertIn("divan_runtime/adoption_runner.py", names)
                 self.assertIn("divan_runtime/modules.json", names)
                 self.assertIn("divan_runtime/messages.json", names)
                 self.assertIn("divan_runtime/studio/index.html", names)
