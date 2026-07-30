@@ -19,6 +19,27 @@ def _contrast(foreground: str, background: str) -> float:
 
 
 class SiteMarkupTests(unittest.TestCase):
+    def test_public_identity_leads_with_outcome_and_exposes_local_seyir(self) -> None:
+        for relative in ("docs/index.html", "site/index.html"):
+            with self.subTest(relative=relative):
+                html = (ROOT / relative).read_text(encoding="utf-8")
+                self.assertIn(
+                    "<title>Divan — Niyetten doğrulanmış yayına</title>",
+                    html,
+                )
+                self.assertIn(
+                    'content="Divan — Niyetten doğrulanmış yayına"',
+                    html,
+                )
+                self.assertNotIn("Vibe coder'ın vezirler kurulu", html)
+                self.assertIn('<section class="bab" id="seyir">', html)
+                self.assertIn("Yerel Seyir", html)
+                self.assertIn(
+                    "python scripts/divan.py status --project . --open --lang auto",
+                    html,
+                )
+                self.assertNotIn("127.0.0.1:49152", html)
+
     def test_public_metadata_and_structured_data_are_complete(self) -> None:
         required = (
             '<meta name="description"',

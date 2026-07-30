@@ -17,12 +17,14 @@ verifies the result, records the decisions, and presents a finished delivery.
 It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
 Skills remain portable to Cursor and other compatible hosts.
 
+## Host compatibility
+
 Host support is evidence-graded rather than advertised as a single yes/no
 claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v0.18.1 · **Latest published:** v0.18.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v0.18.1 · **Latest published:** v0.18.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -165,9 +167,9 @@ For safety, the installer never overwrites an existing `divan` marketplace or
 and fails with an actionable error.
 
 The installer delegates to the official Claude and Codex plugin CLIs, records
-pre-state, and never removes unrelated plugins. See
-[installation options](docs/Kurulum.md) for single-host, manual, legacy
-migration, and removal paths.
+pre-state, and never removes unrelated plugins. Run
+`python scripts/divan.py install --help` for the English host and profile
+options.
 
 The five-minute safe lifecycle continues with:
 
@@ -181,8 +183,7 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 
 Replace the example journal with doctor's exact `recovery_command`. Rolling
 back the `install-...json` journal uninstalls only Divan entries created by that
-transaction. See [docs/Kaldirma.md](docs/Kaldirma.md) for host-aware manual
-removal and ownership boundaries.
+transaction; it does not remove unrelated host entries.
 
 ## Clean development
 

@@ -11,6 +11,25 @@ SPEC.loader.exec_module(WIKI)
 
 
 class WikiTesti(unittest.TestCase):
+    def test_home_ilerleme_ile_surum_durumunu_ayri_yollara_baglar(self):
+        home = (KOK / "docs" / "Home.md").read_text(encoding="utf-8")
+
+        self.assertIn(
+            "| Projenin ilerlemesini izle | "
+            "[[Hızlı Başlangıç|Hizli-Baslangic]] |",
+            home,
+        )
+        self.assertIn(
+            "| Divan'ın sürüm durumunu gör | "
+            "[[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] |",
+            home,
+        )
+        self.assertNotIn(
+            "| Projenin durumunu gör | "
+            "[[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] |",
+            home,
+        )
+
     def test_manifest_home_ile_baslar_ve_kaynaklar_mevcuttur(self):
         sayfalar = WIKI.manifesti_oku(KOK)
         self.assertEqual(sayfalar[0]["slug"], "Home")

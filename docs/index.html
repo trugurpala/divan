@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Divan — Vibe coder'ın vezirler kurulu</title>
+<title>Divan — Niyetten doğrulanmış yayına</title>
 <meta name="description" content="Claude Code ve Codex için modüler, denetimli teslim framework'ü ve geri alınabilir 41 becerilik Divan dağıtımı.">
 <link rel="canonical" href="https://trugurpala.github.io/divan/">
 <link rel="alternate" hreflang="tr" href="https://trugurpala.github.io/divan/">
 <link rel="alternate" hreflang="en" href="https://github.com/trugurpala/divan/blob/main/README.md">
-<meta property="og:title" content="Divan — Vibe coder'ın vezirler kurulu">
+<meta property="og:title" content="Divan — Niyetten doğrulanmış yayına">
 <meta property="og:description" content="Hükümdar sensin: fermanı ver, Divan işi planlasın, doğrulasın ve kanıtıyla teslim etsin.">
 <meta property="og:image" content="https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/divan-social-preview.png">
 <meta property="og:type" content="website">
@@ -128,7 +128,7 @@ footer p+p{margin-top:10px}
 
 <header class="hero">
   <div class="wrap">
-    <p class="tugra">Vibe coder'ın vezirler kurulu</p>
+    <p class="tugra">Niyetten doğrulanmış yayına</p>
     <h1>Divan<span class="nokta">.</span></h1>
     <p class="tez"><b>Hükümdar sensin.</b> Divan tek üründür: Claude Code ve Codex için <b>modüler, denetimli teslim framework'ü ve yerel skill/plugin dağıtımı</b>dır; model veya runtime değildir. Divan Nizamı ürünün yönetim modelidir. Fermanı planlar, test eder ve kanıtıyla teslim eder. v0.18.1 güncel kaynak · son yayımlanan v0.18.1 · 41 beceri · 5 paket · v1: 7/8.</p>
     <div class="ferman">
@@ -195,6 +195,24 @@ footer p+p{margin-top:10px}
       ölçütlerinden başlar; kanıt zinciri preview, release ve canlı geri
       okumaya kadar sürer.</p>
     <p style="margin-top:18px"><a href="https://github.com/trugurpala/divan/blob/main/docs/Project-Contract.tr.md">Divan Proje Sözleşmesini incele</a></p>
+  </div>
+</section>
+
+<section class="bab" id="seyir">
+  <div class="wrap">
+    <p class="bab-etiket">Yerel Seyir</p>
+    <h2>İlerlemeyi çalışan yerel adresten izle</h2>
+    <p>Seyir; aktif hedefi, şu anki görevi, tamamlanan işleri, kontrolleri,
+      engelleri ve sıradaki adımı sade bir sayfada gösterir. Salt okunurdur,
+      yalnız <code>127.0.0.1</code> üzerinde çalışır ve bulut hesabı veya API
+      anahtarı istemez.</p>
+    <div class="ferman">
+      <p class="ferman-etiket">Gerçek adresi üret ve aç</p>
+      <code>python scripts/divan.py status --project . --open --lang auto</code>
+    </div>
+    <p style="margin-top:18px">Divan her çalıştırmada boş bir port seçip tam
+      adresi terminale yazar. Önceki oturumdan kalan örnek bir adresi yeniden
+      kullanma; işi bitirince terminalde <code>Ctrl+C</code> tuşlarına bas.</p>
   </div>
 </section>
 

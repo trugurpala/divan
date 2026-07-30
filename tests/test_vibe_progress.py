@@ -109,6 +109,8 @@ class VibeProgressContractTests(unittest.TestCase):
         self.assertIn("gerçek-ajan A/B sonucu", value_guide)
         self.assertEqual(pages, site)
         self.assertIn("İlerleme dili", pages)
+        self.assertIn("Yerel Seyir", pages)
+        self.assertIn("scripts/divan.py status", pages)
         for name, surface in (
             ("readme-en", readme_en),
             ("readme-tr", readme_tr),
@@ -130,6 +132,29 @@ class VibeProgressContractTests(unittest.TestCase):
             self.assertNotIn("yalnız tag/Release sonrası kullan", pages)
         else:
             self.assertIn("yalnız tag/Release sonrası kullan", pages)
+
+    def test_english_readme_keeps_critical_paths_in_english(self) -> None:
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        alias = (ROOT / "README.en.md").read_text(encoding="utf-8")
+
+        self.assertEqual(readme, alias)
+        for heading in (
+            "## Host compatibility",
+            "## Follow progress locally",
+            "## Install",
+        ):
+            with self.subTest(heading=heading):
+                self.assertIn(heading, readme)
+        self.assertIn(
+            "**Host compatibility:** [English guide](#host-compatibility)",
+            readme,
+        )
+        self.assertIn(
+            "**Local progress:** [Seyir](#follow-progress-locally)",
+            readme,
+        )
+        self.assertNotIn("(docs/Host-Uyumlulugu.md)", readme)
+        self.assertNotIn("[installation options](docs/Kurulum.md)", readme)
 
 
 if __name__ == "__main__":

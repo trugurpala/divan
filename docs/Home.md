@@ -43,7 +43,8 @@ oluşturmaz.
 | Bir bug düzelt | [[Test ve Teftiş|Test-ve-Teftis]] | Kök neden → regresyon testi → dar düzeltme |
 | Arayüz tasarla | [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] | Estetik yön → sistem → tarayıcı kanıtı |
 | Divan'ı kur | [[Kurulum]] | Hostuna uygun en küçük kurulum yolu |
-| Projenin durumunu gör | [[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] | Yayımlanan, açık ve sıradaki iş ayrımı |
+| Projenin ilerlemesini izle | [[Hızlı Başlangıç|Hizli-Baslangic]] | Yerel Seyir → şu anki görev → sıradaki adım |
+| Divan'ın sürüm durumunu gör | [[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] | Yayımlanan, açık ve sıradaki sürüm ayrımı |
 
 Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 
