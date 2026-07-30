@@ -30,6 +30,9 @@ compatibility surfaces through v1. Issue #34 now targets machine-verifiable
 clean-room evidence rather than operator identity. The schema-2 mechanism is
 implemented locally but not yet released, so v1 remains 7/8.
 
+v0.18.3 release surfaces are prepared locally. This is not yet a PR, merge,
+tag, GitHub Release, Pages/Wiki publication, or clean-room receipt claim.
+
 ## Yapıldı
 
 - Schema-1 adoption receipts remain verifiable with explicit non-v1 statuses.

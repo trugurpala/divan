@@ -87,9 +87,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- v0.18.3, `adoption prove` ile doğrulanmış temiz-proje kanıt mekanizmasını
-  yayımlayacak. Issue #34 kimlik beyanı değil, çevrimdışı doğrulanabilir
-  schema-2 teknik kanıt isteyecek. Gerçek yayımlanmış makbuz oluşana kadar v1
+- **v0.18.3 ✓** Local release candidate: `adoption prove` ile doğrulanmış temiz-proje
+  kanıt mekanizması hazırlandı. Issue #34 kimlik beyanı değil, çevrimdışı
+  doğrulanabilir schema-2 teknik kanıt isteyecek. PR/main/tag/Release/Pages/Wiki
+  henüz ayrı kanıtlanacaktır; gerçek yayımlanmış makbuz oluşana kadar v1
   dürüstçe 7/8 kalır.
 
 ### Yayımlanan temel
