@@ -33,6 +33,9 @@ class LocaleTests(unittest.TestCase):
             "progress.live_summary",
             "technical.tasks",
             "connection.missing_capability",
+            "state.current",
+            "task.test_first_implementation",
+            "task.independent_review",
         ):
             self.assertIn(key, catalog)
         for key, translations in catalog.items():

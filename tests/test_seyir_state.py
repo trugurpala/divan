@@ -75,6 +75,7 @@ class SeyirStateTests(unittest.TestCase):
                 execute=True,
             )
             snapshot = status.build_snapshot(project, "en")
+            turkish = status.build_snapshot(project, "tr")
 
         self.assertEqual(applied["status"], "updated")
         self.assertEqual(snapshot["goal"]["id"], identifier)
@@ -82,6 +83,13 @@ class SeyirStateTests(unittest.TestCase):
         self.assertEqual(snapshot["tasks"][1]["status"], "CURRENT")
         self.assertEqual(snapshot["current"]["task"], snapshot["tasks"][1]["title"])
         self.assertEqual(snapshot["next_action"], snapshot["tasks"][2]["title"])
+        self.assertEqual(turkish["tasks"][0]["title"], "ön kontrol")
+        self.assertEqual(turkish["current"]["task"], "genel yüzey eşitleme")
+        self.assertEqual(turkish["next_action"], "sürekli entegrasyon")
+        self.assertEqual(
+            [task["id"] for task in turkish["tasks"]],
+            [task["id"] for task in snapshot["tasks"]],
+        )
 
     def test_unknown_or_completed_current_task_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-seyir-state-") as temporary:

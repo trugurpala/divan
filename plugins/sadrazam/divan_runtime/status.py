@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import subprocess
 from collections.abc import Mapping
 from typing import Any
@@ -144,7 +145,24 @@ def _latest_goal(root: pathlib.Path) -> tuple[pathlib.Path, dict[str, Any]] | No
     return path, value
 
 
-def _route_tasks(root: pathlib.Path, identifier: str) -> list[dict[str, str]]:
+def _task_title(
+    stage: str,
+    catalog: Mapping[str, Mapping[str, str]],
+    language: str,
+) -> str:
+    key = "task." + re.sub(r"[^a-z0-9]+", "_", stage.casefold()).strip("_")
+    translations = catalog.get(key)
+    if translations is None:
+        return _safe_text(stage)
+    return _safe_text(translations[language])
+
+
+def _route_tasks(
+    root: pathlib.Path,
+    identifier: str,
+    catalog: Mapping[str, Mapping[str, str]],
+    language: str,
+) -> list[dict[str, str]]:
     route_path = root / ".divan" / "specs" / identifier / "route.json"
     try:
         route = json.loads(route_path.read_text(encoding="utf-8"))
@@ -165,7 +183,10 @@ def _route_tasks(root: pathlib.Path, identifier: str) -> list[dict[str, str]]:
         if not isinstance(task, dict):
             continue
         identifier_value = _safe_text(task.get("id", f"task-{index:03d}"))
-        title = _safe_text(task.get("stage", task.get("title", identifier_value)))
+        stage = _safe_text(
+            task.get("stage", task.get("title", identifier_value))
+        )
+        title = _task_title(stage, catalog, language)
         tasks.append(
             {
                 "id": identifier_value,
@@ -297,7 +318,7 @@ def build_snapshot(
 
     _, receipt = selected
     identifier = _safe_text(receipt.get("goal_id", ""))
-    tasks = _route_tasks(root, identifier)
+    tasks = _route_tasks(root, identifier, catalog, locale)
     current_task = next(
         (task["title"] for task in tasks if task["status"] == "CURRENT"),
         None,
