@@ -46,6 +46,7 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
         scripts: dict[str, str] | None = None,
         *,
         source: dict[str, str] = SOURCE,
+        bind_verification_evidence: bool = True,
     ) -> tuple[str, pathlib.Path]:
         package = {
             "name": "external-sample",
@@ -75,8 +76,24 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
             root, "Verify a real project", "verified", execute=True
         )
         receipt_path = root / result["receipt"]
+        verification = (
+            root / ".divan" / "evidence" / result["goal_id"] / "verification.md"
+        )
+        verification.write_text("native checks passed\n", encoding="utf-8")
+        relative_verification = verification.relative_to(root).as_posix()
+        verification_digest = hashlib.sha256(verification.read_bytes()).hexdigest()
         for state in ("SPECIFIED", "PLANNED", "IMPLEMENTING", "VERIFIED"):
-            receipts.append_transition(receipt_path, state)
+            final = state == "VERIFIED" and bind_verification_evidence
+            receipts.append_transition(
+                receipt_path,
+                state,
+                evidence=[relative_verification] if final else None,
+                bind_artifacts=(
+                    {relative_verification: verification_digest}
+                    if final
+                    else None
+                ),
+            )
         runner = root.parent / "divan-project.pyz"
         with zipfile.ZipFile(runner, "w") as archive:
             archive.writestr(
@@ -122,6 +139,26 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                 sorted(row["id"] for row in plan["checks"]),
             )
             self.assertFalse((root / ".divan" / "adoption").exists())
+
+    def test_preview_rejects_verified_goal_without_execution_evidence(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-goal-evidence-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            goal_id, runner = self.create_verified_project(
+                root, bind_verification_evidence=False
+            )
+
+            with self.assertRaisesRegex(ValueError, "verification evidence"):
+                module.build_proof_plan(
+                    root,
+                    goal_id,
+                    "claude-code",
+                    runner_path=runner,
+                    expected_runner_sha256=self.runner_digest(runner),
+                )
 
     def test_goal_bound_check_survives_the_eight_check_cap(self) -> None:
         module = self.require_module()
@@ -229,7 +266,7 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                         forged, SOURCE
                     )
 
-    def test_distinct_project_policy_blocks_complete_and_partial_divan_signatures(
+    def test_distinct_project_policy_allows_common_version_and_other_marketplace(
         self,
     ) -> None:
         module = self.require_module()
@@ -240,12 +277,26 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
             self.assertTrue(module.classify_distinct_project(root)["distinct"])
 
             (root / "VERSION").write_text("0.18.3\n", encoding="utf-8")
+            marketplace = root / ".claude-plugin" / "marketplace.json"
+            marketplace.parent.mkdir()
+            marketplace.write_text('{"name":"another-product"}\n', encoding="utf-8")
+            self.assertTrue(module.classify_distinct_project(root)["distinct"])
+
+    def test_distinct_project_policy_blocks_strong_divan_signatures(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-distinct-"
+        ) as temporary:
+            root = pathlib.Path(temporary)
+            marketplace = root / ".claude-plugin" / "marketplace.json"
+            marketplace.parent.mkdir(parents=True)
+            marketplace.write_text('{"name":"divan"}\n', encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "partial Divan signature"):
                 module.classify_distinct_project(root)
 
-            marketplace = root / ".claude-plugin" / "marketplace.json"
-            marketplace.parent.mkdir()
-            marketplace.write_text('{"name":"divan"}\n', encoding="utf-8")
+            (root / "VERSION").write_text("0.18.3\n", encoding="utf-8")
             runtime_modules = (
                 root
                 / "plugins"

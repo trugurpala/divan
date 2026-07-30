@@ -1278,7 +1278,14 @@ def _rank_workflows(intent: str, contracts: Contracts) -> list[Workflow]:
     ranked.sort(key=lambda row: (-row[0], -row[1], row[2]))
     if not ranked:
         return [contracts.workflows["feature-delivery"]]
-    return [row[3] for row in ranked]
+    workflows = [row[3] for row in ranked]
+    if workflows[0].id == "bugfix-delivery":
+        workflows = [
+            workflow
+            for workflow in workflows
+            if workflow.id not in {"testing-delivery", "feature-delivery"}
+        ]
+    return workflows
 
 
 def _select_workflow(intent: str, contracts: Contracts) -> Workflow:

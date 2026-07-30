@@ -184,6 +184,7 @@ def append_transition(
     reason: str = "",
     evidence: list[str] | None = None,
     results: dict[str, dict[str, Any]] | None = None,
+    bind_artifacts: dict[str, str] | None = None,
     resume_from: str | None = None,
 ) -> dict[str, Any]:
     """Append one legal phase event and atomically replace the receipt."""
@@ -210,6 +211,16 @@ def append_transition(
         resume_from = None
     elif resume_from is not None:
         raise ValueError("resume_from is valid only for BLOCKED")
+    artifacts = value.get("artifacts")
+    if not isinstance(artifacts, dict):
+        raise ValueError("receipt artifacts are invalid")
+    additions = {} if bind_artifacts is None else dict(bind_artifacts)
+    for relative, digest in additions.items():
+        existing = artifacts.get(relative)
+        if existing is not None and existing != digest:
+            raise ValueError(f"receipt artifact changed: {relative}")
+        artifacts[relative] = digest
+    value["artifacts"] = dict(sorted(artifacts.items()))
     events = value.get("events")
     if not isinstance(events, list):
         raise ValueError("receipt events must be an array")
