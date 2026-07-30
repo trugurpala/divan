@@ -5,9 +5,11 @@ import hashlib
 import json
 import pathlib
 import sys
-from typing import Any
+from collections.abc import Callable
+from datetime import datetime, timezone
+from typing import Any, cast
 
-from . import adoption, engine, goals, project_state, receipts, timeouts
+from . import adoption, engine, execution, goals, project_state, receipts, timeouts
 
 QUALIFYING_HOSTS = {
     "claude-code": ("claude", "--version"),
@@ -383,6 +385,328 @@ def build_proof_plan(
             "root": root,
             "runner_path": resolved_runner,
             "receipt_path": receipt_path,
+            "host": host,
             "checks": checks,
         },
+    }
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _utc_text(value: datetime) -> str:
+    if value.tzinfo is None:
+        raise ValueError("proof clock must return a timezone-aware datetime")
+    return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _atomic_journal(path: pathlib.Path, value: dict[str, Any]) -> None:
+    receipts._atomic_json(path, value)
+
+
+def _source_fingerprint(plan: dict[str, Any]) -> str:
+    private = plan["_private"]
+    root = private["root"]
+    check_rows = private["checks"]
+    workspaces = sorted(
+        {row["workspace_path"] for row in check_rows},
+        key=lambda item: item.as_posix(),
+    )
+    markers = (
+        "package.json",
+        "pyproject.toml",
+        "requirements.txt",
+        "setup.py",
+        "go.mod",
+        "Cargo.toml",
+    )
+    files: set[pathlib.Path] = {
+        root / ".divan" / "config.json",
+        root / ".divan" / "install-state.json",
+        private["receipt_path"],
+    }
+    for workspace in workspaces:
+        for marker in markers:
+            candidate = workspace / marker
+            if candidate.exists():
+                files.add(candidate)
+    rows: list[dict[str, str]] = []
+    for path in sorted(files, key=lambda item: item.as_posix()):
+        if project_state._is_reparse_or_symlink(path):
+            raise ValueError("proof identity input uses a symlink or reparse point")
+        resolved = path.resolve(strict=True)
+        try:
+            relative = resolved.relative_to(root).as_posix()
+        except ValueError as error:
+            raise ValueError("proof identity input escapes the project") from error
+        if not resolved.is_file() or resolved.stat().st_size > 4 * 1024 * 1024:
+            raise ValueError("proof identity input is unavailable or too large")
+        rows.append(
+            {
+                "path_sha256": _domain_hash(
+                    "divan-proof-identity-path-v1", relative
+                ),
+                "content_sha256": _hash_bytes(resolved.read_bytes()),
+            }
+        )
+    return _domain_hash("divan-proof-source-fingerprint-v1", rows)
+
+
+def _host_version(result: execution.ExecutionResult) -> str:
+    if result.status != "PASS" or result.returncode != 0:
+        raise ValueError("host version probe did not pass")
+    tokens = result.stdout.replace("\r", " ").replace("\n", " ").split()
+    candidates = [
+        token.removeprefix("v")
+        for token in tokens
+        if any(character.isdigit() for character in token)
+        and adoption.SAFE_TOKEN.fullmatch(token.removeprefix("v")) is not None
+    ]
+    if len(candidates) != 1:
+        raise ValueError("host version probe output is ambiguous")
+    return candidates[0]
+
+
+def _result_status(result: execution.ExecutionResult) -> str:
+    if result.status == "PASS" and result.returncode == 0:
+        return "passed"
+    if result.status == "TIMEOUT":
+        return "timed-out"
+    if result.status == "CANCELLED":
+        return "cancelled"
+    return "failed"
+
+
+def _public_check_result(
+    row: dict[str, Any], result: execution.ExecutionResult
+) -> dict[str, Any]:
+    duration_ms = max(0, round(result.elapsed_seconds * 1000))
+    duration_ms = min(duration_ms, row["timeout_ms"])
+    return {
+        "id": row["id"],
+        "class": row["class"],
+        "workspace_sha256": row["workspace_sha256"],
+        "runner": row["runner"],
+        "name": row["name"],
+        "argv_sha256": row["argv_sha256"],
+        "status": _result_status(result),
+        "exit_code": result.returncode,
+        "duration_ms": duration_ms,
+        "timeout_ms": row["timeout_ms"],
+        "timeout_policy_sha256": row["timeout_policy_sha256"],
+        "output_sha256": _domain_hash(
+            "divan-proof-output-v1",
+            {"stdout": result.stdout, "stderr": result.stderr},
+        ),
+    }
+
+
+def _failure_result(
+    plan: dict[str, Any], journal: dict[str, Any], status: str, reason: str
+) -> dict[str, Any]:
+    journal["status"] = status
+    journal["reason"] = reason
+    staging = (
+        plan["_private"]["root"]
+        / ".divan"
+        / "adoption"
+        / ".staging"
+        / plan["proof_id"]
+    )
+    _atomic_journal(staging / "journal.json", journal)
+    return {
+        "schema_version": 1,
+        "status": status,
+        "proof_id": plan["proof_id"],
+        "reason": reason,
+        "receipt_status": "invalid",
+        "files": [f".divan/adoption/.staging/{plan['proof_id']}/journal.json"],
+    }
+
+
+def execute_proof(
+    plan: dict[str, Any],
+    *,
+    command_runner: Callable[..., execution.ExecutionResult] = execution.run,
+    clock: Callable[[], datetime] = _utc_now,
+) -> dict[str, Any]:
+    """Execute one proof plan once and promote only offline-verified evidence."""
+    private = plan.get("_private")
+    if not isinstance(private, dict):
+        raise ValueError("proof plan has no private execution context")
+    root = private.get("root")
+    runner_path = private.get("runner_path")
+    host = private.get("host")
+    if (
+        not isinstance(root, pathlib.Path)
+        or not isinstance(runner_path, pathlib.Path)
+        or not isinstance(host, str)
+    ):
+        raise ValueError("proof plan private execution context is invalid")
+    final = root / ".divan" / "adoption" / str(plan.get("proof_id", ""))
+    staging = (
+        root
+        / ".divan"
+        / "adoption"
+        / ".staging"
+        / str(plan.get("proof_id", ""))
+    )
+    if final.exists():
+        raise ValueError("final proof already exists and will not be overwritten")
+    if staging.exists():
+        raise ValueError("proof staging directory already exists")
+    fresh = build_proof_plan(
+        root,
+        plan["goal"]["id"],
+        host,
+        plan["operator"]["role"],
+        runner_path=runner_path,
+    )
+    if fresh["plan_digest"] != plan.get("plan_digest"):
+        raise ValueError("proof inputs changed after preview")
+    staging.mkdir(parents=True)
+    started_at = _utc_text(clock())
+    journal: dict[str, Any] = {
+        "schema_version": 1,
+        "proof_id": plan["proof_id"],
+        "status": "running",
+        "host_probe": {
+            "status": "pending",
+            "argv_sha256": _domain_hash(
+                "divan-host-probe-v1", list(QUALIFYING_HOSTS[host])
+            ),
+        },
+        "checks": [],
+    }
+    _atomic_journal(staging / "journal.json", journal)
+    host_decision = timeouts.resolve_default("fast-check")
+    host_result = command_runner(
+        QUALIFYING_HOSTS[host],
+        host_decision,
+        mutating=False,
+        cwd=str(root),
+    )
+    try:
+        observed_version = _host_version(host_result)
+    except ValueError as error:
+        journal["host_probe"] = {
+            **journal["host_probe"],
+            "status": _result_status(host_result),
+            "output_sha256": _domain_hash(
+                "divan-host-probe-output-v1",
+                {"stdout": host_result.stdout, "stderr": host_result.stderr},
+            ),
+        }
+        return _failure_result(plan, journal, "blocked", str(error))
+    journal["host_probe"] = {
+        **journal["host_probe"],
+        "status": "passed",
+        "version": observed_version,
+        "output_sha256": _domain_hash(
+            "divan-host-probe-output-v1",
+            {"stdout": host_result.stdout, "stderr": host_result.stderr},
+        ),
+    }
+    _atomic_journal(staging / "journal.json", journal)
+    baseline = _source_fingerprint(plan)
+    receipt_checks: list[dict[str, Any]] = []
+    for row in private["checks"]:
+        pending = {
+            "id": row["id"],
+            "class": row["class"],
+            "workspace_sha256": row["workspace_sha256"],
+            "runner": row["runner"],
+            "name": row["name"],
+            "argv_sha256": row["argv_sha256"],
+            "status": "pending",
+            "timeout_ms": row["timeout_ms"],
+            "timeout_policy_sha256": row["timeout_policy_sha256"],
+        }
+        journal["checks"].append(pending)
+        _atomic_journal(staging / "journal.json", journal)
+        decision = timeouts.resolve_default(row["timeout_class"])
+        result = command_runner(
+            row["argv"],
+            decision,
+            mutating=True,
+            cwd=str(row["workspace_path"]),
+        )
+        public_result = _public_check_result(row, result)
+        journal["checks"][-1] = public_result
+        _atomic_journal(staging / "journal.json", journal)
+        if public_result["status"] != "passed":
+            status = (
+                "cancelled"
+                if public_result["status"] == "cancelled"
+                else "failed-checks"
+            )
+            return _failure_result(
+                plan,
+                journal,
+                status,
+                f"check {row['id']} {public_result['status']}",
+            )
+        receipt_checks.append(public_result)
+    if _source_fingerprint(plan) != baseline:
+        return _failure_result(
+            plan,
+            journal,
+            "invalid",
+            "bounded project identity changed during proof",
+        )
+    completed_at = _utc_text(clock())
+    receipt_value = adoption.build_clean_room_receipt(
+        divan=plan["divan"],
+        host={
+            "name": host,
+            "version": observed_version,
+            "version_source": "observed-cli",
+        },
+        environment=plan["environment"],
+        operator=plan["operator"],
+        project=plan["project"],
+        goal=plan["goal"],
+        checks=receipt_checks,
+        proof={
+            "id": plan["proof_id"],
+            "started_at": started_at,
+            "completed_at": completed_at,
+            "source_stable": True,
+        },
+    )
+    json_path = staging / "adoption-receipt.json"
+    markdown_path = staging / "adoption-receipt.md"
+    json_path.write_bytes(adoption.serialize_adoption_json(receipt_value))
+    markdown_path.write_bytes(
+        adoption.serialize_adoption_markdown(receipt_value)
+    )
+    for path in (json_path, markdown_path):
+        verification = adoption.verify_adoption(path)
+        if (
+            verification.get("status") != "valid-clean-room-adoption"
+            or verification.get("eligible_for_v1") is not True
+        ):
+            return _failure_result(
+                plan,
+                journal,
+                "invalid",
+                "staged adoption receipt did not verify",
+            )
+    journal["status"] = "passed"
+    receipt_proof = cast(dict[str, Any], receipt_value["proof"])
+    journal["receipt_digest"] = receipt_proof["receipt_digest"]
+    _atomic_journal(staging / "journal.json", journal)
+    staging.rename(final)
+    return {
+        "schema_version": 1,
+        "status": "passed",
+        "proof_id": plan["proof_id"],
+        "receipt_status": "valid-clean-room-adoption",
+        "checks_passed": len(receipt_checks),
+        "files": [
+            f".divan/adoption/{plan['proof_id']}/adoption-receipt.json",
+            f".divan/adoption/{plan['proof_id']}/adoption-receipt.md",
+            f".divan/adoption/{plan['proof_id']}/journal.json",
+        ],
     }

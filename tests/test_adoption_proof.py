@@ -5,6 +5,7 @@ import pathlib
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -12,7 +13,7 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import goals, project_os, receipts  # noqa: E402
+from divan_runtime import execution, goals, project_os, receipts  # noqa: E402
 
 try:
     from divan_runtime import adoption_proof  # noqa: E402
@@ -248,6 +249,244 @@ class CleanRoomProofPlanningTests(unittest.TestCase):
                     "independent",
                     runner_path=runner,
                 )
+
+
+class CleanRoomProofExecutionTests(CleanRoomProofPlanningTests):
+    def make_plan(
+        self, root: pathlib.Path, host: str = "claude-code"
+    ) -> dict[str, object]:
+        module = self.require_module()
+        goal_id, runner = self.create_verified_project(root)
+        return module.build_proof_plan(
+            root,
+            goal_id,
+            host,
+            "maintainer",
+            runner_path=runner,
+        )
+
+    @staticmethod
+    def result(
+        status: str = "PASS",
+        returncode: int | None = 0,
+        stdout: str = "",
+        stderr: str = "",
+        elapsed: float = 0.01,
+    ) -> execution.ExecutionResult:
+        return execution.ExecutionResult(
+            status=status,
+            returncode=returncode,
+            stdout=stdout,
+            stderr=stderr,
+            elapsed_seconds=elapsed,
+            timeout={},
+            mutating=False,
+            retry_allowed=False,
+            next_action="",
+        )
+
+    def test_success_journals_pending_before_checks_and_promotes_receipts(
+        self,
+    ) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-execute-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            plan = self.make_plan(root)
+            calls: list[tuple[str, ...]] = []
+            pending_seen: list[bool] = []
+
+            def fake_runner(command, _decision, **kwargs):
+                argv = tuple(command)
+                calls.append(argv)
+                if kwargs.get("mutating"):
+                    journal = (
+                        root
+                        / ".divan"
+                        / "adoption"
+                        / ".staging"
+                        / plan["proof_id"]
+                        / "journal.json"
+                    )
+                    payload = json.loads(journal.read_text(encoding="utf-8"))
+                    pending_seen.append(
+                        payload["checks"][-1]["status"] == "pending"
+                    )
+                    return self.result(
+                        stdout="55 tests passed\n",
+                        elapsed=0.2,
+                    )
+                return self.result(stdout="Claude Code 2.1.220\n")
+
+            moments = iter(
+                (
+                    datetime(2026, 7, 30, 10, 0, tzinfo=timezone.utc),
+                    datetime(2026, 7, 30, 10, 1, tzinfo=timezone.utc),
+                )
+            )
+            result = module.execute_proof(
+                plan,
+                command_runner=fake_runner,
+                clock=lambda: next(moments),
+            )
+
+            final = (
+                root / ".divan" / "adoption" / str(plan["proof_id"])
+            )
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(
+                result["receipt_status"], "valid-clean-room-adoption"
+            )
+            self.assertTrue(pending_seen)
+            self.assertEqual(calls[0], ("claude", "--version"))
+            self.assertTrue((final / "adoption-receipt.json").is_file())
+            self.assertTrue((final / "adoption-receipt.md").is_file())
+            self.assertTrue((final / "journal.json").is_file())
+            self.assertFalse(
+                (
+                    root
+                    / ".divan"
+                    / "adoption"
+                    / ".staging"
+                    / str(plan["proof_id"])
+                ).exists()
+            )
+            json_text = (final / "adoption-receipt.json").read_text(
+                encoding="utf-8"
+            )
+            self.assertNotIn(str(root), json_text)
+            self.assertNotIn("vitest run", json_text)
+            self.assertEqual(
+                module.adoption.verify_adoption(
+                    final / "adoption-receipt.json"
+                )["status"],
+                "valid-clean-room-adoption",
+            )
+            self.assertEqual(
+                module.adoption.verify_adoption(
+                    final / "adoption-receipt.md"
+                )["status"],
+                "valid-clean-room-adoption",
+            )
+
+    def test_failure_timeout_and_cancel_stop_without_promotion(self) -> None:
+        module = self.require_module()
+        cases = (
+            ("FAILED", 2, "failed-checks"),
+            ("TIMEOUT", None, "failed-checks"),
+            ("CANCELLED", None, "cancelled"),
+        )
+        for command_status, returncode, expected in cases:
+            with self.subTest(command_status=command_status):
+                with tempfile.TemporaryDirectory(
+                    prefix="divan-proof-failure-"
+                ) as temporary:
+                    root = pathlib.Path(temporary) / "project"
+                    root.mkdir()
+                    plan = self.make_plan(root)
+                    project_calls = 0
+
+                    def fake_runner(command, _decision, **kwargs):
+                        nonlocal project_calls
+                        if not kwargs.get("mutating"):
+                            return self.result(
+                                stdout="Claude Code 2.1.220\n"
+                            )
+                        project_calls += 1
+                        return self.result(
+                            command_status,
+                            returncode,
+                            stderr="bounded failure",
+                        )
+
+                    result = module.execute_proof(
+                        plan, command_runner=fake_runner
+                    )
+                    staging = (
+                        root
+                        / ".divan"
+                        / "adoption"
+                        / ".staging"
+                        / str(plan["proof_id"])
+                    )
+                    final = (
+                        root
+                        / ".divan"
+                        / "adoption"
+                        / str(plan["proof_id"])
+                    )
+                    self.assertEqual(result["status"], expected)
+                    self.assertEqual(project_calls, 1)
+                    self.assertTrue((staging / "journal.json").is_file())
+                    self.assertFalse(final.exists())
+                    self.assertFalse(
+                        (staging / "adoption-receipt.json").exists()
+                    )
+
+    def test_project_identity_drift_blocks_receipt(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-drift-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            plan = self.make_plan(root)
+            changed = False
+
+            def fake_runner(command, _decision, **kwargs):
+                nonlocal changed
+                if not kwargs.get("mutating"):
+                    return self.result(stdout="Claude Code 2.1.220\n")
+                if not changed:
+                    changed = True
+                    package = root / "package.json"
+                    package.write_text(
+                        package.read_text(encoding="utf-8") + "\n",
+                        encoding="utf-8",
+                    )
+                return self.result(stdout="passed\n")
+
+            result = module.execute_proof(
+                plan, command_runner=fake_runner
+            )
+
+            self.assertEqual(result["status"], "invalid")
+            self.assertIn("changed", result["reason"])
+            self.assertFalse(
+                (
+                    root
+                    / ".divan"
+                    / "adoption"
+                    / str(plan["proof_id"])
+                ).exists()
+            )
+
+    def test_existing_final_proof_is_never_overwritten(self) -> None:
+        module = self.require_module()
+        with tempfile.TemporaryDirectory(
+            prefix="divan-proof-existing-"
+        ) as temporary:
+            root = pathlib.Path(temporary) / "project"
+            root.mkdir()
+            plan = self.make_plan(root)
+            final = (
+                root / ".divan" / "adoption" / str(plan["proof_id"])
+            )
+            final.mkdir(parents=True)
+            marker = final / "marker.txt"
+            marker.write_text("keep\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "already exists"):
+                module.execute_proof(
+                    plan,
+                    command_runner=lambda *_args, **_kwargs: self.fail(
+                        "no process should start"
+                    ),
+                )
+
+            self.assertEqual(marker.read_text(encoding="utf-8"), "keep\n")
 
 
 if __name__ == "__main__":
