@@ -1,4 +1,4 @@
-# Divan Wiki · v0.18.3
+# Divan Wiki · v0.18.4
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -18,9 +18,15 @@ Son kapı kişinin kimliğini değil, Divan'dan ayrı gerçek projedeki makine
 kanıtını ölçer. Önce yazmayan planı gör, sonra aynı planı uygula:
 
 ```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
+
+İlk iki komut gerçek kod/test kanıtını hedefe atomik bağlar; yalnız plan
+dosyasıyla VERIFIED olunamaz. Son iki komut yayımlanmış runner, host ve test
+sonucunu gizlilik sınırlı makbuza dönüştürür.
 
 Yeni Sadrazam sözleşmesi, host ajanını başlangıçta ve anlamlı aşama
 değişimlerinde şu an ne olduğunu, neden önemli olduğunu ve sırada ne bulunduğunu
@@ -34,7 +40,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v0.18.3 · **Son yayımlanan:** v0.18.2 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v0.18.4 · **Son yayımlanan:** v0.18.3 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

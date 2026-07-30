@@ -4,22 +4,20 @@ Son güncelleme: 2026-07-30
 
 ## Yayın durumu
 
-- Latest published release: v0.18.2
-- Published commit: d3a2a41f9b88c3639f9832c24dd898fd8b88cbe4
-- Publication evidence: .divan/evidence/teftis-20260730-v0182-release.md
-- Release asset evidence: .divan/evidence/teftis-20260730-v0182-release.md
+- Latest published release: v0.18.3
+- Published commit: 294958620e6382fe10296ab15246e100fab84764
+- Publication evidence: .divan/evidence/teftis-20260730-v0183-release.md
+- Release asset evidence: .divan/evidence/teftis-20260730-v0183-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is v0.18.2 at immutable commit `d3a2a41`.
-PR #60 merged the read-only bilingual local Seyir page, evidence-bound task
-progress, deterministic `divan.pyz` clean-host bootstrap, exact
-source-commit/catalog authority, durable recovery commands, safe Windows npm
-shim discovery, evidence-backed timeout decisions, and the repeated-CI-failure
-circuit breaker. All required main workflows passed. Seven release assets were
-downloaded again, their SHA-256 values matched, strict attestations passed, and
-Pages plus Wiki returned the published version.
+The latest published release is v0.18.3 at immutable commit `2949586`.
+PR #63 published `adoption prove`, privacy-bounded schema-2 receipts, immutable
+release authority, one-shot bounded checks, source-stability protection, and
+the machine-backed v1 gate. All nine required main/publication workflows
+passed. Seven release assets were downloaded again, their SHA-256 values
+matched, strict attestations passed, and Pages plus Wiki returned v0.18.3.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -28,10 +26,13 @@ the final authority and only `owner` may expand scope. Legacy Company OS,
 Project OS, `/company`, `company-validate`, and Python/JSON paths remain bounded
 compatibility surfaces through v1. Issue #34 now targets machine-verifiable
 clean-room evidence rather than operator identity. The schema-2 mechanism is
-implemented locally but not yet released, so v1 remains 7/8.
+published, but no reviewed receipt from the released mechanism is committed,
+so v1 remains 7/8.
 
-v0.18.3 release surfaces are prepared locally. This is not yet a PR, merge,
-tag, GitHub Release, Pages/Wiki publication, or clean-room receipt claim.
+v0.18.4 is a local trust candidate. It binds real implementation/test evidence
+on VERIFIED, rejects plan-only proof, removes common-project false positives,
+and keeps bug-fix routing focused. This is not yet a PR, merge, tag, GitHub
+Release, Pages/Wiki publication, or clean-room receipt claim.
 
 ## Yapıldı
 
@@ -353,8 +354,9 @@ tag, GitHub Release, Pages/Wiki publication, or clean-room receipt claim.
 
 ## Devam ediyor
 
-- v0.18.3 must publish the schema-2 mechanism. After publication, the existing
-  verified RSK goal can be re-proven with bounded checks. Only a privacy-reviewed
+- v0.18.4 must publish the real-evidence binding fix. After publication, the
+  separate clean-room canary can be initialized with the released runner and
+  re-proven with bounded checks. Only a privacy-reviewed
   `valid-clean-room-adoption` receipt may move v1 from 7/8 to 8/8.
 
 ## Tarihsel devam kayıtları
@@ -385,6 +387,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Release v0.18.3 mechanism, rebuild both portable runners, then rerun adoption prove
-against the existing verified RSK goal and commit only the privacy-reviewed schema-2
-receipt before changing the v1 score from 7/8 to 8/8.
+Publish v0.18.4, download and verify both portable runners, then rerun
+`adoption prove` against the separate clean-room canary. Commit only the
+privacy-reviewed schema-2 receipt and re-verify it before changing the v1
+score from 7/8 to 8/8.

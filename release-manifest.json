@@ -216,6 +216,7 @@
     {"id": "v0181-codex-auto-install-spec", "path": ".divan/spec/v0.18.1-codex-auto-install.md", "marker": "# v0.18.1 target — Codex Desktop auto-install", "replace_version": false},
     {"id": "v0181-release-candidate-evidence", "path": ".divan/evidence/teftis-20260730-v0181-release-candidate.md", "marker": "# v0.18.1 local release-candidate evidence", "replace_version": false},
     {"id": "v0181-release-evidence", "path": ".divan/evidence/teftis-20260730-v0181-release.md", "marker": "# v0.18.1 immutable release evidence", "replace_version": false},
+    {"id": "v0183-release-evidence", "path": ".divan/evidence/teftis-20260730-v0183-release.md", "marker": "# v0.18.3 immutable release evidence", "replace_version": false},
     {"id": "codex-auto-install-design", "path": "docs/superpowers/specs/2026-07-30-codex-auto-install-design.md", "marker": "# Codex Desktop Auto-Install Design", "replace_version": false},
     {"id": "codex-auto-install-plan", "path": "docs/superpowers/plans/2026-07-30-codex-auto-install.md", "marker": "# Codex Desktop Auto-Install Implementation Plan", "replace_version": false},
     {"id": "nizam-i-sefer-tests", "path": "tests/test_planning_intelligence.py", "marker": "class NizamPlanningTests", "replace_version": false},

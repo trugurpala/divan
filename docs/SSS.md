@@ -12,9 +12,14 @@ ayrı gerçek projede doğrulanmış hedef için önce yazmayan plan, sonra uygu
 çalıştırılır:
 
 ```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
+
+İlk iki komut gerçek kod/test kanıtını hedef makbuzuna bağlamadan Divan hedefi
+VERIFIED saymaz.
 
 Yalnız `valid-clean-room-adoption` geçerlidir; bu sonuç üçüncü taraf onayı veya
 pazar benimsemesi iddia etmez.

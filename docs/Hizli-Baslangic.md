@@ -34,16 +34,16 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.3
-python scripts/divan.py install --host both --ref v0.18.3 --execute
+python scripts/divan.py install --host both --ref v0.18.4
+python scripts/divan.py install --host both --ref v0.18.4 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.18.3
-python scripts/divan.py update --host both --ref v0.18.3
-python scripts/divan.py update --host both --ref v0.18.3 --execute
+python scripts/divan.py doctor --host both --ref v0.18.4
+python scripts/divan.py update --host both --ref v0.18.4
+python scripts/divan.py update --host both --ref v0.18.4 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
@@ -124,9 +124,14 @@ Doğrulanmış hedefin varsa önce hiçbir şey yazmayan planı gör. Plan doğr
 uygula; bakımcı veya dış kullanıcı olman teknik sonucu değiştirmez:
 
 ```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 ```
+
+VERIFIED geçişi gerçek kod ve test/doğrulama dosyalarını atomik olarak hedef
+makbuzuna bağlar; yalnız plan dosyası kanıt sayılmaz.
 
 Yalnız `valid-clean-room-adoption` sonucu v1'e adaydır. Bu kayıt bağımsız
 kullanıcı sayısı veya verim artışı iddiası değildir; gerçek test/regresyon

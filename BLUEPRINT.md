@@ -61,7 +61,8 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     ADR 0011'dedir.
 12. **Doğrulanmış temiz-proje kabulü:** v1'in son kapısı operatörün kimliğini
     değil; değişmez Divan release'i, Divan'dan ayrı gerçek proje, doğrulanmış
-    hedef, bir kez çalışan sınırlı test/regresyon kontrolleri ve gizlilik
+    hedefin VERIFIED olayına atomik bağlanan gerçek uygulama/test kanıtı, bir
+    kez çalışan sınırlı test/regresyon kontrolleri ve gizlilik
     sınırlı schema-2 makbuzu ölçer. Bakımcı ile dış kullanıcı aynı teknik kapıya
     tabidir. Bu kanıt pazar benimsemesi, üçüncü taraf onayı veya verim artışı
     iddiası değildir. Runner yan dosyası yalnız taşıma bütünlüğüdür; kanıt
@@ -89,14 +90,22 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v0.18.3 ✓** Local release candidate: `adoption prove` ile doğrulanmış temiz-proje
-  kanıt mekanizması hazırlandı. Issue #34 kimlik beyanı değil, çevrimdışı
-  doğrulanabilir schema-2 teknik kanıt isteyecek. PR/main/tag/Release/Pages/Wiki
-  henüz ayrı kanıtlanacaktır; gerçek yayımlanmış makbuz oluşana kadar v1
-  dürüstçe 7/8 kalır.
+- **v0.18.4 ✓** Local trust candidate: VERIFIED geçişi gerçek uygulama/test
+  kanıtını atomik bağlar; temiz-proje kanıtı yalnız bu terminal olaydaki
+  dosyaları kabul eder. Genel `VERSION` dosyası ve Divan dışı marketplace
+  yanlış pozitif değildir; bug-fix fermanı gereksiz feature/testing akışlarını
+  çoğaltmaz. PR/main/tag/Release/Pages/Wiki ve yayımlanmış-runner temiz-proje
+  makbuzu henüz ayrı kanıtlanacaktır; v1 dürüstçe 7/8 kalır.
 
 ### Yayımlanan temel
 
+- **v0.18.3 ✓** Published verified clean-room mechanism: `adoption prove`,
+  schema-2 privacy-bounded receipts, immutable release authority, one-shot
+  bounded checks, source-stability protection, and machine-backed v1
+  validation. PR #63 merged at `294958620e6382fe10296ab15246e100fab84764`;
+  all nine main/publication workflows, seven checksummed and strictly attested
+  assets, immutable tag/Release, Pages, and Wiki are bound in the v0.18.3
+  evidence. A released-runner receipt is still absent, so v1 remains 7/8.
 - **v0.18.2 ✓** Published Seyir and clean-host bootstrap release: bilingual
   loopback-only progress UI, deterministic single-file `divan.pyz`, exact
   source/catalog authority, evidence-backed timeouts, repeated-failure circuit
@@ -192,8 +201,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 1. ✓ v0.12.0 birleştirme/tag/Release/Pages/Wiki ve global kurulum kanıtı.
 2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
-3. v0.18.3 schema-2 temiz-proje mekanizmasını değişmez release olarak yayımla.
-4. Yayımlanmış mekanizmayla Divan'dan ayrı gerçek projede
+3. ✓ v0.18.3 schema-2 temiz-proje mekanizmasını değişmez release olarak yayımla.
+4. v0.18.4 gerçek-kanıt bağlama düzeltmesini değişmez release olarak yayımla.
+5. Yayımlanmış mekanizmayla Divan'dan ayrı gerçek projede
    `valid-clean-room-adoption` makbuzu üret, repoya kaydet ve çevrimdışı yeniden
    doğrula.
 
@@ -214,6 +224,13 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-30: v0.18.3 PR #63 ile `294958620e6382fe10296ab15246e100fab84764`
+  commit'inde yayımlandı. Dokuz ana/yayın workflow'u, yedi indirilen varlık,
+  checksum, sıkı attestation, Pages ve Wiki doğrulandı. Sonraki temiz-proje
+  provası; hedefin gerçek uygulama/test kanıtını bağlayamaması, ortak `VERSION`
+  dosyasını yanlış Divan imzası sayması ve küçük bug-fix'i 18 göreve
+  genişletmesi sorunlarını ortaya çıkardı. v0.18.4 bu üç güven sınırını
+  düzeltir; yayımlanmış makbuz oluşana kadar v1 7/8'dir.
 - 2026-07-30: v0.18.3 verified clean-room adoption implementation began from
   published v0.18.2. Schema-1 receipts remain compatibility-only; schema-2
   binds immutable release identity, a project distinct from Divan, a verified
@@ -439,6 +456,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Release v0.18.3 mechanism, rebuild both portable runners, then rerun adoption
-prove against the existing verified RSK goal and commit only the
-privacy-reviewed schema-2 receipt before changing the v1 score from 7/8 to 8/8.
+Publish v0.18.4, download and verify both portable runners, then rerun
+`adoption prove` against the separate clean-room canary. Commit only the
+privacy-reviewed schema-2 receipt and re-verify it before changing the v1
+score from 7/8 to 8/8.

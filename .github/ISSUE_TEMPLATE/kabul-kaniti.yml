@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Bu form kişinin kim olduğunu değil, gerçek ve Divan'dan ayrı bir projede çalışan makinece doğrulanmış kanıtı ölçer. Bakımcı ve dış kullanıcı aynı teknik kapıya tabidir. Yalnız `adoption prove --execute` tarafından üretilen, çevrimdışı doğrulamada `valid-clean-room-adoption` sonucu veren schema-2 makbuzu gönderin. Bu kanıt pazar benimsemesi, üçüncü taraf onayı, hız veya kalite artışı iddiası değildir.
+        Bu form kişinin kim olduğunu değil, gerçek ve Divan'dan ayrı bir projede çalışan makinece doğrulanmış kanıtı ölçer. Bakımcı ve dış kullanıcı aynı teknik kapıya tabidir. Önce gerçek uygulama/test dosyalarını `goal advance --to verified --evidence ... --execute` ile hedefe bağlayın. Yalnız `adoption prove --execute` tarafından üretilen, çevrimdışı doğrulamada `valid-clean-room-adoption` sonucu veren schema-2 makbuzu gönderin. Bu kanıt pazar benimsemesi, üçüncü taraf onayı, hız veya kalite artışı iddiası değildir.
   - type: input
     id: release
     attributes:

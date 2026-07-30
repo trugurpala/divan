@@ -129,10 +129,19 @@ selected host through its fixed version probe, runs a bounded test/regression
 plan once, detects source drift, and atomically seals schema-2 JSON and Markdown:
 
 ```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <implementation-file> <test-or-verification-file>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <implementation-file> <test-or-verification-file> --execute
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
+
+The VERIFIED transition validates project-relative evidence paths, rejects
+links, traversal, missing files, secrets, and oversized files, then hashes the
+accepted files into the goal receipt in the same atomic write as the state
+transition. A goal backed only by generated specification or plan files cannot
+become VERIFIED, and `adoption prove` independently requires evidence recorded
+on the VERIFIED event.
 
 Operator role is descriptive and does not change eligibility: maintainer and
 external operators pass the same technical gate. The receipt stores hashes,
