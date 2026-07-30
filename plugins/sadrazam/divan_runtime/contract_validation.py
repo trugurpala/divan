@@ -15,6 +15,7 @@ RUNTIME_DATA_FILES = (
     "frameworks.json", "governance.json", "impact-graph.json", "modules.json",
     "roles.json", "workflows.json", "messages.json",
     "version.txt",
+    "data/timeout-policy.json", "data/timeout-benchmarks.json",
     "studio/index.html", "studio/studio.css", "studio/studio.js",
 )
 REQUIRED_MODULE_IDS = (

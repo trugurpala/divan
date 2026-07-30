@@ -21,7 +21,7 @@ from urllib.request import (
     build_opener,
 )
 
-from . import goals, project_os, receipts
+from . import execution, goals, project_os, receipts, timeouts
 
 
 class ProviderCapabilityV1(dict[str, Any]):
@@ -516,14 +516,28 @@ def _verification_command(
 
 
 def _default_runner(command: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
+    observed = execution.run(
         command,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="strict",
-        timeout=30,
-        check=False,
+        timeouts.resolve_default("provider"),
+        mutating=False,
+    )
+    return_codes = {
+        "TIMEOUT": 124,
+        "CANCELLED": 130,
+    }
+    returncode = observed.returncode
+    if returncode is None:
+        returncode = return_codes.get(observed.status, 125)
+    stderr = observed.stderr
+    if observed.status == "TIMEOUT":
+        stderr = f"divan-timeout: {observed.next_action}"
+    elif observed.status == "CANCELLED":
+        stderr = f"divan-cancelled: {observed.next_action}"
+    return subprocess.CompletedProcess(
+        command,
+        returncode,
+        observed.stdout,
+        stderr,
     )
 
 

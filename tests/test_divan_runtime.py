@@ -68,7 +68,7 @@ class DivanRuntimeContractTests(unittest.TestCase):
                 for row in architecture["modules"]
                 if row["id"] == "evidence"
             ),
-            ["receipts"],
+            ["receipts", "execution"],
         )
         self.assertIn(
             "compatibility",

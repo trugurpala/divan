@@ -5,8 +5,16 @@
       "id": "kernel",
       "en": "Kernel",
       "tr": "Çekirdek",
-      "python_modules": ["kernel", "contract_validation"],
-      "capabilities": ["architecture_validation", "module_resolution"],
+      "python_modules": [
+        "kernel",
+        "contract_validation",
+        "timeouts"
+      ],
+      "capabilities": [
+        "architecture_validation",
+        "module_resolution",
+        "adaptive_timeout_policy"
+      ],
       "depends_on": [],
       "required": true
     },
@@ -15,7 +23,10 @@
       "en": "Governance",
       "tr": "Divan Nizamı",
       "python_modules": ["governance"],
-      "capabilities": ["authority_chain", "scope_control"],
+      "capabilities": [
+        "authority_chain",
+        "scope_control"
+      ],
       "depends_on": ["kernel"],
       "required": true
     },
@@ -38,8 +49,12 @@
       "id": "evidence",
       "en": "Evidence",
       "tr": "Kanıt",
-      "python_modules": ["receipts"],
-      "capabilities": ["evidence_ledger", "receipt_verification"],
+      "python_modules": ["receipts", "execution"],
+      "capabilities": [
+        "evidence_ledger",
+        "receipt_verification",
+        "bounded_command_execution"
+      ],
       "depends_on": ["kernel", "governance"],
       "required": true
     },
@@ -61,8 +76,21 @@
       "id": "records",
       "en": "Records",
       "tr": "Defter",
-      "python_modules": ["goals", "goal_archive", "adoption", "seyir_state"],
-      "capabilities": ["goal_state", "active_goal", "task_progress", "archive", "adoption"],
+      "python_modules": [
+        "goals",
+        "goal_archive",
+        "adoption",
+        "seyir_state",
+        "ci_guard"
+      ],
+      "capabilities": [
+        "goal_state",
+        "active_goal",
+        "task_progress",
+        "archive",
+        "adoption",
+        "ci_failure_circuit_breaker"
+      ],
       "depends_on": ["kernel", "governance", "council", "evidence", "project"],
       "required": true
     },
