@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "engines": [
+    {
+      "id": "backstage",
+      "category": "portal",
+      "status": "candidate",
+      "decision": "ADAPT",
+      "capabilities": [
+        "software-catalog-projection",
+        "software-template-projection",
+        "techdocs-projection",
+        "api-docs-projection"
+      ],
+      "constraints": [
+        "not-divan-control-plane",
+        "optional-sidecar-only",
+        "community-plugins-require-separate-admission"
+      ],
+      "supported_hosts": ["claude", "codex", "standalone"],
+      "installation_mode": "sidecar",
+      "license": {
+        "spdx": "Apache-2.0",
+        "evidence_url": "https://github.com/backstage/backstage/blob/master/LICENSE",
+        "scope_note": "Example metadata only. A reviewed immutable commit must be recorded before adoption."
+      },
+      "source": {
+        "canonical_url": "https://github.com/backstage/backstage"
+      },
+      "pin_policy": "immutable-commit",
+      "quality_profile": "portal-provider-v1",
+      "escape_plan": {
+        "database_owned_by_project": true,
+        "business_logic_outside_engine": true,
+        "export_test_required": true,
+        "uninstall_test_required": true,
+        "notes": "Divan CLI and receipts remain available when the portal is absent."
+      },
+      "adapter_contract_version": 1,
+      "risk_notes": "Large Node ecosystem and variable community-plugin quality require strict admission and isolation."
+    },
+    {
+      "id": "nx",
+      "category": "monorepo",
+      "status": "candidate",
+      "decision": "ADOPT",
+      "capabilities": [
+        "project-graph",
+        "generators",
+        "executors",
+        "migrations",
+        "dependency-boundaries"
+      ],
+      "constraints": [
+        "typescript-projects-only",
+        "not-required-by-python-core"
+      ],
+      "supported_hosts": ["claude", "codex", "standalone"],
+      "installation_mode": "dependency",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/nrwl/nx/blob/master/LICENSE",
+        "scope_note": "Example metadata only. A reviewed immutable commit and lockfile are required before adoption."
+      },
+      "source": {
+        "canonical_url": "https://github.com/nrwl/nx"
+      },
+      "pin_policy": "lockfile",
+      "quality_profile": "typescript-monorepo-v1",
+      "escape_plan": {
+        "database_owned_by_project": true,
+        "business_logic_outside_engine": true,
+        "export_test_required": false,
+        "uninstall_test_required": true,
+        "notes": "Generated projects must retain ordinary package scripts and must not require Divan or Nx to run in production."
+      },
+      "adapter_contract_version": 1,
+      "risk_notes": "Plugin APIs and migration behavior may change between major releases."
+    },
+    {
+      "id": "lowdefy",
+      "category": "internal-app",
+      "status": "candidate",
+      "decision": "ADOPT",
+      "capabilities": [
+        "forms",
+        "crud",
+        "tables",
+        "internal-dashboard"
+      ],
+      "constraints": [
+        "not-for-highly-custom-public-ui",
+        "business-logic-must-remain-outside-ui-config"
+      ],
+      "supported_hosts": ["claude", "codex", "standalone"],
+      "installation_mode": "provider",
+      "license": {
+        "spdx": "Apache-2.0",
+        "evidence_url": "https://github.com/lowdefy/lowdefy/blob/main/LICENSE",
+        "scope_note": "Example metadata only. A reviewed immutable commit and package lock are required before adoption."
+      },
+      "source": {
+        "canonical_url": "https://github.com/lowdefy/lowdefy"
+      },
+      "pin_policy": "lockfile",
+      "quality_profile": "internal-app-v1",
+      "escape_plan": {
+        "database_owned_by_project": true,
+        "business_logic_outside_engine": true,
+        "export_test_required": true,
+        "uninstall_test_required": true,
+        "notes": "The project owns the API, database schema and domain logic. Lowdefy is replaceable UI configuration."
+      },
+      "adapter_contract_version": 1,
+      "risk_notes": "Configuration convenience can hide coupling unless domain logic and data ownership are enforced."
+    }
+  ]
+}
