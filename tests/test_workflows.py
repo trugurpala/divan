@@ -197,6 +197,15 @@ class WorkflowHardeningTests(unittest.TestCase):
             '"$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum"',
             text,
         )
+        self.assertIn("Bootstrap dosyasını temiz hostta doğrula", text)
+        self.assertIn(
+            "python scripts/build_bootstrap.py --output \"$RUNNER_TEMP/divan.pyz\"",
+            text,
+        )
+        self.assertIn(
+            'python "$RUNNER_TEMP/divan.pyz" doctor --host codex --json',
+            text,
+        )
 
     def test_non_main_dispatch_cannot_reach_publication(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
