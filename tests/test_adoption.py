@@ -91,12 +91,25 @@ class AdoptionReceiptTests(unittest.TestCase):
             self.assertNotIn("github.com", serialized)
             self.assertNotIn("plugin", serialized.casefold())
             self.assertEqual(
-                module.verify_adoption(json_path)["status"],
-                "valid-owner-canary",
+                module.verify_adoption(json_path),
+                {
+                    "schema_version": 1,
+                    "status": "valid-schema-1-owner-canary",
+                    "eligible_for_v1": False,
+                    "errors": [],
+                },
             )
             self.assertEqual(
-                module.verify_adoption(markdown_path)["status"],
-                "valid-owner-canary",
+                module.verify_adoption(markdown_path),
+                {
+                    "schema_version": 1,
+                    "status": "valid-schema-1-owner-canary",
+                    "eligible_for_v1": False,
+                    "errors": [],
+                },
+            )
+            self.assertEqual(
+                exported["status"], "valid-schema-1-owner-canary"
             )
 
     def test_independent_is_a_declaration_and_tamper_is_invalid(self) -> None:
@@ -110,8 +123,17 @@ class AdoptionReceiptTests(unittest.TestCase):
             path = project.parent / "redirected-independent.json"
             path.write_text(exported["json"], encoding="utf-8")
             self.assertEqual(
-                module.verify_adoption(path)["status"],
-                "valid-independent-declaration",
+                module.verify_adoption(path),
+                {
+                    "schema_version": 1,
+                    "status": "valid-schema-1-independent-declaration",
+                    "eligible_for_v1": False,
+                    "errors": [],
+                },
+            )
+            self.assertEqual(
+                exported["status"],
+                "valid-schema-1-independent-declaration",
             )
             payload = json.loads(path.read_text(encoding="utf-8"))
             payload["host"]["version"] = "token=super-secret-value"

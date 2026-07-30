@@ -367,6 +367,7 @@ The canonical JSON object contains only bounded, privacy-safe data:
   "checks": [
     {
       "id": "root:test",
+      "class": "test",
       "workspace_sha256": "sha256:<64 lowercase hex>",
       "runner": "bun",
       "name": "test",
@@ -383,6 +384,7 @@ The canonical JSON object contains only bounded, privacy-safe data:
     "id": "proof-<12 lowercase hex>",
     "started_at": "<UTC RFC3339>",
     "completed_at": "<UTC RFC3339>",
+    "source_stable": true,
     "receipt_digest": "sha256:<64 lowercase hex>"
   }
 }
