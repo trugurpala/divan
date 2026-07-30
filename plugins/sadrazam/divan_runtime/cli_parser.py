@@ -193,6 +193,18 @@ def _add_goal_parsers(commands: Any) -> None:
     goal_resume.add_argument("--goal", required=True)
     _mutation_control(goal_resume)
     _common_output(goal_resume)
+    progress = goal_commands.add_parser(
+        "progress", help="record the active goal task cursor"
+    )
+    progress.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    progress.add_argument("--goal", required=True)
+    progress.add_argument("--completed", nargs="*", default=[])
+    progress.add_argument("--current")
+    progress.add_argument("--next", dest="next_task")
+    _mutation_control(progress)
+    _common_output(progress)
     archive = goal_commands.add_parser("archive")
     archive.add_argument(
         "--project", type=pathlib.Path, default=pathlib.Path.cwd()

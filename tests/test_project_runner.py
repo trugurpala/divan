@@ -45,6 +45,7 @@ RUNTIME_FILES = (
     "receipts.py",
     "release.py",
     "roles.json",
+    "seyir_state.py",
     "status.py",
     "studio/index.html",
     "studio/studio.css",

@@ -61,8 +61,8 @@
       "id": "records",
       "en": "Records",
       "tr": "Defter",
-      "python_modules": ["goals", "goal_archive", "adoption"],
-      "capabilities": ["goal_state", "archive", "adoption"],
+      "python_modules": ["goals", "goal_archive", "adoption", "seyir_state"],
+      "capabilities": ["goal_state", "active_goal", "task_progress", "archive", "adoption"],
       "depends_on": ["kernel", "governance", "council", "evidence", "project"],
       "required": true
     },

@@ -10,7 +10,7 @@ import subprocess
 from collections.abc import Mapping
 from typing import Any
 
-from . import locales, receipts
+from . import locales, receipts, seyir_state
 
 SCHEMA_VERSION = 1
 GIT_TIMEOUT_SECONDS = 5
@@ -99,8 +99,27 @@ def _verified_receipts(root: pathlib.Path) -> list[tuple[str, pathlib.Path, dict
 
 
 def _latest_goal(root: pathlib.Path) -> tuple[pathlib.Path, dict[str, Any]] | None:
+    try:
+        active = seyir_state.load(root)
+    except ValueError:
+        active = None
+    if active is not None:
+        identifier = str(active["active_goal_id"])
+        for _, path, value in _verified_receipts(root):
+            if value.get("goal_id") == identifier:
+                return path, value
     found = _verified_receipts(root)
     if not found:
+        return None
+    nonterminal = [
+        item
+        for item in found
+        if item[2].get("state") not in receipts.TERMINAL_STATES
+    ]
+    if len(nonterminal) == 1:
+        _, path, value = nonterminal[0]
+        return path, value
+    if len(nonterminal) > 1:
         return None
     _, path, value = max(
         found,
@@ -117,6 +136,14 @@ def _route_tasks(root: pathlib.Path, identifier: str) -> list[dict[str, str]]:
         return []
     execution = route.get("execution_plan")
     source = execution.get("tasks", []) if isinstance(execution, dict) else []
+    try:
+        progress = seyir_state.load(root)
+    except ValueError:
+        progress = {}
+    if progress.get("active_goal_id") != identifier:
+        progress = {}
+    completed = set(progress.get("completed_task_ids", []))
+    current = progress.get("current_task_id")
     tasks: list[dict[str, str]] = []
     for index, task in enumerate(source, 1):
         if not isinstance(task, dict):
@@ -127,7 +154,13 @@ def _route_tasks(root: pathlib.Path, identifier: str) -> list[dict[str, str]]:
             {
                 "id": identifier_value,
                 "title": title,
-                "status": "PENDING",
+                "status": (
+                    "DONE"
+                    if identifier_value in completed
+                    else "CURRENT"
+                    if identifier_value == current
+                    else "PENDING"
+                ),
             }
         )
     return tasks
@@ -250,7 +283,16 @@ def build_snapshot(
     identifier = _safe_text(receipt.get("goal_id", ""))
     tasks = _route_tasks(root, identifier)
     current_task = next(
-        (task["title"] for task in tasks if task["status"] != "DONE"),
+        (task["title"] for task in tasks if task["status"] == "CURRENT"),
+        None,
+    )
+    try:
+        progress = seyir_state.load(root)
+    except ValueError:
+        progress = {}
+    next_id = progress.get("next_task_id")
+    next_action = next(
+        (task["title"] for task in tasks if task["id"] == next_id),
         None,
     )
     return {
@@ -265,7 +307,7 @@ def build_snapshot(
         "checks": _event_results(receipt),
         "evidence": _event_evidence(receipt),
         "blocker": _blocker(receipt),
-        "next_action": current_task,
+        "next_action": next_action,
     }
 
 

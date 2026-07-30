@@ -25,6 +25,47 @@ def load_module(name: str, path: pathlib.Path):
 
 
 class PortableCompanyCliTests(unittest.TestCase):
+    def test_goal_progress_is_dry_run_first_and_explicit(self) -> None:
+        cli = load_module("divan_company_cli_progress", COMPANY_CLI)
+        response = {
+            "status": "planned",
+            "schema_version": 1,
+            "active_goal_id": "goal-0123456789ab",
+        }
+        output = io.StringIO()
+        with mock.patch.object(
+            cli.seyir_state,
+            "update",
+            return_value=response,
+        ) as update, contextlib.redirect_stdout(output):
+            result = cli.main(
+                [
+                    "goal",
+                    "progress",
+                    "--project",
+                    str(ROOT),
+                    "--goal",
+                    "goal-0123456789ab",
+                    "--completed",
+                    "task-001",
+                    "--current",
+                    "task-002",
+                    "--next",
+                    "task-003",
+                    "--json",
+                ]
+            )
+
+        self.assertEqual(result, 0)
+        update.assert_called_once_with(
+            ROOT,
+            "goal-0123456789ab",
+            completed_task_ids=["task-001"],
+            current_task_id="task-002",
+            next_task_id="task-003",
+            execute=False,
+        )
+
     def test_status_route_is_forwarded_to_local_server(self) -> None:
         cli = load_module("divan_company_cli_status", COMPANY_CLI)
         with mock.patch.object(

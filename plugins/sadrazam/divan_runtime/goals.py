@@ -12,7 +12,7 @@ import unicodedata
 from collections.abc import Mapping
 from typing import Any
 
-from . import engine, receipts
+from . import engine, receipts, seyir_state
 
 TARGETS = ("VERIFIED", "PREVIEWED", "RELEASED", "OBSERVED")
 GOAL_ID_PATTERN = re.compile(r"^goal-[0-9a-f]{12}$")
@@ -336,6 +336,7 @@ def start_goal(
         if not path.exists():
             _atomic_write(path, content)
             changed = True
+    seyir_state.initialize(root, identifier, execute=True)
     result["status"] = "created" if changed else "unchanged"
     return result
 

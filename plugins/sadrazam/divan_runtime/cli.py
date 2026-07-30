@@ -25,6 +25,7 @@ from divan_runtime import (  # noqa: E402
     project_lifecycle,
     project_os,
     receipts,
+    seyir_state,
 )
 from divan_runtime import (  # noqa: E402
     release as release_api,
@@ -226,6 +227,15 @@ def _execute(options: argparse.Namespace) -> dict[str, Any]:
             )
         if options.goal_command == "status":
             return goals.goal_status(options.project, options.goal)
+        if options.goal_command == "progress":
+            return seyir_state.update(
+                options.project,
+                options.goal,
+                completed_task_ids=options.completed,
+                current_task_id=options.current,
+                next_task_id=options.next_task,
+                execute=options.execute,
+            )
         if options.goal_command == "archive":
             plan = goal_archive.build_archive_plan(
                 options.project, options.goal, options.recorded_on
