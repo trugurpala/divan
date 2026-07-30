@@ -22,6 +22,7 @@ import host_probe as _host_probe
 import host_profiles as _host_profiles
 import host_transactions as _host_transactions
 import host_upgrade as _host_upgrade
+import bootstrap_contract as _bootstrap_contract
 from host_options import Options
 
 PACKAGES = ("sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack")
@@ -83,27 +84,12 @@ def _plugin_rows(host: str, runner: Runner) -> dict[str, dict[str, Any]]:
 
 
 def _expected_packages(root: pathlib.Path) -> dict[str, dict[str, Any]]:
-    bundled = root / "divan-bootstrap-catalog.json"
-    if bundled.is_file():
-        try:
-            catalog = json.loads(bundled.read_text(encoding="utf-8"))
-            expected = catalog["packages"]
-        except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
-            raise InstallError("cannot read the bundled native catalog") from exc
-        if not isinstance(expected, dict):
-            raise InstallError("bundled native catalog is invalid")
-        if set(expected) != set(PACKAGES):
-            raise InstallError("bundled native catalog does not define five packages")
-        skill_names = {
-            skill
-            for row in expected.values()
-            if isinstance(row, dict)
-            for skill in row.get("skills", [])
-            if isinstance(skill, str)
-        }
-        if len(skill_names) != 41:
-            raise InstallError("bundled native catalog does not define 41 skills")
-        return expected
+    try:
+        bundled = _bootstrap_contract.load(root)
+    except _bootstrap_contract.ContractError as exc:
+        raise InstallError(str(exc)) from exc
+    if bundled is not None:
+        return bundled[1]
     path = root / ".agents" / "plugins" / "marketplace.json"
     try:
         marketplace = json.loads(path.read_text(encoding="utf-8"))
@@ -440,6 +426,23 @@ def _install_target(
 ) -> tuple[_host_install_journal.InstallIO, dict[str, Any]]:
     install_io = _install_io(runner)
     versions = {package: row["version"] for package, row in expected_packages.items()}
+    try:
+        bundled = _bootstrap_contract.load(repository)
+    except _bootstrap_contract.ContractError as exc:
+        raise InstallError(str(exc)) from exc
+    if bundled is not None:
+        identity, _ = bundled
+        catalog = json.loads(
+            (repository / "divan-bootstrap-catalog.json").read_text(encoding="utf-8")
+        )
+        return install_io, {
+            "source": identity["source_repository"],
+            "ref": identity["source_ref"],
+            "root": str(repository.resolve()),
+            "commit": identity["source_commit"],
+            "catalog_digest": catalog["marketplace_digest"],
+            "versions": versions,
+        }
     return install_io, _host_install_journal.target_evidence(
         repository, options.source, options.ref, versions, install_io)
 

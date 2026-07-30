@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -15,9 +16,11 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import build_project_runner
+import bootstrap_contract
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 HOST_FILES = (
+    "bootstrap_contract.py",
     "divan.py",
     "host_adapters.py",
     "host_cli.py",
@@ -82,7 +85,8 @@ def _version(root: pathlib.Path) -> str:
 def _catalog(root: pathlib.Path, version: str) -> dict[str, Any]:
     path = root / ".agents" / "plugins" / "marketplace.json"
     try:
-        marketplace = json.loads(path.read_text(encoding="utf-8"))
+        raw = path.read_bytes()
+        marketplace = json.loads(raw)
     except (OSError, json.JSONDecodeError) as error:
         raise ValueError("cannot read the canonical plugin catalog") from error
     packages: dict[str, dict[str, Any]] = {}
@@ -111,6 +115,7 @@ def _catalog(root: pathlib.Path, version: str) -> dict[str, Any]:
     if set(packages) != expected or len(unique_skills) != 41:
         raise ValueError("plugin catalog must define five packages and 41 unique skills")
     return {
+        "marketplace_digest": hashlib.sha256(raw).hexdigest(),
         "packages": packages,
         "schema_version": 1,
         "skill_count": len(unique_skills),
@@ -167,6 +172,7 @@ def _entries(
         "source_repository": "https://github.com/trugurpala/divan.git",
         "version": version,
     }
+    bootstrap_contract.validate(identity, catalog)
     entries["divan-bootstrap-source.json"] = (
         json.dumps(identity, separators=(",", ":"), sort_keys=True) + "\n"
     ).encode("utf-8")

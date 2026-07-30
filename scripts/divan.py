@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import contextlib
 import importlib.util
-import json
 import pathlib
 import sys
 from collections.abc import Iterator
@@ -18,9 +17,9 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import host_lifecycle  # noqa: E402
+import bootstrap_contract  # noqa: E402
 
 DEFAULT_SOURCE = "https://github.com/trugurpala/divan.git"
-BOOTSTRAP_IDENTITY = ROOT / "divan-bootstrap-source.json"
 RUNTIME_CLI = PLUGIN_ROOT / "divan_runtime" / "cli.py"
 RUNTIME_PACKAGE = RUNTIME_CLI.parent / "__init__.py"
 DIVAN_COMMANDS = {
@@ -134,18 +133,11 @@ def _host_arguments(options: argparse.Namespace) -> list[str]:
 
 
 def _bootstrap_identity() -> dict[str, str] | None:
-    if not BOOTSTRAP_IDENTITY.is_file():
-        return None
     try:
-        value = json.loads(BOOTSTRAP_IDENTITY.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
+        bundled = bootstrap_contract.load(ROOT)
+    except bootstrap_contract.ContractError as error:
         raise RuntimeError("cannot read the bundled Divan identity") from error
-    required = ("source_ref", "source_repository", "version")
-    if not isinstance(value, dict) or any(
-        not isinstance(value.get(key), str) or not value[key] for key in required
-    ):
-        raise RuntimeError("bundled Divan identity is invalid")
-    return {key: value[key] for key in required}
+    return bundled[0] if bundled is not None else None
 
 
 def _add_host_common(parser: argparse.ArgumentParser) -> None:
@@ -205,10 +197,13 @@ def main(argv: list[str] | None = None) -> int:
     if (
         bundled is not None
         and options.command != "recover"
-        and options.ref != bundled["source_ref"]
+        and (
+            options.ref != bundled["source_ref"]
+            or options.source != bundled["source_repository"]
+        )
     ):
         parser.error(
-            "this bootstrap can use only its bundled release "
+            "this bootstrap can use only its bundled source and release "
             f"{bundled['source_ref']}"
         )
     return host_lifecycle.main(_host_arguments(options))

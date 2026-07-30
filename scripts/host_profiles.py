@@ -14,6 +14,7 @@ from typing import Any
 
 import host_probe
 import legacy_state
+import bootstrap_contract
 
 FALLBACK_CLI_STATUSES = {"missing", "not-executable", "access-denied"}
 NATIVE_MODE = "native"
@@ -206,21 +207,14 @@ def _contained(path: pathlib.Path, root: pathlib.Path) -> bool:
 
 
 def _expected_skill_names(root: pathlib.Path) -> set[str]:
-    bundled = root / "divan-bootstrap-catalog.json"
-    if bundled.is_file():
-        try:
-            catalog = json.loads(bundled.read_text(encoding="utf-8"))
-            packages = catalog["packages"]
-            skills = {
-                skill
-                for row in packages.values()
-                for skill in row["skills"]
-            }
-        except (OSError, json.JSONDecodeError, KeyError, TypeError) as error:
-            raise ValueError("bundled skill catalog is invalid") from error
-        if len(skills) != 41:
-            raise ValueError("bundled skill catalog must define 41 skills")
-        return skills
+    try:
+        bundled = bootstrap_contract.load(root)
+    except bootstrap_contract.ContractError as error:
+        raise ValueError(str(error)) from error
+    if bundled is not None:
+        return {
+            skill for row in bundled[1].values() for skill in row["skills"]
+        }
     return {
         path.parent.name
         for path in root.glob("plugins/*/skills/*/SKILL.md")

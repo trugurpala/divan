@@ -192,6 +192,35 @@ class BootstrapRunnerTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("bundled", result.stderr.casefold())
 
+    def test_bootstrap_rejects_alternate_remote_and_local_sources(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-bootstrap-") as temporary:
+            base = pathlib.Path(temporary)
+            repository = base / "repo"
+            source_commit = self._fixture(repository)
+            output = base / "divan.pyz"
+            built = self._build(repository, output, source_commit)
+            self.assertEqual(built.returncode, 0, built.stderr)
+            for source in ("https://example.invalid/divan.git", str(repository)):
+                with self.subTest(source=source):
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            str(output),
+                            "doctor",
+                            "--host",
+                            "codex",
+                            "--source",
+                            source,
+                        ],
+                        capture_output=True,
+                        text=True,
+                        encoding="utf-8",
+                        check=False,
+                        timeout=10,
+                    )
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("bundled source", result.stderr.casefold())
+
 
 if __name__ == "__main__":
     unittest.main()
