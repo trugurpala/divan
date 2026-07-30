@@ -1,15 +1,15 @@
-# Durum ve Yol Haritası · v0.18.3
+# Durum ve Yol Haritası · v0.18.4
 
 Son durum tarihi: 2026-07-30.
 
-> **En güncel yayımlanmış sürüm v0.18.2'dir.** PR #60 yerel Seyir ekranını,
-> tek dosyalık temiz-host kurucusunu ve kanıta dayalı timeout politikasını
-> tamamladı. Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM,
-> attestations ve üç işletim sistemi yaşam döngüsü canary'siyle yayımlandı.
+> **En güncel yayımlanmış sürüm v0.18.3'tür.** PR #63 temiz-proje kanıtı,
+> gizlilik sınırlı schema-2 makbuz ve değişmez release otoritesini tamamladı.
+> Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, attestations,
+> Pages ve Wiki ile yayımlandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.18.2` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v0.18.3` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -113,14 +113,29 @@ değildir.
   attestations, SPDX 2.3 SBOM, Pages, Wiki ve Linux/macOS/Windows yaşam döngüsü
   canary'leri geçti.
 
+## v0.18.3 — yayımlanan temiz-proje kanıt mekanizması
+
+- `adoption prove`, yazmayan önizleme ile başlayıp sabit host probu ve sınırlı
+  test/regresyon kontrollerini bir kez çalıştırır.
+- Schema-2 makbuz; değişmez release, ayrı proje, doğrulanmış hedef, kaynak
+  kararlılığı, gözlenen host ve gizlilik sınırlarını çevrimdışı doğrular.
+- PR #63 `294958620e6382fe10296ab15246e100fab84764` commit'inde birleşti.
+  Dokuz ana/yayın workflow'u, yedi indirilen varlığın SHA-256 değeri, strict
+  attestations, SPDX 2.3 SBOM, Pages ve Wiki geçti.
+- Yayımlanmış runner ile üretilip repoya kaydedilmiş temiz-proje makbuzu henüz
+  olmadığı için v1 dürüstçe **7/8** kalır.
+
 ## Sıradaki ürün kanıtı
 
-1. Schema-2 mekanizmasını değişmez release olarak yayımla.
-2. Divan'dan ayrı, gerçek ve doğrulanmış hedef içeren projede yazmayan planı gör:
+1. v0.18.4 gerçek kod/test kanıtı bağlama düzeltmesini değişmez release olarak
+   yayımla.
+2. Divan'dan ayrı gerçek projede uygulama ve test kanıtını hedefe bağla:
+   `python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-dosyası> --execute`
+3. Aynı projede yazmayan temiz-proje planını gör:
    `python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex`
-3. Aynı planı `--execute` ile çalıştır; host sürümünü gözle, sınırlı
+4. Aynı planı `--execute` ile çalıştır; host sürümünü gözle, sınırlı
    test/regresyon kontrollerini geçir ve gizlilik sınırlı makbuzu mühürle.
-4. `valid-clean-room-adoption` makbuzunu çevrimdışı yeniden doğrula. Yalnız
+5. `valid-clean-room-adoption` makbuzunu çevrimdışı yeniden doğrula. Yalnız
    bundan sonra issue #34 ve v1 karnesini ayrı değişiklikle güncelle.
 
 ## v1.0 kapıları

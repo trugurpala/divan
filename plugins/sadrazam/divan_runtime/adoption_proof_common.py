@@ -97,3 +97,37 @@ def missing_required_commands(
         )
     }
     return required - matched
+
+
+def goal_verification_digests(
+    goal_receipt: dict[str, Any],
+    artifacts: dict[str, str],
+    goal_id: str,
+) -> list[str]:
+    """Return hashes bound by the terminal VERIFIED event, excluding specs."""
+    events = goal_receipt.get("events")
+    if not isinstance(events, list):
+        raise ValueError("goal receipt has no verification evidence")
+    verified_events = [
+        event
+        for event in events
+        if isinstance(event, dict) and event.get("to_state") == "VERIFIED"
+    ]
+    if not verified_events:
+        raise ValueError("goal receipt has no verification evidence")
+    evidence = verified_events[-1].get("evidence")
+    spec_prefix = f".divan/specs/{goal_id}/"
+    qualifying = (
+        [
+            item
+            for item in evidence
+            if isinstance(item, str) and not item.startswith(spec_prefix)
+        ]
+        if isinstance(evidence, list)
+        else []
+    )
+    if not qualifying or any(item not in artifacts for item in qualifying):
+        raise ValueError(
+            "goal receipt must bind implementation or verification evidence"
+        )
+    return sorted("sha256:" + artifacts[item] for item in qualifying)

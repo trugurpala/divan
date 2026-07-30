@@ -14,7 +14,7 @@ from collections import deque
 from collections.abc import Mapping
 from typing import Any, NamedTuple
 
-from . import planning
+from . import planning, planning_policy
 
 MAX_MARKER_BYTES = 1024 * 1024
 MAX_MARKER_NESTING = 32
@@ -23,12 +23,11 @@ MAX_PROJECT_DIRECTORIES = 128
 MAX_DIRECTORY_ENTRIES = 256
 IGNORED_PROJECT_DIRECTORIES = frozenset(
     {
-        ".cache", ".git", ".gradle", ".hg", ".mypy_cache",
-        ".next", ".nuxt", ".output", ".parcel-cache",
+        ".cache", ".git", ".gradle", ".hg", ".mypy_cache", ".next", ".nuxt", ".output", ".parcel-cache",
         ".pytest_cache", ".ruff_cache", ".svelte-kit", ".svn",
         ".tox", ".turbo", ".venv", ".vercel", "__pycache__",
-        "bin", "build", "cache", "coverage", "dist",
-        "node_modules", "obj", "out", "target", "vendor", "venv",
+        "bin", "build", "cache", "coverage", "dist", "node_modules",
+        "obj", "out", "target", "vendor", "venv",
     }
 )
 WORKSPACE_MANIFESTS = frozenset(
@@ -1278,7 +1277,8 @@ def _rank_workflows(intent: str, contracts: Contracts) -> list[Workflow]:
     ranked.sort(key=lambda row: (-row[0], -row[1], row[2]))
     if not ranked:
         return [contracts.workflows["feature-delivery"]]
-    return [row[3] for row in ranked]
+    subsumed = planning_policy.subsumed_workflow_ids(ranked[0][3].id)
+    return [row[3] for row in ranked if row[3].id not in subsumed]
 
 
 def _select_workflow(intent: str, contracts: Contracts) -> Workflow:

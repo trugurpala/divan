@@ -279,6 +279,30 @@ class ProjectIntelligenceTests(unittest.TestCase):
             ["integration-delivery", "testing-delivery", "feature-delivery"],
         )
 
+    def test_bugfix_route_subsumes_generic_testing_and_feature_workflows(self) -> None:
+        intent = (
+            "Make normalize_label collapse repeated internal whitespace, "
+            "add a regression test, and verify the smallest correct fix."
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            result = self.engine.plan_intent(
+                intent, pathlib.Path(temporary), self.contracts
+            )
+
+        self.assertEqual(result["primary_workflow"], "bugfix-delivery")
+        self.assertEqual(result["workflows"], ["bugfix-delivery"])
+        self.assertEqual(
+            result["stages"],
+            [
+                "reproduce",
+                "root cause",
+                "regression test",
+                "minimal fix",
+                "independent review",
+                "verification",
+            ],
+        )
+
     def test_nested_workspaces_discover_node_managers_and_native_scripts(self) -> None:
         lockfiles = {
             "apps/npm-app": ("package-lock.json", "npm run build"),

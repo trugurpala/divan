@@ -128,10 +128,19 @@ yürütür, kaynak sapmasını denetler ve schema-2 JSON/Markdown makbuzlarını
 olarak mühürler:
 
 ```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
 python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
 python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
+
+VERIFIED geçişi proje-göreli kanıt yollarını doğrular; bağlantı, yol kaçışı,
+eksik dosya, secret ve boyut sınırını aşan dosyaları reddeder. Kabul edilen
+dosyaların hash'leri, durum geçişiyle aynı atomik yazımda hedef makbuzuna
+bağlanır. Yalnız üretilmiş şartname veya plan dosyalarına dayanan bir hedef
+VERIFIED olamaz; `adoption prove` ayrıca gerçek kanıtın VERIFIED olayında
+kaydedildiğini bağımsız olarak denetler.
 
 Operatör rolü yalnız açıklayıcıdır; bakımcı ve dış kullanıcı aynı teknik kapıya
 tabidir. Makbuz; hash, kaba sonuç, süre, kontrol sınıfı ve gözlenen host sürümünü

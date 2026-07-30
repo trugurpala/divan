@@ -8,8 +8,52 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ### Planned
 
-- More verified native host adapters and one released clean-room adoption
-  receipt produced by the schema-2 mechanism.
+- One released clean-room adoption receipt produced by the schema-2 mechanism.
+
+## [0.18.4] - 2026-07-30
+
+### Added
+
+- `goal advance --evidence`, a dry-run-first way to bind new implementation,
+  regression-test, or verification files to the goal receipt in the same
+  atomic write as the state transition.
+- Clean-room proof extraction from the actual VERIFIED transition rather than
+  from all files that happened to exist in the original goal plan.
+- Immutable v0.18.3 publication evidence with workflow, asset, checksum,
+  attestation, Pages, Wiki, and live-readback identifiers.
+
+### Changed
+
+- A bug-fix intent now uses the focused six-step bug-fix workflow instead of
+  also expanding generic testing and feature workflows into an 18-task graph.
+- A conventional project-level `VERSION` file or an unrelated plugin
+  marketplace no longer makes a distinct project look like a Divan checkout.
+  Divan-owned marketplace/module signatures continue to fail closed.
+- English and Turkish README, Project Contract, Wiki, Pages, Blueprint,
+  progress, and release surfaces now describe the same real-evidence boundary
+  and distinguish current source v0.18.4 from published v0.18.3.
+
+### Safety
+
+- VERIFIED rejects absolute or backslash paths, traversal, missing files,
+  symlinks/reparse points, secrets, and files larger than 4 MiB before writing.
+- A goal backed only by generated specification or plan artifacts cannot
+  become VERIFIED. `adoption prove` independently refuses a VERIFIED goal
+  without real evidence recorded on the terminal transition.
+- Existing bound artifacts are preserved and new artifacts are merged
+  deterministically without an intermediate partially updated receipt.
+
+### Verification
+
+- The canonical local verifier passes 695 tests with 14 expected
+  Windows-only symlink/permission skips, plus the five-package/41-skill
+  catalog, v1 registry, 230 release surfaces, Wiki, Ruff, mypy, Clean Code,
+  and final repository hygiene.
+- A separate Git repository reproduced a label-normalization bug, observed the
+  regression test fail, applied the smallest fix, observed two tests pass, and
+  reached VERIFIED only after the implementation, test, and verification
+  files were hash-bound. This is local pre-release evidence, not yet the v1
+  clean-room receipt.
 
 ## [0.18.3] - 2026-07-30
 

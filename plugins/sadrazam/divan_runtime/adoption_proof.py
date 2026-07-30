@@ -26,13 +26,13 @@ OPERATOR_ROLES = frozenset({"maintainer", "external"})
 NODE_MANAGERS = frozenset({"bun", "npm", "pnpm", "yarn"})
 MAX_CHECKS = 8
 DISTINCTNESS_POLICY = {
-    "version": 1,
+    "version": 2,
     "complete_signature": [
-        "VERSION",
         ".claude-plugin/marketplace.json:name=divan",
         "plugins/sadrazam/divan_runtime/modules.json",
     ],
-    "partial_signature": "blocked",
+    "diagnostic_marker": "VERSION",
+    "strong_partial_signature": "blocked",
 }
 CHECK_PRIORITY = {
     "test": 0,
@@ -81,25 +81,19 @@ def _bounded_json(path: pathlib.Path, label: str) -> dict[str, Any]:
 def classify_distinct_project(root: pathlib.Path | str) -> dict[str, Any]:
     """Reject complete and ambiguous partial Divan source signatures."""
     project = _real_directory(root, "project")
-    version_path = project / "VERSION"
     marketplace_path = project / ".claude-plugin" / "marketplace.json"
     modules_path = (
         project / "plugins" / "sadrazam" / "divan_runtime" / "modules.json"
     )
-    version_marker = version_path.exists()
     marketplace_marker = marketplace_path.exists()
     modules_marker = modules_path.exists()
-    if version_marker and project_state._is_reparse_or_symlink(version_path):
-        raise ValueError("partial Divan signature uses an unsafe VERSION marker")
     if modules_marker and project_state._is_reparse_or_symlink(modules_path):
         raise ValueError("partial Divan signature uses an unsafe modules marker")
     marketplace_is_divan = False
     if marketplace_marker:
         marketplace = _bounded_json(marketplace_path, "Divan marketplace marker")
         marketplace_is_divan = marketplace.get("name") == "divan"
-        if not marketplace_is_divan:
-            raise ValueError("partial Divan signature has an ambiguous marketplace")
-    markers = (version_marker, marketplace_is_divan, modules_marker)
+    markers = (marketplace_is_divan, modules_marker)
     count = sum(markers)
     if count == len(markers):
         raise ValueError("project is the Divan source tree")
@@ -108,7 +102,8 @@ def classify_distinct_project(root: pathlib.Path | str) -> dict[str, Any]:
     return {
         "distinct": True,
         "policy_sha256": _domain_hash(
-            "divan-distinct-project-policy-v1", DISTINCTNESS_POLICY
+            "divan-distinct-project-policy-v2",
+            DISTINCTNESS_POLICY,
         ),
     }
 
@@ -294,6 +289,11 @@ def build_proof_plan(
     ):
         raise ValueError("goal receipt must be valid, verified, and artifact-backed")
     goal_receipt = _bounded_json(receipt_path, "goal receipt")
+    verified_artifacts = adoption_proof_common.goal_verification_digests(
+        goal_receipt,
+        goal_verification["artifacts"],
+        goal_id,
+    )
     inspection = goals._inspection(root)
     goal_route = _bounded_json(spec_root / "route.json", "goal route")
     checks = select_checks(inspection, goal_route, root)
@@ -361,10 +361,7 @@ def build_proof_plan(
             "state": goal_verification["state"],
             "target": goal_receipt["target"],
             "receipt_sha256": _hash_bytes(receipt_path.read_bytes()),
-            "artifact_sha256": sorted(
-                "sha256:" + digest
-                for digest in goal_verification["artifacts"].values()
-            ),
+            "artifact_sha256": verified_artifacts,
         },
         "checks": public_checks,
         "writes": [
