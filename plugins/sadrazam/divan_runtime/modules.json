@@ -106,7 +106,8 @@
         "cli_parser",
         "cli",
         "locales",
-        "status"
+        "status",
+        "local_server"
       ],
       "capabilities": [
         "cli",
@@ -115,7 +116,8 @@
         "legacy_company_imports",
         "legacy_cli_aliases",
         "bilingual_reader_messages",
-        "status_snapshot"
+        "status_snapshot",
+        "loopback_status_server"
       ],
       "depends_on": [
         "kernel",
