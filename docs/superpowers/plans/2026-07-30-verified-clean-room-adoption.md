@@ -54,7 +54,7 @@
   - Add project classification, safe argv, selection, preview, execution, timeout/failure, drift, staging, and atomic-promotion coverage.
 - `tests/test_cli.py`
   - Add parser/routing/human/JSON contract coverage for `adoption prove`.
-- `tests/test_modules.py`
+- `tests/test_divan_runtime.py`
   - Assert nine top-level modules and the new records capability/module membership.
 - `tests/test_v1.py`
   - Replace identity-declaration expectations with machine-backed schema-2 evidence enforcement.
@@ -215,7 +215,7 @@ git commit -m "feat: verify clean-room adoption receipts"
 - Create: `plugins/sadrazam/divan_runtime/adoption_proof.py`
 - Create: `tests/test_adoption_proof.py`
 - Modify: `plugins/sadrazam/divan_runtime/modules.json`
-- Modify: `tests/test_modules.py`
+- Modify: `tests/test_divan_runtime.py`
 
 **Interfaces:**
 - Consumes: `engine.inspect_project(project: pathlib.Path | str) -> dict[str, Any]`
@@ -267,7 +267,7 @@ Assert rejection of `test && curl example.invalid`, `../workspace`, absolute exe
 Run:
 
 ```powershell
-python -m unittest tests.test_adoption_proof tests.test_modules -v
+python -m unittest tests.test_adoption_proof tests.test_divan_runtime -v
 ```
 
 Expected: import failure for `divan_runtime.adoption_proof`.
@@ -334,7 +334,7 @@ Add `"adoption_proof"` to `records.python_modules`, add `"clean_room_adoption"` 
 Run:
 
 ```powershell
-python -m unittest tests.test_adoption_proof tests.test_modules -v
+python -m unittest tests.test_adoption_proof tests.test_divan_runtime -v
 python scripts/catalog.py --check
 ```
 
@@ -343,7 +343,7 @@ Expected: all focused tests pass and module/catalog contracts remain valid.
 Commit:
 
 ```powershell
-git add plugins/sadrazam/divan_runtime/adoption_proof.py plugins/sadrazam/divan_runtime/modules.json tests/test_adoption_proof.py tests/test_modules.py
+git add plugins/sadrazam/divan_runtime/adoption_proof.py plugins/sadrazam/divan_runtime/modules.json tests/test_adoption_proof.py tests/test_divan_runtime.py
 git commit -m "feat: plan bounded clean-room proofs"
 ```
 
@@ -721,7 +721,7 @@ git commit -m "docs: explain verified clean-room adoption"
 Run:
 
 ```powershell
-python -m unittest tests.test_adoption tests.test_adoption_v2 tests.test_adoption_proof tests.test_cli tests.test_modules tests.test_v1 tests.test_impact_graph -v
+python -m unittest tests.test_adoption tests.test_adoption_v2 tests.test_adoption_proof tests.test_cli tests.test_divan_runtime tests.test_v1 tests.test_impact_graph -v
 python scripts/handoff.py --check
 python scripts/catalog.py --check
 python scripts/release.py --check
@@ -866,4 +866,3 @@ project checks.
 ```
 
 Do not convert it into an independent-user count, third-party endorsement, market-adoption claim, speed improvement, or quality win.
-

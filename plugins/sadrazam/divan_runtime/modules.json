@@ -80,6 +80,7 @@
         "goals",
         "goal_archive",
         "adoption",
+        "adoption_proof",
         "seyir_state",
         "ci_guard"
       ],
@@ -89,6 +90,7 @@
         "task_progress",
         "archive",
         "adoption",
+        "clean_room_adoption",
         "ci_failure_circuit_breaker"
       ],
       "depends_on": ["kernel", "governance", "council", "evidence", "project"],
