@@ -15,6 +15,7 @@ _CODES = {
     "access-denied": 126,
     "missing": 127,
 }
+_WINDOWS_SUFFIXES = (".cmd", ".exe", ".com", ".bat")
 
 
 def _failure(
@@ -41,13 +42,52 @@ def _os_error_status(exc: OSError) -> str:
     return "not-executable"
 
 
+def resolve_executable(
+    command: str,
+    environment: Mapping[str, str] | None = None,
+    *,
+    windows: bool | None = None,
+) -> str | None:
+    """Resolve a host CLI without ever selecting a PowerShell script shim."""
+    active = os.environ if environment is None else environment
+    is_windows = os.name == "nt" if windows is None else windows
+    if not is_windows:
+        return shutil.which(command, path=active.get("PATH"))
+    raw = pathlib.Path(command)
+    suffix = raw.suffix.casefold()
+    if suffix:
+        if suffix not in _WINDOWS_SUFFIXES:
+            return None
+        resolved = shutil.which(command, path=active.get("PATH"))
+        if (
+            resolved
+            and pathlib.Path(resolved).suffix.casefold() in _WINDOWS_SUFFIXES
+        ):
+            return resolved
+        return None
+    directories = [
+        item for item in active.get("PATH", "").split(os.pathsep) if item
+    ]
+    appdata = active.get("APPDATA")
+    if appdata:
+        npm_home = str(pathlib.Path(appdata) / "npm")
+        if npm_home not in directories:
+            directories.append(npm_home)
+    search_path = os.pathsep.join(directories)
+    for extension in _WINDOWS_SUFFIXES:
+        resolved = shutil.which(f"{command}{extension}", path=search_path)
+        if resolved is not None:
+            return resolved
+    return None
+
+
 def run(
     command: list[str],
     *,
     env: Mapping[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     """Run a host command without allowing launch failures to escape."""
-    resolved = shutil.which(command[0])
+    resolved = resolve_executable(command[0], env)
     if resolved is None:
         return _failure(command, "missing", f"executable not found: {command[0]}")
     actual = [resolved, *command[1:]]
