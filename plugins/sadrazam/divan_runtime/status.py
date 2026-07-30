@@ -216,12 +216,17 @@ def build_snapshot(
     if not root.is_dir():
         raise ValueError(f"project directory does not exist: {root}")
     locale = locales.resolve_language(language)
+    catalog = locales.load_messages(pathlib.Path(__file__).resolve().parent)
     selected = _latest_goal(root)
     project_value = {"name": _safe_text(root.name), **_git_snapshot(root)}
     common = {
         "schema_version": SCHEMA_VERSION,
         "product": {"name": "Divan", "version": _version()},
         "locale": locale,
+        "copy": {
+            key: translations[locale]
+            for key, translations in sorted(catalog.items())
+        },
         "project": project_value,
         "generated_at": _utc_timestamp(now),
     }

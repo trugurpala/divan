@@ -47,6 +47,8 @@ class StatusSnapshotTests(unittest.TestCase):
         self.assertEqual(result["schema_version"], 1)
         self.assertEqual(result["product"]["name"], "Divan")
         self.assertEqual(result["locale"], "tr")
+        self.assertEqual(result["copy"]["app.title"], "Divan Seyir")
+        self.assertEqual(result["copy"]["progress.current_task"], "Şu an ne yapılıyor?")
         self.assertEqual(result["goal"]["status"], "NO_ACTIVE_GOAL")
         self.assertIsNone(result["goal"]["id"])
         self.assertIsNone(result["blocker"])
