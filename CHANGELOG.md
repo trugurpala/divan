@@ -6,6 +6,30 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-07-31
+
+### Fixed
+
+- Project inspection now ignores Divan-owned `.worktrees`, dependency/build
+  caches, fixture trees, and skill-internal helper folders while traversing a
+  parent project. Old agent branches, test fixtures, and packaged skill helper
+  files no longer appear as duplicate user workspaces or extra test targets.
+
+### Changed
+
+- README, Pages, Wiki, and Divan Engine guidance now explain that discovery
+  stays focused on the explicit project root. This keeps onboarding and Seyir
+  status calmer for vibe coders without adding an external runtime, a second
+  repository, or a forked dependency.
+
+### Verification
+
+- Added a regression test that first reproduced `.worktrees`/fixture/skill
+  discovery noise as an unwanted `python` framework signal, then passed after
+  the traversal contract was narrowed.
+- The current repository inspection now reports one root workspace and one root
+  test command for Divan instead of stale worktree or fixture-derived targets.
+
 ## [1.0.1] - 2026-07-31
 
 ### Fixed

@@ -130,10 +130,10 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Niyetten doğrulanmış yayına</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Hükümdar sensin.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>modüler, denetimli teslim sistemi ve yerel skill/plugin dağıtımı</b>na çevirir. Divan model veya runtime değildir; Divan Nizamı ürünün yetki düzenidir. Fermanı planlar, test eder, Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.0.1 güncel kaynak · son yayımlanan v1.0.1 · 41 beceri · 5 paket · v1 hazırlık: 8/8.</p>
+    <p class="tez"><b>Hükümdar sensin.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>modüler, denetimli teslim sistemi ve yerel skill/plugin dağıtımı</b>na çevirir. Divan model veya runtime değildir; Divan Nizamı ürünün yetki düzenidir. Fermanı planlar, test eder, Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.0.2 güncel kaynak · son yayımlanan v1.0.1 · 41 beceri · 5 paket · v1 hazırlık: 8/8.</p>
     <div class="ferman">
-      <p class="ferman-etiket">Güncel yayın · yazmayan önizleme · SHA-256 doğrulamalı</p>
-      <code>python scripts/divan.py install --host both --ref v1.0.1</code>
+      <p class="ferman-etiket">Güncel kaynak · yalnız tag/Release sonrası kullan · SHA-256 doğrulamalı</p>
+      <code>python scripts/divan.py install --host both --ref v1.0.2</code>
     </div>
   </div>
 </header>
@@ -173,6 +173,10 @@ footer p+p{margin-top:10px}
       Hükümdarın fermanını göreve ve framework'e göre en küçük yetkin ekibe
       yönlendirir. Her değişikliği test, README, Wiki, site ve yayın
       bağımlılıklarına kadar izler.</p>
+    <p>Keşif ekranı gerçek proje köküne odaklanır: Divan'a ait geçici
+      <code>.worktrees</code>, fixture projeleri, dependency/build cache'leri ve
+      skill içi yardımcı klasörler eski ajan dalları gibi kullanıcı planına
+      karışmaz.</p>
     <p>Nizâm-ı Sefer; fermanı risk, bağımlılık ve kanıt yükümlülüklerine göre
       en fazla üç çalışma hattına böler. Host belirsizse sıralı çalışır; model
       veya bağlam kapasitesini doğrulamadan varmış gibi göstermez.</p>
@@ -222,11 +226,11 @@ footer p+p{margin-top:10px}
     <p class="bab-etiket">Güvenli yol</p>
     <h2>Yayın sonrasında beş dakikada ilk başarı</h2>
     <ol class="yasam">
-      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v1.0.1 --execute</code></div></li>
-      <li><div><b>Codex Desktop en güçlü güvenli yolu seçsin</b><code>python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute</code></div></li>
-      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v1.0.1</code></div></li>
-      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v1.0.1</code></div></li>
-      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v1.0.1 --execute</code></div></li>
+      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v1.0.2 --execute</code></div></li>
+      <li><div><b>Codex Desktop en güçlü güvenli yolu seçsin</b><code>python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute</code></div></li>
+      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v1.0.2</code></div></li>
+      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v1.0.2</code></div></li>
+      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v1.0.2 --execute</code></div></li>
       <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
       <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>
@@ -279,9 +283,11 @@ footer p+p{margin-top:10px}
       <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.tr.md">Katkı rehberi · Türkçe</a>
       <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.md">Contribution guide · English</a>
     </div>
-    <p style="margin-top:18px">v1.0.1 yayımlandı; v1 hazırlık kapılarının 8'i
-      de kanıtla geçti. v0.18.5 ile üretilen schema-2 temiz-proje makbuzu ve
-      v1.0.1 yayın/yükseltme zinciri repoda çevrimdışı doğrulanabilir.</p>
+    <p style="margin-top:18px">v1.0.2 kaynak adayı Seyir bekleme açıklamasını ve
+      gürültüsüz proje keşfini taşır; tag/GitHub Release oluşana kadar son
+      yayımlanan sürüm v1.0.1'dir. v1 hazırlık kapılarının 8'i kanıtla geçti;
+      v0.18.5 ile üretilen schema-2 temiz-proje makbuzu ve v1.0.1
+      yayın/yükseltme zinciri repoda çevrimdışı doğrulanabilir.</p>
     <p><code>python divan-project.pyz adoption prove --project . --goal &lt;goal-id&gt; --host codex</code></p>
   </div>
 </section>

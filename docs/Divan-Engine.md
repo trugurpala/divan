@@ -52,6 +52,12 @@ authority contract. `python scripts/divan.py architecture --json` validates
 and displays both. Dependencies must be acyclic. The core has no external
 runtime or external-repository dependency.
 
+Project inspection is bounded and read-only. It ignores Divan-owned scratch
+worktrees, dependency/build caches, fixture trees, and skill-internal helper
+folders during parent-project traversal so stale agent branches do not become
+duplicate workspaces or test targets. If one of those folders is passed as the
+explicit `--project` root, Divan inspects it normally.
+
 ## Nizam-i Sefer
 
 `council` owns `planning.py` plus a small `planning_policy.py` policy component.

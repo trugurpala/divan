@@ -53,7 +53,7 @@
     {"kind": "function-lines", "target": "scripts/legacy_state.py:install_legacy", "value": 65},
     {"kind": "function-lines", "target": "scripts/legacy_state.py:recover_legacy", "value": 88},
     {"kind": "function-lines", "target": "scripts/candidate_review.py:denetle", "value": 51},
-    {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/engine.py", "value": 1526},
+    {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/engine.py", "value": 1525},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/goal_archive.py", "value": 489},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/project_lifecycle.py", "value": 435},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/project_os.py", "value": 2932},

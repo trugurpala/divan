@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v1.0.1
+# Durum ve Yol Haritası · v1.0.2
 
 Son durum tarihi: 2026-07-31.
 
@@ -7,6 +7,10 @@ Son durum tarihi: 2026-07-31.
 > Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, strict
 > attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages, Wiki
 > ve indirilen runner'la gerçek yerel yükseltme doğrulandı.
+>
+> `main` üzerinde hazırlanan v1.0.2 adayı, Seyir bekleme açıklamasını ve
+> workspace keşfi gürültü düzeltmesini taşır. Tag/GitHub Release oluşana kadar
+> son yayımlanan sürüm v1.0.1 olarak kalır.
 
 ## Şu anda yayımlanan
 
@@ -33,6 +37,9 @@ Son durum tarihi: 2026-07-31.
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
   dikkat eşiğini açıklar; kullanıcı sessiz ekranı çökme zannetmez.
+- Divan Engine, üst proje taramasında `.worktrees`, fixture projeleri ve skill
+  içi yardımcı klasörlerden gelen eski ajan/test gürültüsünü workspace veya test
+  hedefi gibi göstermez; açıkça proje kökü verilirse yine inceler.
 - Repo indirmeden kullanılabilen, checksum ve kaynak commit'i doğrulanan tek
   dosyalık `divan.pyz`; yazma öncesi plan, doctor ve güvenli recovery komutları.
 - Yerel ve CI süre ölçümlerinden türetilen sınırlı timeout politikası ile aynı

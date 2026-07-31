@@ -1121,6 +1121,7 @@ class ProjectIntelligenceTests(unittest.TestCase):
             (project / "index.html").write_text("<main></main>", encoding="utf-8")
             for ignored in (
                 ".git",
+                ".worktrees",
                 "Node_Modules",
                 "vendor",
                 "cache",
@@ -1132,10 +1133,30 @@ class ProjectIntelligenceTests(unittest.TestCase):
                 (directory / "pyproject.toml").write_text(
                     "[project]\nname='ignored'\n", encoding="utf-8"
                 )
+            for ignored in ("tests/fixtures", "plugins/zanaat-pack/skills"):
+                directory = project / ignored / "escaped"
+                directory.mkdir(parents=True)
+                (directory / "pyproject.toml").write_text(
+                    "[project]\nname='ignored'\n", encoding="utf-8"
+                )
 
             result = self.engine.inspect_project(project, self.contracts)
 
         self.assertEqual(result["frameworks"], ["static-web"])
+
+    def test_traversal_keeps_user_skills_directory_as_workspace(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = pathlib.Path(temporary)
+            workspace = project / "skills" / "real"
+            workspace.mkdir(parents=True)
+            (workspace / "pyproject.toml").write_text(
+                "[project]\nname='real-skill-workspace'\n", encoding="utf-8"
+            )
+
+            result = self.engine.inspect_project(project, self.contracts)
+
+        self.assertIn("python", result["frameworks"])
+        self.assertIn("skills/real", {row["path"] for row in result["workspaces"]})
 
     def test_directory_fanout_over_limit_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
