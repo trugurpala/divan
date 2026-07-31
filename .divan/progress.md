@@ -34,6 +34,13 @@ schema-2 JSON and Markdown receipts re-verified offline as
 `valid-clean-room-adoption`. The v1 readiness score is now 8/8. This is not an
 independent-user count, endorsement, market-adoption, speed, or quality claim.
 
+Post-release `main` now carries two verified hardening changes that are not part
+of the immutable v1.0.1 tag: pinned GitHub Actions were refreshed as one policy
+coherent change, and the public README/Wiki/Pages copy was rewritten around the
+Hükümdar-first, single-repository, modular Divan contract. These changes improve
+the development line only; a new public release still requires the canonical
+`scripts/release.py` workflow and synchronized release surfaces.
+
 ## Yapıldı
 
 - Schema-1 adoption receipts remain verifiable with explicit non-v1 statuses.
@@ -368,6 +375,30 @@ independent-user count, endorsement, market-adoption, speed, or quality claim.
   future v1.1.0 or bounded patch release only through `scripts/release.py` after
   CHANGELOG, BLUEPRINT, README, Wiki, site, and release-manifest surfaces are
   synchronized.
+- PR #72 merged the pinned-action refresh into `main` at
+  `954202492723bb1b4174a51d2b1fd41ef76f6a35`. It superseded Dependabot PRs
+  #41-#45 as one coherent policy update, kept every GitHub Action pinned to a
+  full commit SHA, synchronized `UPSTREAM.md`, tests, workflows, and the release
+  manifest, and passed main `quality-gate`, `release`, `compatibility`,
+  `codeql`, `site-tests`, `scorecard`, `wiki-sync`, and Pages.
+- PR #73 merged the Hükümdar-first public copy repair into `main` at
+  `fc4f734bb662500a1f24319b8b8ff4582499b28c`. It superseded stale PR #51,
+  preserved Divan/Ferman/Hükümdar identity, clarified that Divan is one repo
+  with modular packs rather than a separate runtime, external model, or forked
+  project, and verified README, Pages, and Wiki live readbacks. Main CI passed
+  `quality-gate`, `codeql`, `site-tests`, `scorecard`, `wiki-sync`, and Pages.
+- The observed CI/user-wait benchmarks for this development line are now known:
+  local Windows `python scripts/verify.py` took about 307 seconds, main
+  `quality-gate` took 7m43s after PR #72 and 8m02s after PR #73, release took
+  3m56s after PR #72, and PR validation took roughly 8-9 minutes on the
+  public-copy branch. Future Seyir/timeout work should surface these waits to a
+  vibe coder as friendly progress states instead of silent waiting.
+- Only two open pull requests remain: draft PR #29 durable project memory and
+  draft PR #28 Forge Golden Path Council. Both are currently dirty against
+  `main` and must be re-audited against the post-v1 Divan Engine / Project
+  Contract architecture before merge or release. The remaining open issues are
+  automated Meclis discoveries #47 and #23, which require candidate lifecycle
+  decisions rather than direct code adoption.
 
 ## Tarihsel devam kayıtları
 
@@ -396,8 +427,11 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep v1.0.1 immutable. Triage the remaining open backlog before the next
-release: close or refresh stale public-copy PR #51, review Dependabot PRs
-#41-#45 with pinned-action policy, decide whether draft PR #29 and #28 still
-fit the post-v1 architecture, and only then prepare the next release line with
-the canonical release workflow.
+Keep v1.0.1 immutable. First exact action: audit PR #29 against current Project
+Contract, Seyir, and goal-state behavior; either refresh it from current `main`
+as a smaller post-v1 memory module or close the stale draft with a written
+rationale. Then apply the same refresh-or-close decision to PR #28 under the
+Meclis candidate rules, triage issues #47 and #23 into
+ADOPT/ADAPT/REFERENCE/REJECT decisions, and only then prepare the next release
+line through `scripts/release.py` with CHANGELOG, BLUEPRINT, README, Wiki, site,
+and release-manifest surfaces synchronized.
