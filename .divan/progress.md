@@ -354,9 +354,20 @@ independent-user count, endorsement, market-adoption, speed, or quality claim.
 
 ## Devam ediyor
 
-- v1.0.1 is a bounded installation patch, not a new product scope. Canonical
-  verification, independent review, PR/CI, immutable release publication, and
-  a repeat of the real Windows/Codex upgrade remain required.
+- PR #62 merged the multi-engine foundation into `main` at
+  `0b0efca5369c690b5830de76e4b0df0874ab1958`. The change stayed inside one
+  repository and added a read-only engine registry validator, schema, example
+  registry, CLI route, tests, and bilingual Divan Engine documentation. GitHub
+  Actions for the merge commit passed `quality-gate`, `compatibility`,
+  `codeql`, `site-tests`, `wiki-sync`, `scorecard`, `candidate-review`,
+  `release`, and Pages deployment. Local canonical verification on Windows
+  passed 705 tests with 14 platform-specific skips.
+- v1.0.1 remains the latest immutable public release at
+  `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`. The multi-engine foundation is
+  source-ready on `main`, but it is not a newly tagged public release. Prepare a
+  future v1.1.0 or bounded patch release only through `scripts/release.py` after
+  CHANGELOG, BLUEPRINT, README, Wiki, site, and release-manifest surfaces are
+  synchronized.
 
 ## Tarihsel devam kayıtları
 
@@ -385,7 +396,8 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep v1.0.1 immutable. Re-run the canonical verifier for this publication
-evidence update, merge it only after CI, then read README, Pages, Wiki, tag,
-Release assets, and the local healthy Codex installation back without moving
-the published tag.
+Keep v1.0.1 immutable. Triage the remaining open backlog before the next
+release: close or refresh stale public-copy PR #51, review Dependabot PRs
+#41-#45 with pinned-action policy, decide whether draft PR #29 and #28 still
+fit the post-v1 architecture, and only then prepare the next release line with
+the canonical release workflow.
