@@ -88,7 +88,19 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Yol Haritası
 
-### En son yayımlanan yama
+### Son yama hattı
+
+- **v1.0.2 ✓** Release candidate scope: Seyir'in bekleme açıklaması ve Divan
+  Engine'in sessiz workspace keşfi aynı kullanıcı-dostu hatta bağlandı.
+  `plugins/sadrazam/divan_runtime/engine.py` artık üst proje taramasında
+  `.worktrees`, fixture ağaçları, dependency/build cache'leri ve skill içi
+  yardımcı klasörleri ekstra workspace/test hedefi yapmaz; bu klasörlerden biri
+  açıkça `--project` kökü verilirse incelenebilir. Hedef, Hükümdar'ın takip
+  ekranında eski ajan dalları ve örnek projelerden gelen gürültüyü kaldırıp tek
+  repo/modüler çekirdek sınırını korumaktır. Yayın PR'ı main'e girdikten sonra
+  release workflow'u tag, GitHub Release, varlık, checksum, SBOM, attestation,
+  Pages ve Wiki kanıtını üretecektir; yayın kanıtı ayrı geri okumayla
+  mühürlenecektir.
 
 - **v1.0.1 ✓** PR #69
   `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde birleşti ve değişmez
@@ -506,7 +518,8 @@ yükseltmesiyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Keep v1.0.1 immutable. Merge the publication evidence only after the canonical
-verifier and CI, then read README, Pages, Wiki, tag, Release assets, and the
-healthy local Codex installation back before opening a separately approved
-product target.
+Finish the v1.0.2 release candidate: run the canonical verifier, open and merge
+the release PR only after CI is green, then wait for the main release workflow.
+After tag/GitHub Release assets exist, create the publication-evidence update
+that changes Latest published/Son yayımlanan to v1.0.2 and records README,
+Pages, Wiki, tag, checksum, SBOM, attestation, and doctor readbacks.

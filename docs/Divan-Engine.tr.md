@@ -53,6 +53,12 @@ sözleşmesinin tek kaynağıdır. `python scripts/divan.py architecture --json`
 ikisini birlikte doğrular ve gösterir. Bağımlılıklar döngü kuramaz. Çekirdek
 başka bir repoya veya harici agent runtime'ına bağlı değildir.
 
+Proje keşfi sınırlı ve salt okunurdur. Üst proje taramasında Divan'a ait geçici
+worktree'leri, bağımlılık/derleme cache'lerini, fixture ağaçlarını ve skill içi
+yardımcı klasörleri yok sayar; böylece eski ajan dalları tekrar workspace veya
+test hedefi gibi görünmez. Bu klasörlerden biri açıkça `--project` kökü verilirse
+Divan onu normal biçimde inceler.
+
 ## Nizâm-ı Sefer
 
 `council` modülü `planning.py` ve küçük bir `planning_policy.py` politika

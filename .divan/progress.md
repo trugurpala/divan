@@ -34,12 +34,13 @@ schema-2 JSON and Markdown receipts re-verified offline as
 `valid-clean-room-adoption`. The v1 readiness score is now 8/8. This is not an
 independent-user count, endorsement, market-adoption, speed, or quality claim.
 
-Post-release `main` now carries two verified hardening changes that are not part
-of the immutable v1.0.1 tag: pinned GitHub Actions were refreshed as one policy
-coherent change, and the public README/Wiki/Pages copy was rewritten around the
-Hükümdar-first, single-repository, modular Divan contract. These changes improve
-the development line only; a new public release still requires the canonical
-`scripts/release.py` workflow and synchronized release surfaces.
+Post-release `main` now carries a v1.0.2 release candidate. It packages the
+Seyir wait-state UX with a quieter Divan Engine inspection path: parent-project
+traversal ignores Divan-owned `.worktrees`, fixture trees, dependency/build
+caches, and skill-internal helper folders so stale agent branches and test
+fixtures do not appear as duplicate user workspaces. Latest published remains
+immutable v1.0.1 until the release workflow creates tag/GitHub Release v1.0.2
+and publication evidence is recorded.
 
 ## Yapıldı
 
@@ -458,8 +459,10 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep the current immutable release unchanged. First exact action: choose the next
-small post-v1 slice from the remaining product queue, with preference for
-Hükümdar-friendly onboarding polish or Seyir proof/status depth. Before any new
-public release, run `scripts/release.py` and synchronize CHANGELOG, BLUEPRINT,
-README, Wiki, site, and release-manifest surfaces.
+Finish v1.0.2. First exact action: run focused tests, `scripts/release.py
+--check`, `scripts/wiki.py --check`, the canonical verifier, and `git diff
+--check`; then open/merge the release PR only after CI is green. After the main
+release workflow publishes tag/GitHub Release v1.0.2, create the publication
+evidence update that changes Latest published/Son yayımlanan to v1.0.2 and
+records README, Pages, Wiki, release assets, checksums, SBOM, attestations, and
+doctor readbacks.

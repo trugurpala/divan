@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.1-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.2-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -25,7 +25,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v1.0.1 · **Latest published:** v1.0.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.2 · **Latest published:** v1.0.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -65,6 +65,11 @@ team, and expands changed paths through an impact graph. Core Pack supplies
 engineering discipline, UI Pack handles interfaces, React Pack activates only
 for detected React projects, and Zanaat Pack joins creative or integration
 work. See [Divan Engine](docs/Divan-Engine.md).
+
+Project inspection keeps the user-facing plan focused on the real project. It
+does not turn Divan-owned scratch worktrees, dependency/build caches, fixture
+projects, or skill-internal helper folders into extra workspaces unless one of
+those folders is the explicit project root.
 
 Nizam-i Sefer adds the missing execution judgment. A plan now explains the
 structural risk, host certainty, conservative context budget, required model
@@ -163,7 +168,7 @@ running measured checks.
 
 The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
-ref whose immutable tag and GitHub Release exist.
+ref whose immutable tag and GitHub Release exist. Use v1.0.2 only after its tag and GitHub Release are visible; until then use v1.0.1 for release-pinned installs.
 
 ### Fastest first install: one verified file, no repository checkout
 
@@ -191,16 +196,16 @@ From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.1
-python scripts/divan.py install --host both --ref v1.0.1 --execute
+python scripts/divan.py install --host both --ref v1.0.2
+python scripts/divan.py install --host both --ref v1.0.2 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.1
-python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.2
+python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
@@ -222,9 +227,9 @@ options. The complete Turkish reference remains available in
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.1
-python scripts/divan.py update --host both --ref v1.0.1
-python scripts/divan.py update --host both --ref v1.0.1 --execute
+python scripts/divan.py doctor --host both --ref v1.0.2
+python scripts/divan.py update --host both --ref v1.0.2
+python scripts/divan.py update --host both --ref v1.0.2 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

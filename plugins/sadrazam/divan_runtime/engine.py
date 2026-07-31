@@ -24,21 +24,14 @@ MAX_DIRECTORY_ENTRIES = 256
 IGNORED_PROJECT_DIRECTORIES = frozenset(
     {
         ".cache", ".git", ".gradle", ".hg", ".mypy_cache", ".next", ".nuxt", ".output", ".parcel-cache",
-        ".pytest_cache", ".ruff_cache", ".svelte-kit", ".svn",
+        ".pytest_cache", ".ruff_cache", ".svelte-kit", ".svn", ".worktrees",
         ".tox", ".turbo", ".venv", ".vercel", "__pycache__",
         "bin", "build", "cache", "coverage", "dist", "node_modules",
         "obj", "out", "target", "vendor", "venv",
     }
 )
 WORKSPACE_MANIFESTS = frozenset(
-    {
-        "Cargo.toml",
-        "go.mod",
-        "package.json",
-        "pyproject.toml",
-        "requirements.txt",
-        "setup.py",
-    }
+    {"Cargo.toml", "go.mod", "package.json", "pyproject.toml", "requirements.txt", "setup.py"}
 )
 NODE_LOCKFILES = {
     "bun": ("bun.lock", "bun.lockb"),
@@ -797,9 +790,15 @@ def _project_directories(root: pathlib.Path) -> list[pathlib.Path]:
         directories.append(resolved)
         if depth >= MAX_PROJECT_DEPTH:
             continue
+        parent_parts = tuple(part.casefold() for part in resolved.relative_to(root).parts)
         children: list[pathlib.Path] = []
         for entry in _bounded_directory_entries(root, resolved):
-            if entry.name.casefold() in IGNORED_PROJECT_DIRECTORIES:
+            entry_name = entry.name.casefold()
+            if (
+                entry_name in IGNORED_PROJECT_DIRECTORIES
+                or (entry_name == "fixtures" and parent_parts == ("tests",))
+                or (entry_name == "skills" and len(parent_parts) == 2 and parent_parts[0] == "plugins")
+            ):
                 continue
             try:
                 if entry.is_dir(follow_symlinks=False):
