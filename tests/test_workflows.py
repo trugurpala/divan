@@ -15,7 +15,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("using: composite", text)
         self.assertIn(
-            "actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6",
+            "actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7",
             text,
         )
         self.assertIn(
@@ -110,7 +110,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("id-token: write", text)
         self.assertNotIn("contents: write", text)
         self.assertIn(
-            "ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3",
+            "ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4",
             text,
         )
         self.assertIn("results_format: sarif", text)
@@ -223,7 +223,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         licenses = (ROOT / "THIRD_PARTY_LICENSES.md").read_text(encoding="utf-8")
         manifest = (ROOT / "release-manifest.json").read_text(encoding="utf-8")
         for repository, sha, license_id in (
-            ("ossf/scorecard-action", "4eaacf0543bb3f2c246792bd56e8cdeffafb205a", "Apache-2.0"),
+            ("ossf/scorecard-action", "2d1146689b8cda280b9bc96326124645441f03bc", "Apache-2.0"),
             (
                 "actions/dependency-review-action",
                 "a1d282b36b6f3519aa1f3fc636f609c47dddb294",
