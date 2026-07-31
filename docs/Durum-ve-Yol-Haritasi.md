@@ -1,19 +1,15 @@
 # Durum ve Yol Haritası · v1.0.0
 
-Son durum tarihi: 2026-07-30.
+Son durum tarihi: 2026-07-31.
 
-> **En güncel yayımlanmış sürüm v0.18.5'tir.** PR #65 Windows'ta çalışan
-> `.cmd` host girişini güvenli biçimde seçerek temiz-proje kanıtını tamamladı.
-> Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, attestations,
-> Pages ve Wiki ile yayımlandı.
->
-> **v1.0.0 yayın adayı hazırlanıyor.** PR #66 son 8/8 kanıtını `main`e taşıdı;
-> README, Pages, Wiki ve makine karnesi geri okundu. v1.0.0 etiketi ve GitHub
-> Release henüz oluşmadığı için aday, yayımlanmış sürüm diye gösterilmez.
+> **En güncel yayımlanmış sürüm v1.0.0'dır.** PR #67 kararlı ürün sözleşmesini
+> `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde dondurdu. Değişmez
+> tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, strict attestations,
+> Windows/macOS/Linux temiz-host kapıları, Chromium, Pages ve Wiki doğrulandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v0.18.5` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v1.0.0` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -158,12 +154,24 @@ değildir.
   yeniden doğrulandı. v1 hazırlık karnesi bu sınırlı teknik kanıtla **8/8**'dir;
   bağımsız kullanıcı, pazar benimsemesi, hız veya kalite artışı iddia edilmez.
 
+## v1.0.0 — yayımlanan kararlı Divan sözleşmesi
+
+- Tek repo, beş modüler paket, 41 beceri, stdlib-only Divan Engine, Hükümdar
+  öncelikli Divan Nizamı ve kurulu Divan Proje Sözleşmesi kararlı sınırdır.
+- PR #67 `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde birleşti.
+- Release hattı üç işletim sisteminde temiz kurulum, bütün yayın kapıları,
+  Pages/Wiki eşliği ve canlı Chromium kontrolünden sonra v1.0.0'ı yayımladı.
+- Yedi varlık yeniden indirildi; SHA-256, iki sidecar, master manifest, SPDX
+  SBOM, iki gömülü runner kimliği ve strict attestations doğrulandı.
+
 ## Sıradaki ürün adımı
 
 1. ✓ 8/8 kanıt PR'ını bütün kalite kapılarından geçirip `main`e birleştir.
 2. ✓ Canlı README, Pages, Wiki ve v1 karnesini varsayılan daldan geri oku.
-3. v1.0.0 yayın adayını ayrı sürüm değişikliği olarak doğrula ve birleştir;
-   değişmez tag/Release, varlık, attestation ve canlı geri-okuma kanıtını üret.
+3. ✓ v1.0.0'ı değişmez tag/Release, yedi varlık, SBOM, attestation ve canlı
+   geri-okuma kapılarıyla yayımla.
+4. Yayın kanıtını ve son sürüm etiketlerini `main`e eşitle; sonraki ürünü ayrı
+   onaylı hedef olarak başlat.
 
 ## v1.0 kapıları
 

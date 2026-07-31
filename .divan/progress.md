@@ -1,23 +1,23 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-30
+Son güncelleme: 2026-07-31
 
 ## Yayın durumu
 
-- Latest published release: v0.18.5
-- Published commit: f65d62a857e744dce0b370414e6686b9c49258d7
-- Publication evidence: .divan/evidence/teftis-20260730-v0185-release.md
-- Release asset evidence: .divan/evidence/teftis-20260730-v0185-release.md
+- Latest published release: v1.0.0
+- Published commit: 2f73e0514d97d4ec9597b3d313f20c82d7770b77
+- Publication evidence: .divan/evidence/teftis-20260731-v100-release.md
+- Release asset evidence: .divan/evidence/teftis-20260731-v100-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release remains v0.18.5 at immutable commit `f65d62a`.
-PR #66 merged the privacy-reviewed clean-room receipts at
-`afedaeeee87f6c065820833dc19e4434225f8494`. Its PR checks and eight triggered
-main/publication workflows passed. README, Pages, Wiki, and the parsed gate
-registry were read back at 8/8. Issue #34 is closed with the bounded
-machine-verifiable claim.
+The latest published release is v1.0.0 at immutable commit
+`2f73e0514d97d4ec9597b3d313f20c82d7770b77`. PR #67 froze the stable product
+contract. The release workflow passed clean-host installation on Windows,
+macOS, and Linux, waited for Pages and Wiki, verified the live site in Chromium,
+and published seven checksummed and strictly attested assets. Downloaded
+readback matched the tag, Release target, SBOM, runner identities, and commit.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -351,9 +351,10 @@ independent-user count, endorsement, market-adoption, speed, or quality claim.
 
 ## Devam ediyor
 
-- The canonical release tool prepared the frozen v1.0.0 source surfaces. The
-  candidate still requires full local verification, PR checks, merge, immutable
-  tag/Release publication, downloaded-asset verification, and live readback.
+- The immutable v1.0.0 release is complete. Its publication evidence and
+  human-facing latest-release labels are being synchronized through one bounded
+  follow-up PR, after which README, Pages, Wiki, and install guidance will be
+  read back from `main`.
 
 ## Tarihsel devam kayıtları
 
@@ -376,15 +377,12 @@ the current execution queue.
 
 ## Bilinen açıklar
 
-- v1 hazırlık kanıtı 8/8 olsa da `v1.0.0` etiketi ve GitHub Release henüz yoktur;
-  hazırlık karnesi sürümün yayımlandığı anlamına gelmez.
 - Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
   manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
   native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
 
 ## Sıradaki kesin adım
 
-Validate and merge the v1.0.0 release PR without expanding the frozen product
-contract. Then verify the immutable tag, GitHub Release, seven downloaded
-assets, checksums, strict attestations, README, Pages, Wiki, and install
-readback before declaring v1 published.
+Validate and merge the bounded v1.0.0 publication-evidence PR. Then read
+README, Pages, Wiki, the GitHub Release, and the pinned install path back from
+`main`; begin post-v1 work only from a separately approved goal.

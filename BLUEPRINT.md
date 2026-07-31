@@ -90,14 +90,18 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v1.0.0 ✓** Release candidate surfaces prepared; PR #66, v0.18.5'in
-  makinece doğrulanmış temiz-proje
-  makbuzunu `main`e taşıdı; README, Pages, Wiki ve makine karnesi 8/8 olarak
-  geri okundu. Donmuş ürün sözleşmesi kanonik yayın yolunda hazırlanıyor;
-  tag/Release henüz yayımlanmadı.
+- **v1.0.0 yayın kanıtı:** Değişmez sürüm yayımlandı. İndirilen varlık,
+  checksum, SBOM, attestation ve gömülü runner kimliği kanıtı ile kullanıcıya
+  dönük son sürüm etiketleri tek sınırlı takip PR'ında eşitleniyor.
 
 ### Yayımlanan temel
 
+- **v1.0.0 ✓** Published stable Divan contract: PR #67
+  `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde birleşti. Değişmez
+  tag/GitHub Release, yedi checksummed ve strict-attested varlık, SPDX SBOM,
+  Windows/macOS/Linux temiz-host kapıları, Chromium, Pages ve Wiki doğrulandı.
+  Tek repo, beş modüler paket, 41 beceri, stdlib-only Divan Engine, Hükümdar
+  öncelikli Divan Nizamı ve Divan Proje Sözleşmesi kararlı ürün sınırıdır.
 - **v0.18.5 ✓** Published Windows trust fix: temiz-proje host sürüm probu,
   çalıştırılamayan uzantısız npm shim'i yerine çalışan `.cmd` veya `.exe`
   komutunu platforma göre çözer. PR #65 `f65d62a857e744dce0b370414e6686b9c49258d7`
@@ -230,8 +234,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - Sürüm etiketi, release notes, kurulum ve geri alma tatbikatı.
 
 Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
-`docs/V1-Hazirlik.md` dosyasındadır. Sekiz kapı da `passed` durumundadır; bu
-hazırlık kanıtı v1.0.0 tag/Release yayımlanmadan sürümün çıktığı anlamına gelmez.
+`docs/V1-Hazirlik.md` dosyasındadır. Sekiz kapı da `passed` durumundadır;
+değişmez v1.0.0 tag/Release ayrıca yayın zinciriyle doğrulanmıştır.
 
 ### Uzun vade
 
@@ -239,6 +243,12 @@ hazırlık kanıtı v1.0.0 tag/Release yayımlanmadan sürümün çıktığı an
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-31: v1.0.0 PR #67 ile
+  `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde yayımlandı. Üç
+  işletim sistemindeki temiz-host kapıları, canlı Chromium, Pages ve Wiki
+  geçtikten sonra yedi varlık üretildi. İndirilen dosyaların SHA-256, sidecar,
+  master manifest, SBOM, gömülü runner kimliği ve strict attestations
+  doğrulandı.
 - 2026-07-30: PR #66 `afedaeeee87f6c065820833dc19e4434225f8494`
   commit'inde birleşti. Yerelde 697 test ve son hijyen; PR'da kalite, CodeQL,
   bağımlılık, Wiki ve iki Playwright kapısı; `main`de sekiz yayın akışı geçti.
@@ -484,7 +494,6 @@ hazırlık kanıtı v1.0.0 tag/Release yayımlanmadan sürümün çıktığı an
 
 ## Sıradaki Kesin Adım
 
-Validate and merge the v1.0.0 release PR without expanding the frozen product
-contract. Then verify the immutable tag, GitHub Release, seven downloaded
-assets, checksums, strict attestations, README, Pages, Wiki, and install
-readback before declaring v1 published.
+Validate and merge the bounded v1.0.0 publication-evidence PR. Read README,
+Pages, Wiki, Release, and pinned install guidance back from `main`; start any
+post-v1 feature only under a separately approved goal.

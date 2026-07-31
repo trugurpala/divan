@@ -19,7 +19,7 @@ yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların 
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 
-**Güncel kaynak:** v1.0.0 · **Son yayımlanan:** v0.18.5 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v1.0.0 · **Son yayımlanan:** v1.0.0 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -177,7 +177,7 @@ Eşleşen GitHub Release yayımlandıktan sonra bağımsız kurucuyu ve checksum
 dosyasını indir, bilgisayarında doğrula, yazmayan planı gör ve sonra uygula:
 
 ```powershell
-$tag = "v0.18.5"
+$tag = "v1.0.0"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -340,20 +340,17 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 
 ## Dürüst durum
 
-Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
-ancak henüz v1.0 değildir. 41 beceri yapısal olarak doğrulanır; 4 özgün skill için
-13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
-yüzeylerini ve temiz-host matrisini otomatikleştirir. İlk güvenilir gerçek
-ajan/hakem karşılaştırması yayımlanmıştır. Son kapı artık yayımlanmış
-mekanizmayla üretilen tek bir makinece doğrulanmış temiz-proje kanıtıdır; bu,
-bağımsız kullanıcı, üçüncü taraf onayı veya pazar benimsemesi iddiası değildir.
-v0.17.0, Divan Engine ile Divan Nizamı'nı açıklaştırır ve eski yolları
-korur. PR #49, bütün zorunlu CI kapıları, değişmez tag/Release, checksum ve
-attestation bağlı beş varlık, Pages ve Wiki yayın kanıtında doğrulanmıştır.
-Güncel, makine-okunur durum
-[v1 hazırlık karnesinde](docs/V1-Hazirlik.md)
-bulunur; bağımsız kanıt gelmeden hız, gelir veya “dünyanın en iyisi” iddiası
-yapılmaz.
+Divan v1.0.0, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
+yayımlandı. 41 becerinin tamamı yapısal olarak doğrulanır; 4 özgün skill için
+13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
+tek repo, beş modüler paket, stdlib-only Divan Engine, Hükümdar öncelikli Divan
+Nizamı, kurulu Divan Proje Sözleşmesi ve Claude Code/Codex yaşam döngüsünü
+korur. Değişmez tag, checksum ve attestation bağlı yedi varlık, SBOM, Pages,
+Wiki ve temiz-host matrisi
+[v1.0.0 yayın kanıtında](.divan/evidence/teftis-20260731-v100-release.md)
+kayıtlıdır. Temiz-proje sonucu sınırlı teknik akışı kanıtlar; bağımsız kullanıcı
+sayısı, üçüncü taraf onayı, pazar benimsemesi, hız, gelir, kalite artışı veya
+“dünyanın en iyisi” iddiası değildir.
 
 ## Kaldırma
 
