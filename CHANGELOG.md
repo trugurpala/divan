@@ -6,9 +6,188 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
-### Planned
+## [1.0.1] - 2026-07-31
 
-- More verified native host adapters and independent adoption evidence.
+### Fixed
+
+- Standalone `divan.pyz update --execute` now uses its embedded immutable
+  release identity, commit, and marketplace digest instead of treating the
+  extracted bootstrap directory as a Git checkout. This repairs the real
+  Windows upgrade path from an older native Codex installation while keeping
+  source/ref proof, transactional rollback, and unrelated plugins intact.
+
+### Changed
+
+- Synchronized README, Pages, Wiki, roadmap, and project handoff with the
+  verified immutable v1.0.1 Release and recorded downloaded-asset, checksum,
+  SBOM, runner-identity, strict-attestation, and real Windows/Codex update
+  evidence.
+
+### Verification
+
+- The released v1.0.0 runner reproduced the failure before any host mutation:
+  its dry-run produced the correct replacement plan, while execute stopped at
+  `git status` against the extracted non-Git bootstrap directory. A regression
+  test now fails on that exact boundary and the related 64 upgrade, rollback,
+  authority, security, and bootstrap tests pass after the fix.
+- The candidate passed 698 tests with 14 expected platform skips and both PR
+  quality runs. The immutable v1.0.1 Release then passed every main/publication
+  workflow, seven downloaded SHA-256 checks, strict attestation verification,
+  and a real update of the existing native Windows/Codex installation. Final
+  doctor was healthy and a second execute was a no-op.
+
+## [1.0.0] - 2026-07-30
+
+Divan's first stable release freezes the tested public product contract:
+one repository, five modular packages, 41 skills, Claude Code and Codex host
+lifecycles, the stdlib-only Divan Engine, owner-first Divan Nizamı governance,
+the installed Divan Project Contract, evidence-backed goals, and local Seyir.
+
+### Added
+
+- A privacy-reviewed schema-2 receipt produced by immutable v0.18.5 on Windows
+  11, Codex `0.146.0`, and a real project distinct from Divan. JSON and Markdown
+  both re-verify offline as `valid-clean-room-adoption`.
+- The machine-backed v1 readiness score now records 8/8 completed gates while
+  keeping the bounded claim separate from independent-user, endorsement,
+  market-adoption, speed, or quality-improvement claims.
+
+### Fixed
+
+- README, Pages, Wiki, roadmap, and progress copy now names v0.18.5 as the
+  latest published release instead of retaining the previous release label.
+
+## [0.18.5] - 2026-07-30
+
+### Fixed
+
+- The clean-room Codex/Claude version probe now resolves the runnable Windows
+  `.cmd` or `.exe` launcher before falling back to the portable command name.
+  This avoids an access-denied failure when npm places an extensionless shim
+  before its working `.cmd` launcher on `PATH`.
+
+### Added
+
+- Immutable v0.18.4 publication evidence with workflow, asset, checksum,
+  attestation, Pages, Wiki, and live-readback identifiers.
+- A regression test for the exact Windows launcher ordering reproduced by the
+  released v0.18.4 runner on Codex Desktop.
+
+### Verification
+
+- The released v0.18.4 runner reached the real VERIFIED clean-room goal and
+  bounded native test plan, then failed closed at the host probe. Direct
+  process execution reproduced access denied for `codex` and success for
+  `codex.cmd --version`; the fix selects the latter without using a shell.
+
+## [0.18.4] - 2026-07-30
+
+### Added
+
+- `goal advance --evidence`, a dry-run-first way to bind new implementation,
+  regression-test, or verification files to the goal receipt in the same
+  atomic write as the state transition.
+- Clean-room proof extraction from the actual VERIFIED transition rather than
+  from all files that happened to exist in the original goal plan.
+- Immutable v0.18.3 publication evidence with workflow, asset, checksum,
+  attestation, Pages, Wiki, and live-readback identifiers.
+
+### Changed
+
+- A bug-fix intent now uses the focused six-step bug-fix workflow instead of
+  also expanding generic testing and feature workflows into an 18-task graph.
+- A conventional project-level `VERSION` file or an unrelated plugin
+  marketplace no longer makes a distinct project look like a Divan checkout.
+  Divan-owned marketplace/module signatures continue to fail closed.
+- English and Turkish README, Project Contract, Wiki, Pages, Blueprint,
+  progress, and release surfaces now describe the same real-evidence boundary
+  and distinguish current source v0.18.4 from published v0.18.3.
+
+### Safety
+
+- VERIFIED rejects absolute or backslash paths, traversal, missing files,
+  symlinks/reparse points, secrets, and files larger than 4 MiB before writing.
+- A goal backed only by generated specification or plan artifacts cannot
+  become VERIFIED. `adoption prove` independently refuses a VERIFIED goal
+  without real evidence recorded on the terminal transition.
+- Existing bound artifacts are preserved and new artifacts are merged
+  deterministically without an intermediate partially updated receipt.
+
+### Verification
+
+- The canonical local verifier passes 695 tests with 14 expected
+  Windows-only symlink/permission skips, plus the five-package/41-skill
+  catalog, v1 registry, 230 release surfaces, Wiki, Ruff, mypy, Clean Code,
+  and final repository hygiene.
+- A separate Git repository reproduced a label-normalization bug, observed the
+  regression test fail, applied the smallest fix, observed two tests pass, and
+  reached VERIFIED only after the implementation, test, and verification
+  files were hash-bound. This is local pre-release evidence, not yet the v1
+  clean-room receipt.
+
+## [0.18.3] - 2026-07-30
+
+### Added
+
+- `adoption prove`, a dry-run-first command that plans and executes bounded
+  clean-room evidence for an existing verified goal.
+- Schema-2 JSON and Markdown adoption receipts that bind an immutable Divan
+  release, a project distinct from Divan, observed Claude Code or Codex
+  version, test-backed checks, source stability, privacy limits, and an offline
+  integrity digest.
+- A machine-backed v1 gate that accepts only one repository-contained,
+  privacy-reviewed `valid-clean-room-adoption` receipt whose release identity
+  matches the gate registry.
+
+### Changed
+
+- The eighth v1 gate now measures verifiable technical evidence rather than an
+  unprovable declaration that the operator is outside the maintainer group.
+- Maintainer and external operator roles are retained as provenance but pass
+  the same technical eligibility contract.
+- GitHub intake, README, Project Contract, Wiki, Pages, progress, and impact
+  rules now lead with `adoption prove` and keep v1 honestly at 7/8 until a real
+  receipt from the released mechanism is committed and re-verified.
+- Historical schema-1 receipts remain readable and now return explicit
+  `valid-schema-1-owner-canary` or
+  `valid-schema-1-independent-declaration` compatibility statuses; neither is
+  eligible for v1.
+
+### Safety
+
+- Preview performs no writes and starts no subprocess.
+- Execute uses only fixed host-version probes and allowlisted native project
+  checks; it never evaluates caller-supplied shell strings, retries failed
+  checks, or continues after timeout, cancellation, or source drift.
+- The project runner must match its adjacent checksum, embedded source identity,
+  and the digest read independently from the immutable GitHub Release API
+  before planning; execution rebuilds the private plan before launch and
+  rejects worktree, index, or HEAD drift.
+- Goal-bound checks receive priority inside the eight-check ceiling, and
+  missing native goal checks now fail closed. Canonical verification also
+  reserves the complete test-class timeout instead of truncating it with a
+  shorter overall workflow budget.
+- Markdown verification requires the visible summary to be the canonical
+  rendering of its embedded JSON envelope.
+- A durable staging journal records pending state before each check. Receipt
+  files are promoted atomically only after both JSON and Markdown verify
+  offline.
+- Receipts reject usernames, e-mail addresses, absolute paths, remote URLs,
+  secrets, raw argv, command-output bodies, unrelated plugin inventory, unknown
+  keys, boolean integers, and recomputed-digest schema tampering.
+
+### Verification
+
+- Schema-1 compatibility, schema-2 validation, proof planning/execution, CLI
+  presentation, v1 registry, impact graph, bilingual public-copy, and release
+  surface tests cover the new contract.
+- The runtime remains nine-module and Python-standard-library-only; internal
+  receipt, runner, proof-execution, and CLI dispatch helpers keep each new
+  source below the clean-code ceiling. No daemon,
+  database, telemetry service, external agent runtime, or second repository was
+  added.
+- The publication manifest tracks 229 synchronized surfaces before final
+  release verification.
 
 ## [0.18.2] - 2026-07-30
 
@@ -762,6 +941,8 @@ Versioning while the public API remains in initial development (`0.y.z`).
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[1.0.1]: https://github.com/trugurpala/divan/releases/tag/v1.0.1
+[1.0.0]: https://github.com/trugurpala/divan/releases/tag/v1.0.0
 [0.18.0]: https://github.com/trugurpala/divan/releases/tag/v0.18.0
 [0.17.1]: https://github.com/trugurpala/divan/releases/tag/v0.17.1
 [0.17.0]: https://github.com/trugurpala/divan/releases/tag/v0.17.0

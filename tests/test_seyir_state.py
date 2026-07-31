@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import pathlib
 import sys
@@ -137,6 +138,96 @@ class SeyirStateTests(unittest.TestCase):
         self.assertEqual(before["goal"]["status"], "DISCOVERED")
         self.assertEqual(advanced["status"], "advanced")
         self.assertEqual(after["goal"]["status"], "SPECIFIED")
+
+    def test_goal_advance_atomically_binds_new_project_evidence(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-seyir-state-") as temporary:
+            project = pathlib.Path(temporary)
+            identifier, _ = self._goal(project)
+            evidence = project / "implementation.py"
+            evidence.write_text("RESULT = 'verified'\n", encoding="utf-8")
+            relative = "implementation.py"
+            expected = hashlib.sha256(evidence.read_bytes()).hexdigest()
+
+            planned = seyir_state.advance_goal(
+                project,
+                identifier,
+                "specified",
+                execute=False,
+                evidence=[relative],
+            )
+            before = goals.goal_status(project, identifier)
+            advanced = seyir_state.advance_goal(
+                project,
+                identifier,
+                "specified",
+                execute=True,
+                evidence=[relative],
+                reason="Implementation evidence reviewed.",
+            )
+            after = goals.goal_status(project, identifier)
+
+        self.assertEqual(
+            planned["new_artifacts"],
+            [{"path": relative, "sha256": expected}],
+        )
+        self.assertNotIn(relative, before["artifacts"])
+        self.assertEqual(advanced["new_artifacts"], planned["new_artifacts"])
+        self.assertEqual(after["artifacts"][relative], expected)
+        self.assertEqual(after["state"], "SPECIFIED")
+        self.assertTrue(after["ok"])
+
+    def test_goal_advance_rejects_unsafe_or_oversized_new_evidence(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-seyir-state-") as temporary:
+            project = pathlib.Path(temporary)
+            identifier, _ = self._goal(project)
+            outside = project.parent / f"{project.name}-outside.txt"
+            outside.write_text("outside\n", encoding="utf-8")
+            oversized = project / "oversized.bin"
+            oversized.write_bytes(
+                b"x" * (seyir_state.MAX_TRANSITION_EVIDENCE_BYTES + 1)
+            )
+            try:
+                cases = [
+                    ([str(outside)], "project-relative"),
+                    (["../outside.txt"], "project-relative"),
+                    (["missing.txt"], "real file"),
+                    (["oversized.bin"], "too large"),
+                ]
+                for evidence, message in cases:
+                    with self.subTest(evidence=evidence):
+                        with self.assertRaisesRegex(ValueError, message):
+                            seyir_state.advance_goal(
+                                project,
+                                identifier,
+                                "specified",
+                                execute=True,
+                                evidence=evidence,
+                            )
+            finally:
+                outside.unlink(missing_ok=True)
+
+    def test_verified_transition_requires_non_spec_evidence(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-seyir-state-") as temporary:
+            project = pathlib.Path(temporary)
+            identifier, _ = self._goal(project)
+            for state in ("specified", "planned", "implementing"):
+                seyir_state.advance_goal(
+                    project, identifier, state, execute=True
+                )
+            spec = f".divan/specs/{identifier}/spec.md"
+
+            with self.assertRaisesRegex(ValueError, "verification evidence"):
+                seyir_state.advance_goal(
+                    project, identifier, "verified", execute=True
+                )
+            with self.assertRaisesRegex(ValueError, "verification evidence"):
+                seyir_state.advance_goal(
+                    project,
+                    identifier,
+                    "verified",
+                    execute=True,
+                    evidence=[spec],
+                )
 
 
 if __name__ == "__main__":

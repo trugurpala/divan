@@ -356,13 +356,9 @@ def _execute(
     repository: pathlib.Path,
     record: dict[str, Any],
 ) -> dict[str, Any]:
-    target = host_state.checkout_evidence(
-        repository, options.source, options.ref, io.run, io.normalize_source
+    record["target"] = host_state.upgrade_target_evidence(
+        repository, options.source, options.ref, versions, io.run, io.normalize_source
     )
-    if target["contract"] != versions:
-        raise host_state.StateError("target checkout contract does not match native catalog")
-    target_versions = target.pop("contract")
-    record["target"] = {**target, "versions": target_versions}
     record["before_rows"] = {
         host: _capture_before(host, record["target"]["source"], io) for host in options.hosts
     }

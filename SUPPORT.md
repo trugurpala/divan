@@ -14,7 +14,7 @@ product proposals do not get mixed together.
 | Güvenlik açığı / Vulnerability | [Özel güvenlik bildirimi / Private advisory](https://github.com/trugurpala/divan/security/advisories/new) |
 | Mevcut dış yetenek veya repo / Existing external capability | [Kaynak adayı / Source candidate](https://github.com/trugurpala/divan/issues/new?template=kaynak-adayi.yml) |
 | Özgün Divan skill'i / Original Divan skill | [Yeni vezir / New skill](https://github.com/trugurpala/divan/issues/new?template=yeni-vezir.md) |
-| Bağımsız v1 kanıtı / Independent v1 evidence | [Kabul kanıtı / Acceptance evidence](https://github.com/trugurpala/divan/issues/new?template=kabul-kaniti.yml) |
+| Doğrulanmış temiz-proje kanıtı / Verified clean-room evidence | [Kabul kanıtı / Acceptance evidence](https://github.com/trugurpala/divan/issues/new?template=kabul-kaniti.yml) |
 
 Güvenlik açığı, kimlik bilgisi, kişisel veri veya özel proje ayrıntısını public
 issue/discussion'a yazma. / Do not place vulnerabilities, credentials,

@@ -20,6 +20,7 @@ if str(PLUGIN_ROOT) not in sys.path:
 from divan_runtime import timeouts  # noqa: E402
 
 Command = tuple[str, ...]
+CHILD_COMPLETION_MARGIN_SECONDS = 60
 CORE_COMMANDS: tuple[Command, ...] = (
     ("scripts/hygiene.py", "--check"),
     ("scripts/validate.py",),
@@ -69,15 +70,26 @@ def _run(
 ) -> int:
     environment = verification_environment(root, cache_root)
     verify_decision = timeouts.resolve_default("verify")
-    deadline = time.monotonic() + verify_decision.configured_seconds
-    for arguments in commands:
-        child_decision = timeouts.resolve_default(command_class(arguments))
+    scheduled = tuple(
+        (arguments, timeouts.resolve_default(command_class(arguments)))
+        for arguments in commands
+    )
+    largest_child = max(
+        (decision.configured_seconds for _arguments, decision in scheduled),
+        default=0,
+    )
+    overall_seconds = max(
+        verify_decision.configured_seconds,
+        largest_child + CHILD_COMPLETION_MARGIN_SECONDS,
+    )
+    deadline = time.monotonic() + overall_seconds
+    for arguments, child_decision in scheduled:
         remaining = max(0, deadline - time.monotonic())
         timeout_seconds = min(child_decision.configured_seconds, remaining)
         if timeout_seconds <= 0:
             print(
                 "VERIFY TIMEOUT: overall verify limit reached "
-                f"({verify_decision.configured_seconds}s)",
+                f"({overall_seconds}s)",
                 file=sys.stderr,
                 flush=True,
             )

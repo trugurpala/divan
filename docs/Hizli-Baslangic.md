@@ -4,8 +4,9 @@ Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefin
 söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
 genişletebilirsin. Divan bir model veya ayrı üçüncü taraf runtime değildir:
 Divan Engine aynı repodaki modüler icra çekirdeği, Divan Nizamı ise yetki
-düzenidir. Güncel v1 karnesi **7/8** kapının geçtiğini, bağımsız kullanıcı
-kanıtının beklediğini gösterir. Ürün sözleşmesi:
+düzenidir. Güncel v1 hazırlık karnesi **8/8** kapının geçtiğini gösterir:
+değişmez v0.18.5 ile Divan'dan ayrı gerçek projede üretilen schema-2 makbuz
+çevrimdışı yeniden doğrulandı. Ürün sözleşmesi:
 [[Topluluk Standartları|Topluluk-Standartlari]].
 
 Sadrazam'ın ilerleme sözleşmesi, çalışma uzadığında host ajanını ham teknik
@@ -33,16 +34,16 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.2
-python scripts/divan.py install --host both --ref v0.18.2 --execute
+python scripts/divan.py install --host both --ref v1.0.1
+python scripts/divan.py install --host both --ref v1.0.1 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
@@ -116,6 +117,25 @@ Kanıtsız “bitti” deme ve sıradaki kesin adımı kaydet.
 3. Değişen gerçek dosyalar.
 4. Test/CI/tarayıcı çıktısı.
 5. `main`, release ve canlı durumunun birbirinden doğru ayrılması.
+
+## 6. Gerçek işi temiz-proje kanıtına bağla
+
+Doğrulanmış hedefin varsa önce hiçbir şey yazmayan planı gör. Plan doğruysa
+uygula; bakımcı veya dış kullanıcı olman teknik sonucu değiştirmez:
+
+```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+```
+
+VERIFIED geçişi gerçek kod ve test/doğrulama dosyalarını atomik olarak hedef
+makbuzuna bağlar; yalnız plan dosyası kanıt sayılmaz.
+
+Yalnız `valid-clean-room-adoption` sonucu v1'e adaydır. Bu kayıt bağımsız
+kullanıcı sayısı veya verim artışı iddiası değildir; gerçek test/regresyon
+kontrollerinin gizlilik sınırlı makine kanıtıdır.
 
 Canlı ferman seçici: https://trugurpala.github.io/divan/#basla
 

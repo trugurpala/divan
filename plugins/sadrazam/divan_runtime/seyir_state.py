@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
 import tempfile
 from typing import Any
 
-from . import receipts
+from . import project_state, receipts
 
 SCHEMA_VERSION = 1
+MAX_TRANSITION_EVIDENCE_BYTES = 4 * 1024 * 1024
 STATE_PATH = pathlib.PurePosixPath(".divan/state/seyir.json")
 STATE_KEYS = {
     "schema_version",
@@ -238,6 +240,56 @@ def update(
     return result
 
 
+def _evidence_digest(root: pathlib.Path, relative: str) -> str:
+    if "\\" in relative:
+        raise ValueError("goal transition evidence must be a project-relative path")
+    path_errors = receipts._relative_path_errors(relative, "goal transition evidence")
+    if path_errors:
+        raise ValueError(path_errors[0])
+    candidate = root.joinpath(*pathlib.PurePosixPath(relative).parts)
+    containment_errors = receipts._artifact_containment_errors(
+        root, candidate, "goal transition evidence"
+    )
+    if containment_errors:
+        raise ValueError(containment_errors[0])
+    cursor = root
+    for part in pathlib.PurePosixPath(relative).parts:
+        cursor = cursor / part
+        if project_state._is_reparse_or_symlink(cursor):
+            raise ValueError("goal transition evidence uses a symlink or reparse point")
+    if not candidate.is_file():
+        raise ValueError("goal transition evidence must name a real file")
+    if candidate.stat().st_size > MAX_TRANSITION_EVIDENCE_BYTES:
+        raise ValueError("goal transition evidence is too large")
+    content_errors = receipts._artifact_content_errors(
+        candidate, "goal transition evidence"
+    )
+    if content_errors:
+        raise ValueError(content_errors[0])
+    return hashlib.sha256(candidate.read_bytes()).hexdigest()
+
+
+def _new_evidence_artifacts(
+    root: pathlib.Path,
+    receipt: dict[str, Any],
+    evidence: list[str],
+) -> dict[str, str]:
+    artifacts = receipt.get("artifacts")
+    if not isinstance(artifacts, dict):
+        raise ValueError("goal receipt artifacts are invalid")
+    additions: dict[str, str] = {}
+    for relative in evidence:
+        if not isinstance(relative, str):
+            raise ValueError("goal transition evidence must be a project-relative path")
+        digest = _evidence_digest(root, relative)
+        existing = artifacts.get(relative)
+        if existing is not None and existing != digest:
+            raise ValueError(f"goal transition evidence changed: {relative}")
+        if existing is None:
+            additions[relative] = digest
+    return dict(sorted(additions.items()))
+
+
 def advance_goal(
     project: pathlib.Path | str,
     goal_id: str,
@@ -259,12 +311,20 @@ def advance_goal(
     elif destination not in receipts.TRANSITIONS.get(current, frozenset()):
         raise ValueError(f"illegal transition: {current} -> {destination}")
     supplied_evidence = [] if evidence is None else list(evidence)
-    unknown = sorted(set(supplied_evidence) - set(value["artifacts"]))
-    if unknown:
+    if len(supplied_evidence) != len(set(supplied_evidence)):
+        raise ValueError("goal transition evidence must be unique")
+    spec_prefix = f".divan/specs/{goal_id}/"
+    if destination == "VERIFIED" and not any(
+        not item.startswith(spec_prefix) for item in supplied_evidence
+    ):
         raise ValueError(
-            "goal transition evidence is not receipt-bound: "
-            + ", ".join(unknown)
+            "VERIFIED requires implementation or verification evidence"
         )
+    additions = _new_evidence_artifacts(root, value, supplied_evidence)
+    new_artifacts = [
+        {"path": relative, "sha256": digest}
+        for relative, digest in additions.items()
+    ]
     result = {
         "schema_version": 1,
         "status": "planned",
@@ -272,6 +332,7 @@ def advance_goal(
         "from": current,
         "to": destination,
         "evidence": supplied_evidence,
+        "new_artifacts": new_artifacts,
     }
     if execute:
         receipts.append_transition(
@@ -279,6 +340,7 @@ def advance_goal(
             destination,
             reason=reason,
             evidence=supplied_evidence,
+            bind_artifacts=additions,
         )
         result["status"] = "advanced"
     return result

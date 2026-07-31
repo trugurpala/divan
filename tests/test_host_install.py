@@ -412,7 +412,7 @@ class HostInstallTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["errors"], "replace")
 
     def test_host_probe_classifies_missing_executable(self) -> None:
-        with mock.patch.object(HOST_PROBE.shutil, "which", return_value=None):
+        with mock.patch.object(HOST_PROBE, "resolve_executable", return_value=None):
             result = HOST_PROBE.run(["codex", "plugin", "list", "--json"])
 
         self.assertEqual(result.returncode, 127)

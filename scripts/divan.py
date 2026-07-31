@@ -38,6 +38,7 @@ DIVAN_COMMANDS = {
     "project",
     "adoption",
     "validate",
+    "engines",
 }
 
 

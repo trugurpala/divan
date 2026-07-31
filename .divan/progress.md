@@ -1,38 +1,47 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-30
+Son güncelleme: 2026-07-31
 
 ## Yayın durumu
 
-- Latest published release: v0.18.1
-- Published commit: f367de92e09b4f56e205d7e2883d988b3b4d2797
-- Publication evidence: .divan/evidence/teftis-20260730-v0181-release.md
-- Release asset evidence: .divan/evidence/teftis-20260730-v0181-release.md
+- Latest published release: v1.0.1
+- Published commit: 62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949
+- Publication evidence: .divan/evidence/teftis-20260731-v101-release.md
+- Release asset evidence: .divan/evidence/teftis-20260731-v101-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release remains v0.18.1 at immutable commit `f367de92`.
-The active v0.18.2 candidate is on `feat/v0182-seyir-implementation`. It adds a
-read-only bilingual local Seyir page, evidence-bound task progress, a separate
-deterministic `divan.pyz` clean-host bootstrap, exact source-commit/catalog
-authority, durable recovery commands, safe Windows npm shim discovery,
-evidence-backed timeout decisions, and a repeated-CI-failure circuit breaker.
-The clean candidate currently passes 642 tests with 14 expected
-platform-specific skips. It is not yet merged, tagged, or published; GitHub
-review, required checks, merge, tag/Release, seven-asset readback, Pages, and
-Wiki verification remain.
+The latest published release is immutable v1.0.1 at commit
+`62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`. PR #69 repaired the packaged
+Windows/Codex upgrade path without changing Divan's product scope. Both PR
+quality runs, the main publication workflows, seven downloaded asset hashes,
+strict attestations, Pages, Wiki, and live Chromium passed. The downloaded
+release runner upgraded the existing native Codex installation to the exact
+v1.0.1 tag, final doctor returned healthy, five packages/41 skills remained
+enabled, unrelated plugins remained installed, and a second execute was a
+no-op.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
 installed layer is Divan Project Contract / Divan Proje Sözleşmesi. Hükümdar is
 the final authority and only `owner` may expand scope. Legacy Company OS,
 Project OS, `/company`, `company-validate`, and Python/JSON paths remain bounded
-compatibility surfaces through v1. Issue #34 is still the independent non-owner
-adoption gate, so v1 remains 7/8.
+compatibility surfaces through v1. The released v0.18.5 runner completed one
+machine-verifiable clean-room adoption on Windows 11, Codex `0.146.0`, and a
+real project distinct from Divan. One bounded test passed; the privacy-reviewed
+schema-2 JSON and Markdown receipts re-verified offline as
+`valid-clean-room-adoption`. The v1 readiness score is now 8/8. This is not an
+independent-user count, endorsement, market-adoption, speed, or quality claim.
 
 ## Yapıldı
 
+- Schema-1 adoption receipts remain verifiable with explicit non-v1 statuses.
+  Schema-2 adds an immutable-release, distinct-project, verified-goal,
+  observed-host, bounded-check, source-stability, privacy, and offline-digest
+  contract. `adoption prove` previews without writes/processes; `--execute`
+  runs the fixed host probe and safe checks once before atomically sealing
+  evidence. Maintainer/external role does not affect eligibility.
 - Issue #57 adds safe process probing,
   explicit profile selection, canonical fallback execution, exact 41-skill
   manifest verification, per-skill installed SHA-256 verification, a rollback
@@ -345,9 +354,20 @@ adoption gate, so v1 remains 7/8.
 
 ## Devam ediyor
 
-- Issue #34 requires a non-owner to install a pinned release, complete a bounded
-  real task, export a privacy-bounded adoption receipt, and reproduce the
-  result. Maintainer fixtures and owner canaries cannot close this gate.
+- PR #62 merged the multi-engine foundation into `main` at
+  `0b0efca5369c690b5830de76e4b0df0874ab1958`. The change stayed inside one
+  repository and added a read-only engine registry validator, schema, example
+  registry, CLI route, tests, and bilingual Divan Engine documentation. GitHub
+  Actions for the merge commit passed `quality-gate`, `compatibility`,
+  `codeql`, `site-tests`, `wiki-sync`, `scorecard`, `candidate-review`,
+  `release`, and Pages deployment. Local canonical verification on Windows
+  passed 705 tests with 14 platform-specific skips.
+- v1.0.1 remains the latest immutable public release at
+  `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`. The multi-engine foundation is
+  source-ready on `main`, but it is not a newly tagged public release. Prepare a
+  future v1.1.0 or bounded patch release only through `scripts/release.py` after
+  CHANGELOG, BLUEPRINT, README, Wiki, site, and release-manifest surfaces are
+  synchronized.
 
 ## Tarihsel devam kayıtları
 
@@ -370,15 +390,14 @@ the current execution queue.
 
 ## Bilinen açıklar
 
-- Bağımsız kullanıcı/adopsiyon kanıtı henüz yok; başarı iddiası yapılamaz.
 - Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
   manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
   native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
 
 ## Sıradaki kesin adım
 
-Define the next bounded native-host adapter slice from official host contracts.
-Keep one canonical Divan repository, isolate host differences behind adapters,
-and require clean install/discover/update/remove evidence before raising any
-compatibility tier. Issue #34 remains separate; keep v1 at 7/8 unless
-reproducible, privacy-bounded non-owner adoption evidence exists.
+Keep v1.0.1 immutable. Triage the remaining open backlog before the next
+release: close or refresh stale public-copy PR #51, review Dependabot PRs
+#41-#45 with pinned-action policy, decide whether draft PR #29 and #28 still
+fit the post-v1 architecture, and only then prepare the next release line with
+the canonical release workflow.
