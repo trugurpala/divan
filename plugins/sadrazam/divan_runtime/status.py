@@ -12,10 +12,13 @@ import subprocess
 from collections.abc import Mapping
 from typing import Any
 
-from . import locales, receipts, seyir_state
+from . import locales, receipts, seyir_state, timeouts
 
 SCHEMA_VERSION = 1
 GIT_TIMEOUT_SECONDS = 5
+WAIT_COMMAND_CLASS = "verify"
+WAIT_NORMAL_AFTER_SECONDS = 10
+WAIT_ATTENTION_AFTER_SECONDS = 60
 STATE_PHASES = {
     "DISCOVERED": "FERMAN",
     "SPECIFIED": "FERMAN",
@@ -276,6 +279,18 @@ def _utc_timestamp(now: datetime.datetime | None) -> str:
     return observed.astimezone(datetime.UTC).isoformat().replace("+00:00", "Z")
 
 
+def _wait_state() -> dict[str, Any]:
+    decision = timeouts.resolve_default(WAIT_COMMAND_CLASS)
+    return {
+        "command_class": decision.command_class,
+        "timeout_seconds": decision.configured_seconds,
+        "source": decision.source,
+        "sample_count": decision.sample_count,
+        "normal_after_seconds": WAIT_NORMAL_AFTER_SECONDS,
+        "attention_after_seconds": WAIT_ATTENTION_AFTER_SECONDS,
+    }
+
+
 def build_snapshot(
     project: pathlib.Path | str,
     language: str = "auto",
@@ -299,6 +314,7 @@ def build_snapshot(
         },
         "project": project_value,
         "generated_at": _utc_timestamp(now),
+        "wait_state": _wait_state(),
     }
     if selected is None:
         return {

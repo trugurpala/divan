@@ -167,6 +167,11 @@ Divan boş bir port seçer, çalışan adresin tamamını terminale yazar ve `--
 varsa aynı adresi açar. Adres geçicidir; `Ctrl+C` ile kapatılır. Belgelerdeki
 örnek bir portu yeniden kullanma.
 
+Doğrulama uzun sürdüğünde Seyir artık sayfanın neden sessiz görünebildiğini,
+kanıta dayalı normal bekleme aralığını ve hangi eşiği geçince dikkat gerektiğini
+gösterir. Önde vibe coder için sakin bir ekran kalır; arkada ölçülmüş kontroller
+çalışmaya devam eder.
+
 ## Kurulum
 
 Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan

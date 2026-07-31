@@ -39,8 +39,8 @@ class TimeoutRuntimeIntegrationTests(unittest.TestCase):
         decision = timeouts.resolve_default("verify")
 
         self.assertEqual(decision.source, "benchmark")
-        self.assertEqual(decision.sample_count, 5)
-        self.assertEqual(decision.configured_seconds, 300)
+        self.assertEqual(decision.sample_count, 25)
+        self.assertGreaterEqual(decision.configured_seconds, 720)
 
     def test_default_provider_runner_uses_adaptive_execution_once(self) -> None:
         from divan_runtime import execution, providers

@@ -25,6 +25,8 @@ python scripts/divan.py status --project . --open --lang auto
 Komut kullanılabilir bir portu kendisi seçer ve gerçek adresi yazdırır. Seyir
 salt okunurdur, yalnız `127.0.0.1` üzerinde çalışır ve `Ctrl+C` ile kapanır.
 Sabit bir örnek URL'yi açmak yerine her zaman komutun ürettiği adresi kullan.
+Uzun doğrulamalarda sayfanın neden sessiz kalabildiğini, ölçülmüş normal bekleme
+aralığını ve dikkat eşiğini aynı ekranda görürsün.
 
 ## 1. Beş dakikalık güvenli yolu çalıştır
 

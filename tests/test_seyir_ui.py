@@ -25,6 +25,9 @@ class SeyirUiTests(unittest.TestCase):
         self.assertIn('id="goal-title"', document)
         self.assertIn('id="current-task"', document)
         self.assertIn('id="next-action"', document)
+        self.assertIn('id="wait-label"', document)
+        self.assertIn('id="wait-explanation"', document)
+        self.assertIn('id="wait-timeout"', document)
         self.assertIn('id="technical-details"', document)
         self.assertIn('href="#main-content"', document)
 
@@ -51,6 +54,10 @@ class SeyirUiTests(unittest.TestCase):
         self.assertIn("markConnected()", script)
         self.assertIn('"progress.stale"', script)
         self.assertIn("STALE_AFTER_MS", script)
+        self.assertIn("formatDuration", script)
+        self.assertIn("snapshot.wait_state", script)
+        self.assertIn('"wait.explanation"', script)
+        self.assertIn('"wait.timeout"', script)
 
     def test_ui_supports_small_screens_focus_and_reduced_motion(self) -> None:
         document = read("index.html")
@@ -63,6 +70,7 @@ class SeyirUiTests(unittest.TestCase):
         self.assertIn("@media (max-width: 480px)", stylesheet)
         self.assertIn("@media (prefers-reduced-motion: reduce)", stylesheet)
         self.assertIn("color-scheme: light dark", stylesheet)
+        self.assertIn(".answer-card--wait", stylesheet)
         dark_block = stylesheet.split(
             "@media (prefers-color-scheme: dark)",
             maxsplit=1,
