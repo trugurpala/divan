@@ -423,6 +423,13 @@ the development line only; a new public release still requires the canonical
   Seyir snapshots expose this as `wait_state`, and the local UI explains the
   normal wait window plus attention threshold in English and Turkish. No external
   runtime, forked code, or second repository was added.
+- PR #78 merged the Seyir wait-state UX slice into `main` at
+  `7092544f5fbac2a0ac6bbb12cfa4412f28308294`. Local canonical verification
+  passed 706 tests with 14 expected platform skips; main `quality-gate`,
+  `release`, `compatibility`, `codeql`, `site-tests`, `scorecard`, `wiki-sync`,
+  `candidate-review`, and Pages all passed. Raw GitHub source, README, live
+  Pages, and live Wiki readbacks expose the new wait guidance. Latest immutable
+  release remains v1.0.1 at `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`.
 
 ## Tarihsel devam kayıtları
 
@@ -451,9 +458,8 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep the current immutable release unchanged. First exact action: finish branch
-`codex/seyir-wait-state-ux` by committing the wait-state implementation, running
-the canonical verifier from the clean committed checkout, opening/merging the
-PR only after CI passes, and reading back `main`, Pages/Wiki/source surfaces.
-Prepare any public release only through `scripts/release.py` with CHANGELOG,
-BLUEPRINT, README, Wiki, site, and release-manifest surfaces synchronized.
+Keep the current immutable release unchanged. First exact action: choose the next
+small post-v1 slice from the remaining product queue, with preference for
+Hükümdar-friendly onboarding polish or Seyir proof/status depth. Before any new
+public release, run `scripts/release.py` and synchronize CHANGELOG, BLUEPRINT,
+README, Wiki, site, and release-manifest surfaces.
