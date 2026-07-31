@@ -8,14 +8,15 @@
 
 <img src="docs/assets/muhurdar-idle.png" alt="Mühürdar, Divan's verification mascot" width="128" align="right">
 
-**You are Hükümdar, the owner. Divan is one product around your coding agent:
-41 skills, five focused packs, persistent project memory, and independent
-verification.**
+**You are Hükümdar, the owner. Divan turns the coding agent you already use
+into a modular delivery system: one repository, five focused packs, 41 skills,
+persistent project memory, local progress, and independent verification.**
 
-You issue the decree. Divan clarifies it, plans the work, builds with tests,
-verifies the result, records the decisions, and presents a finished delivery.
-It runs as a native plugin in Claude Code/Desktop Code and Codex; its Agent
-Skills remain portable to Cursor and other compatible hosts.
+You write the decree in plain language. Divan narrows the scope, selects the
+smallest qualified team, plans the work, builds with tests, verifies the
+result, records the decisions, and presents a finished delivery. It runs as a
+native plugin in Claude Code/Desktop Code and Codex; its Agent Skills remain
+portable to Cursor and other compatible hosts.
 
 ## Host compatibility
 
@@ -28,8 +29,8 @@ explicit current tier, target tier, capability map, and official source in the
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
-not a second product. The core remains in this repository and has no external
-agent-runtime or external-repository dependency.
+not a second product. The core remains modular inside this repository and has
+no external agent-runtime or external-repository dependency.
 Divan Nizamı is local workflow governance, not identity authentication; the
 host operating-system account and repository permissions remain the security
 boundary.

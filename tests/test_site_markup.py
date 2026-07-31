@@ -65,6 +65,8 @@ class SiteMarkupTests(unittest.TestCase):
                 self.assertIn("Divan Proje Sözleşmesi", html)
                 self.assertIn("docs/Project-Contract.tr.md", html)
                 self.assertIn("Hükümdar sensin", html)
+                self.assertIn("tek repo", html)
+                self.assertIn("Seyir'de takip ettirir", html)
                 self.assertIn("41 beceri", html)
                 self.assertNotIn("Company OS", html)
                 self.assertNotIn("Project OS", html)
