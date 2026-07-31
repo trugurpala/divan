@@ -3,14 +3,16 @@
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
 **Hükümdar sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
-kalıcı bir teslim akışına çeviren tek üründür. Aynı 5 paket/41 beceri Claude
+kalıcı bir teslim akışına çeviren tek üründür: tek repo, modüler çekirdek,
+5 paket, 41 beceri, yerel Seyir ekranı ve kanıtlı denetim. Aynı paketler Claude
 Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
 davranış eval'i ve yayın teftişi aynı çatıdadır.
 
 Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
 repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
 Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Divan
-ürününün parçalarıdır. v1 hazırlık durumu **8/8** kapıdır: değişmez v0.18.5,
+ürününün parçalarıdır; başka repo veya harici agent runtime zorunlu değildir.
+v1 hazırlık durumu **8/8** kapıdır: değişmez v0.18.5,
 Windows 11, Codex ve Divan'dan ayrı gerçek projede makinece doğrulanabilir
 temiz-proje kanıtı üretti; gizlilik incelemeli makbuz çevrimdışı doğrulandı.
 

@@ -8,11 +8,13 @@
 
 <img src="docs/assets/muhurdar-idle.png" alt="Divan'ın Mühürdar maskotu" width="128" align="right">
 
-**Hükümdar sensin. Divan, kodlama ajanının etrafındaki tek üründür — 41 beceri,
-5 paket, kalıcı proje hafızası ve bağımsız denetim.**
-Sen fermanı verirsin; Divan planlar, TDD ile inşa eder, kanıtıyla teslim eder
-ve kaldığın yeri asla unutmaz. Claude Code/Desktop Code ve Codex'te yerel
-plugin olarak; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
+**Hükümdar sensin. Divan, kullandığın kodlama ajanını modüler bir teslim
+sistemine çevirir: tek repo, 5 odaklı paket, 41 beceri, kalıcı proje hafızası,
+yerel ilerleme ekranı ve bağımsız denetim.**
+Sen fermanı sade dille verirsin; Divan kapsamı daraltır, en küçük yetkin ekibi
+seçer, planlar, testle inşa eder, kanıtıyla teslim eder ve kaldığın yeri asla
+unutmaz. Claude Code/Desktop Code ve Codex'te yerel plugin olarak; Cursor ve
+diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
 Host desteği tek bir “uyumlu” pazarlama sözüyle değil, kanıt seviyesiyle
 yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların mevcut
@@ -23,7 +25,7 @@ seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
-ikinci bir ürün değildir. Çekirdek bu repoda kalır ve başka bir agent
+ikinci bir ürün değildir. Çekirdek bu repoda modüler kalır ve başka bir agent
 runtime'ına veya dış repoya bağımlı olmaz.
 Divan Nizamı yerel iş akışı yönetişimidir, kimlik doğrulama sistemi değildir;
 güvenlik sınırı host işletim sistemi hesabı ile repo izinleridir.
