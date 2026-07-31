@@ -10,6 +10,7 @@ import stat
 from collections.abc import Callable
 from typing import Any
 
+import bootstrap_contract
 import host_adapters
 
 PACKAGES = ("sadrazam", "core-pack", "ui-pack", "react-pack", "zanaat-pack")
@@ -113,6 +114,30 @@ def checkout_evidence(
     resolved = root.expanduser().resolve()
     commit, actual_ref = _git_evidence(resolved, ref, run)
     return _checkout_payload(resolved, source, actual_ref, commit, run, normalize)
+
+
+def upgrade_target_evidence(
+    root: pathlib.Path,
+    source: str,
+    ref: str,
+    versions: dict[str, str],
+    run: Run,
+    normalize: Normalize,
+) -> dict[str, Any]:
+    """Resolve one immutable upgrade target from a bundle or clean checkout."""
+    try:
+        bundled = bootstrap_contract.target_evidence(root, versions)
+    except bootstrap_contract.ContractError as exc:
+        raise StateError(str(exc)) from exc
+    if bundled is not None:
+        if normalize(bundled["source"]) != normalize(source) or bundled["ref"] != ref:
+            raise StateError("upgrade request does not match bundled release authority")
+        return dict(bundled)
+    target = checkout_evidence(root, source, ref, run, normalize)
+    if target["contract"] != versions:
+        raise StateError("target checkout contract does not match native catalog")
+    target["versions"] = target.pop("contract")
+    return target
 
 
 def _checkout_payload(

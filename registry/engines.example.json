@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "engines": [
+    {
+      "id": "backstage",
+      "decision": "ADAPT",
+      "status": "candidate",
+      "license": {
+        "spdx_expression": "Apache-2.0",
+        "evidence": "https://github.com/backstage/backstage/blob/master/LICENSE"
+      },
+      "source": {
+        "url": "https://github.com/backstage/backstage",
+        "pin_policy": "manual"
+      },
+      "host_compatibility": ["claude", "codex", "standalone"],
+      "supported_project_types": ["documentation", "service"],
+      "forbidden_project_types": [],
+      "quality_profiles": ["portal-provider-v1"],
+      "installation": {
+        "modes": ["sidecar"],
+        "removal": "remove the optional portal projection without removing Divan CLI state",
+        "rollback": "keep Divan receipts and project metadata readable without the portal"
+      },
+      "escape_plan": {
+        "summary": "Backstage remains an optional projection, not the Divan control plane.",
+        "steps": [
+          "disable the sidecar",
+          "keep project catalog data in Divan-owned files",
+          "run Divan validation without Backstage"
+        ]
+      },
+      "portability": {
+        "data_portable": true,
+        "migration_notes": "Divan CLI and receipts remain the source of truth.",
+        "depends_on_lockfile": false
+      },
+      "business_logic_ownership": {
+        "owner": "project",
+        "notes": "Business logic stays in the target project and Divan records."
+      },
+      "frontend_replaceability": {
+        "replaceable": true,
+        "notes": "The portal UI can be removed without changing Divan runtime behavior."
+      },
+      "when_unavailable": "readonly"
+    },
+    {
+      "id": "nx",
+      "decision": "ADOPT",
+      "status": "candidate",
+      "license": {
+        "spdx_expression": "MIT",
+        "evidence": "https://github.com/nrwl/nx/blob/master/LICENSE"
+      },
+      "source": {
+        "url": "https://github.com/nrwl/nx",
+        "pin_policy": "lockfile"
+      },
+      "host_compatibility": ["claude", "codex", "standalone"],
+      "supported_project_types": ["monorepo"],
+      "forbidden_project_types": ["desktop"],
+      "quality_profiles": ["typescript-monorepo-v1"],
+      "installation": {
+        "modes": ["dependency"],
+        "removal": "remove the package dependency and keep project-native scripts",
+        "rollback": "restore lockfile and package scripts from version control"
+      },
+      "escape_plan": {
+        "summary": "Nx is optional project tooling and never required by Divan Core.",
+        "steps": [
+          "preserve package manager lockfile",
+          "retain native test and build scripts",
+          "remove Nx-specific generators if the project exits"
+        ]
+      },
+      "portability": {
+        "data_portable": true,
+        "migration_notes": "Generated code must remain ordinary project code.",
+        "depends_on_lockfile": true
+      },
+      "business_logic_ownership": {
+        "owner": "project",
+        "notes": "Domain logic remains in project packages."
+      },
+      "frontend_replaceability": {
+        "replaceable": true,
+        "notes": "Frontend apps stay framework-owned, not Divan-owned."
+      },
+      "when_unavailable": "fallback"
+    },
+    {
+      "id": "lowdefy",
+      "decision": "ADOPT",
+      "status": "candidate",
+      "license": {
+        "spdx_expression": "Apache-2.0",
+        "evidence": "https://github.com/lowdefy/lowdefy/blob/main/LICENSE"
+      },
+      "source": {
+        "url": "https://github.com/lowdefy/lowdefy",
+        "pin_policy": "lockfile"
+      },
+      "host_compatibility": ["claude", "codex", "standalone"],
+      "supported_project_types": ["internal-app"],
+      "forbidden_project_types": ["public-web"],
+      "quality_profiles": ["internal-app-v1"],
+      "installation": {
+        "modes": ["provider"],
+        "removal": "remove Lowdefy configuration and keep project-owned APIs",
+        "rollback": "restore the previous lockfile and Divan project receipt"
+      },
+      "escape_plan": {
+        "summary": "Internal UI configuration must not own domain data or behavior.",
+        "steps": [
+          "export configuration",
+          "verify project-owned API contracts",
+          "replace the UI with a project-native frontend if needed"
+        ]
+      },
+      "portability": {
+        "data_portable": true,
+        "migration_notes": "Project-owned API, database schema, and domain rules remain outside UI config.",
+        "depends_on_lockfile": true
+      },
+      "business_logic_ownership": {
+        "owner": "project",
+        "notes": "Business logic must remain in project APIs and services."
+      },
+      "frontend_replaceability": {
+        "replaceable": true,
+        "notes": "Lowdefy is treated as replaceable UI configuration."
+      },
+      "when_unavailable": "fallback"
+    }
+  ]
+}

@@ -123,22 +123,43 @@ python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on 
 python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD --execute
 ```
 
-After a verified goal, a maintainer or independent user can export a bounded
-JSON receipt plus Markdown summary:
+After a verified goal, the primary v1 path proves the work in a project distinct
+from Divan. Preview is read-only and starts no subprocess. Execute observes the
+selected host through its fixed version probe, runs a bounded test/regression
+plan once, detects source drift, and atomically seals schema-2 JSON and Markdown:
 
 ```powershell
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> > adoption-receipt.json
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> --markdown > adoption-receipt.md
-python scripts/divan.py adoption verify adoption-receipt.json
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <implementation-file> <test-or-verification-file>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <implementation-file> <test-or-verification-file> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
-Export is read-only: it writes the selected portable document to stdout and
-creates no project file unless the user redirects it. It rejects secrets,
-email addresses, usernames, absolute paths, remote URLs, unrelated plugin
-inventory, and command-output bodies. Maintainer evidence verifies as
-`valid-owner-canary`; an independent submitter is only a
-`valid-independent-declaration` until a human review accepts it. Divan never
-closes the independent-adoption v1 gate automatically.
+The VERIFIED transition validates project-relative evidence paths, rejects
+links, traversal, missing files, secrets, and oversized files, then hashes the
+accepted files into the goal receipt in the same atomic write as the state
+transition. A goal backed only by generated specification or plan files cannot
+become VERIFIED, and `adoption prove` independently requires evidence recorded
+on the VERIFIED event.
+
+Operator role is descriptive and does not change eligibility: maintainer and
+external operators pass the same technical gate. The receipt stores hashes,
+coarse outcomes, durations, check classes, and the observed host version; it
+rejects secrets, email addresses, usernames, absolute paths, remote URLs,
+unrelated plugin inventory, raw argv, and command-output bodies. Only
+`valid-clean-room-adoption` with `eligible_for_v1: true` can satisfy the gate.
+
+`adoption export` remains available for schema-1 compatibility. Those receipts
+verify only as `valid-schema-1-owner-canary` or
+`valid-schema-1-independent-declaration`, and always remain ineligible for v1.
+The v1 readiness score is **8/8** because a receipt produced by immutable
+v0.18.5 was committed and re-verified. The runner and its `.sha256` sidecar
+must stay together, and execution requires a Git repository for tracked-source drift.
+The sidecar proves download integrity; the v1 gate separately pins the reviewed
+release runner digest in `registry/v1-gates.json` and requires an exact match.
+Preview obtains that digest from the fixed public GitHub Release API; if the
+release authority is unavailable or differs, no project command starts.
 
 For public web projects, the read-only static audit is:
 

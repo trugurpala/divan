@@ -59,6 +59,15 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     41-skill fallback'i seçer. Fallback native komut/ajan/hook/MCP/lifecycle
     iddiasında bulunmaz; geçersiz JSON gerçek uyumsuzluk olarak durur. Ayrıntı
     ADR 0011'dedir.
+12. **Doğrulanmış temiz-proje kabulü:** v1'in son kapısı operatörün kimliğini
+    değil; değişmez Divan release'i, Divan'dan ayrı gerçek proje, doğrulanmış
+    hedefin VERIFIED olayına atomik bağlanan gerçek uygulama/test kanıtı, bir
+    kez çalışan sınırlı test/regresyon kontrolleri ve gizlilik
+    sınırlı schema-2 makbuzu ölçer. Bakımcı ile dış kullanıcı aynı teknik kapıya
+    tabidir. Bu kanıt pazar benimsemesi, üçüncü taraf onayı veya verim artışı
+    iddiası değildir. Runner yan dosyası yalnız taşıma bütünlüğüdür; kanıt
+    önizlemesi sabit public GitHub Release API digest'ini ayrı otorite olarak
+    okur ve v1 defteri aynı digest'i sabitler.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -79,17 +88,54 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Yol Haritası
 
-### Etkin geliştirme hattı
+### En son yayımlanan yama
 
-- **v0.18.2 ✓** Local candidate / publication pending: Yerel Seyir, tek dosyalık
-  deterministik `divan.pyz` temiz-host kurucusu, kanıta dayalı akıllı timeout,
-  iki kanıtlı düzeltmeden sonra devre kesici, güvenli Windows `.cmd` çözümleme
-  ve iki dilli kamusal yüzeyler tamamlandı. Çekirdek dokuz modül ve stdlib-only
-  kaldı; bağımsız inceleme ile GitHub yayın kapıları sıradaki aşamadır.
-- Issue #34 bağımsız kullanıcı gerektiren ayrı v1 kapısı olarak kalır.
+- **v1.0.1 ✓** PR #69
+  `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde birleşti ve değişmez
+  tag/GitHub Release olarak yayımlandı. Tek dosyalık runner, çıkarılmış
+  bootstrap klasörünü Git checkout sanmak yerine gömülü release kimliği,
+  commit'i ve katalog digest'ini hedef otoritesi olarak kullanır. Yedi indirilen
+  varlık, strict attestations ve gerçek Windows/Codex yükseltmesi doğrulandı;
+  final doctor sağlıklı, ikinci execute no-op oldu. Kaynak/ref, rollback ve
+  yabancı eklenti korumaları değişmedi.
 
 ### Yayımlanan temel
 
+- **v1.0.0 ✓** Published stable Divan contract: PR #67
+  `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde birleşti. Değişmez
+  tag/GitHub Release, yedi checksummed ve strict-attested varlık, SPDX SBOM,
+  Windows/macOS/Linux temiz-host kapıları, Chromium, Pages ve Wiki doğrulandı.
+  Tek repo, beş modüler paket, 41 beceri, stdlib-only Divan Engine, Hükümdar
+  öncelikli Divan Nizamı ve Divan Proje Sözleşmesi kararlı ürün sınırıdır.
+- **v0.18.5 ✓** Published Windows trust fix: temiz-proje host sürüm probu,
+  çalıştırılamayan uzantısız npm shim'i yerine çalışan `.cmd` veya `.exe`
+  komutunu platforma göre çözer. PR #65 `f65d62a857e744dce0b370414e6686b9c49258d7`
+  commit'inde birleşti; sekiz tetiklenen ana/yayın workflow'u, yedi doğrulanmış
+  ve strict-attested varlık, Pages ve Wiki geçti. Değişmez runner Windows 11,
+  Codex `0.146.0` ve Divan'dan ayrı gerçek projede test-backed schema-2 makbuz
+  üretti; v1 hazırlık karnesi 8/8'e ulaştı.
+- **v0.18.4 ✓** Published real-evidence boundary: VERIFIED geçişi gerçek
+  uygulama/test kanıtını atomik bağlar; temiz-proje kanıtı yalnız terminal
+  olaydaki dosyaları kabul eder. Genel `VERSION` dosyası ve Divan dışı
+  marketplace yanlış pozitif değildir; bug-fix fermanı odaklı kalır. PR #64
+  `2eb36bdd24e383c90e1e62e53ad1c6c5d5730000` commit'inde birleşti; dokuz
+  workflow, yedi doğrulanmış varlık, attestations, Pages ve Wiki geçti.
+- **v0.18.3 ✓** Published verified clean-room mechanism: `adoption prove`,
+  schema-2 privacy-bounded receipts, immutable release authority, one-shot
+  bounded checks, source-stability protection, and machine-backed v1
+  validation. PR #63 merged at `294958620e6382fe10296ab15246e100fab84764`;
+  all nine main/publication workflows, seven checksummed and strictly attested
+  assets, immutable tag/Release, Pages, and Wiki are bound in the v0.18.3
+  evidence. At v0.18.3 publication time a released-runner receipt was absent,
+  so that release correctly remained at 7/8.
+- **v0.18.2 ✓** Published Seyir and clean-host bootstrap release: bilingual
+  loopback-only progress UI, deterministic single-file `divan.pyz`, exact
+  source/catalog authority, evidence-backed timeouts, repeated-failure circuit
+  breaker, and portable Windows launcher resolution. PR #60, all required
+  main/publication workflows, immutable tag/Release, seven checksummed and
+  attested assets, SPDX 2.3 SBOM, Pages, Wiki, and Linux/macOS/Windows lifecycle
+  canaries are bound in the v0.18.2 evidence. The core remains nine-module and
+  stdlib-only.
 - **v0.18.1 ✓** Published Codex Desktop auto-install release: explicit `auto`
   profile, safe CLI diagnosis, honest native/fallback capability boundary, and
   checksum-backed 41-skill verification. PR #58, all nine main/publication
@@ -177,19 +223,25 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 1. ✓ v0.12.0 birleştirme/tag/Release/Pages/Wiki ve global kurulum kanıtı.
 2. ✓ Gerçek Claude ajanı + kör Codex hakemiyle ilk yayımlanabilir A/B kanıtı.
-3. Sabitlenmiş release'i deneyen bağımsız kullanıcı kabul kanıtı.
-4. Bağımsız kanıt geldikten sonra eşik, başarısızlık ve tekrar koşu politikasını
-   v1 sözleşmesine sabitleme.
+3. ✓ v0.18.3 schema-2 temiz-proje mekanizmasını değişmez release olarak yayımla.
+4. ✓ v0.18.4 gerçek-kanıt bağlama düzeltmesini değişmez release olarak yayımla.
+5. ✓ v0.18.5 Windows host-probe düzeltmesini değişmez release olarak yayımla.
+6. ✓ Yayımlanmış mekanizmayla Divan'dan ayrı gerçek projede
+   `valid-clean-room-adoption` makbuzu üret, repoya kaydet ve çevrimdışı yeniden
+   doğrula.
 
 ### v1.0 kabul kapıları
 
 - Kararlı ve belgelenmiş public skill/command sözleşmesi.
 - Otomatik davranış eval'leri; başarısız eval'de yayın engeli.
-- En az bir bağımsız kullanıcıdan tekrar üretilebilir kurulum ve görev kanıtı.
+- Yayımlanmış mekanizmayla üretilmiş, tekrar doğrulanabilir bir temiz-proje
+  görev kanıtı.
 - Sürüm etiketi, release notes, kurulum ve geri alma tatbikatı.
 
 Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
-`docs/V1-Hazirlik.md` dosyasındadır. Bütün kapılar `passed` olmadan v1 denmez.
+`docs/V1-Hazirlik.md` dosyasındadır. Sekiz kapı da `passed` durumundadır;
+değişmez v1.0.1 tag/Release ayrıca yayın zinciri ve gerçek Windows/Codex
+yükseltmesiyle doğrulanmıştır.
 
 ### Uzun vade
 
@@ -197,6 +249,44 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-31: v1.0.1 PR #69 ile
+  `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde yayımlandı. 698 test,
+  iki PR kalite koşusu, ana/yayın workflow'ları, yedi indirilen varlığın
+  SHA-256 değeri, strict attestations, Pages, Wiki ve canlı Chromium geçti.
+  İndirilen release runner'ı mevcut native Windows/Codex kurulumunu v1.0.1'e
+  yükseltti; doctor sağlıklı döndü ve tekrar execute no-op oldu.
+- 2026-07-31: v1.0.0 PR #67 ile
+  `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde yayımlandı. Üç
+  işletim sistemindeki temiz-host kapıları, canlı Chromium, Pages ve Wiki
+  geçtikten sonra yedi varlık üretildi. İndirilen dosyaların SHA-256, sidecar,
+  master manifest, SBOM, gömülü runner kimliği ve strict attestations
+  doğrulandı.
+- 2026-07-30: PR #66 `afedaeeee87f6c065820833dc19e4434225f8494`
+  commit'inde birleşti. Yerelde 697 test ve son hijyen; PR'da kalite, CodeQL,
+  bağımlılık, Wiki ve iki Playwright kapısı; `main`de sekiz yayın akışı geçti.
+  README, Pages, Wiki ve `registry/v1-gates.json` 8/8 olarak geri okundu.
+  Issue #34, kimlik beyanı yerine makinece doğrulanabilir temiz-proje
+  sözleşmesi ve sınırlandırılmış iddia ile kapandı.
+- 2026-07-30: v0.18.5 PR #65 ile `f65d62a857e744dce0b370414e6686b9c49258d7`
+  commit'inde yayımlandı. Windows/Linux/macOS yaşam döngüsü, kalite, CodeQL,
+  Pages, Wiki, site ve release kapıları geçti; yedi varlık indirildi, SHA-256,
+  sidecar, master manifest ve strict attestations yeniden doğrulandı. Değişmez
+  runner ayrı gerçek projede Codex `0.146.0` ve bir test-backed VERIFIED hedef
+  için `valid-clean-room-adoption` üretti. Gizlilik incelemeli makbuz çevrimdışı
+  doğrulandı ve v1 hazırlık karnesi 8/8'e ulaştı.
+- 2026-07-30: v0.18.3 PR #63 ile `294958620e6382fe10296ab15246e100fab84764`
+  commit'inde yayımlandı. Dokuz ana/yayın workflow'u, yedi indirilen varlık,
+  checksum, sıkı attestation, Pages ve Wiki doğrulandı. Sonraki temiz-proje
+  provası; hedefin gerçek uygulama/test kanıtını bağlayamaması, ortak `VERSION`
+  dosyasını yanlış Divan imzası sayması ve küçük bug-fix'i 18 göreve
+  genişletmesi sorunlarını ortaya çıkardı. v0.18.4 bu üç güven sınırını
+  düzeltir; yayımlanmış makbuz oluşana kadar v1 7/8'dir.
+- 2026-07-30: v0.18.3 verified clean-room adoption implementation began from
+  published v0.18.2. Schema-1 receipts remain compatibility-only; schema-2
+  binds immutable release identity, a project distinct from Divan, a verified
+  goal, observed Claude Code/Codex version, one-shot bounded checks, source
+  stability, privacy limits, and an offline digest. Operator role is provenance,
+  not eligibility. The mechanism is not yet published and v1 remains 7/8.
 - 2026-07-29: v0.18 Nizâm-ı Sefer development started from published v0.17.1.
 - 2026-07-29: PR #54 merged Nizâm-ı Sefer to `main` at `7c674874` after 562
   tests, the cross-platform host matrix, two independent reviews, CodeQL,
@@ -416,7 +506,7 @@ Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 
 ## Sıradaki Kesin Adım
 
-Collect and human-review the reproducible non-owner adoption evidence in issue
-#34. Verify its privacy-bounded receipt before changing the machine-backed v1
-scorecard. Owner fixtures or canaries do not qualify; without valid evidence,
-v1 remains 7/8.
+Keep v1.0.1 immutable. Merge the publication evidence only after the canonical
+verifier and CI, then read README, Pages, Wiki, tag, Release assets, and the
+healthy local Codex installation back before opening a separately approved
+product target.

@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.18.2-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -24,7 +24,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v0.18.2 · **Latest published:** v0.18.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.1 · **Latest published:** v1.0.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -118,9 +118,26 @@ Host `update` replaces Divan packages in Claude/Codex. Project `update` migrates
 only Divan-owned Project Contract surfaces in a target repository. `audit`
 evaluates DPS quality evidence; `project status` compares ownership
 fingerprints and drift. Verified
-goals can be archived, and a privacy-bounded adoption receipt can be exported
-without exposing usernames, absolute paths, remotes, secrets, or unrelated
-plugins. Owner-canary evidence never closes the independent-adoption gate.
+goals can be archived. The primary v1 evidence path now proves a real task in a
+project distinct from Divan, runs bounded test/regression checks once, observes
+the host version directly, and seals a privacy-bounded schema-2 receipt:
+
+```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <implementation-file> <test-or-verification-file>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <implementation-file> <test-or-verification-file> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+```
+
+The VERIFIED transition hashes the named project-relative files into the goal
+receipt atomically; plan-only evidence is rejected. Preview writes nothing and
+starts no subprocess. Operator identity does not
+change eligibility: maintainer and external users pass the same technical
+gate. Only `valid-clean-room-adoption` can qualify; historical schema-1 export
+receipts remain verifiable but are never v1 evidence. Keep the downloaded
+`divan-project.pyz` and `divan-project.pyz.sha256` together; proof execution
+also requires a Git repository so tracked-source drift can fail closed.
 
 ## Follow progress locally
 
@@ -148,7 +165,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v0.18.2"
+$tag = "v1.0.1"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -168,16 +185,16 @@ From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.2
-python scripts/divan.py install --host both --ref v0.18.2 --execute
+python scripts/divan.py install --host both --ref v1.0.1
+python scripts/divan.py install --host both --ref v1.0.1 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.2
-python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
@@ -199,12 +216,15 @@ options. The complete Turkish reference remains available in
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+The standalone `divan.pyz` uses its embedded immutable release identity during
+an update; it does not treat the extracted bundle as a Git checkout.
 
 Replace the example journal with doctor's exact `recovery_command`. Rolling
 back the `install-...json` journal uninstalls only Divan entries created by that
@@ -299,18 +319,19 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 ## Honest status
 
-Divan follows the open Agent Skills specification and ships the standard GitHub
-community and security files, but it is not v1.0 yet. All 41 skills receive
-structural validation; four original skills provide 13 behavioral cases and a
-provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
-compatibility checks. The first declared real-agent/judge comparison is now
-published; independent user evidence remains the external gate. v0.17.0
-publishes Divan Engine and Divan Nizamı while preserving old paths. PR #49,
-all required CI, immutable tag/Release, five checksummed and attested assets,
-Pages, and Wiki are verified in the publication evidence. See the
-[machine-backed v1 scorecard](docs/V1-Hazirlik.md). Until that evidence exists,
-the project does not claim a speed multiplier, revenue
-increase, or “best in the world” status.
+Divan v1.0.1 is published after all eight machine-backed readiness gates passed.
+All 41 skills receive structural validation; four original skills provide 13
+behavioral cases and a provider-neutral A/B runner. The stable contract keeps
+one repository, five modular packages, the stdlib-only Divan Engine,
+owner-first Divan Nizamı governance, the installed Divan Project Contract, and
+Claude Code/Codex lifecycle support. The immutable tag, seven checksummed and
+attested assets, SBOM, Pages, Wiki, and clean-host matrix are recorded in the
+[v1.0.1 publication evidence](.divan/evidence/teftis-20260731-v101-release.md).
+That record also binds the downloaded release runner to a verified native
+Windows/Codex upgrade, a healthy final doctor result, and a no-op repeat.
+The clean-room result proves a bounded technical workflow; it does not claim an
+independent-user count, endorsement, market adoption, speed gain, revenue
+increase, quality win, or “best in the world” status.
 
 ## Contributing and security
 
@@ -324,4 +345,10 @@ increase, or “best in the world” status.
 Divan is not affiliated with or endorsed by Anthropic, Claude, OpenAI, or
 Vercel. Product and compatibility names are descriptive only.
 
-The v1 scorecard remains **7/8**: independent-user evidence is still pending.
+The v1 readiness scorecard is now **8/8**: immutable v0.18.5 produced one
+machine-verifiable clean-room adoption on Windows 11, Codex, and a real external
+project; the privacy-reviewed receipt was committed and re-verified offline.
+This is bounded technical evidence, not an independent-user count, endorsement,
+market-adoption claim, speed gain, or quality win. The checksum sidecar protects
+the download; the v1 gate separately pins and matches the reviewed release
+runner digest in `registry/v1-gates.json`.
