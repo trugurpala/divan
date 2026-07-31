@@ -89,6 +89,33 @@ class VerificationRunnerTests(unittest.TestCase):
         self.assertGreater(run.call_args.kwargs["timeout"], 0)
         self.assertLessEqual(run.call_args.kwargs["timeout"], 120)
 
+    def test_overall_budget_never_shortens_the_largest_child_budget(self) -> None:
+        verify = load_verify()
+        self.assertIsNotNone(verify)
+        completed = mock.Mock(returncode=0)
+        decisions = {
+            "verify": mock.Mock(command_class="verify", configured_seconds=300),
+            "test": mock.Mock(command_class="test", configured_seconds=600),
+        }
+        command = ("-m", "unittest", "discover", "-s", "tests", "-v")
+        with tempfile.TemporaryDirectory() as repo, tempfile.TemporaryDirectory() as cache:
+            with (
+                mock.patch.object(verify.subprocess, "run", return_value=completed) as run,
+                mock.patch.object(
+                    verify.timeouts,
+                    "resolve_default",
+                    side_effect=lambda name: decisions[name],
+                ),
+            ):
+                result = verify.run(
+                    root=pathlib.Path(repo),
+                    commands=(command,),
+                    cache_root=pathlib.Path(cache),
+                )
+
+        self.assertEqual(result, 0)
+        self.assertEqual(run.call_args.kwargs["timeout"], 600)
+
     def test_child_python_uses_current_interpreter_and_preserves_user_files(self) -> None:
         verify = load_verify()
         self.assertIsNotNone(verify)

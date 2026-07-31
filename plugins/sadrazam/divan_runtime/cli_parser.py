@@ -6,7 +6,7 @@ import argparse
 import pathlib
 from typing import Any
 
-from . import adoption, planning, receipts
+from . import adoption, adoption_proof, planning, receipts
 from . import release as release_api
 
 DESCRIPTION = "Portable command-line interface for the Divan runtime."
@@ -65,6 +65,26 @@ def _add_adoption_parser(commands: Any) -> None:
     verify = subcommands.add_parser("verify")
     verify.add_argument("path", type=pathlib.Path)
     _common_output(verify)
+    prove = subcommands.add_parser(
+        "prove",
+        help="preview or execute a machine-verifiable clean-room proof",
+    )
+    prove.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    prove.add_argument("--goal", required=True)
+    prove.add_argument(
+        "--host",
+        choices=tuple(sorted(adoption_proof.QUALIFYING_HOSTS)),
+        required=True,
+    )
+    prove.add_argument(
+        "--operator-role",
+        choices=tuple(sorted(adoption_proof.OPERATOR_ROLES)),
+        default="maintainer",
+    )
+    _mutation_control(prove)
+    _common_output(prove)
 
 
 def _add_runtime_contract_parsers(commands: Any) -> None:
@@ -76,6 +96,18 @@ def _add_runtime_contract_parsers(commands: Any) -> None:
         "architecture", help="show the Divan module and authority contracts"
     )
     _common_output(architecture)
+
+
+def _add_engine_registry_parser(commands: Any) -> None:
+    engines = commands.add_parser(
+        "engines", help="inspect and validate Divan engine registry metadata"
+    )
+    subcommands = engines.add_subparsers(dest="engines_command", required=True)
+    validate = subcommands.add_parser(
+        "validate", help="validate an engine registry JSON file"
+    )
+    validate.add_argument("--registry", type=pathlib.Path, required=True)
+    _common_output(validate)
 
 
 def _add_discovery_parsers(commands: Any) -> None:
@@ -91,6 +123,7 @@ def _add_discovery_parsers(commands: Any) -> None:
     impact.add_argument("paths", nargs="+")
     _common_output(impact)
     _add_runtime_contract_parsers(commands)
+    _add_engine_registry_parser(commands)
 
 
 def _add_status_parser(commands: Any) -> None:

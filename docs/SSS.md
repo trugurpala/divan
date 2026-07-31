@@ -3,8 +3,27 @@
 Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
 runtime değildir. Kendi modüler Divan Engine çekirdeği aynı repoda yaşar. On
 bir zorunlu ürün kuralı [[Topluluk Standartları|Topluluk-Standartlari]]
-sayfasındadır. v1 durumu **7/8** kapıdır; bağımsız kullanıcı kanıtı
-beklenmektedir.
+sayfasındadır. v1 hazırlık durumu **8/8** kapıdır; yayımlanmış v0.18.5 ile
+üretilen schema-2 temiz-proje makbuzu repoda ve çevrimdışı doğrulanabilir.
+
+**Sekizinci v1 kapısı nasıl geçti?**
+Kişinin bakımcı veya dış kullanıcı olması teknik sonucu değiştirmez. Divan'dan
+ayrı gerçek projede doğrulanmış hedef için önce yazmayan plan, sonra uygulama
+çalıştırılır:
+
+```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+```
+
+İlk iki komut gerçek kod/test kanıtını hedef makbuzuna bağlamadan Divan hedefi
+VERIFIED saymaz.
+
+Yalnız `valid-clean-room-adoption` geçerlidir; bu sonuç üçüncü taraf onayı veya
+pazar benimsemesi iddia etmez. Kayıt Windows 11, Codex ve Divan'dan ayrı gerçek
+bir projedeki tek makinece doğrulanmış kullanımı kanıtlar.
 
 **Neden repoları tek tek fork'lamadık?**
 Marketplace tek repo olmak zorunda: `/plugin marketplace add` tek depo okur.
@@ -43,5 +62,5 @@ ajan iskeletler, CI teftişi geçen PR birleşir.
 
 **Soru, hata veya güvenlik bildirimi nereye gider?**
 Kullanım sorusu Discussions Q&A'ya, tekrar üretilebilir hata bug formuna,
-güvenlik açığı özel advisory'ye gider. Yetenek ve bağımsız kabul kanıtı için de
+güvenlik açığı özel advisory'ye gider. Yetenek ve temiz-proje kabul kanıtı için de
 ayrı formlar vardır: [SUPPORT.md](../SUPPORT.md).

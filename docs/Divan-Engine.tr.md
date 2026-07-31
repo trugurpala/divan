@@ -83,11 +83,18 @@ python scripts/divan.py inspect --project .
 python scripts/divan.py plan --project . --intent "Kayıt ekranını erişilebilir yap"
 python scripts/divan.py plan --project . --intent "API'yi güvenli yap ve yayınla" --host-profile codex --context-window 1050000 --target released --json
 python scripts/divan.py impact README.md plugins/sadrazam/skills/sadrazam/SKILL.md
+python scripts/divan.py engines validate --registry registry/engines.example.json
 python scripts/divan.py validate
 python scripts/divan.py init --project . --profile standard
 python scripts/divan.py init --project . --profile standard --actor owner --execute
 python scripts/divan.py audit --project .
 ```
+
+`engines validate` dis motor, sablon ve repo fikirleri icin salt-okunur bir
+registry kapisidir. Metadata, lisans kaniti, kaynak pin politikasi, host
+uyumlulugu, kurulum/kaldirma notu, tasinabilirlik ve kacis plani denetlenir.
+Motor kurmaz, calistirmaz, vendor etmez, fork'u onaylamaz. Cikis kodlari
+kararlidir: `0` gecerli, `1` registry verisi gecersiz, `2` dosya okunamadi.
 
 Eski `Company OS` adı ve `plugins/sadrazam/company/` yolu v1 boyunca
 uyumluluk yüzeyi olarak kalır ve v2'den önce kaldırılmaz. Eski

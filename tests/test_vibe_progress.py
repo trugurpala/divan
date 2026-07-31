@@ -99,6 +99,10 @@ class VibeProgressContractTests(unittest.TestCase):
         value_guide = (ROOT / "docs" / "Vibe-Coder-Icin-Deger.md").read_text(
             encoding="utf-8"
         )
+        quick_start = (ROOT / "docs" / "Hizli-Baslangic.md").read_text(
+            encoding="utf-8"
+        )
+        install_guide = (ROOT / "docs" / "Kurulum.md").read_text(encoding="utf-8")
         pages = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
         site = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
 
@@ -131,11 +135,33 @@ class VibeProgressContractTests(unittest.TestCase):
             for line in progress.splitlines()
             if line.startswith(prefix)
         )
+        normalized_turkish_surfaces = tuple(
+            " ".join(surface.split())
+            for surface in (readme_tr, quick_start, install_guide)
+        )
         if current == published:
             self.assertIn("Güncel yayın · yazmayan önizleme", pages)
             self.assertNotIn("yalnız tag/Release sonrası kullan", pages)
+            self.assertNotIn(
+                "only after its tag and GitHub Release are visible", readme_en
+            )
+            for surface in normalized_turkish_surfaces:
+                self.assertNotIn(
+                    "yalnız tag ve GitHub Release sayfası görünür olduktan sonra",
+                    surface,
+                )
         else:
             self.assertIn("yalnız tag/Release sonrası kullan", pages)
+            self.assertIn(
+                f"Use v{current} only after its tag and GitHub Release are visible",
+                readme_en,
+            )
+            for surface in normalized_turkish_surfaces:
+                self.assertIn(
+                    f"v{current}'i yalnız tag ve GitHub Release sayfası görünür "
+                    "olduktan sonra",
+                    surface,
+                )
 
     def test_english_readme_keeps_critical_paths_in_english(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
