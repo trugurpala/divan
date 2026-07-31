@@ -16,7 +16,7 @@ RUNTIME = PLUGIN_ROOT / "divan_runtime"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import goals, receipts  # noqa: E402
+from divan_runtime import goals, receipts, timeouts  # noqa: E402
 
 NOW = datetime.datetime(2026, 7, 30, 12, 0, tzinfo=datetime.UTC)
 SECRET = "ghp_abcdefghijklmnopqrstuvwxyz123456"
@@ -54,6 +54,16 @@ class StatusSnapshotTests(unittest.TestCase):
         self.assertIsNone(result["goal"]["id"])
         self.assertIsNone(result["blocker"])
         self.assertEqual(result["tasks"], [])
+        self.assertEqual(result["wait_state"]["command_class"], "verify")
+        self.assertEqual(
+            result["wait_state"]["timeout_seconds"],
+            timeouts.resolve_default("verify").configured_seconds,
+        )
+        self.assertGreaterEqual(result["wait_state"]["timeout_seconds"], 720)
+        self.assertEqual(result["wait_state"]["normal_after_seconds"], 10)
+        self.assertEqual(result["wait_state"]["attention_after_seconds"], 60)
+        self.assertIn("wait.title", result["copy"])
+        self.assertIn("wait.explanation", result["copy"])
 
     def test_snapshot_uses_existing_goal_and_never_exposes_absolute_path(self) -> None:
         module = load_status()
@@ -67,6 +77,8 @@ class StatusSnapshotTests(unittest.TestCase):
         self.assertEqual(result["goal"]["status"], "DISCOVERED")
         self.assertEqual(result["current"]["phase"], "FERMAN")
         self.assertTrue(result["tasks"])
+        self.assertEqual(result["wait_state"]["source"], "benchmark")
+        self.assertGreaterEqual(result["wait_state"]["sample_count"], 12)
         self.assertNotIn(str(project), rendered)
 
     def test_snapshot_redacts_secrets_and_surfaces_blocker_reason(self) -> None:

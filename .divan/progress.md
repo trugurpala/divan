@@ -416,6 +416,13 @@ the development line only; a new public release still requires the canonical
   Pages all completed successfully; `quality-gate` took 7m32s. Discovery issues
   #47 and #23 were closed with promoted/rejected candidate summaries. No pull
   requests or issues remain open.
+- Branch `codex/seyir-wait-state-ux` turns the recorded CI wait problem into a
+  small post-v1 product slice. The timeout benchmark now includes the latest 20
+  trusted `main` `quality-gate.yml` runs from GitHub Actions, so `verify`
+  resolves from 25 samples to p95 480s and a bounded 720s configured wait.
+  Seyir snapshots expose this as `wait_state`, and the local UI explains the
+  normal wait window plus attention threshold in English and Turkish. No external
+  runtime, forked code, or second repository was added.
 
 ## Tarihsel devam kayıtları
 
@@ -444,9 +451,9 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep the current immutable release unchanged. First exact action: design the
-next small post-v1 product slice around Seyir wait-state/timeout explanations
-using the benchmark data recorded above, so vibe coders can see what Divan is
-waiting on instead of guessing whether it is stuck. Prepare any public release
-only through `scripts/release.py` with CHANGELOG, BLUEPRINT, README, Wiki, site,
-and release-manifest surfaces synchronized.
+Keep the current immutable release unchanged. First exact action: finish branch
+`codex/seyir-wait-state-ux` by committing the wait-state implementation, running
+the canonical verifier from the clean committed checkout, opening/merging the
+PR only after CI passes, and reading back `main`, Pages/Wiki/source surfaces.
+Prepare any public release only through `scripts/release.py` with CHANGELOG,
+BLUEPRINT, README, Wiki, site, and release-manifest surfaces synchronized.

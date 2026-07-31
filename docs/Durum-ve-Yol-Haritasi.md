@@ -31,6 +31,8 @@ Son durum tarihi: 2026-07-31.
   çalıştırma engelinde sınırları belirtilen checksum-backed 41-skill fallback.
 - Vibe coder için yalnız loopback'te çalışan, yetenek URL'siyle korunan iki
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
+- Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
+  dikkat eşiğini açıklar; kullanıcı sessiz ekranı çökme zannetmez.
 - Repo indirmeden kullanılabilen, checksum ve kaynak commit'i doğrulanan tek
   dosyalık `divan.pyz`; yazma öncesi plan, doctor ve güvenli recovery komutları.
 - Yerel ve CI süre ölçümlerinden türetilen sınırlı timeout politikası ile aynı
@@ -106,6 +108,9 @@ değildir.
   checksum doğrulaması ve yazmayan plan olmadan kurulum iddiası oluşturmaz.
 - Akıllı timeout değerleri ölçülmüş yerel/CI kanıtlarına bağlıdır; aynı kanıtlı
   hata iki düzeltmeden sonra sürerse döngü durur ve Hükümdara taşınır.
+- v1 sonrası Seyir sertleştirmesi, son 20 ana dal `quality-gate.yml` koşusunu
+  timeout benchmark defterine ekledi ve kullanıcıya normal bekleme/dikkat
+  eşiğini sade dille göstermeye başladı.
 - PR #60 `d3a2a41f9b88c3639f9832c24dd898fd8b88cbe4` commit'inde birleşti. Dokuz
   ana yayın kontrolü, yedi indirilen varlığın SHA-256 değeri, strict
   attestations, SPDX 2.3 SBOM, Pages, Wiki ve Linux/macOS/Windows yaşam döngüsü

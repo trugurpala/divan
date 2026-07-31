@@ -58,7 +58,8 @@ python scripts/divan.py status --project . --open --lang auto
 Divan boş bir port seçip gerçek adresi terminale yazar. Sayfa salt okunur;
 yalnız `127.0.0.1` üzerinde çalışır, bulut hesabı veya API anahtarı istemez ve
 `Ctrl+C` ile kapanır. Hedef, şu anki görev, tamamlanan işler, kontroller, engel
-ve sıradaki adım Türkçe veya İngilizce gösterilir.
+ve sıradaki adım Türkçe veya İngilizce gösterilir. Uzun doğrulamalar sessiz
+göründüğünde Seyir artık normal bekleme aralığını ve dikkat eşiğini de açıklar.
 
 Sadrazam'ın kanonik sözleşmesi host ajanını her komutu, dosyayı ve alt ajanı
 sohbet ekranına dökmemeye yönlendirir. İşe başlarken ve anlamlı bir aşama

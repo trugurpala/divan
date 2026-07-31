@@ -154,6 +154,11 @@ Divan selects a free port, prints the exact working address, and opens the same
 address when `--open` is present. The address is temporary; stop it with
 `Ctrl+C`. Do not reuse an example port from documentation.
 
+When verification takes time, Seyir now shows why the page can look quiet, the
+current evidence-backed normal wait window, and when the run deserves attention.
+That keeps the front of the product calm for vibe coders while the back keeps
+running measured checks.
+
 ## Install
 
 The commands below pin Current source. If Current source differs from Latest

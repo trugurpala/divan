@@ -50,6 +50,8 @@ v0.18.2, önceki planlama ve Codex Desktop kurulum sınırlarını korurken yere
 Seyir ekranını, tek dosyalık doğrulanabilir `divan.pyz` kurucusunu, kanıta
 dayalı timeout politikasını ve Linux/macOS/Windows yaşam döngüsü kanıtını
 yayımlar. İkinci ürün, repo veya üçüncü taraf runtime oluşturmaz.
+Seyir, uzun kalite kapılarında artık ölçülmüş normal bekleme aralığını ve dikkat
+eşiğini kullanıcı dostu dille gösterir; sessiz ekranı çökme zannettirmez.
 
 ## Fermanını seç
 

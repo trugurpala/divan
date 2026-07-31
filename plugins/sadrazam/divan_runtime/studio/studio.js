@@ -32,6 +32,13 @@ function translated(key, fallback = "—") {
   return copy[key] ?? fallback;
 }
 
+function formatDuration(seconds) {
+  const value = Number(seconds);
+  if (!Number.isFinite(value) || value <= 0) return translated("state.unknown");
+  if (value < 60) return `${Math.round(value)}s`;
+  return `${Math.ceil(value / 60)} min`;
+}
+
 function stateKey(state) {
   const normalized = String(state ?? "unknown").toLowerCase();
   const aliases = {
@@ -73,6 +80,7 @@ function renderLabels() {
     "checks-label": "progress.checks",
     "blocker-label": "progress.blocker",
     "next-action-label": "progress.next_action",
+    "wait-label": "wait.title",
     "technical-title": "technical.title",
     "branch-label": "technical.branch",
     "commit-label": "technical.commit",
@@ -160,6 +168,18 @@ function render(snapshot) {
   setText(
     "next-action",
     snapshot.next_action ?? translated("progress.no_next_action"),
+  );
+  const waitState = snapshot.wait_state ?? {};
+  const waitSource = waitState.source ?? "safe-fallback";
+  setText("wait-explanation", translated("wait.explanation"));
+  setText(
+    "wait-timeout",
+    format(translated("wait.timeout"), {
+      timeout: formatDuration(waitState.timeout_seconds),
+      attention: formatDuration(waitState.attention_after_seconds),
+      source: translated(`wait.source.${waitSource}`, waitSource),
+      samples: waitState.sample_count ?? 0,
+    }),
   );
   setText(
     "progress-announcer",

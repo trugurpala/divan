@@ -280,10 +280,21 @@ main {
   border-left: 4px solid var(--gold);
 }
 
+.answer-card--wait {
+  border-left: 4px solid var(--green);
+}
+
 .answer {
   margin-bottom: 0;
   font-size: clamp(1rem, 2vw, 1.25rem);
   line-height: 1.5;
+}
+
+.wait-meta {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .compact-list {

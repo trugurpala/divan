@@ -47,6 +47,38 @@
     "en": "What happens next?",
     "tr": "Sıradaki adım ne?"
   },
+  "wait.title": {
+    "en": "Why might this take time?",
+    "tr": "Bu neden zaman alabilir?"
+  },
+  "wait.explanation": {
+    "en": "Long checks can look quiet while Divan is still working. If the connection stays green, this is normally just verification running.",
+    "tr": "Uzun kontroller Divan hâlâ çalışırken sessiz görünebilir. Bağlantı yeşil kaldıysa bu genelde yalnızca doğrulamanın sürdüğü anlamına gelir."
+  },
+  "wait.timeout": {
+    "en": "Normal wait: up to {timeout}. Attention after {attention}. Source: {source}, {samples} trusted runs.",
+    "tr": "Normal bekleme: {timeout} kadar. Dikkat eşiği: {attention}. Kaynak: {source}, {samples} güvenilir koşu."
+  },
+  "wait.source.benchmark": {
+    "en": "recent benchmark",
+    "tr": "güncel benchmark"
+  },
+  "wait.source.default-insufficient-samples": {
+    "en": "safe default",
+    "tr": "güvenli varsayılan"
+  },
+  "wait.source.default-invalid-benchmark": {
+    "en": "safe default after invalid benchmark data",
+    "tr": "geçersiz benchmark verisi sonrası güvenli varsayılan"
+  },
+  "wait.source.override": {
+    "en": "explicit override",
+    "tr": "açık geçersiz kılma"
+  },
+  "wait.source.safe-fallback": {
+    "en": "safe fallback",
+    "tr": "güvenli geri dönüş"
+  },
   "progress.task_count": {
     "en": "{complete} / {total} tasks complete",
     "tr": "{complete} / {total} görev tamamlandı"

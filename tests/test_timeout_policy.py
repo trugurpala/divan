@@ -196,6 +196,25 @@ class TimeoutPolicyTests(unittest.TestCase):
                 override_seconds=True,
             )
 
+    def test_verify_timeout_uses_recent_long_quality_gate_runs(self) -> None:
+        run_ids = {row["run_id"] for row in self.benchmarks["runs"]}
+        for run_id in (
+            30583470061,
+            30595833787,
+            30629647688,
+            30631190695,
+            30637852422,
+        ):
+            with self.subTest(run_id=run_id):
+                self.assertIn(run_id, run_ids)
+
+        decision = self.timeouts.resolve("verify", self.policy, self.benchmarks)
+
+        self.assertEqual(decision.source, "benchmark")
+        self.assertGreaterEqual(decision.sample_count, 12)
+        self.assertGreaterEqual(decision.percentile_seconds or 0, 480)
+        self.assertGreaterEqual(decision.configured_seconds, 720)
+
 
 if __name__ == "__main__":
     unittest.main()
