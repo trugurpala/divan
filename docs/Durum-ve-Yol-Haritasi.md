@@ -2,19 +2,15 @@
 
 Son durum tarihi: 2026-07-31.
 
-> **En güncel yayımlanmış sürüm v1.0.1'dir.** PR #69 paketli Windows/Codex
-> yükseltmesini `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde düzeltti.
-> Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, strict
-> attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages, Wiki
-> ve indirilen runner'la gerçek yerel yükseltme doğrulandı.
->
-> `main` üzerinde hazırlanan v1.0.2 adayı, Seyir bekleme açıklamasını ve
-> workspace keşfi gürültü düzeltmesini taşır. Tag/GitHub Release oluşana kadar
-> son yayımlanan sürüm v1.0.1 olarak kalır.
+> **En güncel yayımlanmış sürüm v1.0.2'dir.** PR #80
+> `f227e2d30ab1a6f010a3d5acf18740f6eab09e70` commit'inde birleşti ve
+> değişmez tag/GitHub Release olarak yayımlandı. Yedi varlık, checksum, SPDX
+> SBOM, attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages,
+> Wiki ve indirilen runner checksumları doğrulandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v1.0.1` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v1.0.2` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -73,9 +69,9 @@ değildir.
   bağımsız kullanıcı sayısı, üçüncü taraf onayı veya pazar benimsemesi değildir.
 - Gerçek Claude/Codex A/B sonucu yayımlandı: skill 0, baseline 1, beraberlik 2.
   Önceden eşik yoktur; kalite artışı iddiası yapılmaz.
-- v1.0.1'in tam yerel doğrulaması 698 test ve 14 platform atlamasıyla geçti.
-  Yayın ayrıca üç işletim sistemi, strict attestations ve gerçek
-  Windows/Codex yükseltmesiyle sınırlandırılmıştır; bütün host ve ortamları
+- v1.0.2'nin tam yerel doğrulaması 707 test ve 14 platform atlamasıyla geçti.
+  Yayın ayrıca üç işletim sistemi, strict attestations, Pages/Wiki readback ve
+  release asset checksumlarıyla sınırlandırılmıştır; bütün host ve ortamları
   kapsadığı iddia edilmez.
 
 ## v0.18 — yayımlanan Nizâm-ı Sefer
@@ -185,6 +181,20 @@ değildir.
   İndirilen runner mevcut Windows/Codex kurulumunu v1.0.1'e yükseltti; doctor
   sağlıklı döndü ve ikinci execute no-op oldu.
 
+## v1.0.2 — yayımlanan sakin keşif ve kullanıcı dostu bekleme düzeltmesi
+
+- Seyir'in uzun doğrulama bekleme açıklaması ile Divan Engine'in üst proje
+  keşif sessizliği aynı kullanıcı-dostu hatta bağlandı.
+- Divan Engine artık `.worktrees`, fixture ağaçları, dependency/build cache'leri
+  ve skill-içi yardımcı klasörleri ebeveyn proje taramasında kullanıcı workspace'i
+  veya test hedefi gibi büyütmez. Bu klasörlerden biri açıkça proje kökü verilirse
+  yine incelenebilir.
+- PR #80 `f227e2d30ab1a6f010a3d5acf18740f6eab09e70` commit'inde birleşti.
+  PR kapıları, main `quality-gate`, `release`, `compatibility`, `codeql`,
+  `site-tests`, `scorecard`, `wiki-sync`, `candidate-review` ve Pages geçti.
+- v1.0.2 GitHub Release değişmezdir; yedi varlık yeniden indirildi, SHA-256
+  manifestleri ve GitHub attestations ile doğrulandı.
+
 ## Sıradaki ürün adımı
 
 1. ✓ 8/8 kanıt PR'ını bütün kalite kapılarından geçirip `main`e birleştir.
@@ -192,7 +202,8 @@ değildir.
 3. ✓ v1.0.0'ı değişmez tag/Release, yedi varlık, SBOM, attestation ve canlı
    geri-okuma kapılarıyla yayımla.
 4. ✓ v1.0.1 yayın kanıtını ve son sürüm etiketlerini `main`e eşitle.
-5. Sonraki ürün kapsamını ayrı onaylı hedef olarak başlat; v1.0.1 tag ve
+5. ✓ v1.0.2 sakin keşif yayınını ve son sürüm etiketlerini `main`e eşitle.
+6. Sonraki ürün kapsamını ayrı onaylı hedef olarak başlat; v1.0.2 tag ve
    varlıklarını değiştirme.
 
 ## v1.0 kapıları
