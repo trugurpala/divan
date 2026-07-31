@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import pathlib
 import re
-from typing import Any
+from typing import Any, TypeGuard
 
 SCHEMA_VERSION = 1
 COMMAND = "engines validate"
@@ -315,7 +315,7 @@ def _enum(result: dict[str, Any], path: str, engine: dict[str, Any], field: str,
         _add(result, code, f"{path}.{field}", f"{field} is invalid")
 
 
-def _string(value: Any) -> bool:
+def _string(value: Any) -> TypeGuard[str]:
     return isinstance(value, str) and bool(value.strip())
 
 
