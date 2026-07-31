@@ -405,6 +405,16 @@ the development line only; a new public release still requires the canonical
   `registry/candidates.json` and generated `docs/Aday-Meclisi.md`; no candidate
   may be installed, forked, vendored, or promoted directly from the discovery
   issues.
+- Automated Meclis discovery issues #47 and #23 were triaged on branch
+  `codex/triage-meclis-discovery`. Seven candidates were promoted into the
+  canonical candidate registry with pinned observed commits, license evidence,
+  execution review, risk notes, source issue links, and bounded
+  ADAPT/REFERENCE rationales: Cherry Studio, PortOS, Notebrain CLI, Engramory,
+  Majordomo, Macher Agent, and Vivarium. This is metadata-only curation:
+  nothing was installed, forked, vendored, or treated as a Divan runtime
+  dependency. The other discovered repositories remain rejected from the
+  registry because they are too narrow, unrelated, empty/noisy, license-unclear,
+  duplicate-purpose, or outside Divan's one-repo modular product boundary.
 
 ## Tarihsel devam kayıtları
 
@@ -433,14 +443,11 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep v1.0.1 immutable. First exact action: triage automated Meclis discovery
-issues #47 and #23 into explicit ADOPT/ADAPT/REFERENCE/REJECT decisions. Promote
-only candidates that fill a real Divan user gap and have canonical identity,
-license evidence, execution-surface review, risk notes, observed commit/source,
-and a bounded rationale in `registry/candidates.json`; regenerate
-`docs/Aday-Meclisi.md` with `python scripts/candidate_review.py --render`.
-Reject noisy or duplicate candidates in the issue comments. After the Meclis
-queue is clean, design the next small post-v1 product slice around Seyir
-wait-state/timeout explanations using the benchmark data recorded above. Prepare
-any public release only through `scripts/release.py` with CHANGELOG, BLUEPRINT,
-README, Wiki, site, and release-manifest surfaces synchronized.
+Keep the current immutable release unchanged. First exact action: finish the
+`codex/triage-meclis-discovery` branch with canonical local verification, open
+and merge its PR after green CI, then comment on and close Meclis discovery
+issues #47 and #23 with the promoted/rejected candidate summary. After the
+Meclis queue is clean, design the next small post-v1 product slice around
+Seyir wait-state/timeout explanations using the benchmark data recorded above.
+Prepare any public release only through `scripts/release.py` with CHANGELOG,
+BLUEPRINT, README, Wiki, site, and release-manifest surfaces synchronized.

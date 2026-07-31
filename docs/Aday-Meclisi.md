@@ -6,17 +6,24 @@
 
 ## Durum
 
-Toplam **7** aday · ADAPT: 2 · ADOPT: 3 · PENDING: 0 · REFERENCE: 2 · REJECT: 0
+Toplam **14** aday · ADAPT: 4 · ADOPT: 3 · PENDING: 0 · REFERENCE: 7 · REJECT: 0
 
 | Aday | Tür | Lisans | Karar | Sonraki inceleme | Gerekçe |
 |---|---|---|---|---|---|
 | [Agent Skills Specification](https://github.com/agentskills/agentskills) | `standard-research` | Apache-2.0 | **ADOPT** | 2026-10-23 | ADOPT, yalnız açık Agent Skills sözleşmesinin uygun yüzeyini inceleme/adaptasyon adayı yapar; taşınacak içerik için ayrı pin, atıf, eval ve teftiş gerekir. |
 | [Auto Company](https://github.com/MaxMiksa/Auto-Company) | `app-template` | UNKNOWN | **REFERENCE** | 2026-10-23 | REFERENCE: rol metaforu karşılaştırma girdisidir; lisans belirsizliği ve daemon modeli nedeniyle kod, prompt veya yapılandırma alınmayacaktır. |
 | [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers) | `registry-index` | MIT | **REFERENCE** | 2026-10-18 | İçeriği topluca almak yerine yapılandırılmış katkı ve otomatik aday teftişi fikri özgün Meclis akışına uyarlandı. |
+| [Cherry Studio](https://github.com/CherryHQ/cherry-studio) | `app-template` | AGPL-3.0 | **REFERENCE** | 2026-10-31 | REFERENCE: popüler AI masaüstü ürünlerinden onboarding ve katalog sezgileri izlenir; lisans ve ürün ölçeği nedeniyle kod, prompt veya paket alınmaz. |
+| [Engramory](https://github.com/tinqiao-oss/engramory) | `standard-research` | MIT | **ADAPT** | 2026-10-31 | ADAPT: kürasyonlu bellek disiplini Divan'ın tek gerçeklik ilkesine uygun şekilde uyarlanabilir; ayrı runtime veya ham prompt paketi alınmaz. |
 | [GitHub Spec Kit](https://github.com/github/spec-kit) | `standard-research` | MIT | **ADAPT** | 2026-10-23 | ADAPT: specification-first kanıt zinciri Divan'ın dil, host ve fail-closed sözleşmesine özgün olarak uyarlanacaktır. |
 | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | `framework-library` | Apache-2.0 | **ADOPT** | 2026-10-23 | ADOPT: pinli, opt-in SEO/erişilebilirlik kanıtı için adaydır; gerçek çalıştırma ve CI entegrasyonu ayrı bir karardır. |
 | [Lychee](https://github.com/lycheeverse/lychee) | `framework-library` | Apache-2.0 OR MIT | **ADOPT** | 2026-10-23 | ADOPT: isteğe bağlı, pinli link denetimi için adaydır; bu kayıt kurulum veya kaynak dağıtımı değildir. |
+| [Macher Agent](https://github.com/elij/macher-agent) | `framework-library` | GPL-3.0 | **REFERENCE** | 2026-10-31 | REFERENCE: sandbox ve fail-fast merge kavramları karşılaştırma girdisidir; lisans ve editör bağı nedeniyle Divan içine alınmaz. |
+| [Majordomo](https://github.com/josephniel/majordomo) | `app-template` | MIT | **REFERENCE** | 2026-10-31 | REFERENCE: gated-write ve recovery fikirleri izlenir; bot/daemon mimarisi ve dış kanal otomasyonu Divan çekirdeğine alınmaz. |
+| [Notebrain CLI](https://github.com/nmdra/notebrain-cli) | `framework-library` | MIT | **REFERENCE** | 2026-10-31 | REFERENCE: local-first bilgi erişimi fikri izlenir; Divan'ın mevcut git-izlenebilir hafıza sınırını genişletmek ayrı tasarım ve gizlilik kanıtı ister. |
 | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | `standard-research` | MIT | **ADAPT** | 2026-10-23 | ADAPT: değişiklik-spec yaklaşımı, Divan'ın kendi durum makinesi ve receipt sözleşmesine uyarlanacaktır. |
+| [PortOS](https://github.com/atomantic/PortOS) | `app-template` | MIT | **ADAPT** | 2026-10-31 | ADAPT: yerel çalışma masası ve görünür durum fikri Divan Seyir'e özgün, hafif ve host-bağımsız şekilde uyarlanacaktır; kaynak kod alınmayacaktır. |
+| [Vivarium](https://github.com/Jason-0409-G/vivarium) | `skill-plugin` | MIT | **REFERENCE** | 2026-10-31 | REFERENCE: event-sourced ve crash-safe workflow kanıtı incelenir; alan-özel skill içeriği veya komutları alınmaz. |
 
 ## Yaşam döngüsü
 

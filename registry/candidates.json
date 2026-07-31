@@ -170,6 +170,188 @@
       "observed_at": "2026-07-23",
       "next_review": "2026-10-23",
       "rationale": "ADOPT: isteğe bağlı, pinli link denetimi için adaydır; bu kayıt kurulum veya kaynak dağıtımı değildir."
+    },
+    {
+      "id": "cherryhq-cherry-studio",
+      "name": "Cherry Studio",
+      "canonical_url": "https://github.com/CherryHQ/cherry-studio",
+      "type": "app-template",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "Geniş kullanıcı kitlesine sahip AI masaüstü deneyiminde asistan kataloğu, sağlayıcı seçimi ve son kullanıcı onboarding kalıplarını izlemek.",
+      "reviewed_head": "f61624e70d9f47ef2548656dd5f9f89666d4ac81",
+      "license": {
+        "spdx": "AGPL-3.0",
+        "evidence_url": "https://github.com/CherryHQ/cherry-studio/blob/f61624e70d9f47ef2548656dd5f9f89666d4ac81/LICENSE",
+        "scope_note": "AGPL-3.0 lisansı incelenen commit'te kanıtlandı; Divan kaynak, UI veya paket yapısı taşımaz, yalnız kullanıcı deneyimi referansı olarak izler."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "AGPL kapsamı, Electron ölçeği ve geniş sağlayıcı yüzeyi Divan'ın küçük, tek repo ve host-uyumlu kurulum hedefiyle doğrudan uyumlu değildir.",
+      "evidence": [
+        "https://github.com/CherryHQ/cherry-studio",
+        "https://github.com/CherryHQ/cherry-studio/tree/f61624e70d9f47ef2548656dd5f9f89666d4ac81",
+        "https://github.com/CherryHQ/cherry-studio/blob/f61624e70d9f47ef2548656dd5f9f89666d4ac81/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/47",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "REFERENCE: popüler AI masaüstü ürünlerinden onboarding ve katalog sezgileri izlenir; lisans ve ürün ölçeği nedeniyle kod, prompt veya paket alınmaz."
+    },
+    {
+      "id": "atomantic-portos",
+      "name": "PortOS",
+      "canonical_url": "https://github.com/atomantic/PortOS",
+      "type": "app-template",
+      "status": "adapted",
+      "decision": "ADAPT",
+      "user_gap": "Yerel geliştirici makinesini pano, görev ve ajan orkestrasyonu etrafında anlaşılır bir çalışma masasına dönüştürme fikri.",
+      "reviewed_head": "94ffc65482f9c24fb44e9b06c728f50cc5829095",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/atomantic/PortOS/blob/94ffc65482f9c24fb44e9b06c728f50cc5829095/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; Divan yalnız kendi Seyir ve tek-komut deneyimine özgün ürün fikri olarak uyarlar."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Self-hosted OS ve Tailscale merkezli kapsam Divan'ın ilk release hattı için büyüktür; daemon veya geniş sistem yetkisi varsayılan kurulum olamaz.",
+      "evidence": [
+        "https://github.com/atomantic/PortOS",
+        "https://github.com/atomantic/PortOS/tree/94ffc65482f9c24fb44e9b06c728f50cc5829095",
+        "https://github.com/atomantic/PortOS/blob/94ffc65482f9c24fb44e9b06c728f50cc5829095/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/47",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "ADAPT: yerel çalışma masası ve görünür durum fikri Divan Seyir'e özgün, hafif ve host-bağımsız şekilde uyarlanacaktır; kaynak kod alınmayacaktır."
+    },
+    {
+      "id": "nmdra-notebrain-cli",
+      "name": "Notebrain CLI",
+      "canonical_url": "https://github.com/nmdra/notebrain-cli",
+      "type": "framework-library",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "Markdown/Obsidian notlarını ajanlar için aranabilir bağlama dönüştürme yaklaşımını Project Contract ve Defterdar sınırlarıyla karşılaştırmak.",
+      "reviewed_head": "98365b6523892472812a484883bce84a6eefd578",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/nmdra/notebrain-cli/blob/98365b6523892472812a484883bce84a6eefd578/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; Divan bu aşamada vektör arama veya not kasası bağımlılığı eklemez."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Semantik arama eklemek yeni indeks, gizlilik ve model sağlayıcı yüzeyi açar; v1 çekirdeğinde doğrulanabilir repo dosyaları önceliklidir.",
+      "evidence": [
+        "https://github.com/nmdra/notebrain-cli",
+        "https://github.com/nmdra/notebrain-cli/tree/98365b6523892472812a484883bce84a6eefd578",
+        "https://github.com/nmdra/notebrain-cli/blob/98365b6523892472812a484883bce84a6eefd578/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/47",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "REFERENCE: local-first bilgi erişimi fikri izlenir; Divan'ın mevcut git-izlenebilir hafıza sınırını genişletmek ayrı tasarım ve gizlilik kanıtı ister."
+    },
+    {
+      "id": "tinqiao-oss-engramory",
+      "name": "Engramory",
+      "canonical_url": "https://github.com/tinqiao-oss/engramory",
+      "type": "standard-research",
+      "status": "adapted",
+      "decision": "ADAPT",
+      "user_gap": "Ajan belleğini kuralsız log yığını yerine taşınabilir, kürasyonlu ve sınırları belirli bir protokol olarak ele almak.",
+      "reviewed_head": "9469d79c0445c7238df8ba5e00241beca6532bd6",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/tinqiao-oss/engramory/blob/9469d79c0445c7238df8ba5e00241beca6532bd6/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; Divan sadece Defterdar/Project Contract sınırlarını güçlendiren özgün uyarlama fikirlerini kullanır."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Bellek protokolü doğrudan alınırsa mevcut receipt, Seyir state ve proje sözleşmesiyle paralel ikinci gerçeklik yaratabilir.",
+      "evidence": [
+        "https://github.com/tinqiao-oss/engramory",
+        "https://github.com/tinqiao-oss/engramory/tree/9469d79c0445c7238df8ba5e00241beca6532bd6",
+        "https://github.com/tinqiao-oss/engramory/blob/9469d79c0445c7238df8ba5e00241beca6532bd6/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/47",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "ADAPT: kürasyonlu bellek disiplini Divan'ın tek gerçeklik ilkesine uygun şekilde uyarlanabilir; ayrı runtime veya ham prompt paketi alınmaz."
+    },
+    {
+      "id": "josephniel-majordomo",
+      "name": "Majordomo",
+      "canonical_url": "https://github.com/josephniel/majordomo",
+      "type": "app-template",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "Kişisel asistanlarda gated writes, model sağlayıcı yedekliliği, recovery ve proactive heartbeat kalıplarını Divan güvenlik sınırlarıyla karşılaştırmak.",
+      "reviewed_head": "d41cf2c00d2e25bbd8c2ddc9b3918db17557d7bd",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/josephniel/majordomo/blob/d41cf2c00d2e25bbd8c2ddc9b3918db17557d7bd/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; Telegram bot veya daemon yaklaşımı Divan'a taşınmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Proaktif bot ve mesajlaşma yüzeyi kullanıcı gizliliği, onay ve dış sistem yazma riskini artırır; Divan'da opt-in provider olmadan çalışamaz.",
+      "evidence": [
+        "https://github.com/josephniel/majordomo",
+        "https://github.com/josephniel/majordomo/tree/d41cf2c00d2e25bbd8c2ddc9b3918db17557d7bd",
+        "https://github.com/josephniel/majordomo/blob/d41cf2c00d2e25bbd8c2ddc9b3918db17557d7bd/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/47",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "REFERENCE: gated-write ve recovery fikirleri izlenir; bot/daemon mimarisi ve dış kanal otomasyonu Divan çekirdeğine alınmaz."
+    },
+    {
+      "id": "elij-macher-agent",
+      "name": "Macher Agent",
+      "canonical_url": "https://github.com/elij/macher-agent",
+      "type": "framework-library",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "Sandbox, asenkron alt ajan ve fail-fast dosya birleştirme kalıplarını Divan'ın kontrollü orkestrasyon modeliyle karşılaştırmak.",
+      "reviewed_head": "73c5619674b902486cdd64aeeb7fe75af5fdcb2f",
+      "license": {
+        "spdx": "GPL-3.0",
+        "evidence_url": "https://github.com/elij/macher-agent/blob/73c5619674b902486cdd64aeeb7fe75af5fdcb2f/LICENSE",
+        "scope_note": "GPL-3.0 lisansı incelenen commit'te kanıtlandı; Divan kod, prompt veya Emacs entegrasyonu taşımaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "GPL lisansı ve Emacs-native kapsam Divan'ın yeniden dağıtım ve host-genel kurulum hedefleriyle doğrudan uyumlu değildir.",
+      "evidence": [
+        "https://github.com/elij/macher-agent",
+        "https://github.com/elij/macher-agent/tree/73c5619674b902486cdd64aeeb7fe75af5fdcb2f",
+        "https://github.com/elij/macher-agent/blob/73c5619674b902486cdd64aeeb7fe75af5fdcb2f/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/23",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "REFERENCE: sandbox ve fail-fast merge kavramları karşılaştırma girdisidir; lisans ve editör bağı nedeniyle Divan içine alınmaz."
+    },
+    {
+      "id": "jason-0409-g-vivarium",
+      "name": "Vivarium",
+      "canonical_url": "https://github.com/Jason-0409-G/vivarium",
+      "type": "skill-plugin",
+      "status": "reference",
+      "decision": "REFERENCE",
+      "user_gap": "Alan-özel workflow skill'lerinde event-sourced yürütme, crash-safe recovery ve yayınlanabilir kanıt üretimi kalıplarını incelemek.",
+      "reviewed_head": "a915249440e52879bac4013630533d78505e87d1",
+      "license": {
+        "spdx": "MIT",
+        "evidence_url": "https://github.com/Jason-0409-G/vivarium/blob/a915249440e52879bac4013630533d78505e87d1/LICENSE",
+        "scope_note": "MIT lisansı incelenen commit'te kanıtlandı; genomik alan içeriği Divan'a taşınmaz."
+      },
+      "execution_review": "metadata-only",
+      "risk_notes": "Domain-specific bilimsel workflow'lar Divan çekirdeğine genel kalite standardı olarak alınamaz; yalnız kanıt/recovery disiplini değerlendirilebilir.",
+      "evidence": [
+        "https://github.com/Jason-0409-G/vivarium",
+        "https://github.com/Jason-0409-G/vivarium/tree/a915249440e52879bac4013630533d78505e87d1",
+        "https://github.com/Jason-0409-G/vivarium/blob/a915249440e52879bac4013630533d78505e87d1/LICENSE"
+      ],
+      "source_issue": "https://github.com/trugurpala/divan/issues/23",
+      "observed_at": "2026-07-31",
+      "next_review": "2026-10-31",
+      "rationale": "REFERENCE: event-sourced ve crash-safe workflow kanıtı incelenir; alan-özel skill içeriği veya komutları alınmaz."
     }
   ]
 }
