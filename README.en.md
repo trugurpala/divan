@@ -24,7 +24,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v1.0.0 · **Latest published:** v0.18.5 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.0 · **Latest published:** v1.0.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -165,7 +165,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v0.18.5"
+$tag = "v1.0.0"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -316,20 +316,17 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 ## Honest status
 
-Divan follows the open Agent Skills specification and ships the standard GitHub
-community and security files, but it is not v1.0 yet. All 41 skills receive
-structural validation; four original skills provide 13 behavioral cases and a
-provider-neutral A/B runner. v0.11 automates publication surfaces and clean-host
-compatibility checks. The first declared real-agent/judge comparison is now
-published. The final gate is now one released, machine-verifiable clean-room
-adoption proof; it does not claim an independent user, endorsement, or market
-adoption. v0.17.0
-publishes Divan Engine and Divan Nizamı while preserving old paths. PR #49,
-all required CI, immutable tag/Release, five checksummed and attested assets,
-Pages, and Wiki are verified in the publication evidence. See the
-[machine-backed v1 scorecard](docs/V1-Hazirlik.md). Until that evidence exists,
-the project does not claim a speed multiplier, revenue
-increase, or “best in the world” status.
+Divan v1.0.0 is published after all eight machine-backed readiness gates passed.
+All 41 skills receive structural validation; four original skills provide 13
+behavioral cases and a provider-neutral A/B runner. The stable contract keeps
+one repository, five modular packages, the stdlib-only Divan Engine,
+owner-first Divan Nizamı governance, the installed Divan Project Contract, and
+Claude Code/Codex lifecycle support. The immutable tag, seven checksummed and
+attested assets, SBOM, Pages, Wiki, and clean-host matrix are recorded in the
+[v1.0.0 publication evidence](.divan/evidence/teftis-20260731-v100-release.md).
+The clean-room result proves a bounded technical workflow; it does not claim an
+independent-user count, endorsement, market adoption, speed gain, revenue
+increase, quality win, or “best in the world” status.
 
 ## Contributing and security
 

@@ -221,6 +221,7 @@
     {"id": "v0185-release-evidence", "path": ".divan/evidence/teftis-20260730-v0185-release.md", "marker": "# v0.18.5 Publication Evidence", "replace_version": false},
     {"id": "v0185-clean-room-json", "path": ".divan/evidence/verified-clean-room-adoption-v0185.json", "marker": "\"product\": \"divan-clean-room-adoption\"", "replace_version": false},
     {"id": "v0185-clean-room-markdown", "path": ".divan/evidence/verified-clean-room-adoption-v0185.md", "marker": "# Divan Clean-Room Adoption Receipt", "replace_version": false},
+    {"id": "v100-release-evidence", "path": ".divan/evidence/teftis-20260731-v100-release.md", "marker": "# v1.0.0 Publication Evidence", "replace_version": false},
     {"id": "codex-auto-install-design", "path": "docs/superpowers/specs/2026-07-30-codex-auto-install-design.md", "marker": "# Codex Desktop Auto-Install Design", "replace_version": false},
     {"id": "codex-auto-install-plan", "path": "docs/superpowers/plans/2026-07-30-codex-auto-install.md", "marker": "# Codex Desktop Auto-Install Implementation Plan", "replace_version": false},
     {"id": "nizam-i-sefer-tests", "path": "tests/test_planning_intelligence.py", "marker": "class NizamPlanningTests", "replace_version": false},

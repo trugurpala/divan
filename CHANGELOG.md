@@ -6,6 +6,12 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+### Changed
+
+- Synchronized README, Pages, Wiki, roadmap, and project handoff with the
+  verified immutable v1.0.0 Release and recorded downloaded-asset,
+  checksum, SBOM, runner-identity, and strict-attestation evidence.
+
 ## [1.0.0] - 2026-07-30
 
 Divan's first stable release freezes the tested public product contract:
