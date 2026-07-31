@@ -40,7 +40,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v1.0.1 · **Son yayımlanan:** v1.0.0 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v1.0.1 · **Son yayımlanan:** v1.0.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
