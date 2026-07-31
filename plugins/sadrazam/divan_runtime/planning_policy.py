@@ -31,10 +31,20 @@ CRITICAL_RISK_TERMS = {
     "rotate leaked",
 }
 LEVEL_ORDER = {"low": 0, "moderate": 1, "high": 2, "critical": 3}
+BUGFIX_SUBSUMED_WORKFLOWS = frozenset(
+    {"testing-delivery", "feature-delivery"}
+)
 
 
 def _floor(level: str, minimum: str) -> str:
     return minimum if LEVEL_ORDER[level] < LEVEL_ORDER[minimum] else level
+
+
+def subsumed_workflow_ids(primary_id: str) -> frozenset[str]:
+    """Keep a focused bug-fix route without generic duplicate workflows."""
+    if primary_id == "bugfix-delivery":
+        return BUGFIX_SUBSUMED_WORKFLOWS
+    return frozenset()
 
 
 def complexity(route: dict[str, Any], target: str) -> dict[str, Any]:

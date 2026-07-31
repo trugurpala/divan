@@ -34,9 +34,10 @@
       "id": "council",
       "en": "Council",
       "tr": "Divan",
-      "python_modules": ["engine", "planning", "planning_policy"],
+      "python_modules": ["engine", "engine_registry", "planning", "planning_policy"],
       "capabilities": [
         "project_discovery",
+        "engine_registry_validation",
         "intent_routing",
         "impact_analysis",
         "capacity_planning",
@@ -79,7 +80,14 @@
       "python_modules": [
         "goals",
         "goal_archive",
+        "adoption_common",
+        "adoption_legacy",
+        "adoption_schema2",
+        "adoption_runner",
         "adoption",
+        "adoption_proof_common",
+        "adoption_proof_execution",
+        "adoption_proof",
         "seyir_state",
         "ci_guard"
       ],
@@ -89,6 +97,7 @@
         "task_progress",
         "archive",
         "adoption",
+        "clean_room_adoption",
         "ci_failure_circuit_breaker"
       ],
       "depends_on": ["kernel", "governance", "council", "evidence", "project"],
@@ -132,6 +141,7 @@
       "python_modules": [
         "compatibility",
         "cli_parser",
+        "cli_dispatch",
         "cli",
         "locales",
         "status",

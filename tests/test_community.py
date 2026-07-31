@@ -93,11 +93,47 @@ class CommunityContractTests(unittest.TestCase):
             content = read(relative)
             with self.subTest(relative=relative):
                 self.assertRegex(content, r"Topluluk-Standartlari(?:\.md)?")
-                self.assertIn("7/8", content)
+                self.assertIn("8/8", content)
                 lowered = content.lower()
                 if "not a model" not in lowered and "not model" not in lowered:
                     self.assertIn("model veya", lowered)
                     self.assertIn("runtime değildir", lowered)
+
+    def test_clean_room_adoption_is_the_public_v1_contract(self) -> None:
+        for relative in (
+            "README.md",
+            "README.en.md",
+            "README.tr.md",
+            "docs/Project-Contract.md",
+            "docs/Project-Contract.tr.md",
+            "docs/Home.md",
+            "docs/SSS.md",
+            "docs/Hizli-Baslangic.md",
+            "docs/Kurulum.md",
+            "docs/Durum-ve-Yol-Haritasi.md",
+        ):
+            content = read(relative)
+            with self.subTest(relative=relative):
+                self.assertIn("adoption prove", content)
+                self.assertIn("8/8", content)
+
+        for relative in (
+            "README.md",
+            "README.en.md",
+            "README.tr.md",
+            "docs/Project-Contract.md",
+            "docs/Project-Contract.tr.md",
+        ):
+            with self.subTest(relative=relative):
+                self.assertIn("valid-clean-room-adoption", read(relative))
+
+        issue_form = read(".github/ISSUE_TEMPLATE/kabul-kaniti.yml")
+        self.assertIn("schema-2", issue_form.lower())
+        self.assertIn("valid-clean-room-adoption", issue_form)
+        self.assertNotIn(
+            "Proje sahibi/developer dışında bağımsız bir kullanıcıyım",
+            issue_form,
+        )
 
     def test_wiki_and_release_manifests_cover_community_surfaces(self) -> None:
         wiki = read("wiki-pages.json")
@@ -198,7 +234,7 @@ class CommunityContractTests(unittest.TestCase):
             self.assertIn('data-homepage="https://trugurpala.github.io/divan/"', html)
             self.assertIn("yerel skill/plugin dağıtımı", html)
             self.assertIn("model veya runtime değildir", html)
-            self.assertIn("v1: 7/8", html)
+            self.assertIn("v1 hazırlık: 8/8", html)
             self.assertIn("Topluluk Standartları", html)
             visible = unescape(html)
             self.assertNotRegex(visible, r"--rollback-transaction\s+<[^>]+>")

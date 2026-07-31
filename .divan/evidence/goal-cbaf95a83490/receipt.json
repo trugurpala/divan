@@ -1,5 +1,6 @@
 {
   "artifacts": {
+    ".divan/evidence/teftis-20260730-v0182-release.md": "8434dc5c87f72346795fa3688ffdac8bad9b2d4bb21f4573eb6fb965affdc3e8",
     ".divan/specs/goal-cbaf95a83490/plan.md": "06d8c505f0d9e62005eae1362730bc793b7567554997802b4c9eb6161ff402a7",
     ".divan/specs/goal-cbaf95a83490/route.json": "8890dff7089c71908166bac58ac749171a7fd1366ab51ae435f0e522e3f93f90",
     ".divan/specs/goal-cbaf95a83490/spec.md": "78f98a7d98feba4da8e07b12b4faedadaa9217fc360cd66bd5138ab749be4822",
@@ -65,11 +66,39 @@
       "resume_from": null,
       "sequence": 5,
       "to_state": "VERIFIED"
+    },
+    {
+      "evidence": [
+        ".divan/evidence/teftis-20260730-v0182-release.md"
+      ],
+      "from_state": "VERIFIED",
+      "hash": "158fcd6fe748da0d9517c184ee21fa35b7f19156aa28493f4a6da616598e9c87",
+      "previous_hash": "76825cf31427abd745754c307d5fe71fc71fce8a81215691f12cb075287c6072",
+      "reason": "Published Pages and Wiki returned HTTP 200 with v0.18.2 after main merge.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 6,
+      "to_state": "PREVIEWED"
+    },
+    {
+      "evidence": [
+        ".divan/evidence/teftis-20260730-v0182-release.md"
+      ],
+      "from_state": "PREVIEWED",
+      "hash": "d66fa81d636cacb23612b8b6be5291ae2d1ddf7f020202473ba1b70cdcdc093f",
+      "previous_hash": "158fcd6fe748da0d9517c184ee21fa35b7f19156aa28493f4a6da616598e9c87",
+      "reason": "Immutable v0.18.2 tag and Release were read back; seven asset hashes and strict attestations passed.",
+      "recorded_on": "2026-07-30",
+      "results": {},
+      "resume_from": null,
+      "sequence": 7,
+      "to_state": "RELEASED"
     }
   ],
   "goal_id": "goal-cbaf95a83490",
   "intent": "Divan'ı geçmiş GitHub ve kurulum sorunları temizlenmiş, Türkçe ve İngilizce kimliği tutarlı, modüler stdlib çekirdeği korunan ve vibe coder'ın yerel Seyir URL'sinden gerçek ilerlemeyi takip edebildiği kullanıcı dostu v0.18.2 sürümüne ulaştır; temiz kurulum, akıllı timeout, CI, bağımsız inceleme ve canlı yayın kanıtlarını tamamla.",
   "schema_version": 2,
-  "state": "VERIFIED",
+  "state": "RELEASED",
   "target": "RELEASED"
 }

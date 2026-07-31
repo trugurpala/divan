@@ -134,7 +134,9 @@ def _load_source_module(
 
 
 @contextlib.contextmanager
-def _isolated_runtime(runtime: pathlib.Path) -> Iterator[tuple[ModuleType, ModuleType]]:
+def _isolated_runtime(
+    runtime: pathlib.Path,
+) -> Iterator[tuple[ModuleType, ModuleType, ModuleType]]:
     previous_path = list(sys.path)
     previous = {
         name: sys.modules[name]
@@ -151,10 +153,13 @@ def _isolated_runtime(runtime: pathlib.Path) -> Iterator[tuple[ModuleType, Modul
         engine = _load_source_module(
             "divan_runtime.engine", runtime / "engine.py"
         )
+        engine_registry = _load_source_module(
+            "divan_runtime.engine_registry", runtime / "engine_registry.py"
+        )
         kernel = _load_source_module(
             "divan_runtime.kernel", runtime / "kernel.py"
         )
-        yield engine, kernel
+        yield engine, kernel, engine_registry
     finally:
         for name in _runtime_module_names():
             sys.modules.pop(name, None)
@@ -166,12 +171,26 @@ def validate(root: pathlib.Path) -> list[str]:
     """Return contract loading errors without importing project code."""
     try:
         runtime = _runtime_directory(root)
-        required = ("__init__.py", "engine.py", "kernel.py")
+        required = ("__init__.py", "engine.py", "engine_registry.py", "kernel.py")
         for name in required:
             _checked_source(runtime, name)
-        with _isolated_runtime(runtime) as (engine, kernel):
+        with _isolated_runtime(runtime) as (engine, kernel, engine_registry):
             engine.load_contracts(runtime)
             kernel.load_architecture(runtime)
+            registry = root / "registry" / "engines.example.json"
+            if registry.is_file():
+                result, _exit_code = engine_registry.validate_registry_path(
+                    registry
+                )
+                if result["errors"]:
+                    return [
+                        (
+                            "engine registry "
+                            f"{error['code']} {error['path']}: "
+                            f"{error['message']}"
+                        )
+                        for error in result["errors"]
+                    ]
     except (
         ImportError,
         OSError,

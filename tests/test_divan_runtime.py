@@ -78,6 +78,13 @@ class DivanRuntimeContractTests(unittest.TestCase):
                 if row["id"] == "api"
             ),
         )
+        records = next(
+            row
+            for row in architecture["modules"]
+            if row["id"] == "records"
+        )
+        self.assertIn("adoption_proof", records["python_modules"])
+        self.assertIn("clean_room_adoption", records["capabilities"])
         self.assertEqual(
             [row["id"] for row in architecture["authority_chain"]],
             [

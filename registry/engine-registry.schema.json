@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://divan.dev/schemas/engine-registry.schema.json",
+  "title": "Divan Multi-Engine Registry",
+  "description": "Commitment schema for Divan multi-engine metadata.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "engines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "enum": ["ADOPT", "ADAPT", "REFERENCE", "FORK"]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "candidate",
+              "active",
+              "accepted",
+              "adapted",
+              "blocked",
+              "deprecated"
+            ]
+          },
+          "license": {
+            "type": "object",
+            "properties": {
+              "spdx_expression": {
+                "type": "string"
+              },
+              "evidence": {
+                "type": "string"
+              }
+            },
+            "required": ["spdx_expression", "evidence"],
+            "additionalProperties": false
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "pin": {
+                "type": "string"
+              },
+              "pin_policy": {
+                "type": "string",
+                "enum": ["immutable", "lockfile", "manual"]
+              }
+            },
+            "required": ["url"],
+            "additionalProperties": false
+          },
+          "fork_repository": {
+            "type": "string"
+          },
+          "host_compatibility": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "supported_project_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "forbidden_project_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "quality_profiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "installation": {
+            "type": "object",
+            "properties": {
+              "modes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "removal": {
+                "type": "string"
+              },
+              "rollback": {
+                "type": "string"
+              }
+            },
+            "required": ["modes", "removal", "rollback"],
+            "additionalProperties": false
+          },
+          "escape_plan": {
+            "type": "object",
+            "properties": {
+              "summary": {
+                "type": "string"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["summary", "steps"],
+            "additionalProperties": false
+          },
+          "portability": {
+            "type": "object",
+            "properties": {
+              "data_portable": {
+                "type": "boolean"
+              },
+              "migration_notes": {
+                "type": "string"
+              },
+              "depends_on_lockfile": {
+                "type": "boolean"
+              }
+            },
+            "required": ["data_portable"],
+            "additionalProperties": false
+          },
+          "business_logic_ownership": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "type": "string",
+                "enum": ["project", "vendor", "community"]
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": ["owner", "notes"],
+            "additionalProperties": false
+          },
+          "frontend_replaceability": {
+            "type": "object",
+            "properties": {
+              "replaceable": {
+                "type": "boolean"
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": ["replaceable", "notes"],
+            "additionalProperties": false
+          },
+          "when_unavailable": {
+            "type": "string",
+            "enum": ["manual", "fallback", "readonly", "degrade"]
+          }
+        },
+        "required": [
+          "id",
+          "decision",
+          "status",
+          "license",
+          "source",
+          "host_compatibility",
+          "supported_project_types",
+          "forbidden_project_types",
+          "quality_profiles",
+          "installation",
+          "escape_plan",
+          "portability",
+          "business_logic_ownership",
+          "frontend_replaceability",
+          "when_unavailable"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["schema_version", "engines"],
+  "additionalProperties": false
+}

@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-0.18.2-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -19,7 +19,7 @@ yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların 
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 
-**Güncel kaynak:** v0.18.2 · **Son yayımlanan:** v0.18.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v1.0.1 · **Son yayımlanan:** v1.0.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -108,9 +108,28 @@ python scripts/divan.py project repair --project . --execute
 Host `update`, Claude/Codex içindeki Divan paketlerini değiştirir. Project
 `update`, hedef repoda yalnız Divan'ın sahip olduğu yüzeyleri taşır. `audit`,
 DPS kalite kanıtını; `project status`, sahiplik parmak izlerini ve sapmayı
-değerlendirir. Doğrulanmış hedefler arşivlenebilir; kullanıcı adı, mutlak yol,
-remote, secret veya alakasız eklenti açıklamayan sınırlı kabul makbuzu
-üretilebilir. Sahip canary kanıtı bağımsız kabul kapısını kapatmaz.
+değerlendirir. Doğrulanmış hedefler arşivlenebilir. Ana v1 kanıt yolu, Divan'dan
+ayrı gerçek projedeki görevi sınırlı test/regresyon kontrolleriyle bir kez
+çalıştırır, host sürümünü doğrudan gözler ve gizlilik sınırlı schema-2 makbuzu
+mühürler:
+
+```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
+```
+
+VERIFIED geçişi adı verilen proje-göreli dosyaları hedef makbuzuna atomik olarak
+hash'ler; yalnız plan dosyası kanıtı reddedilir. Önizleme yazmaz ve subprocess
+başlatmaz. Bakımcı ile dış kullanıcı aynı teknik
+kapıya tabidir; kişinin sıfatı uygunluğu değiştirmez. Yalnız
+`valid-clean-room-adoption` v1'e aday olabilir. Eski schema-1 export makbuzları
+doğrulanmaya devam eder fakat v1 kanıtı sayılmaz.
+İndirilen `divan-project.pyz` ile `divan-project.pyz.sha256` aynı klasörde
+kalmalıdır. Kanıt yürütmesi, izlenen kaynak sapmasını güvenli biçimde
+reddedebilmek için bir Git reposu da gerektirir.
 
 ## Kendi kendini nasıl geliştirir?
 
@@ -158,7 +177,7 @@ Eşleşen GitHub Release yayımlandıktan sonra bağımsız kurucuyu ve checksum
 dosyasını indir, bilgisayarında doğrula, yazmayan planı gör ve sonra uygula:
 
 ```powershell
-$tag = "v0.18.2"
+$tag = "v1.0.1"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -178,16 +197,16 @@ Repo checkout'u içinden yazmayan planı görüp aynı sabit release'i iki hosta
 kurmak için:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.2
-python scripts/divan.py install --host both --ref v0.18.2 --execute
+python scripts/divan.py install --host both --ref v1.0.1
+python scripts/divan.py install --host both --ref v1.0.1 --execute
 ```
 
 Codex Desktop için tek bir açık `auto` profil komutu yerel CLI'ı tanılar ve
 kanıtlayabildiği en güçlü yolu seçer:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.2
-python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute
 ```
 
 Codex CLI sağlıklıysa tam yerel plugin yolu korunur. CLI bulunamazsa,
@@ -208,12 +227,15 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+Tek dosyalık `divan.pyz`, yükseltme sırasında içindeki değişmez release
+kimliğini kullanır; çıkarıldığı geçici klasörü Git checkout gibi yorumlamaz.
 
 Örnek günlük yolunu doctor çıktısındaki tam `recovery_command` ile değiştir.
 `install-...json` geri alması bu kurulumun oluşturduğu Divan kayıtlarını kaldırır;
@@ -321,18 +343,19 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 
 ## Dürüst durum
 
-Divan açık standartlara ve GitHub'ın açık kaynak topluluk dosyalarına uyumludur;
-ancak henüz v1.0 değildir. 41 beceri yapısal olarak doğrulanır; 4 özgün skill için
-13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. v0.11 yayın
-yüzeylerini ve temiz-host matrisini otomatikleştirir. İlk güvenilir gerçek
-ajan/hakem karşılaştırması yayımlanmıştır; bağımsız kullanıcı kanıtı hâlâ dış
-kapıdır. v0.17.0, Divan Engine ile Divan Nizamı'nı açıklaştırır ve eski yolları
-korur. PR #49, bütün zorunlu CI kapıları, değişmez tag/Release, checksum ve
-attestation bağlı beş varlık, Pages ve Wiki yayın kanıtında doğrulanmıştır.
-Güncel, makine-okunur durum
-[v1 hazırlık karnesinde](docs/V1-Hazirlik.md)
-bulunur; bağımsız kanıt gelmeden hız, gelir veya “dünyanın en iyisi” iddiası
-yapılmaz.
+Divan v1.0.1, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
+yayımlandı. 41 becerinin tamamı yapısal olarak doğrulanır; 4 özgün skill için
+13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
+tek repo, beş modüler paket, stdlib-only Divan Engine, Hükümdar öncelikli Divan
+Nizamı, kurulu Divan Proje Sözleşmesi ve Claude Code/Codex yaşam döngüsünü
+korur. Değişmez tag, checksum ve attestation bağlı yedi varlık, SBOM, Pages,
+Wiki ve temiz-host matrisi
+[v1.0.1 yayın kanıtında](.divan/evidence/teftis-20260731-v101-release.md)
+kayıtlıdır. Aynı kayıt, indirilen release runner'ıyla doğrulanmış yerel
+Windows/Codex yükseltmesini, sağlıklı son doctor sonucunu ve no-op tekrarı da
+bağlar. Temiz-proje sonucu sınırlı teknik akışı kanıtlar; bağımsız kullanıcı
+sayısı, üçüncü taraf onayı, pazar benimsemesi, hız, gelir, kalite artışı veya
+“dünyanın en iyisi” iddiası değildir.
 
 ## Kaldırma
 
@@ -356,8 +379,14 @@ Skill metinlerinin yanında açık kaynak doğrulama/kurulum betikleri ve bazı
 Divan'ın `DCS-001`–`DCS-011` arasındaki on bir zorunlu ürün kuralı
 [Topluluk Standartları](docs/Topluluk-Standartlari.md) sayfasında ve
 `python scripts/standards.py --check` kapısında yaşar. Kullanım sorusu, hata,
-özel güvenlik bildirimi, yetenek önerisi ve bağımsız kabul kanıtı için tek doğru
+özel güvenlik bildirimi, yetenek önerisi ve temiz-proje kabul kanıtı için tek doğru
 yollar [SUPPORT.md](SUPPORT.md) içindedir. Katkı rehberi:
 [Türkçe](CONTRIBUTING.tr.md) · [English](CONTRIBUTING.en.md).
 
-v1 durumu: **7/8** kapı geçti; bağımsız kullanıcı kanıtı hâlâ bekleniyor.
+v1 hazırlık durumu: **8/8** kapı geçti. Değişmez v0.18.5, Windows 11, Codex ve
+Divan'dan ayrı gerçek bir projede makinece doğrulanabilir bir temiz-proje kanıtı
+üretti; gizlilik incelemesinden geçen makbuz repoya kaydedilip çevrimdışı yeniden
+doğrulandı. Bu sınırlı teknik kanıt; bağımsız kullanıcı sayısı, üçüncü taraf
+onayı, pazar benimsemesi, hız veya kalite artışı iddiası değildir.
+Önizleme bu özeti önce public GitHub Release API'sinden okur; yayın otoritesi
+doğrulanamazsa proje komutları başlamadan kapalı başarısız olur.

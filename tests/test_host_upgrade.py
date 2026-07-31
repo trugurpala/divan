@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import io
 import json
@@ -241,6 +242,19 @@ class UpgradeRunner:
         self.roots[host] = self.target_roots[host] if ref == TARGET_REF else self.old_roots[host]
 
 
+class BundledUpgradeRunner(UpgradeRunner):
+    def __init__(self, fixture_root: pathlib.Path, bundled_root: pathlib.Path) -> None:
+        super().__init__(fixture_root)
+        self.bundled_root = bundled_root.resolve()
+
+    def _git(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        if pathlib.Path(command[2]).resolve() == self.bundled_root:
+            return subprocess.CompletedProcess(
+                command, 128, "", "fatal: not a git repository"
+            )
+        return super()._git(command)
+
+
 class HostUpgradeTests(unittest.TestCase):
     def _codex_metadata(
         self,
@@ -380,6 +394,68 @@ class HostUpgradeTests(unittest.TestCase):
         self.assertIn(
             ["claude", "plugin", "uninstall", "sadrazam@divan", "--scope", "user", "--yes"],
             record["planned_commands"],
+        )
+
+    def test_bundled_upgrade_uses_embedded_identity_without_git_probe(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-bundled-upgrade-") as temporary:
+            base = pathlib.Path(temporary)
+            bundled = base / "bundle"
+            bundled.mkdir()
+            raw_marketplace = (
+                ROOT / ".agents" / "plugins" / "marketplace.json"
+            ).read_bytes()
+            packages = {
+                package: {
+                    "skills": sorted(
+                        path.parent.name
+                        for path in (ROOT / "plugins" / package / "skills").glob(
+                            "*/SKILL.md"
+                        )
+                    ),
+                    "version": version,
+                }
+                for package, version in TARGET_VERSIONS.items()
+            }
+            (bundled / "divan-bootstrap-source.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "source_commit": "a" * 40,
+                        "source_ref": TARGET_REF,
+                        "source_repository": SOURCE,
+                        "version": TARGET_REF.removeprefix("v"),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (bundled / "divan-bootstrap-catalog.json").write_text(
+                json.dumps(
+                    {
+                        "marketplace_digest": hashlib.sha256(
+                            raw_marketplace
+                        ).hexdigest(),
+                        "packages": packages,
+                        "schema_version": 1,
+                        "skill_count": 41,
+                        "version": TARGET_REF.removeprefix("v"),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runner = BundledUpgradeRunner(base, bundled)
+
+            record = HOSTS.upgrade(
+                self.options(runner.state_dir, host="codex"),
+                runner=runner,
+                root=bundled,
+            )
+
+        self.assertEqual(record["status"], "verified")
+        self.assertFalse(
+            any(
+                command[:3] == ("git", "-C", str(bundled.resolve()))
+                for command in runner.commands
+            )
         )
 
     def test_same_source_ref_and_versions_are_a_no_op(self) -> None:
