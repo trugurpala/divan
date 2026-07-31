@@ -393,12 +393,18 @@ the development line only; a new public release still requires the canonical
   3m56s after PR #72, and PR validation took roughly 8-9 minutes on the
   public-copy branch. Future Seyir/timeout work should surface these waits to a
   vibe coder as friendly progress states instead of silent waiting.
-- Only two open pull requests remain: draft PR #29 durable project memory and
-  draft PR #28 Forge Golden Path Council. Both are currently dirty against
-  `main` and must be re-audited against the post-v1 Divan Engine / Project
-  Contract architecture before merge or release. The remaining open issues are
-  automated Meclis discoveries #47 and #23, which require candidate lifecycle
-  decisions rather than direct code adoption.
+- Draft PR #29 durable project memory and draft PR #28 Forge Golden Path Council
+  were audited and closed instead of merged. PR #29 would have introduced a
+  parallel `memory` lifecycle beside the current Project Contract, goal,
+  receipt, and Seyir state. PR #28 would have introduced a parallel Forge
+  registry beside the canonical Aday Meclisi. Their useful ideas remain
+  historical design input only; future work must extend the existing canonical
+  modules rather than adding a second brain. No pull requests remain open.
+- The remaining open GitHub backlog is automated Meclis discovery issue #47 and
+  #23. These require candidate lifecycle decisions through
+  `registry/candidates.json` and generated `docs/Aday-Meclisi.md`; no candidate
+  may be installed, forked, vendored, or promoted directly from the discovery
+  issues.
 
 ## Tarihsel devam kayıtları
 
@@ -427,11 +433,14 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep v1.0.1 immutable. First exact action: audit PR #29 against current Project
-Contract, Seyir, and goal-state behavior; either refresh it from current `main`
-as a smaller post-v1 memory module or close the stale draft with a written
-rationale. Then apply the same refresh-or-close decision to PR #28 under the
-Meclis candidate rules, triage issues #47 and #23 into
-ADOPT/ADAPT/REFERENCE/REJECT decisions, and only then prepare the next release
-line through `scripts/release.py` with CHANGELOG, BLUEPRINT, README, Wiki, site,
-and release-manifest surfaces synchronized.
+Keep v1.0.1 immutable. First exact action: triage automated Meclis discovery
+issues #47 and #23 into explicit ADOPT/ADAPT/REFERENCE/REJECT decisions. Promote
+only candidates that fill a real Divan user gap and have canonical identity,
+license evidence, execution-surface review, risk notes, observed commit/source,
+and a bounded rationale in `registry/candidates.json`; regenerate
+`docs/Aday-Meclisi.md` with `python scripts/candidate_review.py --render`.
+Reject noisy or duplicate candidates in the issue comments. After the Meclis
+queue is clean, design the next small post-v1 product slice around Seyir
+wait-state/timeout explanations using the benchmark data recorded above. Prepare
+any public release only through `scripts/release.py` with CHANGELOG, BLUEPRINT,
+README, Wiki, site, and release-manifest surfaces synchronized.
