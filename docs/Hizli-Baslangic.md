@@ -33,9 +33,6 @@ sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü ku
 Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesi, sonra aynı sabit sürümün uygulaması:
 
-Yayın adayı sınırı: v1.0.1'i yalnız tag ve GitHub Release sayfası görünür olduktan
-sonra kullan; o zamana kadar v1.0.0'ı kullan.
-
 ```powershell
 python scripts/divan.py install --host both --ref v1.0.1
 python scripts/divan.py install --host both --ref v1.0.1 --execute

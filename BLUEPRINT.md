@@ -88,16 +88,16 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ## Yol Haritası
 
-### Etkin geliştirme hattı
+### En son yayımlanan yama
 
-- **v1.0.1 ✓** Yerel release adayı; henüz yayımlanmadı. Yayımlanmış v1.0.0
-  runner'ının gerçek
-  Windows/Codex yükseltme denemesi, dry-run sonrasında çıkarılmış bootstrap
-  klasörünü Git checkout sanan execute hatasını yeniden üretti. Patch adayı,
-  yalnız gömülü değişmez release kimliği, commit'i ve katalog digest'ini hedef
-  otoritesi olarak kullanır; kaynak/ref, rollback ve yabancı eklenti korumaları
-  değişmez. Yayın iddiası ancak PR, CI, tag/Release ve yayımlanmış runner ile
-  aynı v0.18.1 → v1.0.1 yükseltmesi geçtikten sonra kurulacaktır.
+- **v1.0.1 ✓** PR #69
+  `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde birleşti ve değişmez
+  tag/GitHub Release olarak yayımlandı. Tek dosyalık runner, çıkarılmış
+  bootstrap klasörünü Git checkout sanmak yerine gömülü release kimliği,
+  commit'i ve katalog digest'ini hedef otoritesi olarak kullanır. Yedi indirilen
+  varlık, strict attestations ve gerçek Windows/Codex yükseltmesi doğrulandı;
+  final doctor sağlıklı, ikinci execute no-op oldu. Kaynak/ref, rollback ve
+  yabancı eklenti korumaları değişmedi.
 
 ### Yayımlanan temel
 
@@ -240,7 +240,8 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 Makine-okunur ayrıntı `registry/v1-gates.json`, insan/Wiki görünümü
 `docs/V1-Hazirlik.md` dosyasındadır. Sekiz kapı da `passed` durumundadır;
-değişmez v1.0.0 tag/Release ayrıca yayın zinciriyle doğrulanmıştır.
+değişmez v1.0.1 tag/Release ayrıca yayın zinciri ve gerçek Windows/Codex
+yükseltmesiyle doğrulanmıştır.
 
 ### Uzun vade
 
@@ -248,6 +249,12 @@ değişmez v1.0.0 tag/Release ayrıca yayın zinciriyle doğrulanmıştır.
   çekirdek açık ve yerel kalır.
 
 ## Durum Günlüğü
+- 2026-07-31: v1.0.1 PR #69 ile
+  `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde yayımlandı. 698 test,
+  iki PR kalite koşusu, ana/yayın workflow'ları, yedi indirilen varlığın
+  SHA-256 değeri, strict attestations, Pages, Wiki ve canlı Chromium geçti.
+  İndirilen release runner'ı mevcut native Windows/Codex kurulumunu v1.0.1'e
+  yükseltti; doctor sağlıklı döndü ve tekrar execute no-op oldu.
 - 2026-07-31: v1.0.0 PR #67 ile
   `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde yayımlandı. Üç
   işletim sistemindeki temiz-host kapıları, canlı Chromium, Pages ve Wiki
@@ -499,7 +506,7 @@ değişmez v1.0.0 tag/Release ayrıca yayın zinciriyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Run the canonical verifier for the v1.0.1 packaged-upgrade fix, obtain an
-independent code review, merge only after CI, publish the immutable patch
-release, and repeat the real Windows/Codex v0.18.1 → v1.0.1 update with the
-downloaded release runner before claiming the repair.
+Keep v1.0.1 immutable. Merge the publication evidence only after the canonical
+verifier and CI, then read README, Pages, Wiki, tag, Release assets, and the
+healthy local Codex installation back before opening a separately approved
+product target.

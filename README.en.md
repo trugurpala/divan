@@ -24,7 +24,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v1.0.1 · **Latest published:** v1.0.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.1 · **Latest published:** v1.0.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -165,7 +165,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v1.0.0"
+$tag = "v1.0.1"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -180,9 +180,6 @@ The file contains the exact five-package, 41-skill catalog and immutable source
 commit for that release. It rejects another source or ref. Keep `divan.pyz`;
 doctor uses it to print the exact recovery command if an interrupted operation
 needs attention.
-
-Release-candidate guard: Use v1.0.1 only after its tag and GitHub Release are visible;
-until then, use v1.0.0.
 
 From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
@@ -322,14 +319,16 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 ## Honest status
 
-Divan v1.0.0 is published after all eight machine-backed readiness gates passed.
+Divan v1.0.1 is published after all eight machine-backed readiness gates passed.
 All 41 skills receive structural validation; four original skills provide 13
 behavioral cases and a provider-neutral A/B runner. The stable contract keeps
 one repository, five modular packages, the stdlib-only Divan Engine,
 owner-first Divan Nizamı governance, the installed Divan Project Contract, and
 Claude Code/Codex lifecycle support. The immutable tag, seven checksummed and
 attested assets, SBOM, Pages, Wiki, and clean-host matrix are recorded in the
-[v1.0.0 publication evidence](.divan/evidence/teftis-20260731-v100-release.md).
+[v1.0.1 publication evidence](.divan/evidence/teftis-20260731-v101-release.md).
+That record also binds the downloaded release runner to a verified native
+Windows/Codex upgrade, a healthy final doctor result, and a no-op repeat.
 The clean-room result proves a bounded technical workflow; it does not claim an
 independent-user count, endorsement, market adoption, speed gain, revenue
 increase, quality win, or “best in the world” status.

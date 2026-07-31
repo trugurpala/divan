@@ -19,8 +19,9 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Changed
 
 - Synchronized README, Pages, Wiki, roadmap, and project handoff with the
-  verified immutable v1.0.0 Release and recorded downloaded-asset,
-  checksum, SBOM, runner-identity, and strict-attestation evidence.
+  verified immutable v1.0.1 Release and recorded downloaded-asset, checksum,
+  SBOM, runner-identity, strict-attestation, and real Windows/Codex update
+  evidence.
 
 ### Verification
 
@@ -29,6 +30,11 @@ Versioning while the public API remains in initial development (`0.y.z`).
   `git status` against the extracted non-Git bootstrap directory. A regression
   test now fails on that exact boundary and the related 64 upgrade, rollback,
   authority, security, and bootstrap tests pass after the fix.
+- The candidate passed 698 tests with 14 expected platform skips and both PR
+  quality runs. The immutable v1.0.1 Release then passed every main/publication
+  workflow, seven downloaded SHA-256 checks, strict attestation verification,
+  and a real update of the existing native Windows/Codex installation. Final
+  doctor was healthy and a second execute was a no-op.
 
 ## [1.0.0] - 2026-07-30
 

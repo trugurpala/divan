@@ -2,14 +2,15 @@
 
 Son durum tarihi: 2026-07-31.
 
-> **En güncel yayımlanmış sürüm v1.0.0'dır.** PR #67 kararlı ürün sözleşmesini
-> `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde dondurdu. Değişmez
-> tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, strict attestations,
-> Windows/macOS/Linux temiz-host kapıları, Chromium, Pages ve Wiki doğrulandı.
+> **En güncel yayımlanmış sürüm v1.0.1'dir.** PR #69 paketli Windows/Codex
+> yükseltmesini `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde düzeltti.
+> Değişmez tag/GitHub Release, yedi varlık, checksum, SPDX SBOM, strict
+> attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages, Wiki
+> ve indirilen runner'la gerçek yerel yükseltme doğrulandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v1.0.0` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v1.0.1` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -59,17 +60,14 @@ değildir.
 
 ## Dürüst açıklar
 
-- Schema-2 temiz-proje mekanizması hazırdır; henüz yayımlanmış mekanizmayla
-  üretilip repoya kaydedilmiş gerçek makbuz yoktur.
+- Repoda bir makinece doğrulanmış schema-2 temiz-proje makbuzu vardır. Bu,
+  bağımsız kullanıcı sayısı, üçüncü taraf onayı veya pazar benimsemesi değildir.
 - Gerçek Claude/Codex A/B sonucu yayımlandı: skill 0, baseline 1, beraberlik 2.
   Önceden eşik yoktur; kalite artışı iddiası yapılmaz.
-- v0.17.0'ın tam yerel doğrulaması 538 test, 7 platform atlaması, %76
-  kapsam, Ruff, mypy, Clean Code, 41 skill, strict plugin doğrulaması ve
-  deterministik runner ile tamamlandı. Bağımsız son inceleme açık P0-P3 bulgusu
-  olmadığını doğruladı. PR #49, bütün zorunlu CI kapıları ve canlı yayın kanıtı
-  `.divan/evidence/teftis-20260729-v017-release.md` kaydına bağlandı.
-- v0.17 yayını temiz-proje kabul kanıtı değildir; gerçek schema-2 makbuz
-  kaydedilip yeniden doğrulanmadan v1 karnesi **7/8** kalır.
+- v1.0.1'in tam yerel doğrulaması 698 test ve 14 platform atlamasıyla geçti.
+  Yayın ayrıca üç işletim sistemi, strict attestations ve gerçek
+  Windows/Codex yükseltmesiyle sınırlandırılmıştır; bütün host ve ortamları
+  kapsadığı iddia edilmez.
 
 ## v0.18 — yayımlanan Nizâm-ı Sefer
 
@@ -164,14 +162,26 @@ değildir.
 - Yedi varlık yeniden indirildi; SHA-256, iki sidecar, master manifest, SPDX
   SBOM, iki gömülü runner kimliği ve strict attestations doğrulandı.
 
+## v1.0.1 — yayımlanan paketli yükseltme düzeltmesi
+
+- Tek dosyalık `divan.pyz update --execute`, çıkarılmış bootstrap klasörünü Git
+  checkout sanmak yerine içindeki değişmez release kimliği, commit'i ve katalog
+  digest'ini kullanır.
+- PR #69 `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949` commit'inde birleşti; 698 test,
+  iki PR kalite koşusu ve bütün ana/yayın workflow'ları geçti.
+- Yedi varlık yeniden indirildi; SHA-256 ve strict attestations doğrulandı.
+  İndirilen runner mevcut Windows/Codex kurulumunu v1.0.1'e yükseltti; doctor
+  sağlıklı döndü ve ikinci execute no-op oldu.
+
 ## Sıradaki ürün adımı
 
 1. ✓ 8/8 kanıt PR'ını bütün kalite kapılarından geçirip `main`e birleştir.
 2. ✓ Canlı README, Pages, Wiki ve v1 karnesini varsayılan daldan geri oku.
 3. ✓ v1.0.0'ı değişmez tag/Release, yedi varlık, SBOM, attestation ve canlı
    geri-okuma kapılarıyla yayımla.
-4. Yayın kanıtını ve son sürüm etiketlerini `main`e eşitle; sonraki ürünü ayrı
-   onaylı hedef olarak başlat.
+4. ✓ v1.0.1 yayın kanıtını ve son sürüm etiketlerini `main`e eşitle.
+5. Sonraki ürün kapsamını ayrı onaylı hedef olarak başlat; v1.0.1 tag ve
+   varlıklarını değiştirme.
 
 ## v1.0 kapıları
 

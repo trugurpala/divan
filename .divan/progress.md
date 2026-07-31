@@ -4,23 +4,23 @@ Son güncelleme: 2026-07-31
 
 ## Yayın durumu
 
-- Latest published release: v1.0.0
-- Published commit: 2f73e0514d97d4ec9597b3d313f20c82d7770b77
-- Publication evidence: .divan/evidence/teftis-20260731-v100-release.md
-- Release asset evidence: .divan/evidence/teftis-20260731-v100-release.md
+- Latest published release: v1.0.1
+- Published commit: 62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949
+- Publication evidence: .divan/evidence/teftis-20260731-v101-release.md
+- Release asset evidence: .divan/evidence/teftis-20260731-v101-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is still immutable v1.0.0 at commit
-`2f73e0514d97d4ec9597b3d313f20c82d7770b77`; PR #68 and all of its post-merge
-workflows synchronized the publication evidence without moving that tag or
-changing its seven assets. Active source is the v1.0.1 patch candidate. A real
-Windows/Codex update from the released v1.0.0 runner exposed that packaged
-`update --execute` treated its extracted bootstrap directory as a Git checkout.
-The transaction failed before host mutation. A red regression test now covers
-that boundary; the minimal fix uses the bundled immutable release authority and
-64 related upgrade/security/bootstrap tests pass.
+The latest published release is immutable v1.0.1 at commit
+`62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`. PR #69 repaired the packaged
+Windows/Codex upgrade path without changing Divan's product scope. Both PR
+quality runs, the main publication workflows, seven downloaded asset hashes,
+strict attestations, Pages, Wiki, and live Chromium passed. The downloaded
+release runner upgraded the existing native Codex installation to the exact
+v1.0.1 tag, final doctor returned healthy, five packages/41 skills remained
+enabled, unrelated plugins remained installed, and a second execute was a
+no-op.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -385,6 +385,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Run `python scripts/verify.py` for the v1.0.1 candidate, complete independent
-review, merge after CI, publish the immutable release, then use its downloaded
-`divan.pyz` to repeat the real Windows/Codex update and doctor readback.
+Keep v1.0.1 immutable. Re-run the canonical verifier for this publication
+evidence update, merge it only after CI, then read README, Pages, Wiki, tag,
+Release assets, and the local healthy Codex installation back without moving
+the published tag.

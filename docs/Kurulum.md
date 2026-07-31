@@ -14,7 +14,7 @@ Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checks
 dosyasını indirip doğrula:
 
 ```powershell
-$tag = "v0.18.5"
+$tag = "v1.0.1"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -29,9 +29,6 @@ python .\divan.pyz install --host codex --profile auto --execute
 Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
 doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
 komutları için sakla.
-
-Yayın adayı sınırı: v1.0.1'i yalnız tag ve GitHub Release sayfası görünür olduktan
-sonra kullan; o zamana kadar v1.0.0'ı kullan.
 
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
