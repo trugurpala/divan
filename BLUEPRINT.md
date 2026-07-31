@@ -90,9 +90,14 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Etkin geliştirme hattı
 
-- **v1.0.0 yayın kanıtı:** Değişmez sürüm yayımlandı. İndirilen varlık,
-  checksum, SBOM, attestation ve gömülü runner kimliği kanıtı ile kullanıcıya
-  dönük son sürüm etiketleri tek sınırlı takip PR'ında eşitleniyor.
+- **v1.0.1 ✓** Yerel release adayı; henüz yayımlanmadı. Yayımlanmış v1.0.0
+  runner'ının gerçek
+  Windows/Codex yükseltme denemesi, dry-run sonrasında çıkarılmış bootstrap
+  klasörünü Git checkout sanan execute hatasını yeniden üretti. Patch adayı,
+  yalnız gömülü değişmez release kimliği, commit'i ve katalog digest'ini hedef
+  otoritesi olarak kullanır; kaynak/ref, rollback ve yabancı eklenti korumaları
+  değişmez. Yayın iddiası ancak PR, CI, tag/Release ve yayımlanmış runner ile
+  aynı v0.18.1 → v1.0.1 yükseltmesi geçtikten sonra kurulacaktır.
 
 ### Yayımlanan temel
 
@@ -494,6 +499,7 @@ değişmez v1.0.0 tag/Release ayrıca yayın zinciriyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Validate and merge the bounded v1.0.0 publication-evidence PR. Read README,
-Pages, Wiki, Release, and pinned install guidance back from `main`; start any
-post-v1 feature only under a separately approved goal.
+Run the canonical verifier for the v1.0.1 packaged-upgrade fix, obtain an
+independent code review, merge only after CI, publish the immutable patch
+release, and repeat the real Windows/Codex v0.18.1 → v1.0.1 update with the
+downloaded release runner before claiming the repair.

@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.0-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.1-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -24,7 +24,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v1.0.0 · **Latest published:** v1.0.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.1 · **Latest published:** v1.0.0 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -181,20 +181,23 @@ commit for that release. It rejects another source or ref. Keep `divan.pyz`;
 doctor uses it to print the exact recovery command if an interrupted operation
 needs attention.
 
+Release-candidate guard: Use v1.0.1 only after its tag and GitHub Release are visible;
+until then, use v1.0.0.
+
 From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.0
-python scripts/divan.py install --host both --ref v1.0.0 --execute
+python scripts/divan.py install --host both --ref v1.0.1
+python scripts/divan.py install --host both --ref v1.0.1 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.0
-python scripts/divan.py install --host codex --profile auto --ref v1.0.0 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
@@ -216,12 +219,15 @@ options. The complete Turkish reference remains available in
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.0
-python scripts/divan.py update --host both --ref v1.0.0
-python scripts/divan.py update --host both --ref v1.0.0 --execute
+python scripts/divan.py doctor --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+The standalone `divan.pyz` uses its embedded immutable release identity during
+an update; it does not treat the extracted bundle as a Git checkout.
 
 Replace the example journal with doctor's exact `recovery_command`. Rolling
 back the `install-...json` journal uninstalls only Divan entries created by that

@@ -30,14 +30,17 @@ Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
 doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
 komutları için sakla.
 
+Yayın adayı sınırı: v1.0.1'i yalnız tag ve GitHub Release sayfası görünür olduktan
+sonra kullan; o zamana kadar v1.0.0'ı kullan.
+
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.0
-python scripts/divan.py install --host both --ref v1.0.0 --execute
-python scripts/divan.py doctor --host both --ref v1.0.0
-python scripts/divan.py update --host both --ref v1.0.0
-python scripts/divan.py update --host both --ref v1.0.0 --execute
+python scripts/divan.py install --host both --ref v1.0.1
+python scripts/divan.py install --host both --ref v1.0.1 --execute
+python scripts/divan.py doctor --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -60,13 +63,13 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.0
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.0 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -176,6 +179,10 @@ Planı aynı sabit hedefe uygulamak için `--execute` ekleyin:
 ```powershell
 python scripts/divan.py update --host both --ref <yeni-release-tag> --execute
 ```
+
+GitHub Release'ten indirilen tek dosyalık `divan.pyz`, hedef commit/ref/katalog
+kanıtını içindeki değişmez release sözleşmesinden okur; çıkarıldığı geçici
+klasörü Git checkout saymaz.
 
 Kaynak, ref ve beş `@divan` paketinin sürümleri hedef sözleşmeyle zaten
 aynıysa işlem `no-op` döner. Yükseltme başlamadan önce iki hosttaki mevcut
@@ -306,11 +313,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.0.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.0.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.0/scripts/install_codex.sh | DIVAN_REF=v1.0.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.1/scripts/install_codex.sh | DIVAN_REF=v1.0.1 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

@@ -12,12 +12,15 @@ Son güncelleme: 2026-07-31
 
 ## Güncel hedef
 
-The latest published release is v1.0.0 at immutable commit
-`2f73e0514d97d4ec9597b3d313f20c82d7770b77`. PR #67 froze the stable product
-contract. The release workflow passed clean-host installation on Windows,
-macOS, and Linux, waited for Pages and Wiki, verified the live site in Chromium,
-and published seven checksummed and strictly attested assets. Downloaded
-readback matched the tag, Release target, SBOM, runner identities, and commit.
+The latest published release is still immutable v1.0.0 at commit
+`2f73e0514d97d4ec9597b3d313f20c82d7770b77`; PR #68 and all of its post-merge
+workflows synchronized the publication evidence without moving that tag or
+changing its seven assets. Active source is the v1.0.1 patch candidate. A real
+Windows/Codex update from the released v1.0.0 runner exposed that packaged
+`update --execute` treated its extracted bootstrap directory as a Git checkout.
+The transaction failed before host mutation. A red regression test now covers
+that boundary; the minimal fix uses the bundled immutable release authority and
+64 related upgrade/security/bootstrap tests pass.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -351,10 +354,9 @@ independent-user count, endorsement, market-adoption, speed, or quality claim.
 
 ## Devam ediyor
 
-- The immutable v1.0.0 release is complete. Its publication evidence and
-  human-facing latest-release labels are being synchronized through one bounded
-  follow-up PR, after which README, Pages, Wiki, and install guidance will be
-  read back from `main`.
+- v1.0.1 is a bounded installation patch, not a new product scope. Canonical
+  verification, independent review, PR/CI, immutable release publication, and
+  a repeat of the real Windows/Codex upgrade remain required.
 
 ## Tarihsel devam kayıtları
 
@@ -383,6 +385,6 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Validate and merge the bounded v1.0.0 publication-evidence PR. Then read
-README, Pages, Wiki, the GitHub Release, and the pinned install path back from
-`main`; begin post-v1 work only from a separately approved goal.
+Run `python scripts/verify.py` for the v1.0.1 candidate, complete independent
+review, merge after CI, publish the immutable release, then use its downloaded
+`divan.pyz` to repeat the real Windows/Codex update and doctor readback.
