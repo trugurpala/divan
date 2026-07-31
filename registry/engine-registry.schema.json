@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://divan.dev/schemas/engine-registry.schema.json",
   "title": "Divan Multi-Engine Registry",
   "description": "Commitment schema for Divan multi-engine metadata.",
   "type": "object",
