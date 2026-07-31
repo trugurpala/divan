@@ -181,6 +181,9 @@ commit for that release. It rejects another source or ref. Keep `divan.pyz`;
 doctor uses it to print the exact recovery command if an interrupted operation
 needs attention.
 
+Release-candidate guard: Use v1.0.1 only after its tag and GitHub Release are visible;
+until then, use v1.0.0.
+
 From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 

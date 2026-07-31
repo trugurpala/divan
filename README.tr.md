@@ -193,6 +193,9 @@ becerilik tam kataloğunu taşır; başka kaynak veya ref'i reddeder. `divan.pyz
 dosyasını sakla: yarım kalan bir işlem olursa doctor, aynı dosyayla çalışacak
 tam recovery komutunu üretir.
 
+Yayın adayı sınırı: v1.0.1'i yalnız tag ve GitHub Release sayfası görünür olduktan
+sonra kullan; o zamana kadar v1.0.0'ı kullan.
+
 Repo checkout'u içinden yazmayan planı görüp aynı sabit release'i iki hosta
 kurmak için:
 

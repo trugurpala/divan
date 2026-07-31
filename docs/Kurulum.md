@@ -30,6 +30,9 @@ Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
 doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
 komutları için sakla.
 
+Yayın adayı sınırı: v1.0.1'i yalnız tag ve GitHub Release sayfası görünür olduktan
+sonra kullan; o zamana kadar v1.0.0'ı kullan.
+
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
