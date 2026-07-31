@@ -4,23 +4,22 @@ Son güncelleme: 2026-07-31
 
 ## Yayın durumu
 
-- Latest published release: v1.0.1
-- Published commit: 62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949
-- Publication evidence: .divan/evidence/teftis-20260731-v101-release.md
-- Release asset evidence: .divan/evidence/teftis-20260731-v101-release.md
+- Latest published release: v1.0.2
+- Published commit: f227e2d30ab1a6f010a3d5acf18740f6eab09e70
+- Publication evidence: .divan/evidence/teftis-20260731-v102-release.md
+- Release asset evidence: .divan/evidence/teftis-20260731-v102-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The latest published release is immutable v1.0.1 at commit
-`62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`. PR #69 repaired the packaged
-Windows/Codex upgrade path without changing Divan's product scope. Both PR
-quality runs, the main publication workflows, seven downloaded asset hashes,
-strict attestations, Pages, Wiki, and live Chromium passed. The downloaded
-release runner upgraded the existing native Codex installation to the exact
-v1.0.1 tag, final doctor returned healthy, five packages/41 skills remained
-enabled, unrelated plugins remained installed, and a second execute was a
-no-op.
+The latest published release is immutable v1.0.2 at commit
+`f227e2d30ab1a6f010a3d5acf18740f6eab09e70`. PR #80 published the quiet
+discovery and vibe-friendly wait-state line without changing Divan's product
+scope. PR checks and main `quality-gate`, `release`, `compatibility`,
+`codeql`, `site-tests`, `scorecard`, `wiki-sync`, `candidate-review`, and Pages
+all passed. The release workflow created tag/GitHub Release v1.0.2, seven
+downloaded asset hashes matched their manifests, all seven release assets have
+verified GitHub attestations, and live Pages/Wiki/readback gates passed.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
@@ -34,13 +33,10 @@ schema-2 JSON and Markdown receipts re-verified offline as
 `valid-clean-room-adoption`. The v1 readiness score is now 8/8. This is not an
 independent-user count, endorsement, market-adoption, speed, or quality claim.
 
-Post-release `main` now carries a v1.0.2 release candidate. It packages the
-Seyir wait-state UX with a quieter Divan Engine inspection path: parent-project
-traversal ignores Divan-owned `.worktrees`, fixture trees, dependency/build
-caches, and skill-internal helper folders so stale agent branches and test
-fixtures do not appear as duplicate user workspaces. Latest published remains
-immutable v1.0.1 until the release workflow creates tag/GitHub Release v1.0.2
-and publication evidence is recorded.
+v1.0.2 packages the Seyir wait-state UX with a quieter Divan Engine inspection
+path: parent-project traversal ignores Divan-owned `.worktrees`, fixture trees,
+dependency/build caches, and skill-internal helper folders so stale agent
+branches and test fixtures do not appear as duplicate user workspaces.
 
 ## Yapıldı
 
@@ -431,6 +427,13 @@ and publication evidence is recorded.
   `candidate-review`, and Pages all passed. Raw GitHub source, README, live
   Pages, and live Wiki readbacks expose the new wait guidance. Latest immutable
   release remains v1.0.1 at `62f30f39d78be6b15e39f6e2aa9b7c19e7fb0949`.
+- PR #80 merged the v1.0.2 release preparation into `main` at
+  `f227e2d30ab1a6f010a3d5acf18740f6eab09e70`. Local canonical verification
+  passed 707 tests with 14 expected platform skips and `git diff --check`
+  passed. PR validation, main `quality-gate`, release, compatibility, CodeQL,
+  site-tests, Scorecard, Wiki sync, candidate review, Pages deployment, release
+  asset checksum verification, and seven GitHub attestations all passed.
+  v1.0.2 is now the latest immutable public release.
 
 ## Tarihsel devam kayıtları
 
@@ -459,10 +462,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Finish v1.0.2. First exact action: run focused tests, `scripts/release.py
---check`, `scripts/wiki.py --check`, the canonical verifier, and `git diff
---check`; then open/merge the release PR only after CI is green. After the main
-release workflow publishes tag/GitHub Release v1.0.2, create the publication
-evidence update that changes Latest published/Son yayımlanan to v1.0.2 and
-records README, Pages, Wiki, release assets, checksums, SBOM, attestations, and
-doctor readbacks.
+Keep v1.0.2 immutable. First exact action: define the next bounded product
+slice from real user friction, open a fresh branch, and run the same
+verify → PR CI → main release/readback path without changing the v1.0.2 tag or
+release assets.

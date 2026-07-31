@@ -21,7 +21,7 @@ yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların 
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 
-**Güncel kaynak:** v1.0.2 · **Son yayımlanan:** v1.0.1 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v1.0.2 · **Son yayımlanan:** v1.0.2 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
@@ -181,9 +181,8 @@ gösterir. Önde vibe coder için sakin bir ekran kalır; arkada ölçülmüş k
 
 Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
 sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
-Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. v1.0.2'i yalnız
-tag ve GitHub Release sayfası görünür olduktan sonra kullan; o zamana kadar
-release-sabit kurulumlarda v1.0.1'i kullan.
+Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. v1.0.2 artık son
+yayımlanan release'tir ve release-sabit kurulumlarda kullanılabilir.
 
 ### En hızlı ilk kurulum: repo klonlamadan tek doğrulanmış dosya
 
@@ -191,7 +190,7 @@ Eşleşen GitHub Release yayımlandıktan sonra bağımsız kurucuyu ve checksum
 dosyasını indir, bilgisayarında doğrula, yazmayan planı gör ve sonra uygula:
 
 ```powershell
-$tag = "v1.0.1"
+$tag = "v1.0.2"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -357,17 +356,17 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 
 ## Dürüst durum
 
-Divan v1.0.1, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
+Divan v1.0.2, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
 yayımlandı. 41 becerinin tamamı yapısal olarak doğrulanır; 4 özgün skill için
 13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
 tek repo, beş modüler paket, stdlib-only Divan Engine, Hükümdar öncelikli Divan
 Nizamı, kurulu Divan Proje Sözleşmesi ve Claude Code/Codex yaşam döngüsünü
-korur. Değişmez tag, checksum ve attestation bağlı yedi varlık, SBOM, Pages,
-Wiki ve temiz-host matrisi
-[v1.0.1 yayın kanıtında](.divan/evidence/teftis-20260731-v101-release.md)
-kayıtlıdır. Aynı kayıt, indirilen release runner'ıyla doğrulanmış yerel
-Windows/Codex yükseltmesini, sağlıklı son doctor sonucunu ve no-op tekrarı da
-bağlar. Temiz-proje sonucu sınırlı teknik akışı kanıtlar; bağımsız kullanıcı
+korur. v1.0.2, Divan'a ait worktree'leri, fixture ağaçlarını, cache'leri ve
+skill-içi yardımcı klasörleri kullanıcı workspace'i gibi göstermeyen daha
+sakin keşif davranışını yayımlar. Değişmez tag, checksum ve attestation bağlı
+yedi varlık, SBOM, Pages, Wiki, temiz-host matrisi ve release geri okumaları
+[v1.0.2 yayın kanıtında](.divan/evidence/teftis-20260731-v102-release.md)
+kayıtlıdır. Temiz-proje sonucu sınırlı teknik akışı kanıtlar; bağımsız kullanıcı
 sayısı, üçüncü taraf onayı, pazar benimsemesi, hız, gelir, kalite artışı veya
 “dünyanın en iyisi” iddiası değildir.
 

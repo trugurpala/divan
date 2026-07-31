@@ -965,6 +965,7 @@ the installed Divan Project Contract, evidence-backed goals, and local Seyir.
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[1.0.2]: https://github.com/trugurpala/divan/releases/tag/v1.0.2
 [1.0.1]: https://github.com/trugurpala/divan/releases/tag/v1.0.1
 [1.0.0]: https://github.com/trugurpala/divan/releases/tag/v1.0.0
 [0.18.0]: https://github.com/trugurpala/divan/releases/tag/v0.18.0

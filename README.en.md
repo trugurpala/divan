@@ -25,7 +25,7 @@ claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
 
-**Current source:** v1.0.2 · **Latest published:** v1.0.1 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.2 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -168,7 +168,8 @@ running measured checks.
 
 The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
-ref whose immutable tag and GitHub Release exist. Use v1.0.2 only after its tag and GitHub Release are visible; until then use v1.0.1 for release-pinned installs.
+ref whose immutable tag and GitHub Release exist. v1.0.2 is now the latest
+published release and can be used for release-pinned installs.
 
 ### Fastest first install: one verified file, no repository checkout
 
@@ -176,7 +177,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v1.0.1"
+$tag = "v1.0.2"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -330,16 +331,17 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 ## Honest status
 
-Divan v1.0.1 is published after all eight machine-backed readiness gates passed.
+Divan v1.0.2 is published after all eight machine-backed readiness gates passed.
 All 41 skills receive structural validation; four original skills provide 13
 behavioral cases and a provider-neutral A/B runner. The stable contract keeps
 one repository, five modular packages, the stdlib-only Divan Engine,
 owner-first Divan Nizamı governance, the installed Divan Project Contract, and
-Claude Code/Codex lifecycle support. The immutable tag, seven checksummed and
-attested assets, SBOM, Pages, Wiki, and clean-host matrix are recorded in the
-[v1.0.1 publication evidence](.divan/evidence/teftis-20260731-v101-release.md).
-That record also binds the downloaded release runner to a verified native
-Windows/Codex upgrade, a healthy final doctor result, and a no-op repeat.
+Claude Code/Codex lifecycle support. v1.0.2 adds quieter project discovery so
+Divan-owned worktrees, fixture trees, caches, and skill-internal helper folders
+do not appear as duplicate user workspaces. The immutable tag, seven
+checksummed and attested assets, SBOM, Pages, Wiki, clean-host matrix, and
+release readbacks are recorded in the
+[v1.0.2 publication evidence](.divan/evidence/teftis-20260731-v102-release.md).
 The clean-room result proves a bounded technical workflow; it does not claim an
 independent-user count, endorsement, market adoption, speed gain, revenue
 increase, quality win, or “best in the world” status.
