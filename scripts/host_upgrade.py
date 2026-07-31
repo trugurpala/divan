@@ -335,6 +335,8 @@ def upgrade(
     expected: dict[str, dict[str, Any]],
     io: UpgradeIO,
     repository: pathlib.Path,
+    *,
+    bundled_target: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     versions = {package: row["version"] for package, row in expected.items()}
     record = _record(options, packages, versions)
@@ -343,7 +345,15 @@ def upgrade(
     try:
         with host_journal.UpgradeLock(options.state_dir):
             host_journal.assert_no_active(options.state_dir, io.normalize_source)
-            return _execute(options, packages, versions, io, repository, record)
+            return _execute(
+                options,
+                packages,
+                versions,
+                io,
+                repository,
+                record,
+                bundled_target=bundled_target,
+            )
     except (host_journal.JournalError, host_state.StateError) as exc:
         raise host_transactions.TransactionError(str(exc)) from exc
 
@@ -355,14 +365,25 @@ def _execute(
     io: UpgradeIO,
     repository: pathlib.Path,
     record: dict[str, Any],
+    *,
+    bundled_target: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    target = host_state.checkout_evidence(
-        repository, options.source, options.ref, io.run, io.normalize_source
-    )
-    if target["contract"] != versions:
-        raise host_state.StateError("target checkout contract does not match native catalog")
-    target_versions = target.pop("contract")
-    record["target"] = {**target, "versions": target_versions}
+    if bundled_target is None:
+        target = host_state.checkout_evidence(
+            repository, options.source, options.ref, io.run, io.normalize_source
+        )
+        if target["contract"] != versions:
+            raise host_state.StateError(
+                "target checkout contract does not match native catalog"
+            )
+        target_versions = target.pop("contract")
+        record["target"] = {**target, "versions": target_versions}
+    else:
+        if bundled_target["versions"] != versions:
+            raise host_state.StateError(
+                "bundled target contract does not match native catalog"
+            )
+        record["target"] = dict(bundled_target)
     record["before_rows"] = {
         host: _capture_before(host, record["target"]["source"], io) for host in options.hosts
     }

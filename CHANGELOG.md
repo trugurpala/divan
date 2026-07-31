@@ -6,11 +6,29 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-07-31
+
+### Fixed
+
+- Standalone `divan.pyz update --execute` now uses its embedded immutable
+  release identity, commit, and marketplace digest instead of treating the
+  extracted bootstrap directory as a Git checkout. This repairs the real
+  Windows upgrade path from an older native Codex installation while keeping
+  source/ref proof, transactional rollback, and unrelated plugins intact.
+
 ### Changed
 
 - Synchronized README, Pages, Wiki, roadmap, and project handoff with the
   verified immutable v1.0.0 Release and recorded downloaded-asset,
   checksum, SBOM, runner-identity, and strict-attestation evidence.
+
+### Verification
+
+- The released v1.0.0 runner reproduced the failure before any host mutation:
+  its dry-run produced the correct replacement plan, while execute stopped at
+  `git status` against the extracted non-Git bootstrap directory. A regression
+  test now fails on that exact boundary and the related 64 upgrade, rollback,
+  authority, security, and bootstrap tests pass after the fix.
 
 ## [1.0.0] - 2026-07-30
 
@@ -917,6 +935,7 @@ the installed Divan Project Contract, evidence-backed goals, and local Seyir.
 - Monthly upstream monitoring, community files, GitHub Pages, and local audits.
 
 [Unreleased]: https://github.com/trugurpala/divan/issues
+[1.0.1]: https://github.com/trugurpala/divan/releases/tag/v1.0.1
 [1.0.0]: https://github.com/trugurpala/divan/releases/tag/v1.0.0
 [0.18.0]: https://github.com/trugurpala/divan/releases/tag/v0.18.0
 [0.17.1]: https://github.com/trugurpala/divan/releases/tag/v0.17.1

@@ -598,6 +598,16 @@ def upgrade(
     """Plan or execute a provenance-gated, rollback-safe Divan upgrade."""
     repository = root or pathlib.Path(__file__).resolve().parent.parent
     expected = _expected_packages(repository)
+    versions = {package: row["version"] for package, row in expected.items()}
+    try:
+        bundled_target = _bootstrap_contract.target_evidence(repository, versions)
+    except _bootstrap_contract.ContractError as exc:
+        raise InstallError(str(exc)) from exc
+    if bundled_target is not None and (
+        _normalize_source(bundled_target["source"]) != _normalize_source(options.source)
+        or bundled_target["ref"] != options.ref
+    ):
+        raise InstallError("upgrade request does not match bundled release authority")
     io = _host_upgrade.UpgradeIO(
         marketplace_rows=lambda host: _marketplace_rows(host, runner),
         plugin_rows=lambda host: _plugin_rows(host, runner),
@@ -605,7 +615,14 @@ def upgrade(
         rollback=lambda path: rollback_transaction(path, runner=runner, _locked=True),
         normalize_source=_normalize_source,
     )
-    return _host_upgrade.upgrade(options, PACKAGES, expected, io, repository)
+    return _host_upgrade.upgrade(
+        options,
+        PACKAGES,
+        expected,
+        io,
+        repository,
+        bundled_target=bundled_target,
+    )
 
 
 def doctor(
