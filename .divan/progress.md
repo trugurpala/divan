@@ -400,11 +400,6 @@ the development line only; a new public release still requires the canonical
   registry beside the canonical Aday Meclisi. Their useful ideas remain
   historical design input only; future work must extend the existing canonical
   modules rather than adding a second brain. No pull requests remain open.
-- The remaining open GitHub backlog is automated Meclis discovery issue #47 and
-  #23. These require candidate lifecycle decisions through
-  `registry/candidates.json` and generated `docs/Aday-Meclisi.md`; no candidate
-  may be installed, forked, vendored, or promoted directly from the discovery
-  issues.
 - Automated Meclis discovery issues #47 and #23 were triaged on branch
   `codex/triage-meclis-discovery`. Seven candidates were promoted into the
   canonical candidate registry with pinned observed commits, license evidence,
@@ -415,6 +410,12 @@ the development line only; a new public release still requires the canonical
   dependency. The other discovered repositories remain rejected from the
   registry because they are too narrow, unrelated, empty/noisy, license-unclear,
   duplicate-purpose, or outside Divan's one-repo modular product boundary.
+- PR #76 merged the Meclis backlog triage into `main` at
+  `20332a0386374d18eeef51a2b590366eb2d38fee`. Main `quality-gate`,
+  `candidate-review`, `codeql`, `site-tests`, `scorecard`, `wiki-sync`, and
+  Pages all completed successfully; `quality-gate` took 7m32s. Discovery issues
+  #47 and #23 were closed with promoted/rejected candidate summaries. No pull
+  requests or issues remain open.
 
 ## Tarihsel devam kayıtları
 
@@ -443,11 +444,9 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep the current immutable release unchanged. First exact action: finish the
-`codex/triage-meclis-discovery` branch with canonical local verification, open
-and merge its PR after green CI, then comment on and close Meclis discovery
-issues #47 and #23 with the promoted/rejected candidate summary. After the
-Meclis queue is clean, design the next small post-v1 product slice around
-Seyir wait-state/timeout explanations using the benchmark data recorded above.
-Prepare any public release only through `scripts/release.py` with CHANGELOG,
-BLUEPRINT, README, Wiki, site, and release-manifest surfaces synchronized.
+Keep the current immutable release unchanged. First exact action: design the
+next small post-v1 product slice around Seyir wait-state/timeout explanations
+using the benchmark data recorded above, so vibe coders can see what Divan is
+waiting on instead of guessing whether it is stuck. Prepare any public release
+only through `scripts/release.py` with CHANGELOG, BLUEPRINT, README, Wiki, site,
+and release-manifest surfaces synchronized.
