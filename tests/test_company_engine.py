@@ -279,6 +279,30 @@ class ProjectIntelligenceTests(unittest.TestCase):
             ["integration-delivery", "testing-delivery", "feature-delivery"],
         )
 
+    def test_bugfix_route_subsumes_generic_testing_and_feature_workflows(self) -> None:
+        intent = (
+            "Make normalize_label collapse repeated internal whitespace, "
+            "add a regression test, and verify the smallest correct fix."
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            result = self.engine.plan_intent(
+                intent, pathlib.Path(temporary), self.contracts
+            )
+
+        self.assertEqual(result["primary_workflow"], "bugfix-delivery")
+        self.assertEqual(result["workflows"], ["bugfix-delivery"])
+        self.assertEqual(
+            result["stages"],
+            [
+                "reproduce",
+                "root cause",
+                "regression test",
+                "minimal fix",
+                "independent review",
+                "verification",
+            ],
+        )
+
     def test_nested_workspaces_discover_node_managers_and_native_scripts(self) -> None:
         lockfiles = {
             "apps/npm-app": ("package-lock.json", "npm run build"),
@@ -1306,9 +1330,14 @@ class ImpactTests(unittest.TestCase):
         result = self.engine.calculate_impact(
             [
                 "plugins/sadrazam/company/project_lifecycle.py",
+                "plugins/sadrazam/divan_runtime/adoption.py",
+                "plugins/sadrazam/divan_runtime/adoption_proof.py",
                 ".divan/install-state.json",
                 ".divan/archive/2026-07-24-goal-0123456789ab/archive.json",
                 ".divan/evidence/goal-0123456789ab/adoption-receipt.md",
+                ".divan/evidence/verified-clean-room-adoption-v0183.json",
+                "registry/v1-gates.json",
+                ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
                 "canary/README.md",
             ],
             self.contracts,
@@ -1320,6 +1349,11 @@ class ImpactTests(unittest.TestCase):
             {"company-validation", "documentation", "release-validation"}.issubset(
                 result["effects"]
             )
+        )
+        self.assertIn(
+            "python -m unittest tests.test_adoption tests.test_adoption_v2 "
+            "tests.test_adoption_proof tests.test_v1 -v",
+            result["checks"],
         )
 
     def test_planning_change_forces_focused_and_public_surface_checks(self) -> None:

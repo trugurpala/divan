@@ -14,7 +14,7 @@ Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checks
 dosyasını indirip doğrula:
 
 ```powershell
-$tag = "v0.18.2"
+$tag = "v1.0.1"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -33,11 +33,11 @@ komutları için sakla.
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v0.18.2
-python scripts/divan.py install --host both --ref v0.18.2 --execute
-python scripts/divan.py doctor --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2
-python scripts/divan.py update --host both --ref v0.18.2 --execute
+python scripts/divan.py install --host both --ref v1.0.1
+python scripts/divan.py install --host both --ref v1.0.1 --execute
+python scripts/divan.py doctor --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1
+python scripts/divan.py update --host both --ref v1.0.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -60,13 +60,13 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.2
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.1 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -176,6 +176,10 @@ Planı aynı sabit hedefe uygulamak için `--execute` ekleyin:
 ```powershell
 python scripts/divan.py update --host both --ref <yeni-release-tag> --execute
 ```
+
+GitHub Release'ten indirilen tek dosyalık `divan.pyz`, hedef commit/ref/katalog
+kanıtını içindeki değişmez release sözleşmesinden okur; çıkarıldığı geçici
+klasörü Git checkout saymaz.
 
 Kaynak, ref ve beş `@divan` paketinin sürümleri hedef sözleşmeyle zaten
 aynıysa işlem `no-op` döner. Yükseltme başlamadan önce iki hosttaki mevcut
@@ -306,11 +310,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v0.18.2 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.0.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v0.18.2/scripts/install_codex.sh | DIVAN_REF=v0.18.2 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.1/scripts/install_codex.sh | DIVAN_REF=v1.0.1 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
@@ -336,3 +340,23 @@ Güncel 11-host matrisi, resmî belge bağlantıları ve desteklenen yetenekler:
 Bugün Claude Code ve Codex temiz-host kurulum yaşam döngüsüyle
 `verified` seviyesindedir. Diğer hostlar, gerçek canary kanıtı oluşana kadar
 daha düşük ve dürüst seviyede kalır.
+
+## v1 temiz-proje kanıtı
+
+Kurulumdan sonra gerçek bir projede doğrulanmış hedef oluştuğunda, v1'in son
+teknik kapısını önce yazmayan planla incele:
+
+```powershell
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+```
+
+İlk komut dosya yazmaz ve subprocess başlatmaz. İkinci komut sabit host sürüm
+probunu ve sınırlı test/regresyon kontrollerini bir kez çalıştırır. Bakımcı ile
+dış kullanıcı aynı teknik sözleşmeye tabidir. Yalnız
+`valid-clean-room-adoption` sonucu v1'e adaydır. v0.18.5 ile üretilen gerçek
+schema-2 makbuzu kaydedilip yeniden doğrulandığı için v1 hazırlık durumu
+**8/8**'dir.
+`divan-project.pyz.sha256` dosyasını runner ile aynı klasörde tutun. Yürütme,
+Git tarafından izlenen kaynak sapmasını reddedebilmek için bir Git reposu
+gerektirir.

@@ -121,20 +121,44 @@ python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on 
 python scripts/divan.py goal archive --project . --goal <goal-id> --recorded-on YYYY-MM-DD --execute
 ```
 
-Doğrulanmış hedeften sınırlı JSON makbuzu ve Markdown özeti üretilebilir:
+Doğrulanmış hedeften sonra ana v1 yolu, işi Divan'dan ayrı bir projede
+makinece kanıtlar. Önizleme salt okunurdur ve subprocess başlatmaz. Uygulama;
+sabit host sürüm probunu çalıştırır, sınırlı test/regresyon planını bir kez
+yürütür, kaynak sapmasını denetler ve schema-2 JSON/Markdown makbuzlarını atomik
+olarak mühürler:
 
 ```powershell
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> > adoption-receipt.json
-python scripts/divan.py adoption export --project . --goal <goal-id> --host codex --host-version <version> --markdown > adoption-receipt.md
-python scripts/divan.py adoption verify adoption-receipt.json
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
-Dışa aktarım salt okunurdur: seçilen taşınabilir belgeyi stdout'a yazar ve
-kullanıcı yönlendirmedikçe projede dosya oluşturmaz. Secret, e-posta, kullanıcı
-adı, mutlak yol, remote URL, alakasız eklenti envanteri ve komut çıktısı
-gövdesini reddeder. Bakımcı kanıtı `valid-owner-canary`, bağımsız beyan
-`valid-independent-declaration` sonucunu verir. İnsan incelemesi olmadan v1
-bağımsız kabul kapısı otomatik kapanmaz.
+VERIFIED geçişi proje-göreli kanıt yollarını doğrular; bağlantı, yol kaçışı,
+eksik dosya, secret ve boyut sınırını aşan dosyaları reddeder. Kabul edilen
+dosyaların hash'leri, durum geçişiyle aynı atomik yazımda hedef makbuzuna
+bağlanır. Yalnız üretilmiş şartname veya plan dosyalarına dayanan bir hedef
+VERIFIED olamaz; `adoption prove` ayrıca gerçek kanıtın VERIFIED olayında
+kaydedildiğini bağımsız olarak denetler.
+
+Operatör rolü yalnız açıklayıcıdır; bakımcı ve dış kullanıcı aynı teknik kapıya
+tabidir. Makbuz; hash, kaba sonuç, süre, kontrol sınıfı ve gözlenen host sürümünü
+tutar; secret, e-posta, kullanıcı adı, mutlak yol, remote URL, alakasız eklenti
+envanteri, ham argv ve komut çıktısı gövdesini reddeder. Yalnız
+`valid-clean-room-adoption` ve `eligible_for_v1: true` sonucu kapıya adaydır.
+
+`adoption export` schema-1 uyumluluğu için kalır. Bu makbuzlar yalnız
+`valid-schema-1-owner-canary` veya
+`valid-schema-1-independent-declaration` olarak doğrulanır ve v1'e hiçbir zaman
+uygun olmaz. Değişmez v0.18.5 ile üretilen gerçek schema-2 makbuzu repoya
+kaydedilip yeniden doğrulandığı için v1 hazırlık karnesi **8/8**'dir.
+Runner ile `.sha256` yan dosyası birlikte kalmalı; yürütme, Git tarafından
+izlenen kaynak sapmasını reddedebilmek için bir Git reposu gerektirir.
+Yan dosya indirme bütünlüğünü kanıtlar; v1 kapısı ayrıca incelenmiş release
+runner özetini `registry/v1-gates.json` içinde sabitler ve birebir eşleşme ister.
+Önizleme bu özeti sabit public GitHub Release API'sinden okur; yayın otoritesi
+ulaşılamazsa veya farklıysa hiçbir proje komutu başlamaz.
 
 Public web projesinde salt-okunur denetim:
 

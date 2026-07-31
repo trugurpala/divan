@@ -115,7 +115,14 @@
         "plugins/sadrazam/divan_runtime/project_state.py",
         "plugins/sadrazam/divan_runtime/project_transactions.py",
         "plugins/sadrazam/divan_runtime/goal_archive.py",
+        "plugins/sadrazam/divan_runtime/adoption_common.py",
+        "plugins/sadrazam/divan_runtime/adoption_legacy.py",
+        "plugins/sadrazam/divan_runtime/adoption_schema2.py",
+        "plugins/sadrazam/divan_runtime/adoption_runner.py",
         "plugins/sadrazam/divan_runtime/adoption.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof_common.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof_execution.py",
+        "plugins/sadrazam/divan_runtime/adoption_proof.py",
         "plugins/sadrazam/company/project_lifecycle.py",
         "plugins/sadrazam/company/project_state.py",
         "plugins/sadrazam/company/project_transactions.py",
@@ -124,11 +131,14 @@
         ".divan/install-state.json",
         ".divan/archive/**",
         ".divan/evidence/*/adoption-receipt.*",
+        ".divan/evidence/verified-clean-room-adoption-*.json",
+        "registry/v1-gates.json",
+        ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
         "canary/**"
       ],
       "effects": ["company-validation", "documentation", "release-validation"],
       "checks": [
-        "python -m unittest tests.test_project_lifecycle tests.test_goal_archive tests.test_adoption -v",
+        "python -m unittest tests.test_adoption tests.test_adoption_v2 tests.test_adoption_proof tests.test_v1 -v",
         "python scripts/release.py --check"
       ]
     },

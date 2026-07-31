@@ -1,4 +1,4 @@
-# Divan Wiki · v0.18.2
+# Divan Wiki · v1.0.1
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
@@ -10,8 +10,23 @@ davranış eval'i ve yayın teftişi aynı çatıdadır.
 Divan bir model veya ayrı üçüncü taraf runtime değildir. Divan Engine, bu
 repodaki modüler ve stdlib-only icra çekirdeğidir; Divan Nizamı ise yetkinin
 Hükümdardan başlayıp daralarak devredilmesini belirler. İkisi de aynı Divan
-ürününün parçalarıdır. v1 durumu **7/8** kapıdır: bağımsız kullanıcı kabul
-kanıtı hâlâ bekleniyor.
+ürününün parçalarıdır. v1 hazırlık durumu **8/8** kapıdır: değişmez v0.18.5,
+Windows 11, Codex ve Divan'dan ayrı gerçek projede makinece doğrulanabilir
+temiz-proje kanıtı üretti; gizlilik incelemeli makbuz çevrimdışı doğrulandı.
+
+Son kapı kişinin kimliğini değil, Divan'dan ayrı gerçek projedeki makine
+kanıtını ölçer. Önce yazmayan planı gör, sonra aynı planı uygula:
+
+```powershell
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
+python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası> --execute
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex
+python divan-project.pyz adoption prove --project . --goal <goal-id> --host codex --execute
+```
+
+İlk iki komut gerçek kod/test kanıtını hedefe atomik bağlar; yalnız plan
+dosyasıyla VERIFIED olunamaz. Son iki komut yayımlanmış runner, host ve test
+sonucunu gizlilik sınırlı makbuza dönüştürür.
 
 Yeni Sadrazam sözleşmesi, host ajanını başlangıçta ve anlamlı aşama
 değişimlerinde şu an ne olduğunu, neden önemli olduğunu ve sırada ne bulunduğunu
@@ -25,15 +40,14 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v0.18.2 · **Son yayımlanan:** v0.18.1 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v1.0.1 · **Son yayımlanan:** v1.0.1 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
-v0.18.1, v0.18.0'ın Nizâm-ı Sefer planlama zekâsını ve v0.17.1'in vibe coder
-ilerleme sözleşmesini korur. Codex Desktop'ta açıkça seçilen `auto` profili,
-native CLI çalışmıyorsa sınırlarını dürüstçe gösteren, checksum ile doğrulanmış
-41-skill yolunu seçebilir; ikinci ürün, repo veya üçüncü taraf runtime
-oluşturmaz.
+v0.18.2, önceki planlama ve Codex Desktop kurulum sınırlarını korurken yerel
+Seyir ekranını, tek dosyalık doğrulanabilir `divan.pyz` kurucusunu, kanıta
+dayalı timeout politikasını ve Linux/macOS/Windows yaşam döngüsü kanıtını
+yayımlar. İkinci ürün, repo veya üçüncü taraf runtime oluşturmaz.
 
 ## Fermanını seç
 
