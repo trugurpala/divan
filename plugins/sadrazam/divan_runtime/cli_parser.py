@@ -98,6 +98,18 @@ def _add_runtime_contract_parsers(commands: Any) -> None:
     _common_output(architecture)
 
 
+def _add_engine_registry_parser(commands: Any) -> None:
+    engines = commands.add_parser(
+        "engines", help="inspect and validate Divan engine registry metadata"
+    )
+    subcommands = engines.add_subparsers(dest="engines_command", required=True)
+    validate = subcommands.add_parser(
+        "validate", help="validate an engine registry JSON file"
+    )
+    validate.add_argument("--registry", type=pathlib.Path, required=True)
+    _common_output(validate)
+
+
 def _add_discovery_parsers(commands: Any) -> None:
     inspect = commands.add_parser("inspect", help="detect project frameworks")
     inspect.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
@@ -111,6 +123,7 @@ def _add_discovery_parsers(commands: Any) -> None:
     impact.add_argument("paths", nargs="+")
     _common_output(impact)
     _add_runtime_contract_parsers(commands)
+    _add_engine_registry_parser(commands)
 
 
 def _add_status_parser(commands: Any) -> None:

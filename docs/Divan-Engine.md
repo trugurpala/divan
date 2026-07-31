@@ -90,6 +90,7 @@ python scripts/divan.py inspect --project .
 python scripts/divan.py plan --project . --intent "Improve the onboarding UI"
 python scripts/divan.py plan --project . --intent "Secure and release the API" --host-profile codex --context-window 1050000 --target released --json
 python scripts/divan.py impact README.md plugins/sadrazam/skills/sadrazam/SKILL.md
+python scripts/divan.py engines validate --registry registry/engines.example.json
 python scripts/divan.py validate
 python scripts/divan.py init --project . --profile standard
 python scripts/divan.py init --project . --profile standard --actor owner --execute
@@ -99,6 +100,13 @@ python scripts/divan.py audit --project .
 The engine selects the smallest justified team and pack set. Core Pack carries
 engineering discipline; UI and React packs require matching project evidence;
 Zanaat Pack requires a relevant creative or integration workflow.
+
+`engines validate` is a read-only registry gate for outside engines, templates,
+and repo ideas. It checks metadata, license evidence, source pin policy, host
+compatibility, installation/removal notes, portability, and escape plans. It
+does not install, run, vendor, fork, or bless an engine. Exit codes are stable:
+`0` means valid, `1` means invalid registry data, and `2` means the registry
+file could not be read.
 
 The former `Company OS` name and `plugins/sadrazam/company/` path are
 compatibility surfaces through v1 and will not be removed before v2. The old

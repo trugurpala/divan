@@ -9,6 +9,7 @@ from . import (
     adoption,
     adoption_proof,
     engine,
+    engine_registry,
     goal_archive,
     goals,
     governance,
@@ -39,6 +40,11 @@ def read_only_result(options: argparse.Namespace) -> dict[str, Any] | None:
         return engine.calculate_impact(options.paths, contracts)
     if options.command == "architecture":
         return kernel.load_architecture(DIRECTORY)
+    if options.command == "engines" and options.engines_command == "validate":
+        result, exit_code = engine_registry.validate_registry_path(
+            options.registry
+        )
+        return {**result, "_exit_code": exit_code}
     return None
 
 

@@ -19,6 +19,7 @@ from divan_runtime import (  # noqa: E402,F401
     cli_dispatch,
     cli_parser,
     engine,
+    engine_registry,
     goal_archive,
     goals,
     governance,
@@ -98,6 +99,16 @@ def _write_json(value: dict[str, Any]) -> None:
 
 
 def _write_human(value: dict[str, Any], language: str) -> None:
+    if value.get("command") == "engines validate":
+        print(
+            f"Engine registry: {value.get('status')} "
+            f"({value.get('engine_count', 0)} engines, "
+            f"{value.get('error_count', 0)} errors, "
+            f"{value.get('warning_count', 0)} warnings)"
+        )
+        for error in value.get("errors", []):
+            print(f"- {error['code']} {error['path']}: {error['message']}")
+        return
     if value.get("kind") == "adoption-proof-preview":
         _write_proof_preview(value, language)
         return
@@ -248,6 +259,23 @@ def _proof_preview_result(
     }
 
 
+def _result_exit_code(
+    result: dict[str, Any], explicit_exit_code: Any
+) -> int:
+    if explicit_exit_code is not None:
+        return int(explicit_exit_code)
+    if result.get("ok") is False or result.get("status") in {
+        "FAIL",
+        "BLOCKED",
+        "blocked",
+        "failed-checks",
+        "cancelled",
+        "invalid",
+    }:
+        return 1
+    return 0
+
+
 def _parser() -> argparse.ArgumentParser:
     return cli_parser.build_parser()
 
@@ -320,6 +348,7 @@ def main(argv: list[str] | None = None) -> int:
         result = _execute(options)
         if authority is not None:
             result = {**result, "authority": authority}
+        explicit_exit_code = result.pop("_exit_code", None)
     except ValueError as exc:
         if options.json:
             _write_json(
@@ -344,6 +373,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif options.command in {
             "architecture",
+            "engines",
             "init",
             "audit",
             "verify",
@@ -355,16 +385,7 @@ def main(argv: list[str] | None = None) -> int:
         }:
             fallback = "valid" if result.get("ok") else "invalid"
             print(f"Status: {result.get('status', fallback)}")
-    if result.get("ok") is False or result.get("status") in {
-        "FAIL",
-        "BLOCKED",
-        "blocked",
-        "failed-checks",
-        "cancelled",
-        "invalid",
-    }:
-        return 1
-    return 0
+    return _result_exit_code(result, explicit_exit_code)
 
 
 if __name__ == "__main__":

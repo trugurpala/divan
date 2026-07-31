@@ -33,6 +33,7 @@ RUNTIME_FILES = (
     "compatibility.py",
     "contract_validation.py",
     "engine.py",
+    "engine_registry.py",
     "execution.py",
     "frameworks.json",
     "goal_archive.py",

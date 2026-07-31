@@ -34,9 +34,10 @@
       "id": "council",
       "en": "Council",
       "tr": "Divan",
-      "python_modules": ["engine", "planning", "planning_policy"],
+      "python_modules": ["engine", "engine_registry", "planning", "planning_policy"],
       "capabilities": [
         "project_discovery",
+        "engine_registry_validation",
         "intent_routing",
         "impact_analysis",
         "capacity_planning",
