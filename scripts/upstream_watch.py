@@ -159,6 +159,16 @@ def _category(files: list[str]) -> str:
     return "package-content"
 
 
+def _review_decision(review: dict | None, review_debt: bool) -> tuple[str, str]:
+    if review_debt:
+        return (
+            "REVIEW_REQUIRED",
+            "Upstream or the local counterpart changed after the recorded review.",
+        )
+    assert review is not None
+    return str(review["decision"]), str(review["reason"])
+
+
 def decision_records(root: pathlib.Path = KOK) -> list[dict]:
     """Return reviewable records without installing or modifying upstream code."""
     errors, reviews = baseline_errors(root)
@@ -217,12 +227,7 @@ def decision_records(root: pathlib.Path = KOK) -> list[dict]:
                 and local_matches
                 and upstream is not None
             )
-            decision = "REVIEW_REQUIRED" if review_debt else str(review["decision"])
-            rationale = (
-                "Upstream or the local counterpart changed after the recorded review."
-                if review_debt
-                else str(review["reason"])
-            )
+            decision, rationale = _review_decision(review, review_debt)
             records.append(
                 {
                     "source_repository": repository,
