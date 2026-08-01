@@ -116,8 +116,8 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-202607
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
-The command above resolves the latest published tag before downloading. In a
-checkout, use v1.2.0 only after its tag and GitHub Release are visible. See
+The command above resolves the latest published tag before downloading. The
+checkout commands pin the published v1.2.0 tag. See
 [removal and recovery](docs/Kaldirma.md) before deleting anything.
 
 ## Your first real task
@@ -264,9 +264,10 @@ made.
 ## Latest release and verification
 
 The [GitHub Releases page](https://github.com/trugurpala/divan/releases/latest)
-is the authority for the latest published package. The immutable v1.1.0
-publication evidence remains in `.divan/evidence/`; every new release must add
-its own checksum, SPDX SBOM, attestation and live-readback evidence.
+is the authority for the latest published package. The immutable v1.2.0
+publication evidence is recorded in
+`.divan/evidence/teftis-20260801-v120-release.md`; every new release must add its
+own checksum, SPDX SBOM, attestation and live-readback evidence.
 
 The readiness score is **8/8**. That score describes machine-backed technical
 gates, not popularity or market adoption.

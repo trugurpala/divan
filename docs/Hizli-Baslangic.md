@@ -1,8 +1,8 @@
 # Hızlı Başlangıç
 
-v1.2.0 güncel kaynak adayıdır. v1.2.0'i yalnız tag ve GitHub Release sayfası
-görünür olduktan sonra kullan. O zamana kadar [son yayımlanan sürümü](https://github.com/trugurpala/divan/releases/latest)
-seç.
+v1.2.0, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
+[son yayımlanan sürüm](https://github.com/trugurpala/divan/releases/latest)
+sayfasını kullan.
 
 Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefini
 söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
