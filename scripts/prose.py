@@ -194,6 +194,10 @@ def _repository_contract_errors(root: pathlib.Path) -> list[Finding]:
     return errors
 
 
+def _finding_key(finding: Finding) -> tuple[str, int, str, str]:
+    return finding.path, finding.line, finding.code, finding.message
+
+
 def inspect(root: pathlib.Path = ROOT, files: tuple[pathlib.Path, ...] | None = None) -> Report:
     root = root.resolve()
     errors: list[Finding] = []
@@ -207,8 +211,10 @@ def inspect(root: pathlib.Path = ROOT, files: tuple[pathlib.Path, ...] | None = 
     canonical_pair = {(root / "README.md").resolve(), (root / "README.en.md").resolve()}
     if canonical_pair.issubset(selected_names):
         errors.extend(_repository_contract_errors(root))
-    key = lambda finding: (finding.path, finding.line, finding.code, finding.message)
-    return Report(tuple(sorted(errors, key=key)), tuple(sorted(warnings, key=key)))
+    return Report(
+        tuple(sorted(errors, key=_finding_key)),
+        tuple(sorted(warnings, key=_finding_key)),
+    )
 
 
 def payload(report: Report) -> dict:
