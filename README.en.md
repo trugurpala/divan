@@ -268,7 +268,7 @@ made.
 The [GitHub Releases page](https://github.com/trugurpala/divan/releases/latest)
 is the authority for the latest published package. The immutable v1.3.1
 publication evidence is recorded in
-`.divan/evidence/teftis-20260801-v130-release.md`; every new release must add its
+`.divan/evidence/teftis-20260801-v131-release.md`; every new release must add its
 own checksum, SPDX SBOM, attestation and live-readback evidence.
 
 The readiness score is **8/8**. That score describes machine-backed technical
