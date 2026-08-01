@@ -52,17 +52,71 @@ def oku(kok: pathlib.Path = KOK) -> dict:
     return veri
 
 
+ADAY_METIN_ALANLARI = (
+    "id", "name", "canonical_url", "type", "status", "decision", "user_gap",
+    "execution_review", "risk_notes", "rationale",
+)
+
+
+def _metin_alanlarini_denetle(aday: object, onek: str) -> dict:
+    if not isinstance(aday, dict):
+        raise ValueError(f"{onek} nesne olmalı")
+    for alan in ADAY_METIN_ALANLARI:
+        if not isinstance(aday.get(alan), str) or not aday[alan].strip():
+            raise ValueError(f"{onek}.{alan} dolu metin olmalı")
+    return aday
+
+
+def _karar_durumunu_denetle(aday: dict, onek: str) -> None:
+    if aday["status"] not in DURUMLAR or aday["decision"] not in KARARLAR:
+        raise ValueError(f"{onek} durum/karar geçersiz")
+    if aday["decision"] == "PENDING":
+        if aday["status"] not in {"new", "triage", "audit"}:
+            raise ValueError(f"{onek}: PENDING yalnız açık durumlarda olabilir")
+    elif SON_KARAR_DURUMU[aday["decision"]] != aday["status"]:
+        raise ValueError(f"{onek}: karar ile durum uyuşmuyor")
+    if aday["execution_review"] not in {"not-executed", "metadata-only", "reviewed"}:
+        raise ValueError(f"{onek}.execution_review geçersiz")
+
+
+def _immutable_kaniti_denetle(aday: dict, kanitlar: list[str], onek: str) -> None:
+    if aday["decision"] == "PENDING":
+        return
+    reviewed_head = aday.get("reviewed_head")
+    if not isinstance(reviewed_head, str) or not SHA_DESENI.fullmatch(reviewed_head):
+        raise ValueError(f"{onek}.reviewed_head 40 haneli commit olmalı")
+    if not any(reviewed_head in kanit for kanit in kanitlar):
+        raise ValueError(f"{onek}.reviewed_head immutable kanıtlara bağlanmalı")
+
+
+def _lisans_ve_kanitlari_denetle(aday: dict, onek: str) -> None:
+    lisans = aday.get("license")
+    if not isinstance(lisans, dict):
+        raise ValueError(f"{onek}.license nesne olmalı")
+    for alan in ("spdx", "evidence_url", "scope_note"):
+        if not isinstance(lisans.get(alan), str) or not lisans[alan].strip():
+            raise ValueError(f"{onek}.license.{alan} dolu metin olmalı")
+    if aday["decision"] in {"ADOPT", "ADAPT"} and lisans["spdx"] == "UNKNOWN":
+        raise ValueError(f"{onek}: lisansı belirsiz aday alınamaz/uyarlanamaz")
+    kanitlar = aday.get("evidence")
+    if not isinstance(kanitlar, list) or not all(
+        isinstance(k, str) and k.startswith("https://") for k in kanitlar
+    ):
+        raise ValueError(f"{onek}.evidence HTTPS adresleri dizisi olmalı")
+    if aday["decision"] != "PENDING" and len(set(kanitlar)) < 2:
+        raise ValueError(f"{onek}: son karar en az iki kanıt ister")
+    if lisans["evidence_url"] not in kanitlar:
+        raise ValueError(f"{onek}: lisans kanıtı evidence içinde olmalı")
+    _immutable_kaniti_denetle(aday, kanitlar, onek)
+
+
 def denetle(veri: dict) -> list[dict]:
     adaylar = veri["candidates"]
     kimlikler: set[str] = set()
     adresler: set[str] = set()
-    for sira, aday in enumerate(adaylar, start=1):
+    for sira, ham_aday in enumerate(adaylar, start=1):
         onek = f"candidates[{sira}]"
-        if not isinstance(aday, dict):
-            raise ValueError(f"{onek} nesne olmalı")
-        for alan in ("id", "name", "canonical_url", "type", "status", "decision", "user_gap", "execution_review", "risk_notes", "rationale"):
-            if not isinstance(aday.get(alan), str) or not aday[alan].strip():
-                raise ValueError(f"{onek}.{alan} dolu metin olmalı")
+        aday = _metin_alanlarini_denetle(ham_aday, onek)
         if not ID_DESENI.fullmatch(aday["id"]):
             raise ValueError(f"{onek}.id tireli küçük harf biçiminde olmalı")
         if aday["id"] in kimlikler:
@@ -76,38 +130,8 @@ def denetle(veri: dict) -> list[dict]:
         adresler.add(adres)
         if aday["type"] not in TIPLER:
             raise ValueError(f"{onek}.type geçersiz: {aday['type']}")
-        if aday["status"] not in DURUMLAR or aday["decision"] not in KARARLAR:
-            raise ValueError(f"{onek} durum/karar geçersiz")
-        if aday["decision"] == "PENDING":
-            if aday["status"] not in {"new", "triage", "audit"}:
-                raise ValueError(f"{onek}: PENDING yalnız açık durumlarda olabilir")
-        elif SON_KARAR_DURUMU[aday["decision"]] != aday["status"]:
-            raise ValueError(f"{onek}: karar ile durum uyuşmuyor")
-        if aday["execution_review"] not in {"not-executed", "metadata-only", "reviewed"}:
-            raise ValueError(f"{onek}.execution_review geçersiz")
-
-        lisans = aday.get("license")
-        if not isinstance(lisans, dict):
-            raise ValueError(f"{onek}.license nesne olmalı")
-        for alan in ("spdx", "evidence_url", "scope_note"):
-            if not isinstance(lisans.get(alan), str) or not lisans[alan].strip():
-                raise ValueError(f"{onek}.license.{alan} dolu metin olmalı")
-        if aday["decision"] in {"ADOPT", "ADAPT"} and lisans["spdx"] == "UNKNOWN":
-            raise ValueError(f"{onek}: lisansı belirsiz aday alınamaz/uyarlanamaz")
-
-        kanitlar = aday.get("evidence")
-        if not isinstance(kanitlar, list) or not all(isinstance(k, str) and k.startswith("https://") for k in kanitlar):
-            raise ValueError(f"{onek}.evidence HTTPS adresleri dizisi olmalı")
-        if aday["decision"] != "PENDING" and len(set(kanitlar)) < 2:
-            raise ValueError(f"{onek}: son karar en az iki kanıt ister")
-        if lisans["evidence_url"] not in kanitlar:
-            raise ValueError(f"{onek}: lisans kanıtı evidence içinde olmalı")
-        if aday["decision"] != "PENDING":
-            reviewed_head = aday.get("reviewed_head")
-            if not isinstance(reviewed_head, str) or not SHA_DESENI.fullmatch(reviewed_head):
-                raise ValueError(f"{onek}.reviewed_head 40 haneli commit olmalı")
-            if not any(reviewed_head in kanit for kanit in kanitlar):
-                raise ValueError(f"{onek}.reviewed_head immutable kanıtlara bağlanmalı")
+        _karar_durumunu_denetle(aday, onek)
+        _lisans_ve_kanitlari_denetle(aday, onek)
         tarih(aday.get("observed_at"), f"{onek}.observed_at")
         tarih(aday.get("next_review"), f"{onek}.next_review")
     return adaylar
