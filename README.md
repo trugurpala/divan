@@ -3,7 +3,7 @@
 ![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.png)
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Source line 1.2.0](https://img.shields.io/badge/source-1.3.1-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.3.1](https://img.shields.io/badge/source-1.3.1-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
