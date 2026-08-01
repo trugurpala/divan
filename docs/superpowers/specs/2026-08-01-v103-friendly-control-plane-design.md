@@ -82,7 +82,7 @@ Machine output:
 ```json
 {
   "status": "healthy",
-  "next_command": null
+  "next_command": ""
 }
 ```
 
@@ -98,9 +98,9 @@ READY: Divan is installed and verified. Start a new agent session and describe y
 installation. Invalid host JSON remains blocked rather than hidden by a
 fallback.
 
-This is a backward-compatible structural record except that healthy
-`next_command` becomes nullable. Consumers must already inspect `status`; a
-command is meaningful only when action is required.
+This preserves the existing string type: a healthy result uses the empty
+string because no shell action is required. Consumers must inspect `status`;
+non-empty commands remain meaningful only when action is required.
 
 ## Host-Surface Truth
 
@@ -109,8 +109,9 @@ Each compatibility row gains:
 - `surfaces`: the exact product surfaces to which the row applies;
 - `excluded_surfaces`: known surfaces intentionally outside the claim.
 
-For example, the verified Codex plugin claim applies to Desktop and CLI. It
-does not imply plugin availability in the IDE extension or mobile clients.
+For example, the verified Codex lifecycle claim applies to CLI, the surface
+exercised by repository evidence. Desktop, the IDE extension, and mobile stay
+outside the verified claim until separate canary evidence exists.
 The registry validator rejects empty, duplicate, malformed, or overlapping
 surface declarations.
 
@@ -192,7 +193,8 @@ mirrors must remain byte-identical where the release contract requires it.
 
 The release is acceptable only when:
 
-1. a healthy doctor returns `next_command: null`;
+1. a healthy doctor returns `next_command: ""` without changing its public
+   string type;
 2. human doctor output prints `READY` and no `NEXT` line when healthy;
 3. attention and recovery diagnoses still print an exact command;
 4. host-surface declarations validate and Codex excludes unsupported plugin

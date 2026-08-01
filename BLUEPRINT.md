@@ -71,7 +71,7 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 13. **Kullanıcı dostu kontrol düzlemi:** Kurulum bir kez yapılır; günlük arayüz
     Codex/Claude içindeki doğal dil fermanıdır. Değişmez `divan.pyz` yalnız
     doctor, update ve recovery bakım hattıdır. Sağlıklı doctor yeniden kurulum
-    önermez; host uyumluluğu ürün adıyla değil gerçek Desktop/CLI/IDE yüzeyiyle
+    önermez; host uyumluluğu ürün adıyla değil kanıtlanan CLI/IDE yüzeyiyle
     sınırlandırılır. Divan PATH veya kabuk profilini gizlice değiştirmez,
     bağlantılı uygulamalara sırf bağlı oldukları için yetki vermez. Ayrıntı
     `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`

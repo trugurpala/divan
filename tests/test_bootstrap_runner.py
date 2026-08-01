@@ -169,7 +169,7 @@ class BootstrapRunnerTests(unittest.TestCase):
             self.assertEqual(payload["ref"], f"v{(repository / 'VERSION').read_text().strip()}")
             self.assertIn("codex", payload["hosts"])
             self.assertEqual(payload["status"], "healthy")
-            self.assertIsNone(payload["next_command"])
+            self.assertEqual(payload["next_command"], "")
 
     def test_bootstrap_rejects_a_ref_other_than_its_bundled_release(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-bootstrap-") as temporary:

@@ -9,15 +9,15 @@ Versioning while the public API remains in initial development (`0.y.z`).
 ### Fixed
 
 - A healthy host doctor no longer recommends installing Divan again. Machine
-  output uses `next_command: null`; human output ends with a plain `READY`
+  output keeps the public string type with `next_command: ""`; human output ends with a plain `READY`
   instruction. Attention, unavailable, invalid-JSON, and unfinished-transaction
   paths keep their exact recovery or remediation command.
 
 ### Changed
 
 - Host compatibility claims now name the exact product surfaces they cover.
-  Verified Codex plugin support applies to Desktop and CLI, while the IDE
-  extension and mobile clients are explicitly outside that claim.
+  Verified Codex lifecycle support applies to CLI; Desktop, the IDE extension,
+  and mobile clients remain outside that claim pending separate canaries.
 - README, installation guidance, and Pages now separate one-time setup,
   natural-language daily use, and maintenance/recovery. The no-checkout hero
   path uses the release bootstrap instead of assuming a repository checkout.

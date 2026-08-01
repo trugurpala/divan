@@ -74,9 +74,13 @@ def _surface_errors(label: str, row: dict[str, Any]) -> list[str]:
     if not isinstance(surfaces, list) or not surfaces:
         errors.append(f"{label}.surfaces must be a non-empty list")
         supported: list[Any] = []
+        supported_names: list[str] = []
     else:
         supported = surfaces
-        if len(supported) != len(set(supported)):
+        supported_names = [
+            surface for surface in supported if isinstance(surface, str)
+        ]
+        if len(supported_names) != len(set(supported_names)):
             errors.append(f"{label}.surfaces contains duplicates")
         if any(
             not isinstance(surface, str) or not ID_PATTERN.fullmatch(surface)
@@ -86,16 +90,18 @@ def _surface_errors(label: str, row: dict[str, Any]) -> list[str]:
     if not isinstance(excluded, list):
         errors.append(f"{label}.excluded_surfaces must be a list")
         blocked: list[Any] = []
+        blocked_names: list[str] = []
     else:
         blocked = excluded
-        if len(blocked) != len(set(blocked)):
+        blocked_names = [surface for surface in blocked if isinstance(surface, str)]
+        if len(blocked_names) != len(set(blocked_names)):
             errors.append(f"{label}.excluded_surfaces contains duplicates")
         if any(
             not isinstance(surface, str) or not ID_PATTERN.fullmatch(surface)
             for surface in blocked
         ):
             errors.append(f"{label}.excluded_surfaces contains malformed values")
-    if set(supported) & set(blocked):
+    if set(supported_names) & set(blocked_names):
         errors.append(f"{label} surface claims overlap")
     return errors
 
@@ -140,7 +146,8 @@ def validate(root: pathlib.Path = ROOT) -> list[str]:
     ids = [row.get("id") for row in hosts if isinstance(row, dict)]
     if ids != list(HOST_IDS):
         errors.append("hosts must match the canonical ordered host set")
-    if len(ids) != len(set(ids)):
+    string_ids = [host_id for host_id in ids if isinstance(host_id, str)]
+    if len(string_ids) != len(set(string_ids)):
         errors.append("host ids must be unique")
     for index, row in enumerate(hosts):
         errors.extend(_host_errors(root, row, index))

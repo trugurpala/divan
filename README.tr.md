@@ -13,16 +13,17 @@ sistemine çevirir: tek repo, 5 odaklı paket, 41 beceri, kalıcı proje hafıza
 yerel ilerleme ekranı ve bağımsız denetim.**
 Sen fermanı sade dille verirsin; Divan kapsamı daraltır, en küçük yetkin ekibi
 seçer, planlar, testle inşa eder, kanıtıyla teslim eder ve kaldığın yeri asla
-unutmaz. Claude Code ile Codex Desktop/CLI'da yerel plugin olarak; Cursor ve
-diğer Agent Skills uyumlu ajanlarda taşınabilir.
+unutmaz. Claude Code ile Codex CLI'da doğrulanmış yerel plugin yaşam döngüsüne
+sahiptir; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
 Host desteği tek bir “uyumlu” pazarlama sözüyle değil, kanıt seviyesiyle
 yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların mevcut
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
 Her iddia belirli bir ürün yüzeyiyle sınırlıdır. Özellikle doğrulanmış Codex
-plugin desteği Desktop ve CLI demektir; Codex IDE extension veya mobil
-istemcilerde plugin varmış gibi gösterilmez.
+yaşam döngüsü CLI demektir. Desktop resmî bir plugin hedefidir fakat ayrı Divan
+UI canary kaydı oluşana kadar verified sayılmaz; IDE extension ve mobil
+istemciler de kapsam dışıdır.
 
 **Güncel kaynak:** v1.0.2 · **Son yayımlanan:** v1.0.2 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 

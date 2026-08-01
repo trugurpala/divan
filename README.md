@@ -15,7 +15,7 @@ persistent project memory, local progress, and independent verification.**
 You write the decree in plain language. Divan narrows the scope, selects the
 smallest qualified team, plans the work, builds with tests, verifies the
 result, records the decisions, and presents a finished delivery. It runs as a
-native plugin in Claude Code and in Codex Desktop/CLI; its Agent Skills remain
+native plugin lifecycle in Claude Code and Codex CLI; its Agent Skills remain
 portable to Cursor and other compatible hosts.
 
 ## Host compatibility
@@ -24,9 +24,10 @@ Host support is evidence-graded rather than advertised as a single yes/no
 claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
-Every claim is surface-scoped. In particular, verified Codex plugin support
-means Desktop and CLI; it does not claim plugin availability in the Codex IDE
-extension or mobile clients.
+Every claim is surface-scoped. In particular, verified Codex lifecycle support
+means CLI. Desktop is an official plugin target but remains outside Divan's
+verified tier until a separate UI canary exists; the IDE extension and mobile
+clients are excluded too.
 
 **Current source:** v1.0.2 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 

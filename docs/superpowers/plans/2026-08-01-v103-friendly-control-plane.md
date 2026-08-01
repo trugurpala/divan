@@ -23,8 +23,8 @@ Actions, GitHub Pages, Wiki publication checks.
 
 - Modify: `tests/test_host_doctor.py`
 
-1. Add a failing assertion that a healthy diagnosis has
-   `next_command is None`.
+1. Add a failing assertion that a healthy diagnosis keeps a string
+   `next_command` but leaves it empty because no shell action is required.
 2. Add a failing human-output test that expects a `READY` message and rejects a
    `NEXT` line for a healthy diagnosis.
 3. Preserve attention and unfinished-transaction tests that require exact
@@ -40,8 +40,8 @@ Actions, GitHub Pages, Wiki publication checks.
 - Modify: `scripts/host_cli.py`
 - Modify only if required: `scripts/host_adapters.py`
 
-1. Return `None` from the next-action builder only when every requested host is
-   healthy and no unfinished transaction overrides it.
+1. Return an empty command string only when every requested host is healthy
+   and no unfinished transaction overrides it.
 2. Render the healthy human result as one readiness instruction.
 3. Keep invalid JSON, unavailable CLI, version drift, and recovery commands
    unchanged.
@@ -60,8 +60,9 @@ Actions, GitHub Pages, Wiki publication checks.
 2. Run the focused suite and confirm the new tests fail for missing validation.
 3. Add the smallest validator rules and declare surfaces for all canonical
    hosts.
-4. Explicitly exclude Codex IDE extension and mobile from the verified plugin
-   claim, following official OpenAI documentation.
+4. Limit the verified Codex lifecycle claim to the CLI evidence exercised by
+   this repository; keep Desktop, IDE extension, and mobile excluded until
+   separate canaries exist.
 5. Re-run `python -m unittest tests.test_host_compatibility -v` and
    `python scripts/host_compatibility.py --json`.
 

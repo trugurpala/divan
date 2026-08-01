@@ -189,7 +189,7 @@ class HostDoctorTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "healthy")
         self.assertEqual(result["issues"], [])
-        self.assertIsNone(result["next_command"])
+        self.assertEqual(result["next_command"], "")
         self.assertEqual(set(result["hosts"]), {"claude", "codex"})
         self.assertTrue(all(host["status"] == "healthy" for host in result["hosts"].values()))
         self.assertTrue(
@@ -350,13 +350,30 @@ class HostDoctorTests(unittest.TestCase):
                     ),
                 )
 
+    def test_invalid_terminal_journal_has_an_exact_remediation_command(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-doctor-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            transaction = state_dir / "install-invalid.json"
+            transaction.write_text("{}", encoding="utf-8")
+
+            result = self.diagnose(DoctorRunner(), self.options(state_dir))
+
+        self.assertEqual(result["status"], "attention")
+        self.assertTrue(result["next_command"])
+        self.assertEqual(
+            result["next_command"],
+            subprocess.list2cmdline(
+                ["python", "scripts/divan.py", "recover", str(transaction)]
+            ),
+        )
+
     def test_json_cli_writes_only_the_doctor_result(self) -> None:
         payload = {
             "status": "healthy",
             "ref": "v0.12.0",
             "hosts": {"claude": {"status": "healthy", "issues": []}},
             "issues": [],
-            "next_command": None,
+            "next_command": "",
         }
         output = io.StringIO()
         with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
@@ -374,7 +391,7 @@ class HostDoctorTests(unittest.TestCase):
             "ref": "v0.12.0",
             "hosts": {"codex": {"status": "healthy", "issues": []}},
             "issues": [],
-            "next_command": None,
+            "next_command": "",
         }
         output = io.StringIO()
         with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):

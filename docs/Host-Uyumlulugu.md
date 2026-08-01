@@ -23,7 +23,7 @@ Bir alt seviyedeki destek üst seviyeyi kendiliğinden kanıtlamaz. Örneğin
 | Host | Kanıtlanan yüzey | Bugün | Hedef | Dağıtım | Resmî kaynak |
 |---|---|---|---|---|---|
 | Claude Code | CLI | `verified` | `verified` | Plugin | [Plugins reference](https://code.claude.com/docs/en/plugins-reference) |
-| Codex | Desktop + CLI | `verified` | `verified` | Plugin | [Codex plugins](https://developers.openai.com/codex/plugins) |
+| Codex | CLI | `verified` | `verified` | Plugin | [Codex plugins](https://developers.openai.com/codex/plugins) |
 | Cursor | IDE | `skill-compatible` | `verified` | Plugin | [Plugins reference](https://cursor.com/docs/reference/plugins) |
 | Antigravity CLI | CLI | `experimental` | `verified` | Plugin | [Plugins & Skills](https://antigravity.google/docs/cli/plugins) |
 | Gemini CLI | CLI | `experimental` | `verified` | Extension | [Extension reference](https://geminicli.com/docs/extensions/reference/) |
@@ -39,11 +39,13 @@ Bu tablo elle verilmiş bağımsız bir vaat değildir. Kanonik kayıt
 `python scripts/host_compatibility.py` komutudur. `verified` yazabilmek için
 repoda gerçek kanıt yolu bulunmak zorundadır.
 
-Codex satırındaki `verified` iddiası yalnız Desktop ve CLI plugin yüzeyleri
-içindir. OpenAI'nin güncel plugin sözleşmesine göre IDE extension ve mobil
-yüzeyler bu iddianın dışındadır. Bu sınır kanonik kayıtta
-`excluded_surfaces` olarak makinece doğrulanır. Benzer biçimde her satırdaki
-yetenekler yalnız `surfaces` alanında yazan yüzeyler için geçerlidir.
+Codex satırındaki `verified` iddiası yalnız repodaki tekrarlanabilir canary'nin
+çalıştırdığı CLI yaşam döngüsü içindir. OpenAI'nin güncel plugin sözleşmesi
+Desktop desteğini belgelese de Divan henüz ayrı bir Desktop UI canary kaydı
+taşımadığı için Desktop, IDE extension ve mobil yüzeyler bu iddianın dışındadır.
+Bu sınır kanonik kayıtta `excluded_surfaces` olarak makinece doğrulanır. Benzer
+biçimde her satırdaki yetenekler yalnız `surfaces` alanında yazan yüzeyler için
+geçerlidir.
 
 ## Codex Desktop kurulum sonucu
 

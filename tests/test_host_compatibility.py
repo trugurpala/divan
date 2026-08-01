@@ -51,6 +51,15 @@ class HostCompatibilityTests(unittest.TestCase):
             errors = host_compatibility.validate(ROOT)
         self.assertTrue(any("surfaces must be a non-empty list" in error for error in errors))
 
+    def test_codex_verified_claim_is_limited_to_repository_evidence(self) -> None:
+        data = host_compatibility.load(ROOT)
+        codex = next(row for row in data["hosts"] if row["id"] == "codex")
+        self.assertEqual(codex["surfaces"], ["cli"])
+        self.assertEqual(
+            codex["excluded_surfaces"],
+            ["desktop", "ide-extension", "mobile"],
+        )
+
     def test_surface_claims_reject_duplicates_malformed_and_overlap(self) -> None:
         data = copy.deepcopy(host_compatibility.load(ROOT))
         codex = next(row for row in data["hosts"] if row["id"] == "codex")
@@ -61,6 +70,17 @@ class HostCompatibilityTests(unittest.TestCase):
         self.assertTrue(any("surfaces contains duplicates" in error for error in errors))
         self.assertTrue(any("surfaces contains malformed values" in error for error in errors))
         self.assertTrue(any("surface claims overlap" in error for error in errors))
+
+    def test_unhashable_registry_values_are_reported_instead_of_crashing(self) -> None:
+        data = copy.deepcopy(host_compatibility.load(ROOT))
+        data["hosts"][0]["id"] = ["not", "a", "string"]
+        data["hosts"][0]["surfaces"] = [["not-a-surface"]]
+        data["hosts"][0]["excluded_surfaces"] = [{"not": "a-surface"}]
+        with mock.patch.object(host_compatibility, "load", return_value=data):
+            errors = host_compatibility.validate(ROOT)
+        self.assertTrue(any("id must be kebab-case ASCII" in error for error in errors))
+        self.assertTrue(any("surfaces contains malformed values" in error for error in errors))
+        self.assertTrue(any("excluded_surfaces contains malformed values" in error for error in errors))
 
 
 if __name__ == "__main__":

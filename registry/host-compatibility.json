@@ -19,8 +19,8 @@
       "tier": "verified",
       "target_tier": "verified",
       "distribution": "plugin",
-      "surfaces": ["desktop", "cli"],
-      "excluded_surfaces": ["ide-extension", "mobile"],
+      "surfaces": ["cli"],
+      "excluded_surfaces": ["desktop", "ide-extension", "mobile"],
       "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://developers.openai.com/codex/plugins",
       "evidence": [".github/workflows/compatibility.yml", "tests/test_host_install.py"]

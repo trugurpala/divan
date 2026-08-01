@@ -30,10 +30,13 @@ def assert_no_active(
         record = _read(path)
         if record.get("status") in active_statuses:
             raise ScanError(f"active transaction journal requires recovery: {path}")
-        if path.name.startswith("upgrade-"):
-            validate_upgrade(path, record, normalize)
-        else:
-            _validate_terminal_schema1(path, record)
+        try:
+            if path.name.startswith("upgrade-"):
+                validate_upgrade(path, record, normalize)
+            else:
+                _validate_terminal_schema1(path, record)
+        except (ScanError, RuntimeError) as exc:
+            raise ScanError(f"{exc}: {path}") from exc
 
 
 def _read(path: pathlib.Path) -> dict[str, Any]:
