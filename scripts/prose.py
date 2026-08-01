@@ -207,44 +207,66 @@ def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding]
     return errors, _style_warnings(root, path, prose)
 
 
-def _repository_contract_errors(root: pathlib.Path) -> list[Finding]:
-    errors: list[Finding] = []
+def _read_text_if_file(path: pathlib.Path) -> str | None:
+    return path.read_text(encoding="utf-8") if path.is_file() else None
+
+
+def _readme_alias_errors(root: pathlib.Path) -> list[Finding]:
     canonical = root / "README.md"
     alias = root / "README.en.md"
     if canonical.is_file() and alias.is_file() and canonical.read_bytes() != alias.read_bytes():
-        errors.append(Finding("error", "README_ALIAS_DRIFT", "README.en.md", 1, "English README alias differs from canonical README.md"))
+        return [Finding("error", "README_ALIAS_DRIFT", "README.en.md", 1, "English README alias differs from canonical README.md")]
+    return []
+
+
+def _version_copy_errors(root: pathlib.Path) -> list[Finding]:
+    canonical = root / "README.md"
     version_file = root / "VERSION"
-    if version_file.is_file() and canonical.is_file():
-        version = version_file.read_text(encoding="utf-8").strip()
-        if f"**Source line:** v{version}" not in canonical.read_text(encoding="utf-8"):
-            errors.append(Finding("error", "STALE_VERSION", "README.md", 1, "README source line does not match VERSION"))
+    version = _read_text_if_file(version_file)
+    if version is None or not canonical.is_file():
+        return []
+    version = version.strip()
+    if f"**Source line:** v{version}" in canonical.read_text(encoding="utf-8"):
+        return []
+    return [Finding("error", "STALE_VERSION", "README.md", 1, "README source line does not match VERSION")]
+
+
+def _retired_path_errors(root: pathlib.Path) -> list[Finding]:
     retired = root / "registry" / "retired-public-paths.json"
-    if retired.is_file():
-        paths = json.loads(retired.read_text(encoding="utf-8"))
-        for public in public_files(root):
-            text = public.read_text(encoding="utf-8")
-            for old_path in paths:
-                if old_path in text:
-                    errors.append(Finding("error", "RETIRED_REFERENCE", public.relative_to(root).as_posix(), 1, f"reference uses retired path: {old_path}"))
-    version = version_file.read_text(encoding="utf-8").strip() if version_file.is_file() else ""
-    if version:
-        for relative in PUBLIC_RELEASE_SURFACES:
-            path = root / relative
-            if not path.is_file():
-                continue
-            text = path.read_text(encoding="utf-8")
-            for phrase in STALE_CANDIDATE_PHRASES:
-                if phrase in text:
-                    errors.append(
-                        Finding(
-                            "error",
-                            "STALE_RELEASE_COPY",
-                            relative,
-                            1,
-                            f"public onboarding text still marks a release as a candidate; current version is v{version}",
-                        )
-                    )
-                    break
+    if not retired.is_file():
+        return []
+    paths = json.loads(retired.read_text(encoding="utf-8"))
+    errors: list[Finding] = []
+    for public in public_files(root):
+        text = public.read_text(encoding="utf-8")
+        for old_path in paths:
+            if old_path in text:
+                errors.append(Finding("error", "RETIRED_REFERENCE", public.relative_to(root).as_posix(), 1, f"reference uses retired path: {old_path}"))
+    return errors
+
+
+def _stale_release_copy_errors(root: pathlib.Path) -> list[Finding]:
+    version_file = root / "VERSION"
+    version = _read_text_if_file(version_file)
+    if not version:
+        return []
+    errors: list[Finding] = []
+    for relative in PUBLIC_RELEASE_SURFACES:
+        path = root / relative
+        text = _read_text_if_file(path)
+        if text is None:
+            continue
+        if any(phrase in text for phrase in STALE_CANDIDATE_PHRASES):
+            errors.append(Finding("error", "STALE_RELEASE_COPY", relative, 1, f"public onboarding text still marks a release as a candidate; current version is v{version.strip()}"))
+    return errors
+
+
+def _repository_contract_errors(root: pathlib.Path) -> list[Finding]:
+    errors: list[Finding] = []
+    errors.extend(_readme_alias_errors(root))
+    errors.extend(_version_copy_errors(root))
+    errors.extend(_retired_path_errors(root))
+    errors.extend(_stale_release_copy_errors(root))
     return errors
 
 
