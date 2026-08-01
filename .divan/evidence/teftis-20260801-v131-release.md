@@ -5,6 +5,8 @@ Bu kayıt, v1.3.1 yayımlandıktan sonra uzak kaynaklardan yeniden okunan kanıt
 
 ## Yayın kimliği
 
+- Version: v1.3.1
+- Source commit: b5086be9ef8c6bc97ca834484ba21b59282971ce
 - Sürüm: `v1.3.1`
 - `main` commit: `b5086be9ef8c6bc97ca834484ba21b59282971ce`
 - Birleştirme: [PR #91](https://github.com/trugurpala/divan/pull/91)
