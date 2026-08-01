@@ -140,7 +140,9 @@ class VibeProgressContractTests(unittest.TestCase):
             for surface in (readme_tr, quick_start, install_guide)
         )
         if current == published:
-            self.assertIn("Güncel yayın · yazmayan önizleme", pages)
+            self.assertIn("İlk kez kuruyorum", pages)
+            self.assertIn("Divan zaten kurulu", pages)
+            self.assertIn("önizlemeyi, sonra uygulamayı", pages)
             self.assertNotIn("yalnız tag/Release sonrası kullan", pages)
             self.assertNotIn(
                 "only after its tag and GitHub Release are visible", readme_en
