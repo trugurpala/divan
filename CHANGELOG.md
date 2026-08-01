@@ -6,6 +6,22 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-08-01
+
+### Fixed
+
+- Synchronized README, quick-start, installation, status, Blueprint, Pages,
+  and Wiki copy with the latest published release instead of leaving the
+  previous release marked as current or the new release marked as a candidate.
+- Recorded the release evidence path used by the current installation source.
+
+### Verification
+
+- Added a release-publication truth check so public onboarding text cannot
+  point at an older release after `VERSION` advances.
+- Kept the release process stdlib-only and preserved the existing five-pack,
+  42-skill distribution.
+
 ## [1.3.0] - 2026-08-01
 
 ### Added

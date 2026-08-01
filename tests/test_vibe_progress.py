@@ -156,16 +156,14 @@ class VibeProgressContractTests(unittest.TestCase):
         else:
             self.assertIn("Yayın durumu · değişmez tag ve GitHub Release ile doğrulanır", pages)
             self.assertIn("Komutlar Windows, macOS ve Linux'ta aynıdır", normalized_pages)
-            self.assertIn("--ref vX.Y.Z", pages)
-            self.assertNotIn(f"--ref v{current}", pages)
-            self.assertIn(
-                f"use v{current} only after its tag and GitHub Release are visible",
-                readme_en,
+            self.assertIn(f"--ref v{current}", readme_en)
+            self.assertIn(f"--ref v{current}", install_guide)
+            self.assertNotIn(
+                "only after its tag and GitHub Release are visible", readme_en
             )
             for surface in normalized_turkish_surfaces:
-                self.assertIn(
-                    f"v{current}'i yalnız tag ve GitHub Release sayfası görünür "
-                    "olduktan sonra",
+                self.assertNotIn(
+                    "yalnız tag ve GitHub Release sayfası görünür olduktan sonra",
                     surface,
                 )
 

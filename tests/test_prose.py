@@ -100,6 +100,18 @@ class ProseGateTests(unittest.TestCase):
         report = PROSE.inspect(ROOT, PROSE.public_files(ROOT))
         self.assertFalse(report.errors, report.errors)
 
+    def test_stale_release_candidate_copy_is_an_error(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "VERSION").write_text("1.3.1\n", encoding="utf-8")
+            (root / "README.md").write_text(
+                "# Divan\n\nRelease candidate note: use v1.3.0.\n",
+                encoding="utf-8",
+            )
+            (root / "README.en.md").write_bytes((root / "README.md").read_bytes())
+            report = PROSE.inspect(root, PROSE.public_files(root))
+        self.assertIn("STALE_RELEASE_COPY", {finding.code for finding in report.errors})
+
     def test_public_inventory_matches_the_writing_contract(self):
         relative = {
             path.relative_to(ROOT).as_posix()

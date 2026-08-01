@@ -1,6 +1,6 @@
 # Kurulum
 
-v1.2.0, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
+v1.3.1, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
 [son yayımlanan sürüm](https://github.com/trugurpala/divan/releases/latest)
 sayfasını kullan.
 
@@ -8,8 +8,7 @@ Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü t
 runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
 çekirdeğidir; Divan Nizamı Hükümdar öncelikli yetki düzenidir. İlk kez
 kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler güncel kaynak sürümünü
-sabitler. Kaynak sürümü son yayımlanan sürümden farklıysa bütün `--ref`
-komutlarında son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
+sabitler. Yalnız değişmez tag ve GitHub
 Release'i bulunan bir ref'i kur.
 
 ## Repo klonlamadan en hızlı ilk kurulum
@@ -63,11 +62,11 @@ Yalnız sorun veya yarım işlem varsa doctor tek bir `NEXT` komutu üretir.
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.0
-python scripts/divan.py install --host both --ref v1.3.0 --execute
-python scripts/divan.py doctor --host both --ref v1.3.0
-python scripts/divan.py update --host both --ref v1.3.0
-python scripts/divan.py update --host both --ref v1.3.0 --execute
+python scripts/divan.py install --host both --ref v1.3.1
+python scripts/divan.py install --host both --ref v1.3.1 --execute
+python scripts/divan.py doctor --host both --ref v1.3.1
+python scripts/divan.py update --host both --ref v1.3.1
+python scripts/divan.py update --host both --ref v1.3.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -90,17 +89,16 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.3.0
+python scripts/divan.py install --host codex --profile auto --ref v1.3.1
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.3.0 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.3.1 --execute
 ```
 
-Release adayı notu: v1.3.0'i yalnız tag ve GitHub Release sayfası görünür
-olduktan sonra kullanın. O zamana kadar son yayımlanmış release'i kurun.
+v1.3.1 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
 Codex CLI sonucunu şu şekilde ayırır:
@@ -343,11 +341,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.3.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.3.1 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.3.0/scripts/install_codex.sh | DIVAN_REF=v1.3.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.3.1/scripts/install_codex.sh | DIVAN_REF=v1.3.1 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
