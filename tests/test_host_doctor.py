@@ -189,6 +189,7 @@ class HostDoctorTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "healthy")
         self.assertEqual(result["issues"], [])
+        self.assertIsNone(result["next_command"])
         self.assertEqual(set(result["hosts"]), {"claude", "codex"})
         self.assertTrue(all(host["status"] == "healthy" for host in result["hosts"].values()))
         self.assertTrue(
@@ -355,7 +356,7 @@ class HostDoctorTests(unittest.TestCase):
             "ref": "v0.12.0",
             "hosts": {"claude": {"status": "healthy", "issues": []}},
             "issues": [],
-            "next_command": "python scripts/divan.py doctor --host claude --ref v0.12.0",
+            "next_command": None,
         }
         output = io.StringIO()
         with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
@@ -366,6 +367,33 @@ class HostDoctorTests(unittest.TestCase):
                 )
 
         self.assertEqual(json.loads(output.getvalue()), payload)
+
+    def test_human_cli_reports_ready_without_an_install_command_when_healthy(self) -> None:
+        payload = {
+            "status": "healthy",
+            "ref": "v0.12.0",
+            "hosts": {"codex": {"status": "healthy", "issues": []}},
+            "issues": [],
+            "next_command": None,
+        }
+        output = io.StringIO()
+        with mock.patch.object(HOST_INSTALL, "doctor", return_value=payload, create=True):
+            with redirect_stdout(output):
+                self.assertEqual(
+                    HOST_INSTALL.main(
+                        ["--doctor", "--host", "codex", "--ref", "v0.12.0"]
+                    ),
+                    0,
+                )
+
+        self.assertEqual(
+            output.getvalue().splitlines(),
+            [
+                "codex: healthy",
+                "READY: Divan is installed and verified. "
+                "Start a new agent session and describe your goal.",
+            ],
+        )
 
     def test_human_cli_has_one_line_per_host_and_next_command(self) -> None:
         payload = {

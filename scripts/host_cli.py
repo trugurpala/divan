@@ -54,6 +54,12 @@ def _print_doctor(record: dict[str, Any], json_output: bool) -> None:
     aggregate = [issue for issue in record["issues"] if issue not in host_issues]
     if aggregate:
         print(f"STATUS: {record['status']} - {'; '.join(aggregate)}")
+    if record["status"] == "healthy":
+        print(
+            "READY: Divan is installed and verified. "
+            "Start a new agent session and describe your goal."
+        )
+        return
     print(f"NEXT: {record['next_command']}")
 
 
