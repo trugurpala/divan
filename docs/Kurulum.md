@@ -30,6 +30,32 @@ Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
 doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
 komutları için sakla.
 
+## Kurulum tamamlandıysa: günlük kullanım
+
+Terminalde yeni kurulum komutu arama. Projeni Codex veya Claude Code ile aç,
+yeni bir oturum başlat ve sonucu sade dille ver:
+
+> **Divan, bu işi devral. Önce mevcut durumu doğrula; planı yaz, testlerle
+> uygula ve kanıtıyla teslim et: [hedefin].**
+
+Host yeni oturumda Divan paketlerini keşfeder. Günlük çalışma arayüzü doğal
+dildir; `divan.pyz` kurulum, doctor, güncelleme ve recovery için saklanan bakım
+aracıdır. Divan PATH veya kabuk profilini otomatik değiştirmez.
+
+Kurulumu yazmadan denetlemek için sakladığın dosyayı çalıştır:
+
+```powershell
+python .\divan.pyz doctor --host codex
+```
+
+Her şey doğruysa çıktı şu mesajla biter ve yeniden kurulum istemez:
+
+```text
+READY: Divan is installed and verified. Start a new agent session and describe your goal.
+```
+
+Yalnız sorun veya yarım işlem varsa doctor tek bir `NEXT` komutu üretir.
+
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
@@ -157,9 +183,9 @@ raporlar. Otomasyon için yalnız JSON çıktı alın:
 python scripts/divan.py doctor --json --host both --ref <release-tag>
 ```
 
-Her doctor sonucu bir sonraki kesin komutu yazar; tamamlanmamış işlemde bu,
-ilgili `--rollback-transaction` komutudur. Doctor host CLI'larını veya işlem
-günlüklerini değiştirmez.
+Sağlıklı doctor `READY` mesajını yazar. Yalnız dikkat isteyen veya ulaşılamayan
+bir durumda sonraki kesin komutu üretir; tamamlanmamış işlemde bu, ilgili
+recovery komutudur. Doctor host CLI'larını veya işlem günlüklerini değiştirmez.
 Okunamayan veya bozuk bir işlem günlüğü de `attention` sonucudur; tanı kaydı
 bildirilir, fakat doctor hiçbir recovery ya da host değiştirme komutu çalıştırmaz.
 

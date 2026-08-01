@@ -55,6 +55,12 @@ h1 .nokta{color:var(--mercan)}
 .ferman-etiket{font-family:Consolas,'Liberation Mono',monospace;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--altin);margin-bottom:12px}
 .ferman code{display:block;font-family:Consolas,'Liberation Mono',monospace;font-size:15px;color:var(--fildisi);line-height:1.9;overflow-x:auto;white-space:pre}
 .ferman code .p{color:var(--firuze)}
+.hero-yollar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:820px;margin:42px auto 0;text-align:left}
+.hero-yol{border:1px solid rgba(243,237,221,.18);border-radius:8px;padding:22px;background:rgba(30,79,168,.14)}
+.hero-yol:first-child{border-color:rgba(201,162,39,.55)}
+.hero-yol h2{font-size:21px;margin:0 0 8px}
+.hero-yol p{font-size:14px;color:var(--fildisi-soluk);margin-bottom:12px}
+.hero-yol code{display:block;overflow-x:auto;white-space:pre;font:13px/1.7 Consolas,'Liberation Mono',monospace;color:var(--fildisi)}
 
 /* Vibe coder ilk dakika seçicisi */
 .niyetler{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
@@ -119,7 +125,7 @@ footer p+p{margin-top:10px}
   @keyframes yukari{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-@media (max-width:600px){.hero{padding:64px 0 52px}.bab{padding:52px 0}.muhurdar{align-items:flex-start;gap:16px;padding:18px}.muhurdar img{width:88px;height:108px}.secici-ust{display:block}.secici-neden{text-align:left;margin-top:8px}.secici-ferman{align-items:flex-start;flex-direction:column}.secici-akis{grid-template-columns:1fr}.secici-akis li{text-align:left}}
+@media (max-width:600px){.hero{padding:64px 0 52px}.hero-yollar{grid-template-columns:1fr}.bab{padding:52px 0}.muhurdar{align-items:flex-start;gap:16px;padding:18px}.muhurdar img{width:88px;height:108px}.secici-ust{display:block}.secici-neden{text-align:left;margin-top:8px}.secici-ferman{align-items:flex-start;flex-direction:column}.secici-akis{grid-template-columns:1fr}.secici-akis li{text-align:left}}
 </style>
 </head>
 <body data-homepage="https://trugurpala.github.io/divan/">
@@ -131,9 +137,18 @@ footer p+p{margin-top:10px}
     <p class="tugra">Niyetten doğrulanmış yayına</p>
     <h1>Divan<span class="nokta">.</span></h1>
     <p class="tez"><b>Hükümdar sensin.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>modüler, denetimli teslim sistemi ve yerel skill/plugin dağıtımı</b>na çevirir. Divan model veya runtime değildir; Divan Nizamı ürünün yetki düzenidir. Fermanı planlar, test eder, Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.0.2 güncel kaynak · son yayımlanan v1.0.2 · 41 beceri · 5 paket · v1 hazırlık: 8/8.</p>
-    <div class="ferman">
-      <p class="ferman-etiket">Güncel yayın · yazmayan önizleme · SHA-256 doğrulamalı</p>
-      <code>python scripts/divan.py install --host both --ref v1.0.2</code>
+    <div class="hero-yollar" aria-label="Başlangıç yolları">
+      <article class="hero-yol">
+        <h2>İlk kez kuruyorum</h2>
+        <p>Release'ten indirdiğin ve SHA-256 ile doğruladığın kurucuda önce önizlemeyi, sonra uygulamayı çalıştır.</p>
+        <code>python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute</code>
+      </article>
+      <article class="hero-yol">
+        <h2>Divan zaten kurulu</h2>
+        <p>Yeni Codex veya Claude oturumu aç. Terminal komutu ya da skill adı ezberleme; hedefi söyle.</p>
+        <code>Divan, bu işi devral. Mevcut durumu doğrula, planla, testle ve kanıtıyla teslim et.</code>
+      </article>
     </div>
   </div>
 </header>
@@ -223,9 +238,14 @@ footer p+p{margin-top:10px}
 
 <section class="bab" id="kurulum">
   <div class="wrap">
-    <p class="bab-etiket">Güvenli yol</p>
-    <h2>Yayın sonrasında beş dakikada ilk başarı</h2>
+    <p class="bab-etiket">Günlük kullanım</p>
+    <h2>Kurulum bir kez, ferman her gün</h2>
+    <p>Divan kuruluysa günlük iş yeni bir ajan oturumunda sade hedefle başlar.
+      Aşağıdaki komutlar kurulum, bakım ve geliştirici denetimi içindir; görev
+      başlatmak için zorunlu değildir.</p>
+    <h3 style="margin:28px 0 16px">Bakım ve kurtarma</h3>
     <ol class="yasam">
+      <li><div><b>Repo checkout'unda kurulumu önizle</b><code>python scripts/divan.py install --host both --ref v1.0.2</code></div></li>
       <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v1.0.2 --execute</code></div></li>
       <li><div><b>Codex Desktop en güçlü güvenli yolu seçsin</b><code>python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute</code></div></li>
       <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v1.0.2</code></div></li>

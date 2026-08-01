@@ -40,6 +40,22 @@ class SiteMarkupTests(unittest.TestCase):
                 )
                 self.assertNotIn("127.0.0.1:49152", html)
 
+    def test_homepage_separates_first_setup_daily_use_and_maintenance(self) -> None:
+        for relative in ("docs/index.html", "site/index.html"):
+            with self.subTest(relative=relative):
+                html = (ROOT / relative).read_text(encoding="utf-8")
+                hero = html.split("</header>", 1)[0]
+                self.assertIn("İlk kez kuruyorum", hero)
+                self.assertIn("Divan zaten kurulu", hero)
+                self.assertIn(
+                    r"python .\divan.pyz install --host codex --profile auto --execute",
+                    hero,
+                )
+                self.assertNotIn("python scripts/divan.py", hero)
+                self.assertIn("Divan, bu işi devral", hero)
+                self.assertIn("Günlük kullanım", html)
+                self.assertIn("Bakım ve kurtarma", html)
+
     def test_public_metadata_and_structured_data_are_complete(self) -> None:
         required = (
             '<meta name="description"',

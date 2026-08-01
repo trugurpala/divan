@@ -205,6 +205,22 @@ class CommunityContractTests(unittest.TestCase):
                 self.assertIn("scripts/divan.py audit", content)
                 self.assertIn("Project-Contract", content)
 
+    def test_readmes_lead_installed_users_to_plain_language_daily_use(self) -> None:
+        turkish = read("README.tr.md")
+        for content in (read("README.md"), read("README.en.md")):
+            self.assertIn("## Already installed? Start here", content)
+            self.assertIn("Divan, take ownership of this task", content)
+            self.assertIn("First setup", content)
+            self.assertIn("Maintenance", content)
+        self.assertIn("## Divan kuruluysa buradan başla", turkish)
+        self.assertIn("Divan, bu işi devral", turkish)
+        self.assertIn("İlk kurulum", turkish)
+        self.assertIn("Bakım", turkish)
+
+        installation = read("docs/Kurulum.md")
+        self.assertIn("## Kurulum tamamlandıysa: günlük kullanım", installation)
+        self.assertIn("READY: Divan is installed and verified.", installation)
+
     def test_legacy_os_guides_point_to_canonical_divan_guides(self) -> None:
         aliases = {
             "docs/Company-OS.md": "Divan-Engine.md",

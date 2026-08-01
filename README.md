@@ -15,7 +15,7 @@ persistent project memory, local progress, and independent verification.**
 You write the decree in plain language. Divan narrows the scope, selects the
 smallest qualified team, plans the work, builds with tests, verifies the
 result, records the decisions, and presents a finished delivery. It runs as a
-native plugin in Claude Code/Desktop Code and Codex; its Agent Skills remain
+native plugin in Claude Code and in Codex Desktop/CLI; its Agent Skills remain
 portable to Cursor and other compatible hosts.
 
 ## Host compatibility
@@ -24,8 +24,37 @@ Host support is evidence-graded rather than advertised as a single yes/no
 claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
+Every claim is surface-scoped. In particular, verified Codex plugin support
+means Desktop and CLI; it does not claim plugin availability in the Codex IDE
+extension or mobile clients.
 
 **Current source:** v1.0.2 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+
+## Already installed? Start here
+
+Open a fresh Codex or Claude Code session in your project and describe the
+outcome. You do not need to remember a skill name or a repository command:
+
+> **Divan, take ownership of this task. Verify the current state, write the
+> plan, implement it with tests, and deliver the evidence: [your goal].**
+
+Divan selects the smallest capable pack. React Pack joins only a detected
+React-family project; Zanaat Pack joins only creative or integration work.
+Connected GitHub, Figma, Gmail, Slack, or MCP tools do not gain permission by
+being available—the requested task remains the authority boundary.
+
+### First setup
+
+Use the [verified no-checkout install](#fastest-first-install-one-verified-file-no-repository-checkout)
+once, then start a new agent session so the host loads the installed plugin.
+Keep the downloaded `divan.pyz` and checksum together for later diagnosis and
+recovery. Divan does not silently edit PATH or a shell profile.
+
+### Maintenance
+
+Use the retained bootstrap only when you need doctor, update, or recovery.
+A healthy doctor ends with `READY` and does not tell you to install again. A
+real problem prints one exact copyable command.
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is

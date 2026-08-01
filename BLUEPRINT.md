@@ -68,6 +68,14 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     iddiası değildir. Runner yan dosyası yalnız taşıma bütünlüğüdür; kanıt
     önizlemesi sabit public GitHub Release API digest'ini ayrı otorite olarak
     okur ve v1 defteri aynı digest'i sabitler.
+13. **Kullanıcı dostu kontrol düzlemi:** Kurulum bir kez yapılır; günlük arayüz
+    Codex/Claude içindeki doğal dil fermanıdır. Değişmez `divan.pyz` yalnız
+    doctor, update ve recovery bakım hattıdır. Sağlıklı doctor yeniden kurulum
+    önermez; host uyumluluğu ürün adıyla değil gerçek Desktop/CLI/IDE yüzeyiyle
+    sınırlandırılır. Divan PATH veya kabuk profilini gizlice değiştirmez,
+    bağlantılı uygulamalara sırf bağlı oldukları için yetki vermez. Ayrıntı
+    `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`
+    belgesindedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -89,6 +97,13 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ## Yol Haritası
 
 ### Son yama hattı
+
+- **v1.0.3 — geliştirme adayı:** Gerçek kullanımda bulunan iki sürtünmeyi
+  kapatır: sağlıklı doctor'ın yeniden kurulum önermesi ve ilk ekranın repo
+  checkout'u varsayması. İlk kurulum, günlük ferman ve bakım/kurtarma ayrılır;
+  Codex uyumluluğu Desktop/CLI yüzeylerine bağlanır. Güvenlik, checksum,
+  dry-run, transaction ve release kanıt kapıları gevşetilmez. v1.0.2 etiketi ve
+  varlıkları değişmez kalır.
 
 - **v1.0.2 ✓** Published quiet-discovery release: Seyir'in bekleme açıklaması ve Divan
   Engine'in sessiz workspace keşfi aynı kullanıcı-dostu hatta bağlandı.

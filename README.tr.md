@@ -13,15 +13,44 @@ sistemine çevirir: tek repo, 5 odaklı paket, 41 beceri, kalıcı proje hafıza
 yerel ilerleme ekranı ve bağımsız denetim.**
 Sen fermanı sade dille verirsin; Divan kapsamı daraltır, en küçük yetkin ekibi
 seçer, planlar, testle inşa eder, kanıtıyla teslim eder ve kaldığın yeri asla
-unutmaz. Claude Code/Desktop Code ve Codex'te yerel plugin olarak; Cursor ve
+unutmaz. Claude Code ile Codex Desktop/CLI'da yerel plugin olarak; Cursor ve
 diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
 Host desteği tek bir “uyumlu” pazarlama sözüyle değil, kanıt seviyesiyle
 yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların mevcut
 seviyesi, hedefi, yetenek haritası ve resmî kaynağı
 [host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
+Her iddia belirli bir ürün yüzeyiyle sınırlıdır. Özellikle doğrulanmış Codex
+plugin desteği Desktop ve CLI demektir; Codex IDE extension veya mobil
+istemcilerde plugin varmış gibi gösterilmez.
 
 **Güncel kaynak:** v1.0.2 · **Son yayımlanan:** v1.0.2 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+
+## Divan kuruluysa buradan başla
+
+Proje klasöründe yeni bir Codex veya Claude Code oturumu aç ve sonucu sade
+dille yaz. Skill adı veya repo komutu ezberlemen gerekmez:
+
+> **Divan, bu işi devral. Önce mevcut durumu doğrula; planı yaz, testlerle
+> uygula ve kanıtıyla teslim et: [hedefin].**
+
+Divan en küçük yetkin paketi seçer. React Pack yalnız React ailesi bir proje
+kanıtlanırsa; Zanaat Pack yalnız yaratıcı üretim veya entegrasyon gerekiyorsa
+katılır. GitHub, Figma, Gmail, Slack veya MCP bağlantısının açık olması kendi
+başına yetki vermez; sınırı verdiğin görev belirler.
+
+### İlk kurulum
+
+[Repo klonlamadan doğrulanmış kurulum](#en-hızlı-ilk-kurulum-repo-klonlamadan-tek-doğrulanmış-dosya)
+yolunu bir kez uygula, ardından hostun eklentiyi yüklemesi için yeni oturum aç.
+İndirdiğin `divan.pyz` ile checksum dosyasını bakım ve kurtarma için birlikte
+sakla. Divan PATH veya kabuk profilini gizlice değiştirmez.
+
+### Bakım
+
+Sakladığın kurucuyu yalnız doctor, güncelleme veya kurtarma gerektiğinde kullan.
+Sağlıklı doctor `READY` ile biter ve yeniden kurulum önermez. Gerçek bir sorun
+varsa tek, kopyalanabilir komut verir.
 
 Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
 icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
