@@ -119,7 +119,7 @@ def _prose_source(path: pathlib.Path, text: str) -> str:
         return "\n" * match.group(0).count("\n")
 
     return re.sub(
-        r"<(?:style|script)\b[^>]*>.*?</(?:style|script)>",
+        r"<style\b[^>]*>.*?</style\s*>|<script\b[^>]*>.*?</script\s*>",
         preserve_lines,
         text,
         flags=re.IGNORECASE | re.DOTALL,

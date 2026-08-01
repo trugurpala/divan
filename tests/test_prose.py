@@ -12,6 +12,22 @@ SPEC.loader.exec_module(PROSE)
 
 
 class ProseGateTests(unittest.TestCase):
+    def test_html_code_blocks_allow_whitespace_in_closing_tags(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-prose-html-") as temporary:
+            root = pathlib.Path(temporary)
+            page = root / "index.html"
+            page.write_text(
+                "<script>\nconst bad  spacing = true !\n</script >\n"
+                "<style>\n.bad  spacing { color: red !important; }\n</style\t>\n"
+                "<p>Temiz metin.</p>\n",
+                encoding="utf-8",
+            )
+
+            errors, warnings = PROSE._inspect_file(root, page)
+
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [])
+
     def test_safe_turkish_errors_and_mojibake_fail(self):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
