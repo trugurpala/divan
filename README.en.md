@@ -200,6 +200,8 @@ The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
 ref whose immutable tag and GitHub Release exist. v1.0.2 is now the latest
 published release and can be used for release-pinned installs.
+Use v1.0.3 only after its tag and GitHub Release are visible; until then keep
+using Latest published.
 
 ### Fastest first install: one verified file, no repository checkout
 

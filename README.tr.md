@@ -213,6 +213,8 @@ Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son y
 sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
 Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. v1.0.2 artık son
 yayımlanan release'tir ve release-sabit kurulumlarda kullanılabilir.
+v1.0.3'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
+o zamana kadar Son yayımlanan sürümü kullanmayı sürdür.
 
 ### En hızlı ilk kurulum: repo klonlamadan tek doğrulanmış dosya
 
