@@ -1,6 +1,7 @@
 # v1.1.0 immutable release evidence
 
 - Version: v1.1.0
+- Source commit: aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0
 - Merge commit: `aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0`
 - Pull request: `#84`
 - Release workflow run: `30692249356`
