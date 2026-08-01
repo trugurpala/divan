@@ -2,7 +2,7 @@
 
 Bu derleme aşağıdaki açık kaynak projelerden seçilmiş skill'ler içerir. Lisans
 metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
-2026-07-19. Genel bildirim ve marka notları `NOTICE.md` içindedir.
+2026-08-01. Genel bildirim ve marka notları `NOTICE.md` içindedir.
 
 | Paket / içerik | Skill sayısı | Kaynak | Lisans ve yerel metin |
 |---|---:|---|---|
@@ -15,7 +15,8 @@ metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
 | zanaat-pack | 7 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
 
 Özgün `sadrazam`, `defterdar`, `musavir`, `ordu-nizami`, `vezir-yetistirme`,
-`arama-ustasi` ve `temkin` içerikleri depo kökündeki MIT lisansı kapsamındadır.
+`arama-ustasi`, `temkin` ve `product-design-audit` içerikleri depo kökündeki MIT
+lisansı (repository root MIT license) kapsamındadır.
 
 ## Bu derlemedeki değişiklikler
 
