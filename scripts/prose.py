@@ -28,7 +28,11 @@ PUBLIC_PATHS = (
     "docs/Yazim-ve-Uslup.md",
     "docs/Gorsel-Sistem.md",
 )
-MOJIBAKE = re.compile(r"(?:TÃ|Ä[±Ÿž]|Å[Ÿž]|Ã[§¶¼‡–œ]|â€|ï»¿)")
+MOJIBAKE = re.compile(
+    "(?:T\\u00c3|\\u00c4[\\u00b1\\u0178\\u017e]|"
+    "\\u00c5[\\u0178\\u017e]|\\u00c3[\\u00a7\\u00b6\\u00bc\\u2021\\u2013\\u0153]|"
+    "\\u00e2\\u20ac|\\u00ef\\u00bb\\u00bf)"
+)
 MISSPELLINGS = re.compile(r"\b(?:herşey|birşey|yanlız|yada)\b", re.IGNORECASE)
 PUNCTUATION_SPACE = re.compile(r"\s+[,;:!?](?=\s|$)")
 REPEATED_SPACE = re.compile(r"\S[ \t]{2,}\S")

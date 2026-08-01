@@ -17,7 +17,7 @@ class ProseGateTests(unittest.TestCase):
             root = pathlib.Path(directory)
             path = root / "README.tr.md"
             path.write_text(
-                "# Başlık\n\nHerşey  hazır ! TÃ¼rkÃ§e\n",
+                "# Başlık\n\nHerşey  hazır ! T\u00c3\u00bcrk\u00c3\u00a7e\n",
                 encoding="utf-8",
             )
             report = PROSE.inspect(root, (path,))
