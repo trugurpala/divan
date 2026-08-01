@@ -8,6 +8,7 @@ Cikis kodlari: 0 temiz, 2 kurasyon gerektiren fark, 1 denetim calismadi.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import pathlib
 import re
@@ -15,15 +16,15 @@ import subprocess
 import sys
 import tempfile
 
-from upstream_baseline import (
-    baseline_errors,
-    pinned_sources,
+upstream_baseline = importlib.import_module(
+    f"{__package__}.upstream_baseline" if __package__ else "upstream_baseline"
 )
-from upstream_baseline import (
-    skill_map as harita,
-)
-from upstream_baseline import tree_sha256 as agac_sha256
-from upstream_baseline import tree_signature as imza
+
+baseline_errors = upstream_baseline.baseline_errors
+pinned_sources = upstream_baseline.pinned_sources
+harita = upstream_baseline.skill_map
+agac_sha256 = upstream_baseline.tree_sha256
+imza = upstream_baseline.tree_signature
 
 REPOLAR = [
     "obra/superpowers",

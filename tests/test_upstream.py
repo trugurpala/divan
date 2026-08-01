@@ -1,29 +1,37 @@
 from __future__ import annotations
 
-import importlib.util
+import importlib
 import json
 import pathlib
+import subprocess
 import sys
 import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-BASELINE_SPEC = importlib.util.spec_from_file_location(
-    "upstream_baseline", ROOT / "scripts" / "upstream_baseline.py"
-)
-assert BASELINE_SPEC and BASELINE_SPEC.loader
-BASELINE = importlib.util.module_from_spec(BASELINE_SPEC)
-sys.modules["upstream_baseline"] = BASELINE
-BASELINE_SPEC.loader.exec_module(BASELINE)
-SPEC = importlib.util.spec_from_file_location(
-    "divan_upstream", ROOT / "scripts" / "upstream_watch.py"
-)
-assert SPEC and SPEC.loader
-UPSTREAM = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(UPSTREAM)
+BASELINE = importlib.import_module("scripts.upstream_baseline")
+UPSTREAM = importlib.import_module("scripts.upstream_watch")
 
 
 class UpstreamGovernanceTests(unittest.TestCase):
+    def test_direct_module_and_legacy_entrypoints_load_the_same_controller(self) -> None:
+        commands = (
+            [sys.executable, "-B", "scripts/upstream_watch.py", "--help"],
+            [sys.executable, "-B", "-m", "scripts.upstream_watch", "--help"],
+            [sys.executable, "-B", "scripts/upstream-denetim.py", "--help"],
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                result = subprocess.run(
+                    command,
+                    cwd=ROOT,
+                    capture_output=True,
+                    check=False,
+                    encoding="utf-8",
+                    timeout=10,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_text_hash_is_stable_across_line_endings(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upstream-eol-") as temporary:
             root = pathlib.Path(temporary)
