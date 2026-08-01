@@ -26,6 +26,7 @@ jobs:
           pip install -r requirements-dev.txt
           python scripts/naming.py --check
           python scripts/divan.py validate
+          python scripts/prose.py --check
           python scripts/standards.py --check
           python scripts/wiki.py --check
           python scripts/candidate_review.py --check

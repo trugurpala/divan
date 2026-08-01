@@ -24,17 +24,10 @@ and evidence-led.
    installation, and do not copy content without verified license/provenance.
 3. Start behavior changes with a failing test. Keep host policy independent
    from Claude/Codex adapters and preserve unrelated user plugins.
-4. Run the complete local gate:
+4. Run the one canonical local gate:
 
 ```bash
-python scripts/hygiene.py --check
-python scripts/validate.py
-python scripts/handoff.py --check
-python scripts/catalog.py --check
-python scripts/v1.py --check
-python scripts/release.py --check
-python evals/run.py --check
-python -m unittest discover -s tests -v
+python scripts/verify.py
 git diff --check
 ```
 
@@ -71,6 +64,8 @@ change.
 
 Changes to the product must keep README, catalog, installation guide, Wiki
 source, website, release manifest, and licensing/provenance records aligned.
+Public writing must follow [docs/Yazim-ve-Uslup.md](docs/Yazim-ve-Uslup.md) and
+pass `python scripts/prose.py --check`.
 The eleven required rules in `DCS-001` through `DCS-011` are validated with:
 
 ```bash

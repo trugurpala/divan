@@ -16,6 +16,7 @@ uyan referansı aç, uygula.
 | references/clean-code.md | Her kod yazımında temel hijyen |
 | references/anti-overengineering.md | "Sade tut" gerektiğinde; 50 satırlık işi 500 yapmamak için |
 | references/codequality.md | Review ve refactor işlerinde |
+| `docs/Yazim-ve-Uslup.md` | README, Wiki, site, release, issue ve PR metninde |
 | references/database.md | Şema, sorgu, migration işlerinde |
 | references/docker.md | Container/compose işlerinde |
 | references/nextjs-14-tailwind-seo-setup.md | Next.js + SEO kurulumlarında |

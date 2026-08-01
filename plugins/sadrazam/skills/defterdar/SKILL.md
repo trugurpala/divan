@@ -56,6 +56,9 @@ projeye yeni kayıt dosyaları ekleme.
 
 ## Nizam kuralları
 
+- Kamuya açık karar, ilerleme ve teslim metninde varsa proje kökündeki
+  `docs/Yazim-ve-Uslup.md` sözleşmesini kalıcı kaynak olarak kullan.
+
 - BLUEPRINT ≤ 200 satır; taşarsa ayrıntıyı .divan/ altına indir.
 - Kararı sohbette bırakma: konuşulan her mimari karar ADR olur.
 - Kanıtsız "bitti" defterlere geçmez — Teftiş kanıtı evidence/'a yazılmadan

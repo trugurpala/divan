@@ -4,25 +4,26 @@ Son güncelleme: 2026-08-01
 
 ## Yayın durumu
 
-- Latest published release: v1.0.3
-- Published commit: ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb
-- Publication evidence: .divan/evidence/teftis-20260801-v103-release.md
-- Release asset evidence: .divan/evidence/teftis-20260801-v103-release.md
+- Latest published release: v1.1.0
+- Published commit: aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0
+- Publication evidence: GitHub Actions release run 30692249356
+- Release asset evidence: seven checksummed and attested v1.1.0 assets
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The approved v1.0.3 friction-removal slice is published. One-time setup,
-plain-language daily use, and maintenance are separate without weakening
-immutable refs, checksum verification, dry-run, transaction recovery, or
-evidence gates. Healthy doctor output stops at READY while preserving the
-public JSON field type; compatibility claims are scoped to evidenced host
-surfaces; README and Pages lead an installed user to one copyable ferman.
+Divan v1.2.0 will make the technically proven product understandable and
+contributable on first contact. The canonical writing contract, prose gate,
+question-led README, structured community intake, decision-ready Nöbet report,
+and editable Figma visual source must ship together without forking another
+repository or weakening the modular one-repo architecture.
 
-The approved design and executable plan are:
+## Sıradaki kesin iş
 
-- `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`
-- `docs/superpowers/plans/2026-08-01-v103-friendly-control-plane.md`
+Implement and verify the human-centered writing contract, prose quality gate,
+README information architecture, and structured community forms on
+`codex/v120-human-community`; then commit that isolated slice before starting
+the Nöbet and Figma slices.
 
 ## Son yayımlanan durum
 

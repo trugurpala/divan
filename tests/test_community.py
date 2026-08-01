@@ -8,10 +8,10 @@ from html import unescape
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/trugurpala/divan"
 DISCUSSIONS_QA = f"{REPOSITORY}/discussions/categories/q-a"
-BUG_FORM = f"{REPOSITORY}/issues/new?template=hata.md"
+BUG_FORM = f"{REPOSITORY}/issues/new?template=bug.yml"
 PRIVATE_ADVISORY = f"{REPOSITORY}/security/advisories/new"
-CANDIDATE_FORM = f"{REPOSITORY}/issues/new?template=kaynak-adayi.yml"
-SKILL_FORM = f"{REPOSITORY}/issues/new?template=yeni-vezir.md"
+CANDIDATE_FORM = f"{REPOSITORY}/issues/new?template=source-candidate.yml"
+SKILL_FORM = f"{REPOSITORY}/issues/new?template=new-skill.yml"
 ACCEPTANCE_FORM = f"{REPOSITORY}/issues/new?template=kabul-kaniti.yml"
 PAGES_URL = "https://trugurpala.github.io/divan/"
 ROLLBACK_COMMAND = (

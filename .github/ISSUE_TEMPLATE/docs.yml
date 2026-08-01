@@ -1,0 +1,22 @@
+name: Belge düzeltmesi
+description: Eksik, eski veya anlaşılması zor bir kamu metnini düzeltin
+title: "[Belge]: "
+labels: [documentation]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Sayfa veya dosya
+      placeholder: README.tr.md veya Wiki bağlantısı
+    validations: {required: true}
+  - type: textarea
+    id: problem
+    attributes:
+      label: Okurun yaşadığı sorun
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Önerilen doğal anlatım
+      description: docs/Yazim-ve-Uslup.md sözleşmesini izleyin.
+    validations: {required: true}

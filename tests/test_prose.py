@@ -1,0 +1,87 @@
+import importlib.util
+import json
+import pathlib
+import tempfile
+import unittest
+
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("divan_prose", ROOT / "scripts" / "prose.py")
+PROSE = importlib.util.module_from_spec(SPEC)
+assert SPEC.loader
+SPEC.loader.exec_module(PROSE)
+
+
+class ProseGateTests(unittest.TestCase):
+    def test_safe_turkish_errors_and_mojibake_fail(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "README.tr.md"
+            path.write_text(
+                "# Başlık\n\nHerşey  hazır ! TÃ¼rkÃ§e\n",
+                encoding="utf-8",
+            )
+            report = PROSE.inspect(root, (path,))
+        codes = {finding.code for finding in report.errors}
+        self.assertTrue({"TR_SPELLING", "MOJIBAKE", "PUNCTUATION_SPACE", "REPEATED_SPACE"}.issubset(codes))
+
+    def test_context_sensitive_particles_are_not_blindly_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "README.tr.md"
+            path.write_text(
+                "# Doğal Türkçe\n\nProjede de kanıt var mı diye bakın ki karar verebilin.\n",
+                encoding="utf-8",
+            )
+            report = PROSE.inspect(root, (path,))
+        self.assertFalse(report.errors)
+
+    def test_broken_relative_link_and_heading_fail(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "README.md"
+            path.write_text("#Broken\n\n[Missing](docs/missing.md)\n", encoding="utf-8")
+            report = PROSE.inspect(root, (path,))
+        self.assertEqual(
+            {finding.code for finding in report.errors},
+            {"MARKDOWN_HEADING", "BROKEN_LINK"},
+        )
+
+    def test_readme_alias_must_be_byte_identical(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "README.md").write_text("# Divan\n", encoding="utf-8")
+            (root / "README.en.md").write_text("# Other\n", encoding="utf-8")
+            report = PROSE.inspect(
+                root, (root / "README.md", root / "README.en.md")
+            )
+        self.assertIn("README_ALIAS_DRIFT", {finding.code for finding in report.errors})
+
+    def test_warnings_do_not_fail_json_contract(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            path = root / "README.md"
+            path.write_text(
+                "# Divan\n\n" + "This product is optimized for value. " * 22 + "\n",
+                encoding="utf-8",
+            )
+            report = PROSE.inspect(root, (path,))
+            payload = json.loads(PROSE.to_json(report))
+        self.assertEqual(payload["status"], "warning")
+        self.assertGreater(payload["warning_count"], 0)
+        self.assertEqual(payload["error_count"], 0)
+
+    def test_repository_prose_contract_is_clean(self):
+        report = PROSE.inspect(ROOT, PROSE.public_files(ROOT))
+        self.assertFalse(report.errors, report.errors)
+
+    def test_verify_and_quality_gate_include_prose(self):
+        verify = (ROOT / "scripts" / "verify.py").read_text(encoding="utf-8")
+        workflow = (ROOT / ".github" / "workflows" / "quality-gate.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('(\"scripts/prose.py\", \"--check\")', verify)
+        self.assertIn("python scripts/prose.py --check", workflow)
+
+
+if __name__ == "__main__":
+    unittest.main()

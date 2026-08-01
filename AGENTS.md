@@ -16,6 +16,7 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Yayın yüzeyleri: `release-manifest.json` ve `scripts/release.py --check`
 - v1 kabul defteri: `registry/v1-gates.json` ve `scripts/v1.py --check`
 - Claude Code devralması: `CLAUDE.md` ve `scripts/handoff.py --check`
+- Kamuya açık yazı ve dil: `docs/Yazim-ve-Uslup.md` ve `scripts/prose.py --check`
 
 ## Çalışma kuralları
 
@@ -43,6 +44,9 @@ taşınabilirliği, lisans açıklığını ve kanıtlı teslimi korumalıdır.
 - Bir skill'in davranışı iyileştirdiğini iddia etmeden önce `evals/README.md`
   protokolünü kullan. Gerçek ajan adaptörü/hakem koşmadıysa yalnız sözleşme veya
   mekanik doğrulama raporla; win-rate, hız ya da kalite artışı uydurma.
+- README, Wiki, site, sürüm notu, issue ve PR metninde
+  `docs/Yazim-ve-Uslup.md` sözleşmesini uygula. Önce kullanıcı sonucunu yaz;
+  Divan terimini ilk kullanımda günlük karşılığıyla açıkla.
 
 ## Doğrulama
 
