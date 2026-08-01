@@ -86,18 +86,17 @@ class HumanCommunityContractTests(unittest.TestCase):
         self.assertIn("blank_issues_enabled: false", config)
         self.assertIn("security/advisories/new", config)
 
-    def test_progress_records_v131_release_candidate_action(self):
+    def test_progress_records_v131_published_release(self):
         progress = read(".divan/progress.md")
-        self.assertIn("v1.3.0", progress)
-        self.assertIn("v1.3.0", progress)
+        self.assertIn("Latest published release: v1.3.1", progress)
+        self.assertIn("teftis-20260801-v131-release.md", progress)
         self.assertEqual(progress.count("## Sıradaki kesin iş"), 1)
         next_action = progress.split("## Sıradaki kesin iş", 1)[1].split("\n## ", 1)[0]
         normalized = " ".join(next_action.split())
-        self.assertIn("previous immutable tag untouched", normalized)
-        self.assertIn("publish v1.3.1", normalized)
-        self.assertIn("open a PR", normalized)
-        self.assertIn("merge only green checks", normalized)
-        self.assertIn("record the public readback evidence", normalized)
+        self.assertIn("v1.3.1 tag and release immutable", normalized)
+        self.assertIn("new PR", normalized)
+        self.assertIn("green checks", normalized)
+        self.assertIn("public readback evidence", normalized)
 
 
 if __name__ == "__main__":

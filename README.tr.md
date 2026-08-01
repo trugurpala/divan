@@ -255,7 +255,7 @@ iddia edilmez.
 
 [GitHub Releases sayfası](https://github.com/trugurpala/divan/releases/latest),
 son yayımlanan paketin doğru kaynağıdır. Değişmez v1.3.1 yayın kanıtı
-`.divan/evidence/teftis-20260801-v130-release.md` dosyasında kayıtlıdır. Her yeni
+`.divan/evidence/teftis-20260801-v131-release.md` dosyasında kayıtlıdır. Her yeni
 sürüm kendi checksum, SPDX SBOM, attestation ve canlı geri okuma kanıtını
 eklemelidir.
 
