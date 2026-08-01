@@ -17,8 +17,9 @@ class ProseGateTests(unittest.TestCase):
             root = pathlib.Path(temporary)
             page = root / "index.html"
             page.write_text(
-                "<script>\nconst bad  spacing = true !\n</script >\n"
-                "<style>\n.bad  spacing { color: red !important; }\n</style\t>\n"
+                "<script>\nconst bad  spacing = true !\n</script\t\n bar>\n"
+                "<style>\n.bad  spacing { color: red !important; }\n"
+                "</style data-x>\n"
                 "<p>Temiz metin.</p>\n",
                 encoding="utf-8",
             )
