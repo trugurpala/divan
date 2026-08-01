@@ -3,7 +3,7 @@
 ![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.png)
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Source line 1.2.0](https://img.shields.io/badge/source-1.3.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.2.0](https://img.shields.io/badge/source-1.3.1-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -19,7 +19,7 @@ the work visible and refuses to call an unverified result complete.
 > external agent runtime. It cannot make an unavailable host tool appear, and
 > it does not turn an untested claim into evidence.
 
-**Source line:** v1.3.0 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
+**Source line:** v1.3.1 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
 **5 modular packages** · **8/8 readiness gates**
 
 **Host compatibility:** [English guide](#host-compatibility) ·
@@ -107,20 +107,20 @@ python .\divan.pyz install --host codex --profile auto --execute
 From a trusted checkout, the equivalent two-host lifecycle is:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.0
-python scripts/divan.py install --host both --ref v1.3.0 --execute
-python scripts/divan.py doctor --host both --ref v1.3.0
-python scripts/divan.py update --host both --ref v1.3.0
-python scripts/divan.py update --host both --ref v1.3.0 --execute
+python scripts/divan.py install --host both --ref v1.3.1
+python scripts/divan.py install --host both --ref v1.3.1 --execute
+python scripts/divan.py doctor --host both --ref v1.3.1
+python scripts/divan.py update --host both --ref v1.3.1
+python scripts/divan.py update --host both --ref v1.3.1 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
 The command above resolves the latest published tag before downloading. The
-checkout commands pin the published v1.2.0 tag. See
+checkout commands pin the published v1.3.1 tag. See
 [removal and recovery](docs/Kaldirma.md) before deleting anything.
 
-Release candidate note: use v1.3.0 only after its tag and GitHub Release are visible. Until then, install from the latest published release.
+The v1.3.1 tag and GitHub Release are the current immutable installation source.
 
 ## Your first real task
 
@@ -266,9 +266,9 @@ made.
 ## Latest release and verification
 
 The [GitHub Releases page](https://github.com/trugurpala/divan/releases/latest)
-is the authority for the latest published package. The immutable v1.2.0
+is the authority for the latest published package. The immutable v1.3.1
 publication evidence is recorded in
-`.divan/evidence/teftis-20260801-v120-release.md`; every new release must add its
+`.divan/evidence/teftis-20260801-v130-release.md`; every new release must add its
 own checksum, SPDX SBOM, attestation and live-readback evidence.
 
 The readiness score is **8/8**. That score describes machine-backed technical

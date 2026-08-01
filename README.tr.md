@@ -3,7 +3,7 @@
 ![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
 [![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Kaynak hattı 1.2.0](https://img.shields.io/badge/kaynak-1.3.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Kaynak hattı 1.2.0](https://img.shields.io/badge/kaynak-1.3.1-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
 [![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
 [![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
@@ -19,7 +19,7 @@ sonuca “bitti” demez.
 > çalışma zamanı değildir. Hostta bulunmayan aracı varmış gibi göstermez;
 > test edilmemiş iddiayı kanıta dönüştürmez.
 
-**Kaynak hattı:** v1.3.0 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 beceri** ·
+**Kaynak hattı:** v1.3.1 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 beceri** ·
 **5 modüler paket** · **8/8 hazırlık kapısı**
 
 ## Hızlı bağlantılar
@@ -104,19 +104,18 @@ python .\divan.pyz install --host codex --profile auto --execute
 Güvenilen repo checkout yolunda iki host kurulumu:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.0
-python scripts/divan.py install --host both --ref v1.3.0 --execute
-python scripts/divan.py doctor --host both --ref v1.3.0
-python scripts/divan.py update --host both --ref v1.3.0
-python scripts/divan.py update --host both --ref v1.3.0 --execute
+python scripts/divan.py install --host both --ref v1.3.1
+python scripts/divan.py install --host both --ref v1.3.1 --execute
+python scripts/divan.py doctor --host both --ref v1.3.1
+python scripts/divan.py update --host both --ref v1.3.1
+python scripts/divan.py update --host both --ref v1.3.1 --execute
 ```
 
 Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içindeki
-komutlar yayımlanmış v1.2.0 etiketini sabitler. Silmeden önce
+komutlar yayımlanmış v1.3.1 etiketini sabitler. Silmeden önce
 [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
 
-Release adayı notu: v1.3.0'i yalnız tag ve GitHub Release sayfası görünür
-olduktan sonra kullanın. O zamana kadar son yayımlanmış release'i kurun.
+v1.3.1 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
 
 ## İlk gerçek iş
 
@@ -255,8 +254,8 @@ iddia edilmez.
 ## Son release ve doğrulama
 
 [GitHub Releases sayfası](https://github.com/trugurpala/divan/releases/latest),
-son yayımlanan paketin doğru kaynağıdır. Değişmez v1.2.0 yayın kanıtı
-`.divan/evidence/teftis-20260801-v120-release.md` dosyasında kayıtlıdır. Her yeni
+son yayımlanan paketin doğru kaynağıdır. Değişmez v1.3.1 yayın kanıtı
+`.divan/evidence/teftis-20260801-v130-release.md` dosyasında kayıtlıdır. Her yeni
 sürüm kendi checksum, SPDX SBOM, attestation ve canlı geri okuma kanıtını
 eklemelidir.
 

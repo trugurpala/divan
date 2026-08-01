@@ -123,12 +123,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.3.0 ✓** Release candidate: Müşavir görev paydası açık deterministik yetenek
+- **v1.3.1 ✓** Yayımlanan bakım sürümü: Müşavir görev paydası açık deterministik yetenek
   ölçümü, güncel uygulama araçları karar matrisi ve üç davranış eval sözleşmesi
   kazandı. Bu kayıt gerçek sağlayıcı A/B kalite artışı veya hız iddiası değildir;
-  yayımlandığında v1.2.0 etiketi ve varlıkları değişmeden kalır.
+  ölçümünü ve yayın yüzeylerinin güncel sürümle eşitlenmesini içerir.
 
-- **v1.2.0 ✓** Release candidate: insan odaklı README ve topluluk dosyaları, kalıcı yazım
+- **v1.2.0 ✓** Yayımlanan temel: insan odaklı README ve topluluk dosyaları, kalıcı yazım
   sözleşmesi, prose kalite kapısı, karar üretmeye hazır Nöbet raporu ve
   düzenlenebilir Figma görsel sistemi. Tek repo ve beş modüler paket korunur;
   dış runtime veya fork eklenmez.

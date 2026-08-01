@@ -53,6 +53,21 @@ TECHNICAL_DENSITY = re.compile(
     r"\b(?:runtime|orchestration|provenance|framework|workflow|schema|provider)\b",
     re.IGNORECASE,
 )
+PUBLIC_RELEASE_SURFACES = (
+    "README.md",
+    "README.en.md",
+    "README.tr.md",
+    "docs/Hizli-Baslangic.md",
+    "docs/Kurulum.md",
+    "docs/Durum-ve-Yol-Haritasi.md",
+    "docs/Home.md",
+    "docs/index.html",
+    "site/index.html",
+)
+STALE_CANDIDATE_PHRASES = (
+    "Release candidate note:",
+    "Release adayı notu:",
+)
 
 
 class Finding(NamedTuple):
@@ -211,6 +226,25 @@ def _repository_contract_errors(root: pathlib.Path) -> list[Finding]:
             for old_path in paths:
                 if old_path in text:
                     errors.append(Finding("error", "RETIRED_REFERENCE", public.relative_to(root).as_posix(), 1, f"reference uses retired path: {old_path}"))
+    version = version_file.read_text(encoding="utf-8").strip() if version_file.is_file() else ""
+    if version:
+        for relative in PUBLIC_RELEASE_SURFACES:
+            path = root / relative
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            for phrase in STALE_CANDIDATE_PHRASES:
+                if phrase in text:
+                    errors.append(
+                        Finding(
+                            "error",
+                            "STALE_RELEASE_COPY",
+                            relative,
+                            1,
+                            f"public onboarding text still marks a release as a candidate; current version is v{version}",
+                        )
+                    )
+                    break
     return errors
 
 
