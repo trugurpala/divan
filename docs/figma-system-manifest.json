@@ -25,7 +25,7 @@
     "Mobile Site — 390": [390, 1800]
   },
   "production_exports": {
-    "hero.png": {"node": "6:5", "size": [1600, 640], "sha256": "3150a65365dad845635d97cd281b47c02a60c951d15f2008e630597434519b67"},
+    "hero.png": {"node": "6:5", "size": [1600, 640], "sha256": "8c0d796f029936b52e1aa85ebc82877c52a08244fb47403ccf649d9ed7bf954d"},
     "evidence-flow.png": {"node": "6:9", "size": [1600, 900], "sha256": "976b678807bd1e4189a271656f29a7496dbcb4dde55e47ff0dd130207c964afb"},
     "social-preview.png": {"node": "6:21", "size": [1280, 640], "sha256": "73ab730e5beefdbb75e9935efcc50b8ec94523e29bb09a2a57bd7557556351e9"},
     "launch-horizontal.png": {"node": "6:25", "size": [1200, 675], "sha256": "32505635621d388814957e70dc06bcc4929089bda9c589798f66a62eae531129"},
