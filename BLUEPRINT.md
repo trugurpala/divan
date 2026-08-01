@@ -91,6 +91,16 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     marka kaynağıdır; repo yalnız doğrulanmış üretim çıktılarını taşır. Nöbet
     dış kodu kurmaz, her farkı gerekçeli karara bağlar. Ayrıntı ADR 0012,
     `docs/Yazim-ve-Uslup.md` ve `docs/Gorsel-Sistem.md` içindedir.
+16. **Göreve özel yetenek denetimi:** Divan veya model zekâsına öznel bir yüzde
+    verilmez. Müşavir önce somut görev gereksinimlerini ve mevcut host kanıtını
+    çıkarır; `verified`, `partial`, `missing` ve `unknown` durumlarını
+    stdlib-only ölçücüyle kapsama, boşluk ve kanıt güveni olarak hesaplar.
+    Teknoloji kararları `KEEP`, `ADD`, `LATER`, `REPLACE` veya `REJECT` olur;
+    toplu ön-yetki yalnız geri alınabilir yerel değişikliklerde geçerlidir.
+    Hesap, ücret, secret, güvenlik, dış etki, commit, push ve yayın sınırları
+    ayrıca korunur. Ayrıntı
+    `docs/superpowers/specs/2026-08-01-musavir-capability-audit-design.md`
+    belgesindedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -112,6 +122,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ## Yol Haritası
 
 ### Son yama hattı
+
+- **v1.3.0 ✓** Release candidate: Müşavir görev paydası açık deterministik yetenek
+  ölçümü, güncel uygulama araçları karar matrisi ve üç davranış eval sözleşmesi
+  kazandı. Bu kayıt gerçek sağlayıcı A/B kalite artışı veya hız iddiası değildir;
+  yayımlandığında v1.2.0 etiketi ve varlıkları değişmeden kalır.
 
 - **v1.2.0 ✓** Release candidate: insan odaklı README ve topluluk dosyaları, kalıcı yazım
   sözleşmesi, prose kalite kapısı, karar üretmeye hazır Nöbet raporu ve
