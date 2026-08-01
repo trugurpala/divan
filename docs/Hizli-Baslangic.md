@@ -1,7 +1,7 @@
 # Hızlı Başlangıç
 
-v1.1.0 tag'i ve GitHub Release'i yayımlanmıştır;
-kurulum için o zamana kadar son yayımlanan v1.0.3 release'ini seç.
+v1.2.0 güncel kaynak adayıdır. Tag ve GitHub Release görünene kadar kurulumda
+son yayımlanan v1.1.0 release'ini seç.
 
 Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefini
 söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
@@ -40,16 +40,16 @@ yayımlanan release'tir. Önce yazmayan kurulum önizlemesi, sonra aynı sabit
 sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.1.0
-python scripts/divan.py install --host both --ref v1.1.0 --execute
+python scripts/divan.py install --host both --ref v1.2.0
+python scripts/divan.py install --host both --ref v1.2.0 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0 --execute
+python scripts/divan.py doctor --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:

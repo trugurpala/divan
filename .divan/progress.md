@@ -20,19 +20,17 @@ repository or weakening the modular one-repo architecture.
 
 ## Sıradaki kesin iş
 
-Implement and verify the human-centered writing contract, prose quality gate,
-README information architecture, and structured community forms on
-`codex/v120-human-community`; then commit that isolated slice before starting
-the Nöbet and Figma slices.
+Run the canonical repository verification on the complete v1.2.0 release
+candidate, resolve every failure, obtain independent code/security/license/UX
+review, then publish through PR, green CI, merge, tag, Release, Pages, Wiki,
+checksums, SBOM, attestations and live readback.
 
 ## Son yayımlanan durum
 
-The latest published release is immutable v1.0.3 at commit
-`ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb`. PR #82 published the friendly
-control-plane slice without changing Divan's product scope. PR checks and main
-`quality-gate`, `release`, `compatibility`,
-`codeql`, `site-tests`, `scorecard`, `wiki-sync`, `candidate-review`, and Pages
-all passed. The release workflow created tag/GitHub Release v1.0.3, seven
+The latest published release is immutable v1.1.0 at commit
+`aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0`. PR #84 published the bounded UX
+council and `product-design-audit` slice. All required PR and main checks passed;
+the release workflow created tag/GitHub Release v1.1.0 with seven
 downloaded asset hashes matched their manifests, all seven release assets have
 verified GitHub attestations, and live Pages/Wiki/readback gates passed.
 

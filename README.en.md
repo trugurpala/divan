@@ -3,7 +3,7 @@
 ![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.png)
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Version 1.1.0](https://img.shields.io/badge/version-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -19,7 +19,7 @@ the work visible and refuses to call an unverified result complete.
 > external agent runtime. It cannot make an unavailable host tool appear, and
 > it does not turn an untested claim into evidence.
 
-**Current source:** v1.1.0 · **Latest published:** v1.1.0 · **42 skills** ·
+**Current source:** v1.2.0 · **Latest published:** v1.1.0 · **42 skills** ·
 **5 modular packages** · **8/8 readiness gates**
 
 **Host compatibility:** [English guide](#host-compatibility) ·
@@ -107,17 +107,17 @@ python .\divan.pyz install --host codex --profile auto --execute
 From a trusted checkout, the equivalent two-host lifecycle is:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.1.0
-python scripts/divan.py install --host both --ref v1.1.0 --execute
-python scripts/divan.py doctor --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0 --execute
+python scripts/divan.py install --host both --ref v1.2.0
+python scripts/divan.py install --host both --ref v1.2.0 --execute
+python scripts/divan.py doctor --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
 If Current source differs from Latest published, substitute Latest published
-in every `--ref` command. Use v1.1.0 only after its tag and GitHub Release are
+in every `--ref` command. Use v1.2.0 only after its tag and GitHub Release are
 visible. See [removal and recovery](docs/Kaldirma.md) before deleting anything.
 
 ## Your first real task

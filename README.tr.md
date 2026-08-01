@@ -3,7 +3,7 @@
 ![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
 [![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Sürüm 1.1.0](https://img.shields.io/badge/version-1.1.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Sürüm 1.1.0](https://img.shields.io/badge/version-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
 [![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
 [![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
@@ -19,7 +19,7 @@ sonuca “bitti” demez.
 > çalışma zamanı değildir. Hostta bulunmayan aracı varmış gibi göstermez;
 > test edilmemiş iddiayı kanıta dönüştürmez.
 
-**Güncel kaynak:** v1.1.0 · **Son yayımlanan:** v1.1.0 · **42 beceri** ·
+**Güncel kaynak:** v1.2.0 · **Son yayımlanan:** v1.1.0 · **42 beceri** ·
 **5 modüler paket** · **8/8 hazırlık kapısı**
 
 ## Hızlı bağlantılar
@@ -104,16 +104,17 @@ python .\divan.pyz install --host codex --profile auto --execute
 Güvenilen repo checkout yolunda iki host kurulumu:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.1.0
-python scripts/divan.py install --host both --ref v1.1.0 --execute
-python scripts/divan.py doctor --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0 --execute
+python scripts/divan.py install --host both --ref v1.2.0
+python scripts/divan.py install --host both --ref v1.2.0 --execute
+python scripts/divan.py doctor --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0 --execute
 ```
 
 Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref` komutlarında Son
-yayımlanan sürümü kullan. v1.1.0 tag'i ve GitHub Release'i yayımlanmıştır.
-Silmeden önce [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
+yayımlanan sürümü kullan. v1.2.0'i yalnız tag ve GitHub Release sayfası görünür
+olduktan sonra kullan. Silmeden önce [kaldırma ve kurtarma](docs/Kaldirma.md)
+rehberini okuyun.
 
 ## İlk gerçek iş
 
