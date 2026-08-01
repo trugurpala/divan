@@ -4,11 +4,13 @@
 
 - v1.0: verified project workflow, modular Engine and clean-room adoption gate.
 - v1.1: calmer vibe-coder progress, UX audit skill and evidence-backed council.
+- v1.2: human-centered writing, community governance, structured intake,
+  decision-ready Nöbet and editable premium visual system.
 
 ## Next
 
-- v1.2: human-centered writing, community governance, structured intake,
-  decision-ready Nöbet and editable premium visual system.
+- Stable maintenance and community contributions through the documented
+  support, governance and verification paths.
 
 ## Researching
 

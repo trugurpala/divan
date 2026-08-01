@@ -111,9 +111,9 @@ python scripts/divan.py update --host both --ref v1.2.0
 python scripts/divan.py update --host both --ref v1.2.0 --execute
 ```
 
-Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içinde
-v1.2.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullanın.
-Silmeden önce [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
+Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içindeki
+komutlar yayımlanmış v1.2.0 etiketini sabitler. Silmeden önce
+[kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
 
 ## İlk gerçek iş
 
@@ -252,9 +252,10 @@ iddia edilmez.
 ## Son release ve doğrulama
 
 [GitHub Releases sayfası](https://github.com/trugurpala/divan/releases/latest),
-son yayımlanan paketin doğru kaynağıdır. Değişmez v1.1.0 yayın kanıtı
-`.divan/evidence/` altında korunur; her yeni sürüm kendi checksum, SPDX SBOM,
-attestation ve canlı geri okuma kanıtını eklemelidir.
+son yayımlanan paketin doğru kaynağıdır. Değişmez v1.2.0 yayın kanıtı
+`.divan/evidence/teftis-20260801-v120-release.md` dosyasında kayıtlıdır. Her yeni
+sürüm kendi checksum, SPDX SBOM, attestation ve canlı geri okuma kanıtını
+eklemelidir.
 
 Hazırlık puanı **8/8**'dir. Bu puan makine destekli teknik kapıları anlatır;
 popülerlik veya pazar benimsemesi değildir.

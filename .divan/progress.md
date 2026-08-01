@@ -4,35 +4,34 @@ Son güncelleme: 2026-08-01
 
 ## Yayın durumu
 
-- Latest published release: v1.1.0
-- Published commit: aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0
-- Publication evidence: .divan/evidence/teftis-20260801-v110-release.md
-- Release asset evidence: seven checksummed and attested v1.1.0 assets
+- Latest published release: v1.2.0
+- Published commit: c90162f79ba0a7065520eb4568978d8ef69d4cc1
+- Publication evidence: .divan/evidence/teftis-20260801-v120-release.md
+- Release asset evidence: seven checksummed and attested v1.2.0 assets
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-Divan v1.2.0 will make the technically proven product understandable and
-contributable on first contact. The canonical writing contract, prose gate,
-question-led README, structured community intake, decision-ready Nöbet report,
-and editable Figma visual source must ship together without forking another
-repository or weakening the modular one-repo architecture.
+Divan v1.2.0 is published. The product is in stable maintenance and accepts
+community contributions. Public writing follows the canonical human-first
+contract; Nöbet reports zero review debt; and the editable Figma source remains
+the authority for repository visuals. Divan stays one modular repository.
 
 ## Sıradaki kesin iş
 
-Run the canonical repository verification on the complete v1.2.0 release
-candidate, resolve every failure, obtain independent code/security/license/UX
-review, then publish through PR, green CI, merge, tag, Release, Pages, Wiki,
-checksums, SBOM, attestations and live readback.
+Keep v1.2.0 immutable. Triage the next concrete user report or community
+contribution through the documented support path; do not create speculative
+product work while Nöbet and current GitHub Actions remain clean.
 
 ## Son yayımlanan durum
 
-The latest published release is immutable v1.1.0 at commit
-`aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0`. PR #84 published the bounded UX
-council and `product-design-audit` slice. All required PR and main checks passed;
-the release workflow created tag/GitHub Release v1.1.0 with seven
-downloaded asset hashes matched their manifests, all seven release assets have
-verified GitHub attestations, and live Pages/Wiki/readback gates passed.
+The latest published release is immutable v1.2.0 at commit
+`c90162f79ba0a7065520eb4568978d8ef69d4cc1`. PR #86 published the human-first
+writing contract and prose gate, question-led README, structured community
+intake, decision-ready Nöbet report, and editable Figma visual source. All PR
+and main checks passed. The release workflow published seven assets; downloaded
+hashes matched, attestations verified, and live README, Pages, and Wiki
+readbacks reported v1.2.0. Nöbet issue #85 closed with zero review debt.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the

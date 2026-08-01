@@ -2,15 +2,15 @@
 
 Son durum tarihi: 2026-08-01.
 
-> **Yayımlanan paketlerin güncel listesi [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) sayfasındadır.** v1.1.0 için PR #84
-> `aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0` commit'inde birleşti ve
+> **Yayımlanan paketlerin güncel listesi [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) sayfasındadır.** v1.2.0 için PR #86
+> `c90162f79ba0a7065520eb4568978d8ef69d4cc1` commit'inde birleşti ve
 > değişmez tag/GitHub Release olarak yayımlandı. Yedi varlık, checksum, SPDX
 > SBOM, attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages,
 > Wiki ve indirilen runner checksumları doğrulandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v1.1.0` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v1.2.0` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 42 beceri.
 - Vibe coder için beş niyetli ferman seçici.

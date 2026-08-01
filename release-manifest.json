@@ -211,6 +211,7 @@
     {"id": "figma-system-manifest", "path": "docs/figma-system-manifest.json", "marker": "Z325Jjy36I7KLdizcaZAnZ", "replace_version": false},
     {"id": "human-writing-adr", "path": ".divan/decisions/0012-insan-odakli-yazi-ve-gorsel-sistem.md", "marker": "docs/Yazim-ve-Uslup.md", "replace_version": false},
     {"id": "v110-release-evidence", "path": ".divan/evidence/teftis-20260801-v110-release.md", "marker": "# v1.1.0 immutable release evidence", "replace_version": false},
+    {"id": "v120-release-evidence", "path": ".divan/evidence/teftis-20260801-v120-release.md", "marker": "# v1.2.0 Publication Evidence", "replace_version": false},
     {"id": "prose-gate", "path": "scripts/prose.py", "marker": "Check Divan's public prose for safe mechanical errors", "replace_version": false},
     {"id": "prose-tests", "path": "tests/test_prose.py", "marker": "class ProseGateTests", "replace_version": false},
     {"id": "human-community-tests", "path": "tests/test_human_community.py", "marker": "class HumanCommunityContractTests", "replace_version": false},

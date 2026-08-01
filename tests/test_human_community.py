@@ -86,13 +86,16 @@ class HumanCommunityContractTests(unittest.TestCase):
         self.assertIn("blank_issues_enabled: false", config)
         self.assertIn("security/advisories/new", config)
 
-    def test_progress_records_v120_exact_next_action(self):
+    def test_progress_records_published_v120_maintenance_action(self):
         progress = read(".divan/progress.md")
         self.assertIn("v1.2.0", progress)
         self.assertEqual(progress.count("## Sıradaki kesin iş"), 1)
         next_action = progress.split("## Sıradaki kesin iş", 1)[1].split("\n## ", 1)[0]
-        self.assertIn("v1.2.0", next_action)
-        self.assertIn("publish through PR", next_action)
+        normalized = " ".join(next_action.split())
+        self.assertIn("v1.2.0", normalized)
+        self.assertIn("Keep v1.2.0 immutable", normalized)
+        self.assertIn("community contribution", normalized)
+        self.assertIn("do not create speculative product work", normalized)
 
 
 if __name__ == "__main__":
