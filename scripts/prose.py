@@ -12,10 +12,12 @@ import urllib.parse
 from typing import NamedTuple
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-PUBLIC_PATHS = (
+PUBLIC_ROOT_PATHS = (
     "README.md",
     "README.en.md",
     "README.tr.md",
+    "BLUEPRINT.md",
+    "CHANGELOG.md",
     "CONTRIBUTING.md",
     "CONTRIBUTING.en.md",
     "CONTRIBUTING.tr.md",
@@ -25,9 +27,11 @@ PUBLIC_PATHS = (
     "MAINTAINERS.md",
     "ROADMAP.md",
     "RELEASE.md",
-    "docs/Yazim-ve-Uslup.md",
-    "docs/Gorsel-Sistem.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "site/index.html",
+    "docs/index.html",
 )
+PUBLIC_GLOBS = ("docs/*.md", ".github/ISSUE_TEMPLATE/*.yml")
 MOJIBAKE = re.compile(
     "(?:T\\u00c3|\\u00c4[\\u00b1\\u0178\\u017e]|"
     "\\u00c5[\\u0178\\u017e]|\\u00c3[\\u00a7\\u00b6\\u00bc\\u2021\\u2013\\u0153]|"
@@ -41,7 +45,7 @@ BROKEN_HEADING = re.compile(r"^#{1,6}[^#\s]", re.MULTILINE)
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)\s]+)")
 MARKETING = re.compile(
     r"\b(?:best[- ]in[- ]class|world[- ]class|premium quality|"
-    r"adds value|delivers value|optimizes?|empowers?)\b",
+    r"adds value|delivers value|optimizes?\s+(?:your|the|every)|empowers?)\b",
     re.IGNORECASE,
 )
 PASSIVE_TR = re.compile(r"\b(?:edilmektedir|yapılmaktadır|sağlanmaktadır)\b", re.IGNORECASE)
@@ -65,7 +69,14 @@ class Report(NamedTuple):
 
 
 def public_files(root: pathlib.Path = ROOT) -> tuple[pathlib.Path, ...]:
-    return tuple(root / relative for relative in PUBLIC_PATHS if (root / relative).is_file())
+    paths = {
+        root / relative
+        for relative in PUBLIC_ROOT_PATHS
+        if (root / relative).is_file()
+    }
+    for pattern in PUBLIC_GLOBS:
+        paths.update(path for path in root.glob(pattern) if path.is_file())
+    return tuple(sorted(paths, key=lambda path: path.relative_to(root).as_posix()))
 
 
 def _line_number(text: str, offset: int) -> int:
@@ -100,26 +111,44 @@ def _relative_link_error(root: pathlib.Path, path: pathlib.Path, target: str) ->
     return None
 
 
+def _prose_source(path: pathlib.Path, text: str) -> str:
+    if path.suffix.casefold() != ".html":
+        return text
+
+    def preserve_lines(match: re.Match[str]) -> str:
+        return "\n" * match.group(0).count("\n")
+
+    return re.sub(
+        r"<(?:style|script)\b[^>]*>.*?</(?:style|script)>",
+        preserve_lines,
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+
 def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding], list[Finding]]:
     text = path.read_text(encoding="utf-8")
+    prose = _prose_source(path, text)
     errors: list[Finding] = []
     warnings: list[Finding] = []
-    hard_rules = (
+    hard_rules = [
         (MOJIBAKE, "MOJIBAKE", "text contains likely UTF-8 corruption"),
         (MISSPELLINGS, "TR_SPELLING", "text contains a known unambiguous Turkish spelling error"),
         (PUNCTUATION_SPACE, "PUNCTUATION_SPACE", "remove the space before punctuation"),
         (REPEATED_SPACE, "REPEATED_SPACE", "text contains repeated horizontal spaces"),
         (REPEATED_PUNCTUATION, "REPEATED_PUNCTUATION", "text contains repeated punctuation"),
-        (BROKEN_HEADING, "MARKDOWN_HEADING", "Markdown heading needs a space after #"),
-    )
+    ]
+    if path.suffix.casefold() == ".md":
+        hard_rules.append((BROKEN_HEADING, "MARKDOWN_HEADING", "Markdown heading needs a space after #"))
     for pattern, code, message in hard_rules:
-        for match in pattern.finditer(text):
-            errors.append(_finding("error", code, path, root, text, match, message))
-    for match in MARKDOWN_LINK.finditer(text):
-        message = _relative_link_error(root, path, match.group(1))
-        if message:
-            errors.append(_finding("error", "BROKEN_LINK", path, root, text, match, message))
-    for line_number, line in _visible_lines(text):
+        for match in pattern.finditer(prose):
+            errors.append(_finding("error", code, path, root, prose, match, message))
+    if path.suffix.casefold() == ".md":
+        for match in MARKDOWN_LINK.finditer(text):
+            message = _relative_link_error(root, path, match.group(1))
+            if message:
+                errors.append(_finding("error", "BROKEN_LINK", path, root, text, match, message))
+    for line_number, line in _visible_lines(prose):
         if len(line) > 600:
             warnings.append(Finding("warning", "LONG_PARAGRAPH", path.relative_to(root).as_posix(), line_number, "paragraph is too long for quick reading"))
         is_prohibition = any(

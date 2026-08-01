@@ -83,6 +83,34 @@ class ProseGateTests(unittest.TestCase):
         report = PROSE.inspect(ROOT, PROSE.public_files(ROOT))
         self.assertFalse(report.errors, report.errors)
 
+    def test_public_inventory_matches_the_writing_contract(self):
+        relative = {
+            path.relative_to(ROOT).as_posix()
+            for path in PROSE.public_files(ROOT)
+        }
+        required = {
+            "README.md",
+            "README.en.md",
+            "README.tr.md",
+            "BLUEPRINT.md",
+            "CHANGELOG.md",
+            "docs/Home.md",
+            "docs/index.html",
+            "site/index.html",
+            ".github/PULL_REQUEST_TEMPLATE.md",
+            ".github/ISSUE_TEMPLATE/bug.yml",
+            ".github/ISSUE_TEMPLATE/feature.yml",
+            ".github/ISSUE_TEMPLATE/docs.yml",
+            ".github/ISSUE_TEMPLATE/new-skill.yml",
+            ".github/ISSUE_TEMPLATE/source-candidate.yml",
+            ".github/ISSUE_TEMPLATE/kabul-kaniti.yml",
+        }
+        self.assertTrue(required.issubset(relative))
+        self.assertEqual(
+            {path.relative_to(ROOT).as_posix() for path in ROOT.glob("docs/*.md")},
+            {path for path in relative if path.startswith("docs/") and path.endswith(".md")},
+        )
+
     def test_verify_and_quality_gate_include_prose(self):
         verify = (ROOT / "scripts" / "verify.py").read_text(encoding="utf-8")
         workflow = (ROOT / ".github" / "workflows" / "quality-gate.yml").read_text(
