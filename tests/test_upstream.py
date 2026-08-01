@@ -49,8 +49,43 @@ class UpstreamGovernanceTests(unittest.TestCase):
         errors, reviews = UPSTREAM.baseline_errors(ROOT)
 
         self.assertEqual(errors, [])
-        self.assertEqual(len(reviews), 15)
+        self.assertEqual(len(reviews), 31)
         self.assertEqual({review["decision"] for review in reviews}, {"KEEP"})
+
+    def test_nobet_formats_are_decision_ready(self) -> None:
+        records = [
+            {
+                "source_repository": "owner/repo",
+                "skill_or_package": "example",
+                "reviewed_commit": "a" * 40,
+                "current_commit": "b" * 40,
+                "changed_files": ["SKILL.md"],
+                "change_category": "skill-contract",
+                "license_status": "MIT",
+                "divan_counterpart": "plugins/core-pack/skills/example",
+                "decision": "KEEP",
+                "rationale": "The local contract remains validated.",
+                "evidence": "registry/upstream-baselines.json",
+                "review_debt": False,
+            }
+        ]
+
+        payload = UPSTREAM.render_report(records, "json")
+        decoded = json.loads(payload)
+        self.assertEqual(decoded["review_debt_count"], 0)
+        self.assertEqual(decoded["records"][0]["decision"], "KEEP")
+        self.assertIn("| Source |", UPSTREAM.render_report(records, "markdown"))
+        self.assertIn("Decision: KEEP", UPSTREAM.render_report(records, "text"))
+
+    def test_monthly_workflow_reuses_one_nobet_issue(self) -> None:
+        workflow = (ROOT / ".github/workflows/upstream-watch.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("--format markdown", workflow)
+        self.assertIn("issues.listForRepo", workflow)
+        self.assertIn("issues.update", workflow)
+        self.assertNotIn("issues.create({", workflow)
+        self.assertIn("state: 'closed'", workflow)
 
     def test_canonical_source_inventory_includes_curated_distributed_sources(self) -> None:
         registry = json.loads(
