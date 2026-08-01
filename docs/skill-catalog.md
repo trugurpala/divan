@@ -3,7 +3,7 @@
 > Tek doğru kaynak: `plugins/*/skills/*/SKILL.md`. Bu sayfa
 > `python scripts/catalog.py --render` ile deterministik üretilir.
 
-Toplam **41 skill**, **5 paket**.
+Toplam **42 skill**, **5 paket**.
 
 ## core-pack (18 skill)
 
@@ -51,11 +51,12 @@ Toplam **41 skill**, **5 paket**.
 | **sadrazam** | End-to-end delivery orchestrator (the "Grand Vizier"). Use whenever the user asks to build, create, produce, or ship anything substantial — a feature, an app, a document, a campaign — especially with phrases like "baştan sona", "hepsini… |
 | **vezir-yetistirme** | Skill-creation and evaluation coach for the Divan marketplace ("training a new vizier"). Use when the user wants to add, improve, benchmark or test a skill, write a SKILL.md, contribute to the marketplace, compare skill-enabled behavior… |
 
-## ui-pack (3 skill)
+## ui-pack (4 skill)
 
 | Skill / Beceri | Ne yapar / ne zaman |
 |---|---|
 | **frontend-design** | Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults. |
+| **product-design-audit** | Use when a vibe coder wants a premium, evidence-based audit of an existing product, page, or flow before or after implementation. Produces prioritized UI/UX findings and verifies authorized fixes without inventing visual evidence. |
 | **ui-ux-pro-max** | UI/UX design intelligence for web and mobile. Searchable local database with 84 styles, 192 color palettes, 74 font pairings, 192 product types, 98 UX guidelines, 104 icon entries, 16 GSAP motion presets, and 25 chart types across 22… |
 | **webapp-testing** | Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs. |
 

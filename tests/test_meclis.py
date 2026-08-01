@@ -16,7 +16,7 @@ class MeclisTesti(unittest.TestCase):
     def test_guncel_defter_gecerli(self):
         veri = MECLIS.oku(KOK)
         adaylar = MECLIS.denetle(veri)
-        self.assertEqual(len(adaylar), 14)
+        self.assertEqual(len(adaylar), 25)
         self.assertEqual(
             next(aday["decision"] for aday in adaylar if aday["id"] == "punkpeye-awesome-mcp-servers"),
             "REFERENCE",
@@ -53,6 +53,30 @@ class MeclisTesti(unittest.TestCase):
                 self.assertIn(aday["license"]["evidence_url"], aday["evidence"])
                 self.assertRegex(aday["observed_at"], r"^2026-07-(23|31)$")
                 self.assertRegex(aday["next_review"], r"^2026-10-(23|31)$")
+
+    def test_vibe_ux_adaylari_pinli_ve_lisans_kararli(self):
+        adaylar = {aday["id"]: aday for aday in MECLIS.oku(KOK)["candidates"]}
+        beklenen = {
+            "ibelick-ui-skills": ("ADAPT", "MIT"),
+            "addyosmani-agent-skills": ("REFERENCE", "MIT"),
+            "emilkowalski-skills": ("ADAPT", "MIT"),
+            "ehmo-platform-design-skills": ("REFERENCE", "MIT"),
+            "raintree-hig-doctor": ("REFERENCE", "MIT"),
+            "meodai-color-expert": ("REFERENCE", "CC-BY-4.0"),
+            "microsoft-skills": ("REFERENCE", "MIT"),
+            "openai-skills": ("REFERENCE", "LicenseRef-Figma-Beta"),
+            "google-stitch-skills": ("REFERENCE", "Apache-2.0"),
+            "fabricioctelles-skills": ("REFERENCE", "Apache-2.0"),
+            "ramzesenok-ios-accessibility": ("REJECT", "UNKNOWN"),
+        }
+        self.assertTrue(set(beklenen).issubset(adaylar))
+        for kimlik, (karar, lisans) in beklenen.items():
+            with self.subTest(candidate=kimlik):
+                aday = adaylar[kimlik]
+                self.assertEqual(aday["decision"], karar)
+                self.assertEqual(aday["license"]["spdx"], lisans)
+                self.assertRegex(aday["reviewed_head"], r"^[0-9a-f]{40}$")
+                self.assertIn(aday["license"]["evidence_url"], aday["evidence"])
 
     def test_mukerrer_url_reddedilir(self):
         veri = MECLIS.oku(KOK)

@@ -20,7 +20,7 @@ class HostMarketplaceTests(unittest.TestCase):
         errors, packages, skills = HOST_MARKETPLACES.check(ROOT)
 
         self.assertEqual(errors, [])
-        self.assertEqual((packages, skills), (5, 41))
+        self.assertEqual((packages, skills), (5, 42))
         for manifest_path in ROOT.glob("plugins/*/.codex-plugin/plugin.json"):
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             self.assertEqual(manifest["skills"], "./skills/")

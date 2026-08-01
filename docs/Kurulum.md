@@ -26,18 +26,18 @@ python .\divan.pyz install --host codex --profile auto --execute
 ```
 
 İlk `install` yalnız planı gösterir; `--execute` aynı sabit release'i uygular.
-Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
+Kurucu, içine gömülü beş paket/42 beceri kataloğu ile kaynak commit'ini
 doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
 komutları için sakla.
 
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.1.0
+python scripts/divan.py install --host both --ref v1.1.0 --execute
+python scripts/divan.py doctor --host both --ref v1.1.0
+python scripts/divan.py update --host both --ref v1.1.0
+python scripts/divan.py update --host both --ref v1.1.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -60,13 +60,13 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2
+python scripts/divan.py install --host codex --profile auto --ref v1.1.0
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.1.0 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -74,13 +74,13 @@ Codex CLI sonucunu şu şekilde ayırır:
 
 | CLI tanısı | Seçilen yol |
 |---|---|
-| `healthy` | Beş paket ve 41 beceriyi içeren tam yerel plugin kurulumu |
-| `missing` | Checksum ve kaynak commit'i doğrulanan 41-skill fallback |
-| `not-executable` | Checksum ve kaynak commit'i doğrulanan 41-skill fallback |
-| `access-denied` | Checksum ve kaynak commit'i doğrulanan 41-skill fallback |
+| `healthy` | Beş paket ve 42 beceriyi içeren tam yerel plugin kurulumu |
+| `missing` | Checksum ve kaynak commit'i doğrulanan 42-skill fallback |
+| `not-executable` | Checksum ve kaynak commit'i doğrulanan 42-skill fallback |
+| `access-denied` | Checksum ve kaynak commit'i doğrulanan 42-skill fallback |
 | `invalid-json` | Kurulum durur; host protokol sorunu fallback ile gizlenmez |
 
-Skill fallback, bütün 41 beceriyi ve talimatları kurar; sürüm, değişmez ref,
+Skill fallback, bütün 42 beceriyi ve talimatları kurar; sürüm, değişmez ref,
 kaynak commit'i, release arşiv SHA-256 değeri ve beceri başına kurulu dosya
 SHA-256 kaydı üretir. Ancak yerel plugin komutları, ajanlar, hook'lar, MCP
 yapılandırması ve host yaşam döngüsü bu modda yoktur. Başarılı çıktı tam
@@ -310,11 +310,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.0.2 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.1.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.2/scripts/install_codex.sh | DIVAN_REF=v1.0.2 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.1.0/scripts/install_codex.sh | DIVAN_REF=v1.1.0 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
@@ -331,7 +331,7 @@ Kurulumdan sonra ajana "hangi skill'lerin var?" diye sor; `sadrazam` ve
 Divan bütün hostları aynı kabul etmez. `skill-compatible`, `native` ve
 `verified` farklı kanıt seviyeleridir; bir hostta skill okunması hook, agent,
 MCP ve güncelleme yaşam döngüsünün de çalıştığı anlamına gelmez.
-Kanonik dağıtım bugün 5 paket içinde 41 beceri taşır.
+Kanonik dağıtım bugün 5 paket içinde 42 beceri taşır.
 
 Güncel 11-host matrisi, resmî belge bağlantıları ve desteklenen yetenekler:
 [[Host Uyumluluğu|Host-Uyumlulugu]]. Makinece doğrulanan tek kaynak

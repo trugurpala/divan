@@ -6,6 +6,36 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-01
+
+### Added
+
+- Added `product-design-audit`, a single evidence-based UI/UX entry point for
+  vibe coders. It inspects real desktop and mobile behavior, prioritizes at
+  most ten findings, and separates defects from taste.
+- Reviewed eleven current UI/UX skill repositories in the Candidate Council
+  with immutable commits, license evidence, overlap decisions, and no automatic
+  installation. Two are clean-room adaptation candidates, eight remain
+  references, and one was rejected because no redistribution license exists.
+
+### Changed
+
+- Explicit, bounded, reversible pre-authorization can now satisfy the
+  brainstorming approval gate after a compact design is presented. Publication,
+  release, destructive work, secrets, payments, messaging, and account or
+  security changes still require fresh approval.
+- README and Pages now lead with the user's outcome and a three-step start path;
+  Divan terminology remains as governance detail instead of onboarding friction.
+- The canonical distribution now contains five packs and 42 skills. UI Pack is
+  version 0.2.0.
+
+### Verification
+
+- Added focused behavior, skill-contract, Candidate Council, workflow, and site
+  regression tests. The full canonical verification result is recorded in the
+  pull request evidence; this changelog does not claim a quality win without a
+  real comparative agent evaluation.
+
 ## [1.0.2] - 2026-07-31
 
 ### Fixed

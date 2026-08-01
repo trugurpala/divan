@@ -71,7 +71,7 @@ def _print_install(record: dict[str, Any]) -> None:
         return
     print(
         "VERIFIED SKILL FALLBACK "
-        f"- {record['skill_count']}/41 skills; manifest: {record['manifest']}"
+        f"- {record['skill_count']}/42 skills; manifest: {record['manifest']}"
     )
     print(
         "CAPABILITIES - skills/instructions available; "

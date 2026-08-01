@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v1.0.2
+# Durum ve Yol Haritası · v1.1.0
 
 Son durum tarihi: 2026-07-31.
 
@@ -12,11 +12,11 @@ Son durum tarihi: 2026-07-31.
 
 - Değişmez `v1.0.2` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
-- 5 paket ve 41 beceri.
+- 5 paket ve 42 beceri.
 - Vibe coder için beş niyetli ferman seçici.
-- 4 özgün skill / 13 vaka için sağlayıcı-bağımsız kör A/B eval koşucusu;
+- 5 özgün skill / 16 vaka için sağlayıcı-bağımsız kör A/B eval koşucusu;
   Claude gerçek ajanı ve read-only kör Codex hakemi adaptörleri.
-- Claude ve Codex için aynı 5 paket/41 beceriyi sunan yerel pazarlar ile
+- Claude ve Codex için aynı 5 paket/42 beceriyi sunan yerel pazarlar ile
   dry-run-first işlemsel çift-host kurucu.
 - Yerel teftiş, Agent Skills, iki host pazarı, Claude Code plugin doğrulaması,
   CodeQL, Ruff, mypy, Coverage ve actionlint kapıları.
@@ -28,7 +28,7 @@ Son durum tarihi: 2026-07-31.
   Wiki eşliğinden CHANGELOG kaynaklı tag/GitHub Release'a giden yayın kapısı.
 - Claude Code resmî doğrulaması ve Linux/macOS/Windows Codex kur-keşfet-kaldır matrisi.
 - Codex Desktop için açık `auto` profil; sağlıklı CLI'da native kurulum, kanıtlı
-  çalıştırma engelinde sınırları belirtilen checksum-backed 41-skill fallback.
+  çalıştırma engelinde sınırları belirtilen checksum-backed 42-skill fallback.
 - Vibe coder için yalnız loopback'te çalışan, yetenek URL'siyle korunan iki
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
@@ -97,7 +97,7 @@ değildir.
 - Eksik, çalıştırılamayan, erişimi engellenen, geçersiz JSON döndüren ve sağlıklı
   Codex CLI durumları birbirinden ayrılır.
 - Açıkça seçilen `auto` profili sağlıklı CLI'da native yolu değiştirmez; kanıtlı
-  Windows çalıştırma engelinde checksum-backed 41-skill fallback'i seçebilir.
+  Windows çalıştırma engelinde checksum-backed 42-skill fallback'i seçebilir.
 - Fallback; komut, ajan, hook, MCP veya native yaşam döngüsü desteği iddia etmez.
 - PR #58 `f367de92e09b4f56e205d7e2883d988b3b4d2797` commit'inde birleşti. Dokuz
   yayın kontrolü, beş indirilen varlığın SHA-256 değeri, strict SLSA doğrulaması
@@ -107,7 +107,7 @@ değildir.
 
 - Yerel Seyir ekranı yalnız `127.0.0.1` üzerinde çalışır; durum istekleri
   yetenek belirteci ister ve yetkisiz istekler oturum ömrünü uzatmaz.
-- `divan.pyz` tek dosyada kaynak commit'ini ve 41 becerilik kataloğu taşır;
+- `divan.pyz` tek dosyada kaynak commit'ini ve 42 becerilik kataloğu taşır;
   checksum doğrulaması ve yazmayan plan olmadan kurulum iddiası oluşturmaz.
 - Akıllı timeout değerleri ölçülmüş yerel/CI kanıtlarına bağlıdır; aynı kanıtlı
   hata iki düzeltmeden sonra sürerse döngü durur ve Hükümdara taşınır.
@@ -162,7 +162,7 @@ değildir.
 
 ## v1.0.0 — yayımlanan kararlı Divan sözleşmesi
 
-- Tek repo, beş modüler paket, 41 beceri, stdlib-only Divan Engine, Hükümdar
+- Tek repo, beş modüler paket, 42 beceri, stdlib-only Divan Engine, Hükümdar
   öncelikli Divan Nizamı ve kurulu Divan Proje Sözleşmesi kararlı sınırdır.
 - PR #67 `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde birleşti.
 - Release hattı üç işletim sisteminde temiz kurulum, bütün yayın kapıları,

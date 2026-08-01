@@ -12,6 +12,11 @@ Son güncelleme: 2026-07-31
 
 ## Güncel hedef
 
+v1.1.0 is a bounded release candidate on `codex/v1-ux-council`. It adds one
+original product-design audit skill, records eleven UI/UX sources without
+auto-installing them, accepts safe explicit pre-authorization, and rewrites the
+public entry path in plain language. Latest published remains immutable v1.0.2.
+
 The latest published release is immutable v1.0.2 at commit
 `f227e2d30ab1a6f010a3d5acf18740f6eab09e70`. PR #80 published the quiet
 discovery and vibe-friendly wait-state line without changing Divan's product
@@ -462,7 +467,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Keep v1.0.2 immutable. First exact action: define the next bounded product
-slice from real user friction, open a fresh branch, and run the same
-verify → PR CI → main release/readback path without changing the v1.0.2 tag or
-release assets.
+Preserve the latest immutable release. First exact action: complete canonical
+verification and independent review for the v1.1.0 candidate, then open a pull request. Merge,
+tag, release, Pages, Wiki, and live readback remain outside this branch until
+the owner gives separate explicit approval.

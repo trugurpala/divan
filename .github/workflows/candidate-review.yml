@@ -151,7 +151,7 @@ jobs:
               '|---|---|---:|---|---|',
               rows,
               '',
-              'Triage: kanonik kimlik → gerçek LICENSE dosyası → yürütme yüzeyi → mevcut 41 skill ile çakışma → ADOPT/ADAPT/REFERENCE/REJECT.',
+              'Triage: kanonik kimlik → gerçek LICENSE dosyası → yürütme yüzeyi → mevcut 42 skill ile çakışma → ADOPT/ADAPT/REFERENCE/REJECT.',
             ].join('\n');
             await github.rest.issues.create({
               owner, repo, title, body,

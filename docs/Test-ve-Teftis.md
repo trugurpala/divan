@@ -19,7 +19,7 @@ Bu komut Python bytecode'unu kapatır; Ruff, mypy ve coverage cache'lerini repo
 dışındaki geçici dizine yönlendirir ve ikinci hijyen kontrolüyle biter. Dosya
 silmez; açık bakım gerektiğinde `scripts/hygiene.py --clean` yalnız sabit
 allowlist'i temizler. CI bunun ardından
-`skills-ref==0.1.1` ile 41 skill'i ve Claude Code 2.1.212 ile marketplace ile
+`skills-ref==0.1.1` ile 42 skill'i ve Claude Code 2.1.212 ile marketplace ile
 beş paketi doğrular.
 
 ## 2. Soğuk klon testi (kullanıcının gerçeği)

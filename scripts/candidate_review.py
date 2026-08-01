@@ -152,7 +152,7 @@ def ana() -> int:
     veri = oku()
     beklenen = katalog_uret(veri)
     if secim.render:
-        KATALOG.write_text(beklenen, encoding="utf-8")
+        KATALOG.write_text(beklenen, encoding="utf-8", newline="\n")
         print(f"{KATALOG.relative_to(KOK)} güncellendi")
         return 0
     gercek = KATALOG.read_text(encoding="utf-8") if KATALOG.exists() else ""

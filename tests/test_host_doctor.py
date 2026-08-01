@@ -23,7 +23,7 @@ SPEC.loader.exec_module(HOST_INSTALL)
 PACKAGE_VERSIONS = {
     "sadrazam": "0.10.0",
     "core-pack": "0.5.1",
-    "ui-pack": "0.1.0",
+    "ui-pack": "0.2.0",
     "react-pack": "0.2.1",
     "zanaat-pack": "0.1.1",
 }

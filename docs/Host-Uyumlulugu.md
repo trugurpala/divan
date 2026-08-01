@@ -3,7 +3,7 @@
 Divan tek repo ve tek üründür. Claude Code, Codex, Cursor, Antigravity CLI,
 Gemini CLI, GitHub Copilot, Kiro IDE/CLI, OpenCode, Windsurf ve diğer ajanlar
 için ayrı Divan forkları tutulmaz. Host farkları küçük adaptörlerle çözülür;
-41 beceri ve Divan Engine aynı kanonik kaynaktan gelir.
+42 beceri ve Divan Engine aynı kanonik kaynaktan gelir.
 
 ## “Uyumlu” ne demek?
 
@@ -52,7 +52,7 @@ python scripts/divan.py install --host codex --profile auto --ref v0.18.2 --exec
 Komut `missing`, `not-executable`, `access-denied`, `invalid-json` ve `healthy`
 tanılarını ayrı tutar. İlk üç tanıda checksum-backed skill fallback seçilebilir;
 `invalid-json` gerçek bir protokol uyumsuzluğu olarak durur. Fallback sonucu
-`skill-compatible` yetenek verir: 41 skill ve talimat vardır, fakat yerel
+`skill-compatible` yetenek verir: 42 skill ve talimat vardır, fakat yerel
 komutlar, ajanlar, hook'lar, MCP ve host yaşam döngüsü varmış gibi gösterilmez.
 
 ## Host kimliği ile model kapasitesi aynı şey değildir

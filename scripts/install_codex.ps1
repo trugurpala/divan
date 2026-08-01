@@ -2,7 +2,7 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 $ErrorActionPreference = "Stop"
 
-$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v1.0.2" }
+$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v1.1.0" }
 $dst = if ($env:CODEX_SKILLS_DIR) {
   $env:CODEX_SKILLS_DIR
 } else {

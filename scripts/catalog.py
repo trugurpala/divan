@@ -85,7 +85,9 @@ def main() -> int:
     gercek = KATALOG.read_text(encoding="utf-8") if KATALOG.exists() else ""
     if gercek != beklenen:
         raise SystemExit("Beceri Kataloğu eski; python scripts/catalog.py --render çalıştır")
-    print("Beceri Kataloğu temiz: 41 skill / 5 paket")
+    paketler = skill_kayitlari()
+    toplam = sum(len(skiller) for skiller in paketler.values())
+    print(f"Beceri Kataloğu temiz: {toplam} skill / {len(paketler)} paket")
     return 0
 
 

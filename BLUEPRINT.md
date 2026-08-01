@@ -12,6 +12,11 @@ sırasıyla daralmasını sağlar; kapsamı yalnız Hükümdar genişletebilir. 
 kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 
 ## Mimari Kararlar (ADR)
+
+- **v1.1.0 ✓** Release candidate: one evidence-based product-design audit path,
+  25-entry Candidate Council with eleven reviewed UI/UX sources, explicit safe
+  pre-authorization, and human-first README/Pages onboarding. The immutable
+  v1.0.2 release and assets remain unchanged until this candidate passes PR CI.
 1. **Neden skill/plugin, neden MCP değil:** Ürün prosedürel bilgidir (nasıl
    yapılır). Skill'ler progressive disclosure ile token-verimlidir ve Agent
    Skills açık standardı sayesinde Claude Code, Cursor, Codex ve 30+ ajanda
@@ -519,6 +524,6 @@ yükseltmesiyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Keep v1.0.2 immutable. Next exact action: define the next bounded product slice
-from live user friction, open a fresh branch, and run it through the same
-evidence chain without changing the v1.0.2 tag or release assets.
+Keep v1.0.2 immutable. Next exact action: run the v1.1.0 candidate through full
+local verification and independent review, then open a pull request. Do not
+merge, tag, or publish until the owner gives separate explicit approval.
