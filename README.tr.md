@@ -17,6 +17,9 @@ tutar ve teslimde kanıtı gösterir. Güncel dağıtım 5 odaklı paket ve 42 b
 içerir. Claude Code/Desktop Code ve Codex'te yerel plugin olarak; Cursor ve
 diğer Agent Skills uyumlu ajanlarda taşınabilir.
 
+v1.1.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
+kurulum için o zamana kadar son yayımlanan v1.0.2 release'ini seç.
+
 ### Buradan başla
 
 1. [Önce önizleme yapan kurulum rehberiyle](docs/Kurulum.md) kur.

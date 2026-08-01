@@ -1,5 +1,8 @@
 # Kurulum
 
+v1.1.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
+kurulum için o zamana kadar son yayımlanan v1.0.2 release'ini seç.
+
 Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
 runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
 çekirdeğidir; Divan Nizamı Hükümdar öncelikli yetki düzenidir. İlk kez

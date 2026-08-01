@@ -1,5 +1,8 @@
 # Hızlı Başlangıç
 
+v1.1.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
+kurulum için o zamana kadar son yayımlanan v1.0.2 release'ini seç.
+
 Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefini
 söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
 genişletebilirsin. Divan bir model veya ayrı üçüncü taraf runtime değildir:

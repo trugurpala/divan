@@ -18,6 +18,9 @@ The current distribution contains five focused packs and 42 skills. It runs as
 a native plugin in Claude Code/Desktop Code and Codex; its Agent Skills remain
 portable to Cursor and other compatible hosts.
 
+Use v1.1.0 only after its tag and GitHub Release are visible; until then use the
+latest published v1.0.2 release for installation.
+
 ### Start here
 
 1. Install with the [preview-first guide](docs/Kurulum.md).
