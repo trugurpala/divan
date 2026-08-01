@@ -98,12 +98,15 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.0.3 — geliştirme adayı:** Gerçek kullanımda bulunan iki sürtünmeyi
-  kapatır: sağlıklı doctor'ın yeniden kurulum önermesi ve ilk ekranın repo
-  checkout'u varsayması. İlk kurulum, günlük ferman ve bakım/kurtarma ayrılır;
-  Codex uyumluluğu Desktop/CLI yüzeylerine bağlanır. Güvenlik, checksum,
-  dry-run, transaction ve release kanıt kapıları gevşetilmez. v1.0.2 etiketi ve
-  varlıkları değişmez kalır.
+- **v1.0.3 ✓** Kullanıcı dostu kontrol düzlemi yayın adayı: sağlıklı doctor
+  yeniden kurulum önermez; ilk kurulum, günlük doğal dil fermanı ve
+  bakım/kurtarma açıkça ayrılır. Codex için doğrulanmış yaşam döngüsü repo
+  kanıtının çalıştırdığı CLI yüzeyiyle sınırlıdır; Desktop, IDE extension ve
+  mobil ayrı canary oluşana kadar dışarıda kalır. Bozuk host registry değerleri
+  doğrulayıcıyı çökertmez ve geçersiz terminal günlüğü boş yönlendirme yerine
+  tam kurtarma komutu üretir. Güvenlik, checksum, dry-run, transaction ve
+  release kanıt kapıları gevşetilmedi; v1.0.2 etiketi ile varlıkları değişmez
+  kaldı.
 
 - **v1.0.2 ✓** Published quiet-discovery release: Seyir'in bekleme açıklaması ve Divan
   Engine'in sessiz workspace keşfi aynı kullanıcı-dostu hatta bağlandı.

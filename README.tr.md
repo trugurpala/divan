@@ -1,7 +1,7 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.2-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.3-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
@@ -25,7 +25,7 @@ yaşam döngüsü CLI demektir. Desktop resmî bir plugin hedefidir fakat ayrı 
 UI canary kaydı oluşana kadar verified sayılmaz; IDE extension ve mobil
 istemciler de kapsam dışıdır.
 
-**Güncel kaynak:** v1.0.2 · **Son yayımlanan:** v1.0.2 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v1.0.3 · **Son yayımlanan:** v1.0.2 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Divan kuruluysa buradan başla
 
@@ -240,16 +240,16 @@ Repo checkout'u içinden yazmayan planı görüp aynı sabit release'i iki hosta
 kurmak için:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.0.3
+python scripts/divan.py install --host both --ref v1.0.3 --execute
 ```
 
 Codex Desktop için tek bir açık `auto` profil komutu yerel CLI'ı tanılar ve
 kanıtlayabildiği en güçlü yolu seçer:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
 ```
 
 Codex CLI sağlıklıysa tam yerel plugin yolu korunur. CLI bulunamazsa,
@@ -270,9 +270,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.2-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.3-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -29,7 +29,7 @@ means CLI. Desktop is an official plugin target but remains outside Divan's
 verified tier until a separate UI canary exists; the IDE extension and mobile
 clients are excluded too.
 
-**Current source:** v1.0.2 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.3 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Already installed? Start here
 
@@ -227,16 +227,16 @@ From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.0.3
+python scripts/divan.py install --host both --ref v1.0.3 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
@@ -258,9 +258,9 @@ options. The complete Turkish reference remains available in
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

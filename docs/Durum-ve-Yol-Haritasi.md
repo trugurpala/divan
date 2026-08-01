@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v1.0.2
+# Durum ve Yol Haritası · v1.0.3
 
 Son durum tarihi: 2026-07-31.
 

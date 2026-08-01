@@ -59,11 +59,11 @@ Yalnız sorun veya yarım işlem varsa doctor tek bir `NEXT` komutu üretir.
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.0.3
+python scripts/divan.py install --host both --ref v1.0.3 --execute
+python scripts/divan.py doctor --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -86,13 +86,13 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -336,11 +336,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.0.2 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.0.3 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.2/scripts/install_codex.sh | DIVAN_REF=v1.0.2 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.3/scripts/install_codex.sh | DIVAN_REF=v1.0.3 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar
