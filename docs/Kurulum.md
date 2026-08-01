@@ -6,8 +6,7 @@ runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
 kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler Güncel kaynak sürümünü
 sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
 komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
-Release'i bulunan bir ref'i kur. v1.0.2 artık son yayımlanan release'tir:
-v1.0.3'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan.
+Release'i bulunan bir ref'i kur. v1.0.3 artık son yayımlanan release'tir.
 
 ## Repo klonlamadan en hızlı ilk kurulum
 
@@ -15,7 +14,7 @@ Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checks
 dosyasını indirip doğrula:
 
 ```powershell
-$tag = "v1.0.2"
+$tag = "v1.0.3"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()

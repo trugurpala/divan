@@ -29,7 +29,7 @@ means CLI. Desktop is an official plugin target but remains outside Divan's
 verified tier until a separate UI canary exists; the IDE extension and mobile
 clients are excluded too.
 
-**Current source:** v1.0.3 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.3 · **Latest published:** v1.0.3 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Already installed? Start here
 
@@ -198,10 +198,8 @@ running measured checks.
 
 The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
-ref whose immutable tag and GitHub Release exist. v1.0.2 is now the latest
+ref whose immutable tag and GitHub Release exist. v1.0.3 is now the latest
 published release and can be used for release-pinned installs.
-Use v1.0.3 only after its tag and GitHub Release are visible; until then keep
-using Latest published.
 
 ### Fastest first install: one verified file, no repository checkout
 
@@ -209,7 +207,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v1.0.2"
+$tag = "v1.0.3"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -363,17 +361,18 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 ## Honest status
 
-Divan v1.0.2 is published after all eight machine-backed readiness gates passed.
+Divan v1.0.3 is published after all eight machine-backed readiness gates passed.
 All 41 skills receive structural validation; four original skills provide 13
 behavioral cases and a provider-neutral A/B runner. The stable contract keeps
 one repository, five modular packages, the stdlib-only Divan Engine,
 owner-first Divan Nizamı governance, the installed Divan Project Contract, and
-Claude Code/Codex lifecycle support. v1.0.2 adds quieter project discovery so
-Divan-owned worktrees, fixture trees, caches, and skill-internal helper folders
-do not appear as duplicate user workspaces. The immutable tag, seven
-checksummed and attested assets, SBOM, Pages, Wiki, clean-host matrix, and
-release readbacks are recorded in the
-[v1.0.2 publication evidence](.divan/evidence/teftis-20260731-v102-release.md).
+Claude Code/Codex lifecycle support. v1.0.3 keeps the quieter project discovery
+and makes the control plane more direct: healthy doctor output stops at READY,
+recovery output includes the exact command, and setup, daily natural-language
+use, and maintenance are separated. The immutable tag, seven checksummed and
+attested assets, SBOM, Pages, Wiki, clean-host matrix, and release readbacks are
+recorded in the
+[v1.0.3 publication evidence](.divan/evidence/teftis-20260801-v103-release.md).
 The clean-room result proves a bounded technical workflow; it does not claim an
 independent-user count, endorsement, market adoption, speed gain, revenue
 increase, quality win, or “best in the world” status.
