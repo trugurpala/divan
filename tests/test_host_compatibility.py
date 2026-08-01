@@ -44,6 +44,24 @@ class HostCompatibilityTests(unittest.TestCase):
         self.assertTrue(any("unknown values" in error for error in errors))
         self.assertTrue(any("cannot be lower" in error for error in errors))
 
+    def test_every_host_declares_non_empty_supported_surfaces(self) -> None:
+        data = copy.deepcopy(host_compatibility.load(ROOT))
+        data["hosts"][0].pop("surfaces", None)
+        with mock.patch.object(host_compatibility, "load", return_value=data):
+            errors = host_compatibility.validate(ROOT)
+        self.assertTrue(any("surfaces must be a non-empty list" in error for error in errors))
+
+    def test_surface_claims_reject_duplicates_malformed_and_overlap(self) -> None:
+        data = copy.deepcopy(host_compatibility.load(ROOT))
+        codex = next(row for row in data["hosts"] if row["id"] == "codex")
+        codex["surfaces"] = ["desktop", "desktop", "IDE Extension"]
+        codex["excluded_surfaces"] = ["desktop"]
+        with mock.patch.object(host_compatibility, "load", return_value=data):
+            errors = host_compatibility.validate(ROOT)
+        self.assertTrue(any("surfaces contains duplicates" in error for error in errors))
+        self.assertTrue(any("surfaces contains malformed values" in error for error in errors))
+        self.assertTrue(any("surface claims overlap" in error for error in errors))
+
 
 if __name__ == "__main__":
     unittest.main()

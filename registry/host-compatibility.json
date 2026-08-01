@@ -8,6 +8,8 @@
       "tier": "verified",
       "target_tier": "verified",
       "distribution": "plugin",
+      "surfaces": ["cli"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://code.claude.com/docs/en/plugins-reference",
       "evidence": [".github/workflows/compatibility.yml", "tests/test_host_install.py"]
@@ -17,6 +19,8 @@
       "tier": "verified",
       "target_tier": "verified",
       "distribution": "plugin",
+      "surfaces": ["desktop", "cli"],
+      "excluded_surfaces": ["ide-extension", "mobile"],
       "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://developers.openai.com/codex/plugins",
       "evidence": [".github/workflows/compatibility.yml", "tests/test_host_install.py"]
@@ -26,6 +30,8 @@
       "tier": "skill-compatible",
       "target_tier": "verified",
       "distribution": "plugin",
+      "surfaces": ["ide"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp"],
       "official_docs": "https://cursor.com/docs/reference/plugins",
       "evidence": []
@@ -35,6 +41,8 @@
       "tier": "experimental",
       "target_tier": "verified",
       "distribution": "plugin",
+      "surfaces": ["cli"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "agents", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://antigravity.google/docs/cli/plugins",
       "evidence": []
@@ -44,6 +52,8 @@
       "tier": "experimental",
       "target_tier": "verified",
       "distribution": "extension",
+      "surfaces": ["cli"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "commands", "agents", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://geminicli.com/docs/extensions/reference/",
       "evidence": []
@@ -53,6 +63,8 @@
       "tier": "skill-compatible",
       "target_tier": "verified",
       "distribution": "surface-specific",
+      "surfaces": ["ide", "cli", "coding-agent"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "agents", "hooks", "mcp"],
       "official_docs": "https://docs.github.com/en/copilot/reference/customization-cheat-sheet",
       "evidence": []
@@ -62,6 +74,8 @@
       "tier": "experimental",
       "target_tier": "native",
       "distribution": "power",
+      "surfaces": ["ide"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://kiro.dev/docs/powers/",
       "evidence": []
@@ -71,6 +85,8 @@
       "tier": "experimental",
       "target_tier": "verified",
       "distribution": "adapter",
+      "surfaces": ["cli"],
+      "excluded_surfaces": [],
       "capabilities": ["instructions", "agents", "hooks", "mcp", "lifecycle"],
       "official_docs": "https://kiro.dev/docs/cli/skills/",
       "evidence": []
@@ -80,6 +96,8 @@
       "tier": "skill-compatible",
       "target_tier": "verified",
       "distribution": "adapter",
+      "surfaces": ["cli"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "commands", "agents", "mcp"],
       "official_docs": "https://opencode.ai/docs/skills/",
       "evidence": []
@@ -89,6 +107,8 @@
       "tier": "skill-compatible",
       "target_tier": "verified",
       "distribution": "adapter",
+      "surfaces": ["ide"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions", "commands", "hooks", "mcp"],
       "official_docs": "https://docs.windsurf.com/windsurf/cascade/skills",
       "evidence": []
@@ -98,6 +118,8 @@
       "tier": "skill-compatible",
       "target_tier": "skill-compatible",
       "distribution": "agent-skills",
+      "surfaces": ["agent-skills"],
+      "excluded_surfaces": [],
       "capabilities": ["skills", "instructions"],
       "official_docs": "https://agentskills.io/specification",
       "evidence": []
