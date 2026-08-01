@@ -196,6 +196,12 @@ independent-user count, endorsement, market-adoption claim or quality win.
 All packages remain in this repository. Divan does not require a forked runtime
 or a second product repository.
 
+Native Claude Code installations also expose optional command shortcuts:
+`/ferman` starts a bounded brief, `/sefer` runs the work order, `/teftis` checks
+evidence, `/defter` records durable context, `/vezir` creates a skill,
+`/yayin` prepares publication, and the legacy `/company` alias remains for v1
+compatibility. Daily use does not require memorizing these names.
+
 ## Host compatibility and evidence levels
 
 ## Host compatibility

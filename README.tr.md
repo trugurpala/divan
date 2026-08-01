@@ -191,6 +191,12 @@ kullanıcı sayısı, tavsiye, pazar benimsemesi veya kalite kazanımı değildi
 Bütün paketler bu depoda kalır. Divan, forklanmış çalışma zamanı veya ikinci
 ürün deposu gerektirmez.
 
+Native Claude Code kurulumunda isteğe bağlı komut kısayolları da bulunur:
+`/ferman` sınırlı iş tanımını başlatır, `/sefer` iş sırasını yürütür, `/teftis`
+kanıtı kontrol eder, `/defter` kalıcı bağlamı yazar, `/vezir` beceri oluşturur,
+`/yayin` yayını hazırlar. Eski `/company` adı v1 uyumluluğu için korunur. Günlük
+kullanımda bu adları ezberlemeniz gerekmez.
+
 ## Host uyumluluğu ve kanıt düzeyleri
 
 | Düzey | Anlam | Güncel örnek |
