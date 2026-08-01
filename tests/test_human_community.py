@@ -89,7 +89,10 @@ class HumanCommunityContractTests(unittest.TestCase):
     def test_progress_records_v120_exact_next_action(self):
         progress = read(".divan/progress.md")
         self.assertIn("v1.2.0", progress)
-        self.assertIn("Sıradaki kesin iş", progress)
+        self.assertEqual(progress.count("## Sıradaki kesin iş"), 1)
+        next_action = progress.split("## Sıradaki kesin iş", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("v1.2.0", next_action)
+        self.assertIn("publish through PR", next_action)
 
 
 if __name__ == "__main__":

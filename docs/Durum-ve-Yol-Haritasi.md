@@ -2,7 +2,7 @@
 
 Son durum tarihi: 2026-08-01.
 
-> **En güncel yayımlanmış sürüm v1.1.0'dır.** PR #84
+> **Yayımlanan paketlerin güncel listesi [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) sayfasındadır.** v1.1.0 için PR #84
 > `aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0` commit'inde birleşti ve
 > değişmez tag/GitHub Release olarak yayımlandı. Yedi varlık, checksum, SPDX
 > SBOM, attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages,
@@ -34,7 +34,7 @@ Son durum tarihi: 2026-08-01.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
   dikkat eşiğini açıklar; kullanıcı sessiz ekranı çökme zannetmez.
 
-## v1.2.0 adayı
+## v1.2.0 kaynak hattı
 
 - Kalıcı yazım sözleşmesi, prose kalite kapısı ve kullanıcı sorularına göre
   düzenlenen README ilk katkı yolunu sadeleştirir.
@@ -43,8 +43,8 @@ Son durum tarihi: 2026-08-01.
 - Nöbet metin, Markdown ve JSON raporuyla gerekçeli karar üretir; dış kodu
   otomatik kurmaz.
 - Düzenlenebilir Figma kaynağı, yeni GitHub varlıklarının kanonik kaynağıdır.
-- Bu kapsam yalnız v1.2.0 tag ve GitHub Release yayımlandıktan sonra yayımlanmış
-  ürün gerçeği olur.
+- Bu kapsamın yayın durumu, değişmez v1.2.0 tag ve GitHub Release
+  kayıtlarından doğrulanır.
 - Divan Engine, üst proje taramasında `.worktrees`, fixture projeleri ve skill
   içi yardımcı klasörlerden gelen eski ajan/test gürültüsünü workspace veya test
   hedefi gibi göstermez; açıkça proje kökü verilirse yine inceler.

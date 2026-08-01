@@ -3,7 +3,7 @@
 ![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.png)
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Version 1.1.0](https://img.shields.io/badge/version-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.2.0](https://img.shields.io/badge/source-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -19,7 +19,7 @@ the work visible and refuses to call an unverified result complete.
 > external agent runtime. It cannot make an unavailable host tool appear, and
 > it does not turn an untested claim into evidence.
 
-**Current source:** v1.2.0 · **Latest published:** v1.1.0 · **42 skills** ·
+**Source line:** v1.2.0 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
 **5 modular packages** · **8/8 readiness gates**
 
 **Host compatibility:** [English guide](#host-compatibility) ·
@@ -93,7 +93,7 @@ Download `divan.pyz` and its checksum from the same immutable release. Verify
 the file, preview the no-write plan, then execute it.
 
 ```powershell
-$tag = "v1.1.0"
+$tag = (Invoke-RestMethod "https://api.github.com/repos/trugurpala/divan/releases/latest").tag_name
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -116,9 +116,9 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-202607
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
-If Current source differs from Latest published, substitute Latest published
-in every `--ref` command. Use v1.2.0 only after its tag and GitHub Release are
-visible. See [removal and recovery](docs/Kaldirma.md) before deleting anything.
+The command above resolves the latest published tag before downloading. In a
+checkout, use v1.2.0 only after its tag and GitHub Release are visible. See
+[removal and recovery](docs/Kaldirma.md) before deleting anything.
 
 ## Your first real task
 
@@ -263,10 +263,10 @@ made.
 
 ## Latest release and verification
 
-v1.1.0 is the latest published release. Its immutable tag points to commit
-`aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0`. The release contains seven
-checksummed assets, an SPDX SBOM and GitHub attestations. The release workflow
-also re-read Pages, Wiki and the live site before publication.
+The [GitHub Releases page](https://github.com/trugurpala/divan/releases/latest)
+is the authority for the latest published package. The immutable v1.1.0
+publication evidence remains in `.divan/evidence/`; every new release must add
+its own checksum, SPDX SBOM, attestation and live-readback evidence.
 
 The readiness score is **8/8**. That score describes machine-backed technical
 gates, not popularity or market adoption.

@@ -478,10 +478,3 @@ the current execution queue.
 - Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
   manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
   native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
-
-## Sıradaki kesin adım
-
-Keep v1.0.3 immutable. First exact action: collect real post-release usage
-friction, define one bounded product slice, and run the same
-verify → PR CI → main release/readback path without changing the v1.0.3 tag or
-release assets.

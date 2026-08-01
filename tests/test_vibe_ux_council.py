@@ -75,8 +75,8 @@ class VibeUxCouncilTests(unittest.TestCase):
         )
         for historical in ("v0.9.0 ✓** 41 skill", "v0.10.3 ✓** 41 skill"):
             self.assertIn(historical, blueprint)
-        self.assertIn("5 paket ve 41 beceri", status)
-        self.assertIn("v1.1.0 adayı", status)
+        self.assertIn("5 paket ve 42 beceri", status)
+        self.assertIn("v1.2.0 kaynak hattı", status)
 
 
 if __name__ == "__main__":

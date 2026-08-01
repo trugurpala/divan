@@ -198,8 +198,8 @@ def surum_kayitlarini_denetle(
     ilerleme = kok / ".divan" / "progress.md"
     if not ilerleme.is_file():
         hatalar.append(".divan/progress.md eksik")
-    elif "## Sıradaki kesin adım" not in ilerleme.read_text(encoding="utf-8"):
-        hatalar.append("HAFIZA ESKI: progress.md siradaki kesin adimi icermiyor")
+    elif ilerleme.read_text(encoding="utf-8").count("## Sıradaki kesin iş") != 1:
+        hatalar.append("HAFIZA ESKI: progress.md tek bir siradaki kesin isi icermeli")
 
 
 def marketplace_denetle(kok: pathlib.Path, hatalar: list[str]) -> tuple[dict, list]:

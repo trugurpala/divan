@@ -152,8 +152,8 @@ def _repository_contract_errors(root: pathlib.Path) -> list[Finding]:
     version_file = root / "VERSION"
     if version_file.is_file() and canonical.is_file():
         version = version_file.read_text(encoding="utf-8").strip()
-        if f"**Current source:** v{version}" not in canonical.read_text(encoding="utf-8"):
-            errors.append(Finding("error", "STALE_VERSION", "README.md", 1, "README current source does not match VERSION"))
+        if f"**Source line:** v{version}" not in canonical.read_text(encoding="utf-8"):
+            errors.append(Finding("error", "STALE_VERSION", "README.md", 1, "README source line does not match VERSION"))
     retired = root / "registry" / "retired-public-paths.json"
     if retired.is_file():
         paths = json.loads(retired.read_text(encoding="utf-8"))

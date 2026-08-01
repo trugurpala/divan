@@ -22,7 +22,7 @@ class DevralTesti(unittest.TestCase):
                 "- Latest published release: v0.11.0\n"
                 f"- Published commit: {self.PUBLISHED_COMMIT}\n"
                 "- Publication evidence: .divan/evidence/v011.md\n\n"
-                "## Sıradaki kesin adım\n"
+                "## Sıradaki kesin iş\n"
                 "Denetle v0.11.1 adayını.\n"
             ),
             ".divan/evidence/v011.md": (
@@ -61,7 +61,7 @@ class DevralTesti(unittest.TestCase):
                 "- Latest published release: v0.16.0\n"
                 f"- Published commit: {self.PUBLISHED_COMMIT}\n"
                 "- Publication evidence: .divan/evidence/v011.md\n\n"
-                "## Sıradaki kesin adım\n"
+                "## Sıradaki kesin iş\n"
                 "Run v0.16.0 gates, push the release branch, and open a ready PR.\n",
                 encoding="utf-8",
             )
@@ -113,38 +113,36 @@ class DevralTesti(unittest.TestCase):
         progress = (KOK / ".divan/progress.md").read_text(encoding="utf-8")
         section = devral._bolum(progress, "Yayın durumu")
         self.assertIsNotNone(section)
-        published = devral._alan(section or "", "Latest published release")
-        self.assertIsNotNone(published)
         version = (KOK / "VERSION").read_text(encoding="utf-8").strip()
 
         expected = {
             "README.md": (
-                f"**Current source:** v{version}",
-                f"**Latest published:** {published}",
+                f"**Source line:** v{version}",
+                "**Published packages:** [GitHub Releases]",
             ),
             "README.en.md": (
-                f"**Current source:** v{version}",
-                f"**Latest published:** {published}",
+                f"**Source line:** v{version}",
+                "**Published packages:** [GitHub Releases]",
             ),
             "README.tr.md": (
-                f"**Güncel kaynak:** v{version}",
-                f"**Son yayımlanan:** {published}",
+                f"**Kaynak hattı:** v{version}",
+                "**Yayımlanan paketler:** [GitHub Releases]",
             ),
             "site/index.html": (
-                f"v{version} güncel kaynak",
-                f"son yayımlanan {published}",
+                f"v{version} kaynak hattı",
+                "yayımlanan paketler GitHub Releases'ta",
             ),
             "docs/index.html": (
-                f"v{version} güncel kaynak",
-                f"son yayımlanan {published}",
+                f"v{version} kaynak hattı",
+                "yayımlanan paketler GitHub Releases'ta",
             ),
             "docs/Home.md": (
-                f"**Güncel kaynak:** v{version}",
-                f"**Son yayımlanan:** {published}",
+                f"**Kaynak hattı:** v{version}",
+                "**Yayımlanan paketler:** [GitHub Releases]",
             ),
             "docs/Durum-ve-Yol-Haritasi.md": (
                 f"# Durum ve Yol Haritası · v{version}",
-                f"En güncel yayımlanmış sürüm {published}",
+                "Yayımlanan paketlerin güncel listesi [GitHub Releases]",
             ),
         }
         for relative, markers in expected.items():

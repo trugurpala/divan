@@ -3,7 +3,7 @@
 ![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
 [![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Sürüm 1.1.0](https://img.shields.io/badge/version-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Kaynak hattı 1.2.0](https://img.shields.io/badge/kaynak-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
 [![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
 [![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
@@ -19,7 +19,7 @@ sonuca “bitti” demez.
 > çalışma zamanı değildir. Hostta bulunmayan aracı varmış gibi göstermez;
 > test edilmemiş iddiayı kanıta dönüştürmez.
 
-**Güncel kaynak:** v1.2.0 · **Son yayımlanan:** v1.1.0 · **42 beceri** ·
+**Kaynak hattı:** v1.2.0 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 beceri** ·
 **5 modüler paket** · **8/8 hazırlık kapısı**
 
 ## Hızlı bağlantılar
@@ -90,7 +90,7 @@ Aynı değişmez sürümden `divan.pyz` ve checksum dosyasını indirin. Dosyay�
 doğrulayın, yazmayan planı görün, sonra uygulayın.
 
 ```powershell
-$tag = "v1.1.0"
+$tag = (Invoke-RestMethod "https://api.github.com/repos/trugurpala/divan/releases/latest").tag_name
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -111,10 +111,9 @@ python scripts/divan.py update --host both --ref v1.2.0
 python scripts/divan.py update --host both --ref v1.2.0 --execute
 ```
 
-Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref` komutlarında Son
-yayımlanan sürümü kullan. v1.2.0'i yalnız tag ve GitHub Release sayfası görünür
-olduktan sonra kullan. Silmeden önce [kaldırma ve kurtarma](docs/Kaldirma.md)
-rehberini okuyun.
+Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içinde
+v1.2.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullanın.
+Silmeden önce [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
 
 ## İlk gerçek iş
 
@@ -252,10 +251,10 @@ iddia edilmez.
 
 ## Son release ve doğrulama
 
-Son yayımlanan release v1.1.0'dır. Değişmez tag,
-`aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0` commit'ine bağlıdır. Yedi varlığın
-checksum'u, SPDX SBOM'u ve GitHub attestation kayıtları doğrulanmıştır. Yayın
-akışı tag oluşturmadan önce Pages, Wiki ve canlı siteyi geri okumuştur.
+[GitHub Releases sayfası](https://github.com/trugurpala/divan/releases/latest),
+son yayımlanan paketin doğru kaynağıdır. Değişmez v1.1.0 yayın kanıtı
+`.divan/evidence/` altında korunur; her yeni sürüm kendi checksum, SPDX SBOM,
+attestation ve canlı geri okuma kanıtını eklemelidir.
 
 Hazırlık puanı **8/8**'dir. Bu puan makine destekli teknik kapıları anlatır;
 popülerlik veya pazar benimsemesi değildir.

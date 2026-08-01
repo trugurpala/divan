@@ -4,9 +4,9 @@
   "version_source": "VERSION",
   "changelog": "CHANGELOG.md",
   "public_surfaces": [
-    {"id": "readme-en", "path": "README.md", "marker": "**Current source:** v{version}", "replace_version": true, "version_patterns": ["version-{version}", "**Current source:** v{version}", "--ref v{version}"]},
-    {"id": "readme-en-alias", "path": "README.en.md", "marker": "**Current source:** v{version}", "replace_version": true, "version_patterns": ["version-{version}", "**Current source:** v{version}", "--ref v{version}"]},
-    {"id": "readme-tr", "path": "README.tr.md", "marker": "**Güncel kaynak:** v{version}", "replace_version": true, "version_patterns": ["version-{version}", "**Güncel kaynak:** v{version}", "--ref v{version}"]},
+    {"id": "readme-en", "path": "README.md", "marker": "**Source line:** v{version}", "replace_version": true, "version_patterns": ["source-{version}", "**Source line:** v{version}", "--ref v{version}"]},
+    {"id": "readme-en-alias", "path": "README.en.md", "marker": "**Source line:** v{version}", "replace_version": true, "version_patterns": ["source-{version}", "**Source line:** v{version}", "--ref v{version}"]},
+    {"id": "readme-tr", "path": "README.tr.md", "marker": "**Kaynak hattı:** v{version}", "replace_version": true, "version_patterns": ["kaynak-{version}", "**Kaynak hattı:** v{version}", "--ref v{version}"]},
     {"id": "blueprint", "path": "BLUEPRINT.md", "marker": "**v{version} ✓**", "replace_version": false},
     {"id": "progress", "path": ".divan/progress.md", "marker": "v{version}", "replace_version": false},
     {"id": "claude-handoff", "path": "CLAUDE.md", "marker": "scripts/handoff.py --check", "replace_version": false},
@@ -255,7 +255,7 @@
     {"id": "nizam-i-sefer-tests", "path": "tests/test_planning_intelligence.py", "marker": "class NizamPlanningTests", "replace_version": false},
     {"id": "orchestration-guide", "path": "docs/Orkestrasyon-Karari.md", "marker": "# Orkestrasyon Kararı — v0.18", "replace_version": false},
     {"id": "v013-local-evidence", "path": ".divan/evidence/teftis-20260721-v013-community-standards.md", "marker": "# v0.13.0 local release-candidate evidence", "replace_version": false},
-    {"id": "wiki-home", "path": "docs/Home.md", "marker": "# Divan Wiki · v{version}", "replace_version": true, "version_patterns": ["# Divan Wiki · v{version}", "**Güncel kaynak:** v{version}"]},
+    {"id": "wiki-home", "path": "docs/Home.md", "marker": "# Divan Wiki · v{version}", "replace_version": true, "version_patterns": ["# Divan Wiki · v{version}", "**Kaynak hattı:** v{version}"]},
     {"id": "wiki-quick-start", "path": "docs/Hizli-Baslangic.md", "marker": "Beş dakikalık güvenli yolu", "replace_version": true, "version_patterns": ["--ref v{version}"]},
     {"id": "wiki-uninstall", "path": "docs/Kaldirma.md", "marker": "Kurucunun sahiplik denetimli yolu", "replace_version": false},
     {"id": "wiki-status", "path": "docs/Durum-ve-Yol-Haritasi.md", "marker": "# Durum ve Yol Haritası · v{version}", "replace_version": true, "version_patterns": ["# Durum ve Yol Haritası · v{version}"]},
@@ -264,8 +264,8 @@
     {"id": "wiki-standards", "path": "docs/Standartlar-ve-Limitler.md", "marker": "scripts/clean_code.py", "replace_version": false},
     {"id": "wiki-faq", "path": "docs/SSS.md", "marker": "8/8", "replace_version": false},
     {"id": "wiki-manifest", "path": "wiki-pages.json", "marker": "Topluluk-Standartlari", "replace_version": false},
-    {"id": "pages", "path": "docs/index.html", "marker": "v{version} güncel kaynak", "replace_version": true, "version_patterns": ["v{version} güncel kaynak", "--ref v{version}"]},
-    {"id": "site-source", "path": "site/index.html", "marker": "v{version} güncel kaynak", "replace_version": true, "version_patterns": ["v{version} güncel kaynak", "--ref v{version}"]},
+    {"id": "pages", "path": "docs/index.html", "marker": "v{version} kaynak hattı", "replace_version": true, "version_patterns": ["v{version} kaynak hattı", "--ref v{version}"]},
+    {"id": "site-source", "path": "site/index.html", "marker": "v{version} kaynak hattı", "replace_version": true, "version_patterns": ["v{version} kaynak hattı", "--ref v{version}"]},
     {"id": "v1-readiness", "path": "docs/V1-Hazirlik.md", "marker": "Hedef sürüm: v1.0.0", "replace_version": false}
   ],
   "live_surfaces": {
