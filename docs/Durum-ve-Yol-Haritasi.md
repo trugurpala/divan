@@ -1,20 +1,20 @@
 # Durum ve Yol Haritası · v1.1.0
 
-Son durum tarihi: 2026-07-31.
+Son durum tarihi: 2026-08-01.
 
-> **En güncel yayımlanmış sürüm v1.0.2'dir.** PR #80
-> `f227e2d30ab1a6f010a3d5acf18740f6eab09e70` commit'inde birleşti ve
+> **En güncel yayımlanmış sürüm v1.0.3'tür.** PR #82
+> `ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb` commit'inde birleşti ve
 > değişmez tag/GitHub Release olarak yayımlandı. Yedi varlık, checksum, SPDX
 > SBOM, attestations, Windows/macOS/Linux temiz-host kapıları, Chromium, Pages,
 > Wiki ve indirilen runner checksumları doğrulandı.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v1.0.2` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v1.0.3` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 42 beceri.
 - Vibe coder için beş niyetli ferman seçici.
-- 5 özgün skill / 16 vaka için sağlayıcı-bağımsız kör A/B eval koşucusu;
+- 4 özgün skill / 13 vaka için sağlayıcı-bağımsız kör A/B eval koşucusu;
   Claude gerçek ajanı ve read-only kör Codex hakemi adaptörleri.
 - Claude ve Codex için aynı 5 paket/42 beceriyi sunan yerel pazarlar ile
   dry-run-first işlemsel çift-host kurucu.
@@ -69,7 +69,7 @@ değildir.
   bağımsız kullanıcı sayısı, üçüncü taraf onayı veya pazar benimsemesi değildir.
 - Gerçek Claude/Codex A/B sonucu yayımlandı: skill 0, baseline 1, beraberlik 2.
   Önceden eşik yoktur; kalite artışı iddiası yapılmaz.
-- v1.0.2'nin tam yerel doğrulaması 707 test ve 14 platform atlamasıyla geçti.
+- v1.0.3'ün tam yerel doğrulaması 715 test ve 14 platform atlamasıyla geçti.
   Yayın ayrıca üç işletim sistemi, strict attestations, Pages/Wiki readback ve
   release asset checksumlarıyla sınırlandırılmıştır; bütün host ve ortamları
   kapsadığı iddia edilmez.
@@ -195,6 +195,21 @@ değildir.
 - v1.0.2 GitHub Release değişmezdir; yedi varlık yeniden indirildi, SHA-256
   manifestleri ve GitHub attestations ile doğrulandı.
 
+## v1.0.3 — yayımlanan kullanıcı dostu kontrol düzlemi
+
+- Sağlıklı doctor insan çıktısı READY sonucunda durur; JSON sözleşmesindeki
+  `next_command` alanı string kalır ve sağlıklı durumda boş döner.
+- Bozuk veya yarım işlem günlüğü, boş yönlendirme yerine kopyalanabilir tam
+  kurtarma komutu verir; bozuk host registry girdisi denetimi çökertmez.
+- İlk kurulum, günlük doğal dil fermanı ve bakım/kurtarma yolları README, Wiki
+  ve Pages'te ayrı kullanıcı yolculuklarıdır.
+- Codex verified iddiası CLI yüzeyiyle sınırlıdır; Desktop, IDE extension ve
+  mobil ayrı canary oluşana kadar doğrulanmış sayılmaz.
+- PR #82 `ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb` commit'inde birleşti. 715
+  test, 14 beklenen skip, zorunlu PR/main workflow'ları, yedi indirilen varlık,
+  checksum sidecar'ları, strict attestations ve gerçek Windows/Codex CLI
+  yükseltme geri-okuması geçti.
+
 ## Sıradaki ürün adımı
 
 1. ✓ 8/8 kanıt PR'ını bütün kalite kapılarından geçirip `main`e birleştir.
@@ -203,8 +218,11 @@ değildir.
    geri-okuma kapılarıyla yayımla.
 4. ✓ v1.0.1 yayın kanıtını ve son sürüm etiketlerini `main`e eşitle.
 5. ✓ v1.0.2 sakin keşif yayınını ve son sürüm etiketlerini `main`e eşitle.
-6. Sonraki ürün kapsamını ayrı onaylı hedef olarak başlat; v1.0.2 tag ve
-   varlıklarını değiştirme.
+6. ✓ Onaylı v1.0.3 kullanıcı dostu kontrol düzlemini test-first tamamla:
+   sağlıklı doctor, yüzey-bazlı host doğruluğu ve kurulum/günlük
+   kullanım/bakım ayrımı.
+7. ✓ PR kontrolleri ve bağımsız incelemeden sonra `main`e birleştir; v1.0.2 tag
+   ve varlıklarını değiştirmeden yeni v1.0.3 release hattını çalıştır.
 
 ## v1.0 kapıları
 

@@ -4,7 +4,7 @@
 [Community standards](docs/Topluluk-Standartlari.md)
 
 Divan is a local skill/plugin distribution, not a model or agent runtime. A
-contribution must keep the 41-skill catalog portable, licensed, reversible,
+contribution must keep the 42-skill catalog portable, licensed, reversible,
 and evidence-led.
 
 ## Choose the right route

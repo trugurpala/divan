@@ -11,26 +11,18 @@
 **Tell Divan what you want to finish. It turns the coding agent you already use
 into a planned, tested, and verifiable delivery workflow.**
 
-You do not need to memorize commands or skill names. Describe the outcome in
-plain language; Divan narrows the scope, selects only the capabilities the job
-needs, keeps decisions with the project, and shows the evidence at delivery.
-The current distribution contains five focused packs and 42 skills. It runs as
-a native plugin in Claude Code/Desktop Code and Codex; its Agent Skills remain
+You write the result in plain language. Divan narrows the scope, selects the
+smallest qualified team, plans the work, builds with tests, verifies the
+result, records the decisions, and presents a finished delivery. It runs as a
+native plugin lifecycle in Claude Code and Codex CLI; its Agent Skills remain
 portable to Cursor and other compatible hosts.
 
+The Hükümdar/Divan vocabulary describes owner-first governance; it is not a role
+you must learn before using the product. The distribution remains one repository,
+five focused packs, and 42 skills.
+
 Use v1.1.0 only after its tag and GitHub Release are visible; until then use the
-latest published v1.0.2 release for installation.
-
-### Start here
-
-1. Install with the [preview-first guide](docs/Kurulum.md).
-2. Open your project and write the result you want in ordinary language.
-3. Review the plan; Divan implements only the authorized scope and returns tests,
-   inspection results, and the exact remaining uncertainty.
-
-The Hükümdar/Divan vocabulary describes the owner-first governance model. You
-remain the final authority; it is not a role you need to learn before using the
-product.
+latest published v1.0.3 release for installation.
 
 ## Host compatibility
 
@@ -38,8 +30,38 @@ Host support is evidence-graded rather than advertised as a single yes/no
 claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
+Every claim is surface-scoped. In particular, verified Codex lifecycle support
+means CLI. Desktop is an official plugin target but remains outside Divan's
+verified tier until a separate UI canary exists; the IDE extension and mobile
+clients are excluded too.
 
-**Current source:** v1.1.0 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.1.0 · **Latest published:** v1.0.3 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+
+## Already installed? Start here
+
+Open a fresh Codex or Claude Code session in your project and describe the
+outcome. You do not need to remember a skill name or a repository command:
+
+> **Divan, take ownership of this task. Verify the current state, write the
+> plan, implement it with tests, and deliver the evidence: [your goal].**
+
+Divan selects the smallest capable pack. React Pack joins only a detected
+React-family project; Zanaat Pack joins only creative or integration work.
+Connected GitHub, Figma, Gmail, Slack, or MCP tools do not gain permission by
+being available—the requested task remains the authority boundary.
+
+### First setup
+
+Use the [verified no-checkout install](#fastest-first-install-one-verified-file-no-repository-checkout)
+once, then start a new agent session so the host loads the installed plugin.
+Keep the downloaded `divan.pyz` and checksum together for later diagnosis and
+recovery. Divan does not silently edit PATH or a shell profile.
+
+### Maintenance
+
+Use the retained bootstrap only when you need doctor, update, or recovery.
+A healthy doctor ends with `READY` and does not tell you to install again. A
+real problem prints one exact copyable command.
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -182,7 +204,7 @@ running measured checks.
 
 The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
-ref whose immutable tag and GitHub Release exist. v1.0.2 is now the latest
+ref whose immutable tag and GitHub Release exist. v1.0.3 is now the latest
 published release and can be used for release-pinned installs.
 
 ### Fastest first install: one verified file, no repository checkout
@@ -191,7 +213,7 @@ After the matching GitHub Release exists, download its standalone bootstrap and
 checksum, verify them locally, inspect the no-write plan, then execute:
 
 ```powershell
-$tag = "v1.0.2"
+$tag = "v1.0.3"
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -345,17 +367,18 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 
 ## Honest status
 
-Divan v1.0.2 is published after all eight machine-backed readiness gates passed.
-All 42 skills receive structural validation; five original skills provide 16
+Divan v1.0.3 is published after all eight machine-backed readiness gates passed.
+All 42 skills receive structural validation; four original skills provide 13
 behavioral cases and a provider-neutral A/B runner. The stable contract keeps
 one repository, five modular packages, the stdlib-only Divan Engine,
 owner-first Divan Nizamı governance, the installed Divan Project Contract, and
-Claude Code/Codex lifecycle support. v1.0.2 adds quieter project discovery so
-Divan-owned worktrees, fixture trees, caches, and skill-internal helper folders
-do not appear as duplicate user workspaces. The immutable tag, seven
-checksummed and attested assets, SBOM, Pages, Wiki, clean-host matrix, and
-release readbacks are recorded in the
-[v1.0.2 publication evidence](.divan/evidence/teftis-20260731-v102-release.md).
+Claude Code/Codex lifecycle support. v1.0.3 keeps the quieter project discovery
+and makes the control plane more direct: healthy doctor output stops at READY,
+recovery output includes the exact command, and setup, daily natural-language
+use, and maintenance are separated. The immutable tag, seven checksummed and
+attested assets, SBOM, Pages, Wiki, clean-host matrix, and release readbacks are
+recorded in the
+[v1.0.3 publication evidence](.divan/evidence/teftis-20260801-v103-release.md).
 The clean-room result proves a bounded technical workflow; it does not claim an
 independent-user count, endorsement, market adoption, speed gain, revenue
 increase, quality win, or “best in the world” status.

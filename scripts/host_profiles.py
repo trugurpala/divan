@@ -89,6 +89,11 @@ def next_command(
     results: dict[str, dict[str, Any]],
     marketplace_list: Callable[[str], list[str]],
 ) -> str:
+    if results and all(
+        result.get("status") == "healthy" and not result.get("issues")
+        for result in results.values()
+    ):
+        return ""
     codex = results.get("codex")
     if codex is not None and codex.get("cli_status") == "invalid-json":
         return subprocess.list2cmdline(marketplace_list("codex"))

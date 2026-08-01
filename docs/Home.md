@@ -42,7 +42,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v1.1.0 · **Son yayımlanan:** v1.0.2 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v1.1.0 · **Son yayımlanan:** v1.0.3 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -52,9 +52,10 @@ dayalı timeout politikasını ve Linux/macOS/Windows yaşam döngüsü kanıtı
 yayımlar. İkinci ürün, repo veya üçüncü taraf runtime oluşturmaz.
 Seyir, uzun kalite kapılarında artık ölçülmüş normal bekleme aralığını ve dikkat
 eşiğini kullanıcı dostu dille gösterir; sessiz ekranı çökme zannettirmez.
-v1.0.2 yayımlanan hattı ayrıca Divan'a ait geçici worktree'leri, fixture
+v1.0.3 yayımlanan hattı ayrıca Divan'a ait geçici worktree'leri, fixture
 projelerini ve skill içi yardımcı klasörleri normal kullanıcı workspace'i gibi
-göstermez; takip ekranı gerçek proje köküne odaklı kalır.
+göstermez; sağlıklı doctor READY sonucunda durur ve takip ekranı gerçek proje
+köküne odaklı kalır.
 
 ## Fermanını seç
 

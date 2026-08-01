@@ -1,28 +1,37 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-31
+Son güncelleme: 2026-08-01
 
 ## Yayın durumu
 
-- Latest published release: v1.0.2
-- Published commit: f227e2d30ab1a6f010a3d5acf18740f6eab09e70
-- Publication evidence: .divan/evidence/teftis-20260731-v102-release.md
-- Release asset evidence: .divan/evidence/teftis-20260731-v102-release.md
+- Latest published release: v1.0.3
+- Published commit: ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb
+- Publication evidence: .divan/evidence/teftis-20260801-v103-release.md
+- Release asset evidence: .divan/evidence/teftis-20260801-v103-release.md
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-v1.1.0 is a bounded release candidate on `codex/v1-ux-council`. It adds one
-original product-design audit skill, records eleven UI/UX sources without
-auto-installing them, accepts safe explicit pre-authorization, and rewrites the
-public entry path in plain language. Latest published remains immutable v1.0.2.
+The approved v1.0.3 friction-removal slice is published. One-time setup,
+plain-language daily use, and maintenance are separate without weakening
+immutable refs, checksum verification, dry-run, transaction recovery, or
+evidence gates. Healthy doctor output stops at READY while preserving the
+public JSON field type; compatibility claims are scoped to evidenced host
+surfaces; README and Pages lead an installed user to one copyable ferman.
 
-The latest published release is immutable v1.0.2 at commit
-`f227e2d30ab1a6f010a3d5acf18740f6eab09e70`. PR #80 published the quiet
-discovery and vibe-friendly wait-state line without changing Divan's product
-scope. PR checks and main `quality-gate`, `release`, `compatibility`,
+The approved design and executable plan are:
+
+- `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`
+- `docs/superpowers/plans/2026-08-01-v103-friendly-control-plane.md`
+
+## Son yayımlanan durum
+
+The latest published release is immutable v1.0.3 at commit
+`ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb`. PR #82 published the friendly
+control-plane slice without changing Divan's product scope. PR checks and main
+`quality-gate`, `release`, `compatibility`,
 `codeql`, `site-tests`, `scorecard`, `wiki-sync`, `candidate-review`, and Pages
-all passed. The release workflow created tag/GitHub Release v1.0.2, seven
+all passed. The release workflow created tag/GitHub Release v1.0.3, seven
 downloaded asset hashes matched their manifests, all seven release assets have
 verified GitHub attestations, and live Pages/Wiki/readback gates passed.
 
@@ -38,10 +47,10 @@ schema-2 JSON and Markdown receipts re-verified offline as
 `valid-clean-room-adoption`. The v1 readiness score is now 8/8. This is not an
 independent-user count, endorsement, market-adoption, speed, or quality claim.
 
-v1.0.2 packages the Seyir wait-state UX with a quieter Divan Engine inspection
-path: parent-project traversal ignores Divan-owned `.worktrees`, fixture trees,
-dependency/build caches, and skill-internal helper folders so stale agent
-branches and test fixtures do not appear as duplicate user workspaces.
+v1.0.3 preserves the Seyir wait-state UX and quiet workspace discovery, then
+removes control-plane friction: a healthy doctor stops at READY, unhealthy
+journals include an exact recovery command, and setup, daily use, and
+maintenance are separate user journeys.
 
 ## Yapıldı
 
@@ -439,6 +448,12 @@ branches and test fixtures do not appear as duplicate user workspaces.
   site-tests, Scorecard, Wiki sync, candidate review, Pages deployment, release
   asset checksum verification, and seven GitHub attestations all passed.
   v1.0.2 is now the latest immutable public release.
+- PR #82 merged the v1.0.3 friendly control plane into `main` at
+  `ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb`. Canonical local verification
+  passed 715 tests with 14 expected skips; PR and main publication workflows,
+  seven downloaded asset hashes, both checksum sidecars, strict attestations,
+  and a real Windows/Codex CLI upgrade readback passed. v1.0.3 is now the
+  latest immutable public release.
 
 ## Tarihsel devam kayıtları
 
@@ -467,7 +482,7 @@ the current execution queue.
 
 ## Sıradaki kesin adım
 
-Preserve the latest immutable release. First exact action: complete canonical
-verification and independent review for the v1.1.0 candidate, then open a pull request. Merge,
-tag, release, Pages, Wiki, and live readback remain outside this branch until
-the owner gives separate explicit approval.
+Keep v1.0.3 immutable. First exact action: collect real post-release usage
+friction, define one bounded product slice, and run the same
+verify → PR CI → main release/readback path without changing the v1.0.3 tag or
+release assets.
