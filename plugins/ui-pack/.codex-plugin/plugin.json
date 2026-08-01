@@ -1,6 +1,6 @@
 {
   "name": "ui-pack",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Frontend design, UI/UX guidance, and web application testing skills.",
   "author": { "name": "trugurpala" },
   "skills": "./skills/",

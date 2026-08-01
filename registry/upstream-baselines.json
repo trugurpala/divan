@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-07-19",
+  "reviewed_at": "2026-08-01",
   "policy": "Reviewed drift is never copied automatically; a new upstream commit reopens review.",
   "sources": [
     {"repository": "obra/superpowers", "license": "MIT", "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99"},
@@ -16,9 +16,9 @@
       "source": "obra/superpowers",
       "reviewed_head": "d884ae04edebef577e82ff7c4e143debd0bbec99",
       "decision": "KEEP",
-      "local_tree_sha256": "274d1b989314ed126ab50575867f61964912f3abb88cf9390c0e9e21ec371983",
+      "local_tree_sha256": "ee7ea7a6225cc23415431e5f58a30dbdf999177b50184756dc2fc8a6e02a5bcb",
       "changed_files": ["SKILL.md", "scripts/helper.js", "scripts/start-server.sh", "scripts/stop-server.sh", "spec-document-reviewer-prompt.md", "visual-companion.md"],
-      "reason": "Upstream adds a visual companion and server harness; v0.12 keeps Divan's dependency-light approved design gate pending a separate eval."
+      "reason": "Keep Divan's dependency-light design gate and record the v1.1 bounded pre-approval rule: an explicit do-not-ask instruction can advance only reversible named work, never publication, secrets, payments, messaging, account security, or destructive actions."
     },
     {
       "skill": "dispatching-parallel-agents",

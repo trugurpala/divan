@@ -40,7 +40,7 @@ def _contracts() -> tuple[dict[str, object], dict[str, object]]:
         "marketplace_digest": hashlib.sha256(raw).hexdigest(),
         "packages": packages,
         "schema_version": 1,
-        "skill_count": 41,
+        "skill_count": 42,
         "version": version,
     }
     return identity, catalog

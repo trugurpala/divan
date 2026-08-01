@@ -169,10 +169,16 @@ class EvalRunnerTests(unittest.TestCase):
 
     def test_discovers_current_contracts(self) -> None:
         cases = EVALS.discover_cases(ROOT)
-        self.assertEqual(len(cases), 13)
+        self.assertEqual(len(cases), 16)
         self.assertEqual(
             {case["skill_name"] for case in cases},
-            {"arama-ustasi", "baglam-muhafizi", "kaynak-kuratori", "vezir-yetistirme"},
+            {
+                "arama-ustasi",
+                "baglam-muhafizi",
+                "kaynak-kuratori",
+                "product-design-audit",
+                "vezir-yetistirme",
+            },
         )
 
     def test_zero_cases_is_not_success(self) -> None:

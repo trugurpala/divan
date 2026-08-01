@@ -145,8 +145,8 @@ def _catalog(root: pathlib.Path, version: str) -> dict[str, Any]:
     unique_skills = {
         skill for package in packages.values() for skill in package["skills"]
     }
-    if set(packages) != expected or len(unique_skills) != 41:
-        raise ValueError("plugin catalog must define five packages and 41 unique skills")
+    if set(packages) != expected or len(unique_skills) != 42:
+        raise ValueError("plugin catalog must define five packages and 42 unique skills")
     return {
         "marketplace_digest": hashlib.sha256(raw).hexdigest(),
         "packages": packages,

@@ -73,7 +73,7 @@ jobs:
           DIVAN_STATE_DIR: ${{ runner.temp }}/codex-state
         run: |
           bash scripts/install_codex.sh
-          test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 41
+          test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 42
           bash scripts/uninstall_codex.sh
           test "$(find "$CODEX_SKILLS_DIR" -type f -name SKILL.md | wc -l)" -eq 0
       - name: Windows temiz kurulum, keşif ve kaldırma
@@ -86,7 +86,7 @@ jobs:
         run: |
           & ./scripts/install_codex.ps1
           $count = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
-          if ($count -ne 41) { throw "Beklenen 41 skill, bulunan $count" }
+          if ($count -ne 42) { throw "Beklenen 42 skill, bulunan $count" }
           & ./scripts/uninstall_codex.ps1
           $remaining = @(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count
           if ($remaining -ne 0) { throw "Kaldirma sonrasi $remaining skill kaldi" }
@@ -181,7 +181,7 @@ jobs:
               if not expected.issubset(installed(host)):
                   raise SystemExit(f"{host}: five native Divan packages were not installed")
               evidence = record.get("verified", {}).get(host, {})
-              if evidence.get("package_count") != 5 or evidence.get("skill_count") != 41:
+              if evidence.get("package_count") != 5 or evidence.get("skill_count") != 42:
                   raise SystemExit(f"{host}: native package/skill evidence is incomplete")
               if evidence.get("ref") != os.environ["DIVAN_REF"]:
                   raise SystemExit(f"{host}: verified ref does not match CI commit")

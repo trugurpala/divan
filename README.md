@@ -1,22 +1,28 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.3-1f6feb)
+![version](https://img.shields.io/badge/version-1.1.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
 
 <img src="docs/assets/muhurdar-idle.png" alt="Mühürdar, Divan's verification mascot" width="128" align="right">
 
-**You are Hükümdar, the owner. Divan turns the coding agent you already use
-into a modular delivery system: one repository, five focused packs, 41 skills,
-persistent project memory, local progress, and independent verification.**
+**Tell Divan what you want to finish. It turns the coding agent you already use
+into a planned, tested, and verifiable delivery workflow.**
 
-You write the decree in plain language. Divan narrows the scope, selects the
+You write the result in plain language. Divan narrows the scope, selects the
 smallest qualified team, plans the work, builds with tests, verifies the
 result, records the decisions, and presents a finished delivery. It runs as a
 native plugin lifecycle in Claude Code and Codex CLI; its Agent Skills remain
 portable to Cursor and other compatible hosts.
+
+The Hükümdar/Divan vocabulary describes owner-first governance; it is not a role
+you must learn before using the product. The distribution remains one repository,
+five focused packs, and 42 skills.
+
+Use v1.1.0 only after its tag and GitHub Release are visible; until then use the
+latest published v1.0.3 release for installation.
 
 ## Host compatibility
 
@@ -29,7 +35,7 @@ means CLI. Desktop is an official plugin target but remains outside Divan's
 verified tier until a separate UI canary exists; the IDE extension and mobile
 clients are excluded too.
 
-**Current source:** v1.0.3 · **Latest published:** v1.0.3 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.1.0 · **Latest published:** v1.0.3 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Already installed? Start here
 
@@ -218,7 +224,7 @@ python .\divan.pyz install --host codex --profile auto
 python .\divan.pyz install --host codex --profile auto --execute
 ```
 
-The file contains the exact five-package, 41-skill catalog and immutable source
+The file contains the exact five-package, 42-skill catalog and immutable source
 commit for that release. It rejects another source or ref. Keep `divan.pyz`;
 doctor uses it to print the exact recovery command if an interrupted operation
 needs attention.
@@ -227,20 +233,20 @@ From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.3
-python scripts/divan.py install --host both --ref v1.0.3 --execute
+python scripts/divan.py install --host both --ref v1.1.0
+python scripts/divan.py install --host both --ref v1.1.0 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.3
-python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.1.0
+python scripts/divan.py install --host codex --profile auto --ref v1.1.0 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
-non-executable, or OS-denied CLI selects the checksum-backed 41-skill
+non-executable, or OS-denied CLI selects the checksum-backed 42-skill
 fallback. The fallback includes skills and instructions, but it does not claim
 native commands, agents, hooks, MCP configuration, or native lifecycle
 support. Invalid host JSON blocks instead of hiding a compatibility problem.
@@ -258,9 +264,9 @@ options. The complete Turkish reference remains available in
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.3
-python scripts/divan.py update --host both --ref v1.0.3
-python scripts/divan.py update --host both --ref v1.0.3 --execute
+python scripts/divan.py doctor --host both --ref v1.1.0
+python scripts/divan.py update --host both --ref v1.1.0
+python scripts/divan.py update --host both --ref v1.1.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -362,8 +368,8 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 ## Honest status
 
 Divan v1.0.3 is published after all eight machine-backed readiness gates passed.
-All 41 skills receive structural validation; four original skills provide 13
-behavioral cases and a provider-neutral A/B runner. The stable contract keeps
+All 42 skills receive structural validation; five original skills provide 16 behavioral cases
+and a provider-neutral A/B runner. The stable contract keeps
 one repository, five modular packages, the stdlib-only Divan Engine,
 owner-first Divan Nizamı governance, the installed Divan Project Contract, and
 Claude Code/Codex lifecycle support. v1.0.3 keeps the quieter project discovery

@@ -4,7 +4,7 @@
 [Topluluk standartları](docs/Topluluk-Standartlari.md)
 
 Divan yerel bir skill/plugin dağıtımıdır; model veya ajan runtime'ı değildir.
-Katkılar 41 skill'lik kataloğu taşınabilir, lisansı açık, geri alınabilir ve
+Katkılar 42 skill'lik kataloğu taşınabilir, lisansı açık, geri alınabilir ve
 kanıta dayalı tutmalıdır.
 
 ## Doğru yolu seç

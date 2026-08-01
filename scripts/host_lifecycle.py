@@ -174,8 +174,8 @@ def _verify_host(
         if package_skills != set(contract["skills"]):
             errors.append(f"{selector} skill inventory")
         discovered.update(package_skills)
-    if len(discovered) != 41:
-        errors.append(f"discoverable skills {len(discovered)}/41")
+    if len(discovered) != 42:
+        errors.append(f"discoverable skills {len(discovered)}/42")
     if errors:
         raise InstallError(f"{host} verification failed: {', '.join(errors)}")
     return {

@@ -326,11 +326,11 @@ def _verify_manifest(
         rows = list(csv.DictReader(handle, delimiter="\t"))
     expected = _expected_skill_names(root)
     if (
-        len(expected) != 41
-        or len(rows) != 41
+        len(expected) != 42
+        or len(rows) != 42
         or {row.get("skill") for row in rows} != expected
     ):
-        raise ValueError("fallback manifest does not contain exactly 41 Divan skills")
+        raise ValueError("fallback manifest does not contain exactly 42 Divan skills")
     version, commit, archive = _manifest_identity(rows, options)
     installed = _verified_skill_trees(rows, skills_dir)
     return {

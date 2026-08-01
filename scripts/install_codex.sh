@@ -3,7 +3,7 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 set -Eeuo pipefail
 
-REF="${DIVAN_REF:-v1.0.3}"
+REF="${DIVAN_REF:-v1.1.0}"
 DST="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/divan-kur.XXXXXX")"

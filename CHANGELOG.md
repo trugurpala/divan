@@ -6,6 +6,34 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-08-01
+
+### Added
+
+- Added `product-design-audit`, one evidence-based UI/UX entry point for vibe
+  coders. It inspects real desktop and mobile behavior, prioritizes at most ten
+  findings, and separates defects from taste.
+- Reviewed eleven current UI/UX skill repositories in the Candidate Council
+  with immutable commits, license evidence, overlap decisions, and no automatic
+  installation. Two are clean-room adaptation candidates, eight remain
+  references, and one was rejected because no redistribution license exists.
+
+### Changed
+
+- Explicit, bounded, reversible pre-authorization can satisfy the brainstorming
+  approval gate after a compact design. Publication, release, destructive work,
+  secrets, payments, messaging, and account or security changes still require
+  fresh approval.
+- The v1.0.3 friendly control plane remains the onboarding baseline. The
+  canonical distribution now contains five packs and 42 skills; UI Pack is
+  version 0.2.0.
+
+### Verification
+
+- Added skill-contract, license-provenance, Candidate Council, workflow, site,
+  and behavior regression tests. Comparative quality is not claimed without a
+  real blinded agent evaluation.
+
 ## [1.0.3] - 2026-08-01
 
 ### Fixed

@@ -30,7 +30,7 @@ SPEC.loader.exec_module(HOST_INSTALL)
 PACKAGE_VERSIONS = {
     "sadrazam": "0.10.0",
     "core-pack": "0.5.1",
-    "ui-pack": "0.1.0",
+    "ui-pack": "0.2.0",
     "react-pack": "0.2.1",
     "zanaat-pack": "0.1.1",
 }
@@ -638,8 +638,8 @@ class HostInstallTests(unittest.TestCase):
 
         self.assertEqual(record["status"], "verified")
         self.assertEqual(record["selected_mode"], "verified-skill-fallback")
-        self.assertEqual(record["skill_count"], 41)
-        self.assertEqual(len(record["installed_sha256"]), 41)
+        self.assertEqual(record["skill_count"], 42)
+        self.assertEqual(len(record["installed_sha256"]), 42)
         self.assertEqual(record["archive_sha256"], "b" * 64)
         self.assertIn("uninstall_codex", record["rollback_command"])
         self.assertIn(sys.executable, record["rollback_command"])
@@ -707,7 +707,7 @@ class HostInstallTests(unittest.TestCase):
         payload = {
             "status": "verified",
             "selected_mode": "verified-skill-fallback",
-            "skill_count": 41,
+            "skill_count": 42,
             "manifest": "C:\\state\\divan-install.tsv",
             "rollback_command": "powershell.exe -File uninstall_codex.ps1",
             "next_command": "Restart Codex, then open a new task.",
@@ -731,7 +731,7 @@ class HostInstallTests(unittest.TestCase):
         self.assertEqual(result, 0)
         rendered = output.getvalue()
         self.assertIn("VERIFIED SKILL FALLBACK", rendered)
-        self.assertIn("41/41", rendered)
+        self.assertIn("42/42", rendered)
         self.assertIn("native commands, agents, hooks, MCP", rendered)
         self.assertIn("ROLLBACK:", rendered)
         self.assertIn("NEXT:", rendered)
@@ -908,7 +908,7 @@ class HostInstallTests(unittest.TestCase):
             self.assertEqual(set(record["verified"]), {"claude", "codex"})
             for evidence in record["verified"].values():
                 self.assertEqual(evidence["package_count"], 5)
-                self.assertEqual(evidence["skill_count"], 41)
+                self.assertEqual(evidence["skill_count"], 42)
                 self.assertEqual(evidence["ref"], "v0.12.0")
                 self.assertEqual(
                     evidence["source"],

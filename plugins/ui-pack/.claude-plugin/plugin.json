@@ -1,8 +1,8 @@
 {
   "name": "ui-pack",
-  "description": "UI/UX skill paketi: frontend-design ve webapp-testing (Anthropic, Apache 2.0) + ui-ux-pro-max (Next Level Builder, MIT)",
-  "version": "0.1.0",
+  "description": "UI/UX skill paketi: özgün product-design-audit + frontend-design, webapp-testing ve ui-ux-pro-max",
+  "version": "0.2.0",
   "author": { "name": "trugurpala" },
-  "license": "Karma: Apache-2.0 ve MIT (her skill klasorunde kendi lisansi)",
+  "license": "Karma: özgün skill için root MIT; üçüncü taraf skill'ler için paketlenmiş Apache-2.0/MIT bildirimleri",
   "keywords": ["ui", "ux", "design", "frontend", "testing"]
 }

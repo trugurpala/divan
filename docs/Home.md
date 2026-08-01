@@ -1,10 +1,10 @@
-# Divan Wiki · v1.0.3
+# Divan Wiki · v1.1.0
 
 ![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
 
 **Hükümdar sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
 kalıcı bir teslim akışına çeviren tek üründür: tek repo, modüler çekirdek,
-5 paket, 41 beceri, yerel Seyir ekranı ve kanıtlı denetim. Aynı paketler Claude
+5 paket, 42 beceri, yerel Seyir ekranı ve kanıtlı denetim. Aynı paketler Claude
 Code/Desktop Code ve Codex'e yerel plugin olarak kurulur; proje hafızası,
 davranış eval'i ve yayın teftişi aynı çatıdadır.
 
@@ -42,7 +42,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Güncel kaynak:** v1.0.3 · **Son yayımlanan:** v1.0.3 · `main` ürün kaynağı · Wiki bu repodaki
+> **Güncel kaynak:** v1.1.0 · **Son yayımlanan:** v1.0.3 · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -78,7 +78,7 @@ Canlı etkileşimli seçici: https://trugurpala.github.io/divan/#basla
 - [[Divan Engine|Divan-Engine]] — tek ürün, dokuz modül ve Hükümdar öncelikli nizam
 - [[Divan Proje Sözleşmesi|Project-Contract]] — hedef repoya kurulan gözetimli sözleşme
 - [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] — kurunca ne değişir?
-- [[Beceri Kataloğu|Beceri-Katalogu]] — 41 beceri ve tetikleyicileri
+- [[Beceri Kataloğu|Beceri-Katalogu]] — 42 beceri ve tetikleyicileri
 - [[Aday Meclisi|Aday-Meclisi]] — sürekli keşif ve ADOPT/ADAPT/REFERENCE/REJECT kararları
 - [[Orkestrasyon Kararı|Orkestrasyon-Karari]] — Ocak, Sefer ve Ordu
 - [[Test ve Teftiş|Test-ve-Teftis]] — yerel, CI, tarayıcı ve yayın kanıtı

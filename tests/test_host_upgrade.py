@@ -24,7 +24,7 @@ SPEC.loader.exec_module(HOSTS)
 TARGET_VERSIONS = {
     "sadrazam": "0.10.0",
     "core-pack": "0.5.1",
-    "ui-pack": "0.1.0",
+    "ui-pack": "0.2.0",
     "react-pack": "0.2.1",
     "zanaat-pack": "0.1.1",
 }
@@ -436,7 +436,7 @@ class HostUpgradeTests(unittest.TestCase):
                         ).hexdigest(),
                         "packages": packages,
                         "schema_version": 1,
-                        "skill_count": 41,
+                        "skill_count": 42,
                         "version": TARGET_REF.removeprefix("v"),
                     }
                 ),

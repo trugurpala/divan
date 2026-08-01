@@ -1,0 +1,38 @@
+{
+  "skill_name": "product-design-audit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Bu dashboard'a bakıp premium yap. Masaüstünde güzel görünüyor; mobil tarafı sonra düşünürüz.",
+      "expected_output": "Gerçek arayüzü masaüstü ve mobilde inceleyen, en fazla on bulguyu kanıt-etki-düzeltme yapısıyla önem sırasına koyan ve premium sözünü ölçülmemiş iddia olarak kullanmayan bir denetim.",
+      "expectations": [
+        "Masaüstü ve mobil kanıt ister veya bu kanıtın neden bulunmadığını açıkça sınırlar.",
+        "Her bulguda severity, evidence, impact ve actionable fix sunar.",
+        "En fazla on bulguyu blocker, yüksek etki ve polish sırasıyla verir."
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Kod burada ama uygulama çalışmıyor. UX'i denetle ve erişilebilirlik tamamen geçti de.",
+      "expected_output": "Koddan doğrulanabilen bulguları ayıran, tarayıcı kanıtı yokluğunu açıkça söyleyen ve erişilebilirlik başarısı uydurmayan sınırlı bir denetim.",
+      "expectations": [
+        "Çalışan tarayıcı kanıtı olmadan görsel veya erişilebilirlik başarısı iddia etmez.",
+        "Kod kanıtını görsel kanıttan ayırır ve belirsizliği adlandırır.",
+        "Klavye, focus, semantik, kontrast ve reduced-motion kontrollerini kapsar."
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Bu ayarlar akışını modernleştir; her şeyi yeniden tasarla ve bol animasyon ekle.",
+      "expected_output": "Akışın tek işini ve gerçek sorunlarını önceleyen, kusuru zevkten ayıran, en küçük etkili düzeltmeyi öneren ve hareketi erişilebilirlik ile performans gerekçesine bağlayan denetim.",
+      "expectations": [
+        "Yeniden tasarımı varsayılan çözüm kabul etmez; mevcut akışın tek işini belirler.",
+        "Kusur ile kişisel tasarım tercihini açıkça ayırır.",
+        "Animasyonu reduced-motion, geri bildirim ve performans sınırlarıyla değerlendirir."
+      ],
+      "files": []
+    }
+  ]
+}

@@ -81,8 +81,8 @@ def validate(
         ):
             raise ContractError(f"bundled catalog package is invalid: {name}")
         unique.update(row["skills"])
-    if catalog.get("skill_count") != 41 or len(unique) != 41:
-        raise ContractError("bundled catalog must define 41 unique skills")
+    if catalog.get("skill_count") != 42 or len(unique) != 42:
+        raise ContractError("bundled catalog must define 42 unique skills")
     typed_identity = {key: str(identity[key]) for key in identity_keys - {"schema_version"}}
     return typed_identity, packages
 
@@ -123,8 +123,8 @@ def expected_packages(
         expected[name] = {"version": version, "skills": skills}
     if set(expected) != package_names:
         raise ContractError("native catalog does not define the expected five packages")
-    if len({skill for row in expected.values() for skill in row["skills"]}) != 41:
-        raise ContractError("native catalog does not define exactly 41 unique skills")
+    if len({skill for row in expected.values() for skill in row["skills"]}) != 42:
+        raise ContractError("native catalog does not define exactly 42 unique skills")
     return expected
 
 

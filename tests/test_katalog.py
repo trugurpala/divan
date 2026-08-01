@@ -19,7 +19,7 @@ class KatalogTesti(unittest.TestCase):
 
     def test_tum_skiller_ve_cok_satirli_aciklama_gorunur(self) -> None:
         metin = KATALOG.katalog_uret(KOK)
-        self.assertEqual(metin.count("| **"), 41)
+        self.assertEqual(metin.count("| **"), 42)
         self.assertIn("Claude API and Anthropic SDK reference", metin)
         self.assertNotIn("| **claude-api** | /-", metin)
         self.assertIn("# Skill Catalog / Beceri Kataloğu", metin)

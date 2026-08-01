@@ -134,7 +134,7 @@ class BootstrapRunnerTests(unittest.TestCase):
                     and "/skills/" in name
                     and name.endswith("/SKILL.md")
                 ]
-                self.assertEqual(len(skill_manifests), 41)
+                self.assertEqual(len(skill_manifests), 42)
 
     def test_bootstrap_runs_doctor_without_checkout_or_ref(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-bootstrap-") as temporary:

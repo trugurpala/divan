@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v1.0.3
+# Durum ve Yol Haritası · v1.1.0
 
 Son durum tarihi: 2026-08-01.
 
@@ -33,6 +33,13 @@ Son durum tarihi: 2026-08-01.
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
   dikkat eşiğini açıklar; kullanıcı sessiz ekranı çökme zannetmez.
+
+## v1.1.0 adayı
+
+- `product-design-audit` ile katalog 42 beceriye çıkar.
+- Beş özgün skill için 16 davranış vakası bulunur.
+- Bu sayılar yalnız v1.1.0 tag ve GitHub Release yayımlandıktan sonra
+  yayımlanmış ürün gerçeği olur.
 - Divan Engine, üst proje taramasında `.worktrees`, fixture projeleri ve skill
   içi yardımcı klasörlerden gelen eski ajan/test gürültüsünü workspace veya test
   hedefi gibi göstermez; açıkça proje kökü verilirse yine inceler.
@@ -97,7 +104,7 @@ değildir.
 - Eksik, çalıştırılamayan, erişimi engellenen, geçersiz JSON döndüren ve sağlıklı
   Codex CLI durumları birbirinden ayrılır.
 - Açıkça seçilen `auto` profili sağlıklı CLI'da native yolu değiştirmez; kanıtlı
-  Windows çalıştırma engelinde checksum-backed 41-skill fallback'i seçebilir.
+  Windows çalıştırma engelinde checksum-backed 42-skill fallback'i seçebilir.
 - Fallback; komut, ajan, hook, MCP veya native yaşam döngüsü desteği iddia etmez.
 - PR #58 `f367de92e09b4f56e205d7e2883d988b3b4d2797` commit'inde birleşti. Dokuz
   yayın kontrolü, beş indirilen varlığın SHA-256 değeri, strict SLSA doğrulaması
@@ -107,7 +114,7 @@ değildir.
 
 - Yerel Seyir ekranı yalnız `127.0.0.1` üzerinde çalışır; durum istekleri
   yetenek belirteci ister ve yetkisiz istekler oturum ömrünü uzatmaz.
-- `divan.pyz` tek dosyada kaynak commit'ini ve 41 becerilik kataloğu taşır;
+- `divan.pyz` tek dosyada kaynak commit'ini ve 42 becerilik kataloğu taşır;
   checksum doğrulaması ve yazmayan plan olmadan kurulum iddiası oluşturmaz.
 - Akıllı timeout değerleri ölçülmüş yerel/CI kanıtlarına bağlıdır; aynı kanıtlı
   hata iki düzeltmeden sonra sürerse döngü durur ve Hükümdara taşınır.
@@ -162,7 +169,7 @@ değildir.
 
 ## v1.0.0 — yayımlanan kararlı Divan sözleşmesi
 
-- Tek repo, beş modüler paket, 41 beceri, stdlib-only Divan Engine, Hükümdar
+- Tek repo, beş modüler paket, 42 beceri, stdlib-only Divan Engine, Hükümdar
   öncelikli Divan Nizamı ve kurulu Divan Proje Sözleşmesi kararlı sınırdır.
 - PR #67 `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde birleşti.
 - Release hattı üç işletim sisteminde temiz kurulum, bütün yayın kapıları,

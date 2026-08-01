@@ -1,20 +1,26 @@
 # Divan
 
 ![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.3-1f6feb)
+![version](https://img.shields.io/badge/version-1.1.0-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 **Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
 
 <img src="docs/assets/muhurdar-idle.png" alt="Divan'ın Mühürdar maskotu" width="128" align="right">
 
-**Hükümdar sensin. Divan, kullandığın kodlama ajanını modüler bir teslim
-sistemine çevirir: tek repo, 5 odaklı paket, 41 beceri, kalıcı proje hafızası,
-yerel ilerleme ekranı ve bağımsız denetim.**
-Sen fermanı sade dille verirsin; Divan kapsamı daraltır, en küçük yetkin ekibi
+**Divan'a neyi bitirmek istediğini yaz. Kullandığın kodlama ajanını planlı,
+testli ve kanıtlanabilir bir teslim akışına çevirir.**
+Sonucu sade dille verirsin; Divan kapsamı daraltır, en küçük yetkin ekibi
 seçer, planlar, testle inşa eder, kanıtıyla teslim eder ve kaldığın yeri asla
 unutmaz. Claude Code ile Codex CLI'da doğrulanmış yerel plugin yaşam döngüsüne
 sahiptir; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
+
+Hükümdar/Divan dili sahibin son yetkili olduğu yönetişimi anlatır; ürünü
+kullanmak için öğrenmen gereken bir rol oyunu değildir. Dağıtım tek repo, 5
+odaklı paket ve 42 beceri olarak kalır.
+
+v1.1.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
+kurulum için o zamana kadar son yayımlanan v1.0.3 release'ini seç.
 
 Host desteği tek bir “uyumlu” pazarlama sözüyle değil, kanıt seviyesiyle
 yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların mevcut
@@ -25,7 +31,7 @@ yaşam döngüsü CLI demektir. Desktop resmî bir plugin hedefidir fakat ayrı 
 UI canary kaydı oluşana kadar verified sayılmaz; IDE extension ve mobil
 istemciler de kapsam dışıdır.
 
-**Güncel kaynak:** v1.0.3 · **Son yayımlanan:** v1.0.3 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Güncel kaynak:** v1.1.0 · **Son yayımlanan:** v1.0.3 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
 
 ## Divan kuruluysa buradan başla
 
@@ -174,7 +180,7 @@ Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
 
 1. Kaynağı ve gerçek repo kimliğini bulur.
 2. Lisans, köken, hook/script ve araç yetkilerini denetler.
-3. Mevcut 41 beceriyle çakışmayı ve gerçek ürün boşluğunu ölçer.
+3. Mevcut 42 beceriyle çakışmayı ve gerçek ürün boşluğunu ölçer.
 4. Haftalık **Meclis** keşfi ve yapılandırılmış topluluk formuyla aday üretir;
    hiçbir adayı otomatik kurmaz.
 5. Kimlik, lisans, yürütme yüzeyi ve kanıta göre ADOPT, ADAPT, REFERENCE veya
@@ -240,21 +246,21 @@ Repo checkout'u içinden yazmayan planı görüp aynı sabit release'i iki hosta
 kurmak için:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.3
-python scripts/divan.py install --host both --ref v1.0.3 --execute
+python scripts/divan.py install --host both --ref v1.1.0
+python scripts/divan.py install --host both --ref v1.1.0 --execute
 ```
 
 Codex Desktop için tek bir açık `auto` profil komutu yerel CLI'ı tanılar ve
 kanıtlayabildiği en güçlü yolu seçer:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.3
-python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.1.0
+python scripts/divan.py install --host codex --profile auto --ref v1.1.0 --execute
 ```
 
 Codex CLI sağlıklıysa tam yerel plugin yolu korunur. CLI bulunamazsa,
 çalıştırılamazsa veya işletim sistemi erişimi reddederse checksum ile
-doğrulanan 41 becerilik fallback seçilir. Fallback skill ve talimatları sağlar;
+doğrulanan 42 becerilik fallback seçilir. Fallback skill ve talimatları sağlar;
 yerel komut, ajan, hook, MCP yapılandırması veya yerel yaşam döngüsü sağladığını
 iddia etmez. Host geçersiz JSON döndürürse gerçek uyumluluk sorunu gizlenmeden
 kurulum durur.
@@ -270,9 +276,9 @@ elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md
 Beş dakikalık güvenli yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.3
-python scripts/divan.py update --host both --ref v1.0.3
-python scripts/divan.py update --host both --ref v1.0.3 --execute
+python scripts/divan.py doctor --host both --ref v1.1.0
+python scripts/divan.py update --host both --ref v1.1.0
+python scripts/divan.py update --host both --ref v1.1.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -350,7 +356,7 @@ Protokol: [evals/README.md](evals/README.md).
 | `/teftis` | Repoyu ve hafıza sağlığını denetler |
 | `/yayin <semver>` | Bütün sürüm yüzeylerini hazırlar; CI → canlı yüzey → tag/Release zincirini tamamlar |
 
-## Paketler (41 beceri)
+## Paketler (42 beceri)
 
 | Paket | Öne çıkanlar | Kaynak / Lisans |
 |---|---|---|
@@ -387,8 +393,8 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 ## Dürüst durum
 
 Divan v1.0.3, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
-yayımlandı. 41 becerinin tamamı yapısal olarak doğrulanır; 4 özgün skill için
-13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
+yayımlandı. 42 becerinin tamamı yapısal olarak doğrulanır; 5 özgün skill için 16 davranış vakası
+ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
 tek repo, beş modüler paket, stdlib-only Divan Engine, Hükümdar öncelikli Divan
 Nizamı, kurulu Divan Proje Sözleşmesi ve Claude Code/Codex yaşam döngüsünü
 korur. v1.0.3 sakin proje keşfini korurken kontrol düzlemini sadeleştirir:

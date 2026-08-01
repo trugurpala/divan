@@ -1,6 +1,6 @@
 {
   "name": "divan",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "interface": {
     "displayName": "Divan Engine"
   },
@@ -33,7 +33,7 @@
     },
     {
       "name": "ui-pack",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "source": {
         "source": "local",
         "path": "./plugins/ui-pack"

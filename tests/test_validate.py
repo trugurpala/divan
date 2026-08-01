@@ -53,7 +53,7 @@ class RepositoryTests(unittest.TestCase):
     def test_repository_passes_local_audit(self) -> None:
         errors, _warnings, packages, skills = VALIDATE.denetle(ROOT)
         self.assertEqual(errors, [])
-        self.assertEqual((packages, skills), (5, 41))
+        self.assertEqual((packages, skills), (5, 42))
 
     def test_eval_contract_rejects_empty_and_escaping_inputs(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-eval-test-") as temporary:
@@ -154,7 +154,7 @@ class RepositoryTests(unittest.TestCase):
             )
             command = ["bash", str(ROOT / "scripts" / "install_codex.sh")]
             subprocess.run(command, check=True, env=env, capture_output=True, text=True)
-            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 42)
 
             marker = skills_dir / "sadrazam" / "kullanici-dosyasi.txt"
             marker.write_text("koru", encoding="utf-8")
@@ -207,12 +207,12 @@ class RepositoryTests(unittest.TestCase):
                 str(ROOT / "scripts" / "uninstall_codex.ps1"),
             ]
             subprocess.run(install, check=True, env=env, capture_output=True, text=True)
-            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 41)
+            self.assertEqual(len(list(skills_dir.glob("*/SKILL.md"))), 42)
             pointer = state_dir / "divan-install-latest"
             manifest = pathlib.Path(pointer.read_text(encoding="utf-8-sig").strip())
             with manifest.open(encoding="utf-8-sig", newline="") as handle:
                 rows = list(csv.DictReader(handle, delimiter="\t"))
-            self.assertEqual(len(rows), 41)
+            self.assertEqual(len(rows), 42)
             self.assertEqual(
                 set(rows[0]),
                 {

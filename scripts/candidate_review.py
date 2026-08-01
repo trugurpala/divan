@@ -7,14 +7,19 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import pathlib
 import re
+import urllib.error
+import urllib.parse
+import urllib.request
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 DEFTER = KOK / "registry" / "candidates.json"
 KATALOG = KOK / "docs" / "Aday-Meclisi.md"
 ID_DESENI = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 GITHUB_DESENI = re.compile(r"^https://github\.com/[^/\s]+/[^/\s]+$")
+SHA_DESENI = re.compile(r"^[0-9a-f]{40}$")
 TIPLER = {"skill-plugin", "registry-index", "framework-library", "app-template", "standard-research"}
 KARARLAR = {"PENDING", "ADOPT", "ADAPT", "REFERENCE", "REJECT"}
 DURUMLAR = {"new", "triage", "audit", "accepted", "adapted", "reference", "rejected"}
@@ -48,17 +53,86 @@ def oku(kok: pathlib.Path = KOK) -> dict:
     return veri
 
 
+ADAY_METIN_ALANLARI = (
+    "id", "name", "canonical_url", "type", "status", "decision", "user_gap",
+    "execution_review", "risk_notes", "rationale",
+)
+
+
+def _metin_alanlarini_denetle(aday: object, onek: str) -> dict:
+    if not isinstance(aday, dict):
+        raise ValueError(f"{onek} nesne olmalı")
+    for alan in ADAY_METIN_ALANLARI:
+        if not isinstance(aday.get(alan), str) or not aday[alan].strip():
+            raise ValueError(f"{onek}.{alan} dolu metin olmalı")
+    return aday
+
+
+def _karar_durumunu_denetle(aday: dict, onek: str) -> None:
+    if aday["status"] not in DURUMLAR or aday["decision"] not in KARARLAR:
+        raise ValueError(f"{onek} durum/karar geçersiz")
+    if aday["decision"] == "PENDING":
+        if aday["status"] not in {"new", "triage", "audit"}:
+            raise ValueError(f"{onek}: PENDING yalnız açık durumlarda olabilir")
+    elif SON_KARAR_DURUMU[aday["decision"]] != aday["status"]:
+        raise ValueError(f"{onek}: karar ile durum uyuşmuyor")
+    if aday["execution_review"] not in {"not-executed", "metadata-only", "reviewed"}:
+        raise ValueError(f"{onek}.execution_review geçersiz")
+
+
+def _lisans_kaniti_kanonik_mi(aday: dict) -> bool:
+    repo = urllib.parse.urlparse(aday["canonical_url"])
+    kanit = urllib.parse.urlparse(aday["license"]["evidence_url"])
+    if kanit.scheme != "https" or kanit.netloc.casefold() != "github.com":
+        return False
+    repo_yolu = repo.path.rstrip("/").casefold()
+    pin = aday["reviewed_head"].casefold()
+    kanit_yolu = kanit.path.rstrip("/").casefold()
+    return kanit_yolu == f"{repo_yolu}/tree/{pin}" or kanit_yolu.startswith(
+        f"{repo_yolu}/blob/{pin}/"
+    )
+
+
+def _immutable_kaniti_denetle(aday: dict, kanitlar: list[str], onek: str) -> None:
+    if aday["decision"] == "PENDING":
+        return
+    reviewed_head = aday.get("reviewed_head")
+    if not isinstance(reviewed_head, str) or not SHA_DESENI.fullmatch(reviewed_head):
+        raise ValueError(f"{onek}.reviewed_head 40 haneli commit olmalı")
+    if not any(reviewed_head in kanit for kanit in kanitlar):
+        raise ValueError(f"{onek}.reviewed_head immutable kanıtlara bağlanmalı")
+    if not _lisans_kaniti_kanonik_mi(aday):
+        raise ValueError(f"{onek}: lisans kanıtı kanonik repo ve commit'e bağlanmalı")
+
+
+def _lisans_ve_kanitlari_denetle(aday: dict, onek: str) -> None:
+    lisans = aday.get("license")
+    if not isinstance(lisans, dict):
+        raise ValueError(f"{onek}.license nesne olmalı")
+    for alan in ("spdx", "evidence_url", "scope_note"):
+        if not isinstance(lisans.get(alan), str) or not lisans[alan].strip():
+            raise ValueError(f"{onek}.license.{alan} dolu metin olmalı")
+    if aday["decision"] in {"ADOPT", "ADAPT"} and lisans["spdx"] == "UNKNOWN":
+        raise ValueError(f"{onek}: lisansı belirsiz aday alınamaz/uyarlanamaz")
+    kanitlar = aday.get("evidence")
+    if not isinstance(kanitlar, list) or not all(
+        isinstance(k, str) and k.startswith("https://") for k in kanitlar
+    ):
+        raise ValueError(f"{onek}.evidence HTTPS adresleri dizisi olmalı")
+    if aday["decision"] != "PENDING" and len(set(kanitlar)) < 2:
+        raise ValueError(f"{onek}: son karar en az iki kanıt ister")
+    if lisans["evidence_url"] not in kanitlar:
+        raise ValueError(f"{onek}: lisans kanıtı evidence içinde olmalı")
+    _immutable_kaniti_denetle(aday, kanitlar, onek)
+
+
 def denetle(veri: dict) -> list[dict]:
     adaylar = veri["candidates"]
     kimlikler: set[str] = set()
     adresler: set[str] = set()
-    for sira, aday in enumerate(adaylar, start=1):
+    for sira, ham_aday in enumerate(adaylar, start=1):
         onek = f"candidates[{sira}]"
-        if not isinstance(aday, dict):
-            raise ValueError(f"{onek} nesne olmalı")
-        for alan in ("id", "name", "canonical_url", "type", "status", "decision", "user_gap", "execution_review", "risk_notes", "rationale"):
-            if not isinstance(aday.get(alan), str) or not aday[alan].strip():
-                raise ValueError(f"{onek}.{alan} dolu metin olmalı")
+        aday = _metin_alanlarini_denetle(ham_aday, onek)
         if not ID_DESENI.fullmatch(aday["id"]):
             raise ValueError(f"{onek}.id tireli küçük harf biçiminde olmalı")
         if aday["id"] in kimlikler:
@@ -72,35 +146,70 @@ def denetle(veri: dict) -> list[dict]:
         adresler.add(adres)
         if aday["type"] not in TIPLER:
             raise ValueError(f"{onek}.type geçersiz: {aday['type']}")
-        if aday["status"] not in DURUMLAR or aday["decision"] not in KARARLAR:
-            raise ValueError(f"{onek} durum/karar geçersiz")
-        if aday["decision"] == "PENDING":
-            if aday["status"] not in {"new", "triage", "audit"}:
-                raise ValueError(f"{onek}: PENDING yalnız açık durumlarda olabilir")
-        elif SON_KARAR_DURUMU[aday["decision"]] != aday["status"]:
-            raise ValueError(f"{onek}: karar ile durum uyuşmuyor")
-        if aday["execution_review"] not in {"not-executed", "metadata-only", "reviewed"}:
-            raise ValueError(f"{onek}.execution_review geçersiz")
-
-        lisans = aday.get("license")
-        if not isinstance(lisans, dict):
-            raise ValueError(f"{onek}.license nesne olmalı")
-        for alan in ("spdx", "evidence_url", "scope_note"):
-            if not isinstance(lisans.get(alan), str) or not lisans[alan].strip():
-                raise ValueError(f"{onek}.license.{alan} dolu metin olmalı")
-        if aday["decision"] in {"ADOPT", "ADAPT"} and lisans["spdx"] == "UNKNOWN":
-            raise ValueError(f"{onek}: lisansı belirsiz aday alınamaz/uyarlanamaz")
-
-        kanitlar = aday.get("evidence")
-        if not isinstance(kanitlar, list) or not all(isinstance(k, str) and k.startswith("https://") for k in kanitlar):
-            raise ValueError(f"{onek}.evidence HTTPS adresleri dizisi olmalı")
-        if aday["decision"] != "PENDING" and len(set(kanitlar)) < 2:
-            raise ValueError(f"{onek}: son karar en az iki kanıt ister")
-        if lisans["evidence_url"] not in kanitlar:
-            raise ValueError(f"{onek}: lisans kanıtı evidence içinde olmalı")
+        _karar_durumunu_denetle(aday, onek)
+        _lisans_ve_kanitlari_denetle(aday, onek)
         tarih(aday.get("observed_at"), f"{onek}.observed_at")
         tarih(aday.get("next_review"), f"{onek}.next_review")
     return adaylar
+
+
+class _YonlendirmeYasak(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(newurl, code, "redirect rejected", headers, fp)
+
+
+def _guvenli_ac(request: urllib.request.Request, *, timeout: int):
+    return urllib.request.build_opener(_YonlendirmeYasak()).open(
+        request, timeout=timeout
+    )
+
+
+def _github_istegi(
+    url: str, *, kimlik_dogrula: bool = False
+) -> urllib.request.Request:
+    basliklar = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "divan-candidate-review/1",
+    }
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if token and kimlik_dogrula:
+        basliklar["Authorization"] = f"Bearer {token}"
+    return urllib.request.Request(url, headers=basliklar)
+
+
+def uzak_kanitlari_denetle(
+    veri: dict,
+    *,
+    opener=None,
+    timeout: int = 15,
+) -> int:
+    """Final Meclis kararlarının commit ve lisans URL'lerini GitHub'da çöz."""
+    adaylar = denetle(veri)
+    sayi = 0
+    for aday in adaylar:
+        if aday["decision"] == "PENDING":
+            continue
+        repo_yolu = aday["canonical_url"].removeprefix("https://github.com/")
+        commit_url = (
+            f"https://api.github.com/repos/{repo_yolu}/commits/"
+            f"{aday['reviewed_head']}"
+        )
+        ac = opener or _guvenli_ac
+        for etiket, url, kimlik_dogrula in (
+            ("GitHub commit", commit_url, True),
+            ("lisans URL", aday["license"]["evidence_url"], False),
+        ):
+            try:
+                istek = _github_istegi(url, kimlik_dogrula=kimlik_dogrula)
+                with ac(istek, timeout=timeout) as yanit:
+                    if getattr(yanit, "status", 200) != 200:
+                        raise ValueError(f"HTTP {yanit.status}")
+            except (OSError, urllib.error.URLError, ValueError) as hata:
+                raise ValueError(
+                    f"{aday['id']}: {etiket} kanıtı çözümlenemedi: {url}"
+                ) from hata
+        sayi += 1
+    return sayi
 
 
 def katalog_uret(veri: dict) -> str:
@@ -148,11 +257,16 @@ def ana() -> int:
     kip = ayrac.add_mutually_exclusive_group(required=True)
     kip.add_argument("--check", action="store_true")
     kip.add_argument("--render", action="store_true")
+    kip.add_argument("--resolve", action="store_true")
     secim = ayrac.parse_args()
     veri = oku()
+    if secim.resolve:
+        sayi = uzak_kanitlari_denetle(veri)
+        print(json.dumps({"status": "resolved", "candidate_count": sayi}, ensure_ascii=False))
+        return 0
     beklenen = katalog_uret(veri)
     if secim.render:
-        KATALOG.write_text(beklenen, encoding="utf-8")
+        KATALOG.write_text(beklenen, encoding="utf-8", newline="\n")
         print(f"{KATALOG.relative_to(KOK)} güncellendi")
         return 0
     gercek = KATALOG.read_text(encoding="utf-8") if KATALOG.exists() else ""

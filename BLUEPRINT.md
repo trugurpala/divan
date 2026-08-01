@@ -56,7 +56,7 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
 11. **Codex Desktop otomatik kurulum profili:** Kullanıcı açıkça `auto`
     profilini seçtiğinde Divan Codex CLI çalıştırma sonucunu ayrı tanılar;
     sağlıklı CLI'da native yolu, kanıtlı çalıştırma engelinde checksum-backed
-    41-skill fallback'i seçer. Fallback native komut/ajan/hook/MCP/lifecycle
+    42-skill fallback'i seçer. Fallback native komut/ajan/hook/MCP/lifecycle
     iddiasında bulunmaz; geçersiz JSON gerçek uyumsuzluk olarak durur. Ayrıntı
     ADR 0011'dedir.
 12. **Doğrulanmış temiz-proje kabulü:** v1'in son kapısı operatörün kimliğini
@@ -75,6 +75,15 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     sınırlandırılır. Divan PATH veya kabuk profilini gizlice değiştirmez,
     bağlantılı uygulamalara sırf bağlı oldukları için yetki vermez. Ayrıntı
     `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`
+    belgesindedir.
+14. **Vibe coder UX konseyi:** Popüler UI/UX repoları topluca kurulmaz. Tam
+    commit, lisans ve örtüşme kanıtı Aday Meclisi'nde tutulur; yalnız gerçek
+    boşluğu kapatan en küçük özgün adaptasyon dağıtıma girer. İlk uygulama,
+    masaüstü/mobil kanıtı ve en fazla on öncelikli bulgu üreten
+    `product-design-audit` skill'idir. Açık “sorma, uygula” talebi yalnız adı
+    belli, geri alınabilir işlerde tasarım sonrası ilerleme iznidir; yayın ve
+    yüksek etkili sınırlar korunur. Ayrıntı
+    `docs/superpowers/specs/2026-08-01-v11-vibe-ux-council-design.md`
     belgesindedir.
 
 ## Standartlar
@@ -97,6 +106,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ## Yol Haritası
 
 ### Son yama hattı
+
+- **v1.1.0 ✓** Aday UX konseyi: `product-design-audit`, 25 kayıtlı aday,
+  42-skill dağıtım ve yüksek etkili sınırları koruyan açık ön yetkilendirme.
+  v1.0.3 yayımlanmış kullanıcı dostu kontrol düzlemi temel alınır; tag/Release
+  bu PR kapsamında oluşturulmaz.
 
 - **v1.0.3 ✓** Yayımlanan kullanıcı dostu kontrol düzlemi: sağlıklı doctor
   yeniden kurulum önermez; ilk kurulum, günlük doğal dil fermanı ve
