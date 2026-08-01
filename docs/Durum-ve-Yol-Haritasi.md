@@ -1,4 +1,4 @@
-# Durum ve Yol Haritası · v1.0.2
+# Durum ve Yol Haritası · v1.0.3
 
 Son durum tarihi: 2026-07-31.
 
@@ -203,8 +203,11 @@ değildir.
    geri-okuma kapılarıyla yayımla.
 4. ✓ v1.0.1 yayın kanıtını ve son sürüm etiketlerini `main`e eşitle.
 5. ✓ v1.0.2 sakin keşif yayınını ve son sürüm etiketlerini `main`e eşitle.
-6. Sonraki ürün kapsamını ayrı onaylı hedef olarak başlat; v1.0.2 tag ve
-   varlıklarını değiştirme.
+6. ◐ Onaylı v1.0.3 kullanıcı dostu kontrol düzlemini test-first tamamla:
+   sağlıklı doctor, yüzey-bazlı host doğruluğu ve kurulum/günlük
+   kullanım/bakım ayrımı.
+7. PR kontrolleri ve bağımsız incelemeden sonra `main`e birleştir; v1.0.2 tag ve
+   varlıklarını değiştirmeden yeni v1.0.3 release hattını çalıştır.
 
 ## v1.0 kapıları
 

@@ -7,6 +7,7 @@ kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler Güncel kaynak sü
 sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
 komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
 Release'i bulunan bir ref'i kur. v1.0.2 artık son yayımlanan release'tir:
+v1.0.3'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan.
 
 ## Repo klonlamadan en hızlı ilk kurulum
 
@@ -30,14 +31,40 @@ Kurucu, içine gömülü beş paket/41 beceri kataloğu ile kaynak commit'ini
 doğrular ve başka kaynak veya ref'i reddeder. `divan.pyz` dosyasını recovery
 komutları için sakla.
 
+## Kurulum tamamlandıysa: günlük kullanım
+
+Terminalde yeni kurulum komutu arama. Projeni Codex veya Claude Code ile aç,
+yeni bir oturum başlat ve sonucu sade dille ver:
+
+> **Divan, bu işi devral. Önce mevcut durumu doğrula; planı yaz, testlerle
+> uygula ve kanıtıyla teslim et: [hedefin].**
+
+Host yeni oturumda Divan paketlerini keşfeder. Günlük çalışma arayüzü doğal
+dildir; `divan.pyz` kurulum, doctor, güncelleme ve recovery için saklanan bakım
+aracıdır. Divan PATH veya kabuk profilini otomatik değiştirmez.
+
+Kurulumu yazmadan denetlemek için sakladığın dosyayı çalıştır:
+
+```powershell
+python .\divan.pyz doctor --host codex
+```
+
+Her şey doğruysa çıktı şu mesajla biter ve yeniden kurulum istemez:
+
+```text
+READY: Divan is installed and verified. Start a new agent session and describe your goal.
+```
+
+Yalnız sorun veya yarım işlem varsa doctor tek bir `NEXT` komutu üretir.
+
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.0.3
+python scripts/divan.py install --host both --ref v1.0.3 --execute
+python scripts/divan.py doctor --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -60,13 +87,13 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -157,9 +184,9 @@ raporlar. Otomasyon için yalnız JSON çıktı alın:
 python scripts/divan.py doctor --json --host both --ref <release-tag>
 ```
 
-Her doctor sonucu bir sonraki kesin komutu yazar; tamamlanmamış işlemde bu,
-ilgili `--rollback-transaction` komutudur. Doctor host CLI'larını veya işlem
-günlüklerini değiştirmez.
+Sağlıklı doctor `READY` mesajını yazar. Yalnız dikkat isteyen veya ulaşılamayan
+bir durumda sonraki kesin komutu üretir; tamamlanmamış işlemde bu, ilgili
+recovery komutudur. Doctor host CLI'larını veya işlem günlüklerini değiştirmez.
 Okunamayan veya bozuk bir işlem günlüğü de `attention` sonucudur; tanı kaydı
 bildirilir, fakat doctor hiçbir recovery ya da host değiştirme komutu çalıştırmaz.
 
@@ -310,11 +337,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.0.2 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.0.3 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.2/scripts/install_codex.sh | DIVAN_REF=v1.0.2 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.0.3/scripts/install_codex.sh | DIVAN_REF=v1.0.3 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

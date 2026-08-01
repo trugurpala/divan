@@ -168,8 +168,12 @@ class BootstrapRunnerTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertEqual(payload["ref"], f"v{(repository / 'VERSION').read_text().strip()}")
             self.assertIn("codex", payload["hosts"])
-            self.assertNotIn("scripts/divan.py", payload["next_command"])
-            self.assertIn("divan.pyz", payload["next_command"])
+            self.assertIn(payload["status"], {"healthy", "attention", "unavailable"})
+            self.assertIsInstance(payload["next_command"], str)
+            if payload["status"] == "healthy":
+                self.assertEqual(payload["next_command"], "")
+            else:
+                self.assertTrue(payload["next_command"])
 
     def test_bootstrap_rejects_a_ref_other_than_its_bundled_release(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-bootstrap-") as temporary:

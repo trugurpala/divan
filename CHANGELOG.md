@@ -6,6 +6,36 @@ Versioning while the public API remains in initial development (`0.y.z`).
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-08-01
+
+### Fixed
+
+- A healthy host doctor no longer recommends installing Divan again. Machine
+  output keeps the public string type with `next_command: ""`; human output
+  ends with a plain `READY` instruction. Attention, unavailable, invalid-JSON,
+  and unfinished-transaction paths keep their exact recovery or remediation
+  command.
+
+### Changed
+
+- Host compatibility claims now name the exact product surfaces they cover.
+  Verified Codex lifecycle support applies to CLI; Desktop, the IDE extension,
+  and mobile clients remain outside that claim pending separate canaries.
+- README, installation guidance, and Pages now separate one-time setup,
+  natural-language daily use, and maintenance/recovery. The no-checkout hero
+  path uses the release bootstrap instead of assuming a repository checkout.
+- Divan remains one repository with five progressive packs. No global PATH
+  mutation, bulk connector authorization, external agent runtime, or copied
+  skill catalog was added.
+
+### Verification
+
+- Added regression coverage for healthy doctor semantics, terminal-journal
+  recovery, malformed host-surface data, claim boundaries, and the three-moment
+  onboarding journey on both site sources.
+- Canonical local verification passed 715 tests with 14 expected
+  platform-specific skips on Windows 11.
+
 ## [1.0.2] - 2026-07-31
 
 ### Fixed

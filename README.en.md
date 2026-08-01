@@ -1,7 +1,7 @@
 # Divan
 
 ![audit](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.0.2-1f6feb)
+![version](https://img.shields.io/badge/version-1.0.3-1f6feb)
 ![license](https://img.shields.io/badge/license-MIT-2ea44f)
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Changelog](CHANGELOG.md) · [Roadmap](BLUEPRINT.md)
@@ -15,7 +15,7 @@ persistent project memory, local progress, and independent verification.**
 You write the decree in plain language. Divan narrows the scope, selects the
 smallest qualified team, plans the work, builds with tests, verifies the
 result, records the decisions, and presents a finished delivery. It runs as a
-native plugin in Claude Code/Desktop Code and Codex; its Agent Skills remain
+native plugin lifecycle in Claude Code and Codex CLI; its Agent Skills remain
 portable to Cursor and other compatible hosts.
 
 ## Host compatibility
@@ -24,8 +24,38 @@ Host support is evidence-graded rather than advertised as a single yes/no
 claim. Claude Code and Codex are verified today; every other host keeps an
 explicit current tier, target tier, capability map, and official source in the
 [host compatibility registry](registry/host-compatibility.json).
+Every claim is surface-scoped. In particular, verified Codex lifecycle support
+means CLI. Desktop is an official plugin target but remains outside Divan's
+verified tier until a separate UI canary exists; the IDE extension and mobile
+clients are excluded too.
 
-**Current source:** v1.0.2 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+**Current source:** v1.0.3 · **Latest published:** v1.0.2 · **Releases:** https://github.com/trugurpala/divan/releases · **Website:** https://trugurpala.github.io/divan/ · **Live Wiki:** https://github.com/trugurpala/divan/wiki · **Catalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host compatibility:** [English guide](#host-compatibility) · **Local progress:** [Seyir](#follow-progress-locally) · **v1 scorecard:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+
+## Already installed? Start here
+
+Open a fresh Codex or Claude Code session in your project and describe the
+outcome. You do not need to remember a skill name or a repository command:
+
+> **Divan, take ownership of this task. Verify the current state, write the
+> plan, implement it with tests, and deliver the evidence: [your goal].**
+
+Divan selects the smallest capable pack. React Pack joins only a detected
+React-family project; Zanaat Pack joins only creative or integration work.
+Connected GitHub, Figma, Gmail, Slack, or MCP tools do not gain permission by
+being available—the requested task remains the authority boundary.
+
+### First setup
+
+Use the [verified no-checkout install](#fastest-first-install-one-verified-file-no-repository-checkout)
+once, then start a new agent session so the host loads the installed plugin.
+Keep the downloaded `divan.pyz` and checksum together for later diagnosis and
+recovery. Divan does not silently edit PATH or a shell profile.
+
+### Maintenance
+
+Use the retained bootstrap only when you need doctor, update, or recovery.
+A healthy doctor ends with `READY` and does not tell you to install again. A
+real problem prints one exact copyable command.
 
 Divan Engine is the product's built-in, stdlib-only execution core. The Divan
 Governance Model (Divan Nizamı) defines its owner-first authority order; it is
@@ -170,6 +200,8 @@ The commands below pin Current source. If Current source differs from Latest
 published, substitute Latest published in every `--ref` command. Only install a
 ref whose immutable tag and GitHub Release exist. v1.0.2 is now the latest
 published release and can be used for release-pinned installs.
+Use v1.0.3 only after its tag and GitHub Release are visible; until then keep
+using Latest published.
 
 ### Fastest first install: one verified file, no repository checkout
 
@@ -197,16 +229,16 @@ From a repository checkout, preview the no-write plan and install the same
 pinned release into both hosts:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.0.3
+python scripts/divan.py install --host both --ref v1.0.3 --execute
 ```
 
 For Codex Desktop, one explicit auto-profile command diagnoses the local CLI
 and chooses the strongest route it can prove:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3
+python scripts/divan.py install --host codex --profile auto --ref v1.0.3 --execute
 ```
 
 A healthy Codex CLI keeps the full native plugin path. A missing,
@@ -228,9 +260,9 @@ options. The complete Turkish reference remains available in
 The five-minute safe lifecycle continues with:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

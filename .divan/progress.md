@@ -1,6 +1,6 @@
 # Divan İlerleme Defteri
 
-Son güncelleme: 2026-07-31
+Son güncelleme: 2026-08-01
 
 ## Yayın durumu
 
@@ -11,6 +11,24 @@ Son güncelleme: 2026-07-31
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
+
+Active branch `codex/v110-friendly-control-plane` implements the approved
+v1.0.3 friction-removal slice. The product goal is to separate one-time setup,
+plain-language daily use, and maintenance without weakening immutable refs,
+checksum verification, dry-run, transaction recovery, or evidence gates.
+Healthy doctor output must stop recommending a reinstall without changing the
+public JSON field type, compatibility claims must be scoped to evidenced host
+surfaces, and README/Pages must lead an installed
+user to one copyable ferman. The immutable v1.0.2 tag and assets remain
+untouched until the new candidate passes review, PR CI, merge, and release
+readback.
+
+The approved design and executable plan are:
+
+- `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`
+- `docs/superpowers/plans/2026-08-01-v103-friendly-control-plane.md`
+
+## Son yayımlanan durum
 
 The latest published release is immutable v1.0.2 at commit
 `f227e2d30ab1a6f010a3d5acf18740f6eab09e70`. PR #80 published the quiet

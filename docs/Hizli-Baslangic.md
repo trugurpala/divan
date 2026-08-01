@@ -33,20 +33,21 @@ aralığını ve dikkat eşiğini aynı ekranda görürsün.
 Aşağıdaki örnekler Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
 sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
 Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. v1.0.2 artık son
-yayımlanan release'tir. Önce yazmayan kurulum önizlemesi, sonra aynı sabit
+yayımlanan release'tir. v1.0.3'i yalnız tag ve GitHub Release sayfası görünür
+olduktan sonra kullan. Önce yazmayan kurulum önizlemesi, sonra aynı sabit
 sürümün uygulaması:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.0.2
-python scripts/divan.py install --host both --ref v1.0.2 --execute
+python scripts/divan.py install --host both --ref v1.0.3
+python scripts/divan.py install --host both --ref v1.0.3 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2
-python scripts/divan.py update --host both --ref v1.0.2 --execute
+python scripts/divan.py doctor --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3
+python scripts/divan.py update --host both --ref v1.0.3 --execute
 ```
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
