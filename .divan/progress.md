@@ -6,7 +6,7 @@ Son güncelleme: 2026-08-01
 
 - Latest published release: v1.1.0
 - Published commit: aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0
-- Publication evidence: GitHub Actions release run 30692249356
+- Publication evidence: .divan/evidence/teftis-20260801-v110-release.md
 - Release asset evidence: seven checksummed and attested v1.1.0 assets
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
