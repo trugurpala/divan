@@ -19,7 +19,8 @@ when a public page still presents a published release as a candidate.
 ## Sıradaki kesin iş
 
 Keep the previous immutable tag untouched. Verify the publication-truth regression test, open a
-PR, merge only green checks, publish v1.3.1, then record tag, asset, checksum,
+PR, merge only green checks, publish v1.3.1, then record the public readback evidence
+for tag, asset, checksum,
 attestation, Pages, Wiki, and README readback evidence.
 
 ## Son yayımlanan durum
