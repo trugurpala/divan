@@ -246,16 +246,17 @@ python .\divan.pyz install --host codex --profile auto --execute</code>
     <p>Divan kuruluysa günlük iş yeni bir ajan oturumunda sade hedefle başlar.
       Aşağıdaki komutlar kurulum, bakım ve geliştirici denetimi içindir; görev
       başlatmak için zorunlu değildir.</p>
-    <p>Bu sayfadaki komutlar değişmez v1.0.3 tag ve GitHub Release'ine
-      sabitlenmiştir.</p>
+    <p>Aşağıdaki <code>vX.Y.Z</code> değerini GitHub Releases sayfasında
+      görünen son yayımlanmış etiketle değiştirin. Komutlar Windows,
+      macOS ve Linux'ta aynıdır.</p>
     <h3 style="margin:28px 0 16px">Bakım ve kurtarma</h3>
     <ol class="yasam">
-      <li><div><b>Repo checkout'unda kurulumu önizle</b><code>python scripts/divan.py install --host both --ref v1.2.0</code></div></li>
-      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref v1.2.0 --execute</code></div></li>
-      <li><div><b>Codex için en güçlü güvenli yolu seç</b><code>python scripts/divan.py install --host codex --profile auto --ref v1.2.0 --execute</code></div></li>
-      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref v1.2.0</code></div></li>
-      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref v1.2.0</code></div></li>
-      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref v1.2.0 --execute</code></div></li>
+      <li><div><b>Repo checkout'unda kurulumu önizle</b><code>python scripts/divan.py install --host both --ref vX.Y.Z</code></div></li>
+      <li><div><b>Kurulumu uygula</b><code>python scripts/divan.py install --host both --ref vX.Y.Z --execute</code></div></li>
+      <li><div><b>Codex için en güçlü güvenli yolu seç</b><code>python scripts/divan.py install --host codex --profile auto --ref vX.Y.Z --execute</code></div></li>
+      <li><div><b>İki hostu salt okunur denetle</b><code>python scripts/divan.py doctor --host both --ref vX.Y.Z</code></div></li>
+      <li><div><b>Yükseltmeyi önizle</b><code>python scripts/divan.py update --host both --ref vX.Y.Z</code></div></li>
+      <li><div><b>Yükseltmeyi uygula</b><code>python scripts/divan.py update --host both --ref vX.Y.Z --execute</code></div></li>
       <li><div><b>Gerekirse doctor'ın tam recovery komutuyla geri al</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"</code></div></li>
       <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>
@@ -308,10 +309,10 @@ python .\divan.pyz install --host codex --profile auto --execute</code>
       <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.tr.md">Katkı rehberi · Türkçe</a>
       <a href="https://github.com/trugurpala/divan/blob/main/CONTRIBUTING.md">Contribution guide · English</a>
     </div>
-    <p style="margin-top:18px">v1.0.3 yayımlanan hattı Seyir bekleme açıklamasını
-      ve gürültüsüz proje keşfini taşır. v1 hazırlık kapılarının 8'i kanıtla geçti;
-      v0.18.5 ile üretilen schema-2 temiz-proje makbuzu ve v1.0.3
-      yayın/yükseltme zinciri repoda çevrimdışı doğrulanabilir.</p>
+    <p style="margin-top:18px">Yayımlanan paketlerin güncel durumu GitHub
+      Releases sayfasından okunur. v1 hazırlık kapılarının 8'i kanıtla geçti;
+      schema-2 temiz-proje makbuzu ile her sürümün yayın ve yükseltme kanıtı
+      repoda çevrimdışı doğrulanabilir.</p>
     <p><code>python divan-project.pyz adoption prove --project . --goal &lt;goal-id&gt; --host codex</code></p>
   </div>
 </section>

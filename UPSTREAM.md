@@ -37,9 +37,11 @@ izlenir; lisansı belirsiz içerik alınmaz.
 - Bağlam Muhafızı, MIT kaynak koleksiyonundaki context-optimization fikirlerinin
   Divan'ın defterdar/ordu düzenine uyarlanmış özgün Türkçe iş akışıdır; kaynak
   commit'i kör eşitleme yerine yeniden kürasyon için izlenir.
-- Dağıtılan ve kürasyon girdisi olan bütün upstream commit pinlerinin tek
-  kanonik makine-okunur kaynağı `registry/upstream-baselines.json` dosyasındaki
-  `sources` listesidir; drift denetimi ve SPDX üretimi aynı listeyi kullanır.
+- `registry/upstream-baselines.json` her kaynak için iki ayrı pin taşır:
+  `reviewed_head` Nöbet'in en son incelediği upstream commit'tir;
+  `origin_commit` ise dağıtılan yerel içeriğin gerçek kökenidir. Nöbet
+  birinciden, SPDX ve provenance ikinciden beslenir. `KEEP` kararı köken pinini
+  ilerletmez.
 - Anthropic'in proprietary lisanslı docx/pdf/pptx/xlsx skill'leri alınmaz.
 
 ## Bilinçli yamalar

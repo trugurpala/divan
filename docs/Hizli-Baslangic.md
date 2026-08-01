@@ -1,7 +1,8 @@
 # Hızlı Başlangıç
 
-v1.2.0 güncel kaynak adayıdır. Tag ve GitHub Release görünene kadar kurulumda
-son yayımlanan v1.1.0 release'ini seç.
+v1.2.0 güncel kaynak adayıdır. v1.2.0'i yalnız tag ve GitHub Release sayfası
+görünür olduktan sonra kullan. O zamana kadar [son yayımlanan sürümü](https://github.com/trugurpala/divan/releases/latest)
+seç.
 
 Divan'ı kullanmak için skill veya ajan adı ezberlemen gerekmez. Önce hedefini
 söyle, sonra Divan'ın kanıt zincirini izle. Hükümdar sensin; kapsamı yalnız sen
@@ -33,11 +34,10 @@ aralığını ve dikkat eşiğini aynı ekranda görürsün.
 
 ## 1. Beş dakikalık güvenli yolu çalıştır
 
-Aşağıdaki örnekler Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
-sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
-Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. v1.0.3 artık son
-yayımlanan release'tir. Önce yazmayan kurulum önizlemesi, sonra aynı sabit
-sürümün uygulaması:
+Aşağıdaki örnekler güncel kaynak sürümünü sabitler. Kaynak sürümü son yayımlanan
+sürümden farklıysa bütün `--ref` komutlarında son yayımlanan sürümü kullan.
+Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
+kurulum önizlemesini, sonra aynı sabit sürümün uygulamasını çalıştır:
 
 ```powershell
 python scripts/divan.py install --host both --ref v1.2.0

@@ -127,9 +127,12 @@ def baseline_errors(root: pathlib.Path = KOK) -> tuple[list[str], list[dict]]:
             continue
         repository = source.get("repository")
         head = source.get("reviewed_head")
+        origin = source.get("origin_commit")
         if not isinstance(repository, str) or not re.fullmatch(r"[0-9a-f]{40}", str(head)):
             errors.append(f"invalid pinned source: {source!r}")
             continue
+        if not re.fullmatch(r"[0-9a-f]{40}", str(origin)):
+            errors.append(f"{repository}: origin_commit must be a 40-character commit")
         if not isinstance(source.get("license"), str) or not source.get("license"):
             errors.append(f"{repository}: license is required")
         source_heads[repository] = str(head)

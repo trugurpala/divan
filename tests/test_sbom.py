@@ -201,7 +201,7 @@ class SbomTests(unittest.TestCase):
                 )["plugins"]
                 if item["name"] == package["name"]
             ))
-        self.assertIn("obra/superpowers@44c9b2d6", packages["core-pack"]["sourceInfo"])
+        self.assertIn("obra/superpowers@d884ae04", packages["core-pack"]["sourceInfo"])
         self.assertIn(
             "PatrickJS/awesome-cursorrules@b044f956f021b6e8877f16781bcfc466a6a120e9",
             packages["core-pack"]["sourceInfo"],
@@ -211,8 +211,8 @@ class SbomTests(unittest.TestCase):
             "c578e85e40fe2bda7c1fec91ff64cf5285434934",
             packages["core-pack"]["sourceInfo"],
         )
-        self.assertIn("vercel-labs/agent-skills@7c180d90", packages["react-pack"]["sourceInfo"])
-        self.assertIn("anthropics/skills@b29e7cf6", packages["zanaat-pack"]["sourceInfo"])
+        self.assertIn("vercel-labs/agent-skills@f8a72b96", packages["react-pack"]["sourceInfo"])
+        self.assertIn("anthropics/skills@fa0fa64b", packages["zanaat-pack"]["sourceInfo"])
 
     def test_invalid_source_commit_is_rejected(self) -> None:
         sbom = load_sbom()
@@ -240,6 +240,23 @@ class SbomTests(unittest.TestCase):
             registry_path.write_text(json.dumps(registry), encoding="utf-8")
 
             with self.assertRaisesRegex(ValueError, "kanonik pin yok: obra/superpowers"):
+                sbom.build_spdx(root, "0.12.2", SOURCE_COMMIT)
+
+    def test_reviewed_head_cannot_replace_distribution_origin(self) -> None:
+        sbom = load_sbom()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            copy_sbom_fixture(root)
+            registry_path = root / "registry/upstream-baselines.json"
+            registry = json.loads(registry_path.read_text(encoding="utf-8"))
+            source = next(
+                item for item in registry["sources"]
+                if item["repository"] == "obra/superpowers"
+            )
+            source["origin_commit"] = "main"
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "origin_commit tam Git SHA"):
                 sbom.build_spdx(root, "0.12.2", SOURCE_COMMIT)
 
     def test_cli_writes_stable_utf8_json_with_trailing_newline(self) -> None:

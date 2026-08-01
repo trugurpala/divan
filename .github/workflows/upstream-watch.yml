@@ -33,8 +33,6 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            const body = fs.readFileSync('rapor.md', 'utf8');
-            const title = 'Nöbet raporu: upstream bakım durumu';
             const listed = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -42,24 +40,42 @@ jobs:
               labels: 'nobet',
               per_page: 100
             });
-            const current = listed.data.find(issue => !issue.pull_request);
-            const debt = '${{ steps.nobet.outputs.durum }}' === 'var';
-            if (debt && current) {
-              await github.rest.issues.update({
-                owner: context.repo.owner, repo: context.repo.repo,
-                issue_number: current.number, title, body
-              });
-            } else if (debt) {
-              const params = {
-                owner: context.repo.owner, repo: context.repo.repo,
-                title, body, labels: ['nobet']
-              };
-              await github.rest.issues.create(params);
-            } else if (current) {
-              await github.rest.issues.update({
-                owner: context.repo.owner, repo: context.repo.repo,
-                issue_number: current.number, title, body, state: 'closed'
-              });
+            fs.writeFileSync('nobet-issues.json', JSON.stringify(listed.data));
+      - if: steps.nobet.outputs.durum != 'hata'
+        run: |
+          debt=no
+          if [ "${{ steps.nobet.outputs.durum }}" = "var" ]; then debt=yes; fi
+          python scripts/upstream_issue_policy.py --issues nobet-issues.json --debt "$debt" > nobet-plan.json
+          cat nobet-plan.json
+      - if: steps.nobet.outputs.durum != 'hata'
+        uses: actions/github-script@373c709c69115d41ff229c7e5df9f8788daa9553 # v9
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('rapor.md', 'utf8');
+            const plan = JSON.parse(fs.readFileSync('nobet-plan.json', 'utf8'));
+            const title = 'Nöbet raporu: upstream bakım durumu';
+            for (const action of plan.actions) {
+              if (action.operation === 'create') {
+                await github.rest.issues.create({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  title, body, labels: ['nobet']
+                });
+              } else if (action.operation === 'update') {
+                await github.rest.issues.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: action.issue_number, title, body
+                });
+              } else {
+                const duplicate = action.operation === 'close-duplicate';
+                await github.rest.issues.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: action.issue_number,
+                  title,
+                  body: duplicate ? `${body}\n\n> Mükerrer Nöbet kaydı kapatıldı; kanonik kayıt #${plan.primary_issue}.` : body,
+                  state: 'closed'
+                });
+              }
             }
       - if: steps.nobet.outputs.durum == 'hata'
         run: |

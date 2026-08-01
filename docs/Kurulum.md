@@ -1,15 +1,16 @@
 # Kurulum
 
-v1.2.0 güncel kaynak adayıdır. Tag ve GitHub Release görünene kadar kurulumda
-son yayımlanan v1.1.0 release'ini seç.
+v1.2.0 güncel kaynak adayıdır. v1.2.0'i yalnız tag ve GitHub Release sayfası
+görünür olduktan sonra kullan. O zamana kadar [son yayımlanan sürümü](https://github.com/trugurpala/divan/releases/latest)
+seç.
 
 Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
 runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
 çekirdeğidir; Divan Nizamı Hükümdar öncelikli yetki düzenidir. İlk kez
-kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler Güncel kaynak sürümünü
-sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
-komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
-Release'i bulunan bir ref'i kur. v1.1.0 artık son yayımlanan release'tir.
+kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler güncel kaynak sürümünü
+sabitler. Kaynak sürümü son yayımlanan sürümden farklıysa bütün `--ref`
+komutlarında son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
+Release'i bulunan bir ref'i kur.
 
 ## Repo klonlamadan en hızlı ilk kurulum
 
@@ -17,7 +18,7 @@ Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checks
 dosyasını indirip doğrula:
 
 ```powershell
-$tag = "v1.0.3"
+$tag = (Invoke-RestMethod "https://api.github.com/repos/trugurpala/divan/releases/latest").tag_name
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()

@@ -84,7 +84,8 @@ class UpstreamGovernanceTests(unittest.TestCase):
         self.assertIn("--format markdown", workflow)
         self.assertIn("issues.listForRepo", workflow)
         self.assertIn("issues.update", workflow)
-        self.assertNotIn("issues.create({", workflow)
+        self.assertIn("upstream_issue_policy.py", workflow)
+        self.assertIn("nobet-plan.json", workflow)
         self.assertIn("state: 'closed'", workflow)
 
     def test_canonical_source_inventory_includes_curated_distributed_sources(self) -> None:
@@ -102,6 +103,26 @@ class UpstreamGovernanceTests(unittest.TestCase):
             "c578e85e40fe2bda7c1fec91ff64cf5285434934",
         )
         self.assertNotIn("b044f956f021b6e8877f16781bcfc466a6a120e9", repr(UPSTREAM.KURASYON_KAYNAKLARI))
+
+    def test_keep_reviews_advance_observation_without_rewriting_origin(self) -> None:
+        registry = json.loads(
+            (ROOT / "registry/upstream-baselines.json").read_text(encoding="utf-8")
+        )
+        sources = {source["repository"]: source for source in registry["sources"]}
+        self.assertEqual(
+            sources["obra/superpowers"]["origin_commit"],
+            "d884ae04edebef577e82ff7c4e143debd0bbec99",
+        )
+        self.assertNotEqual(
+            sources["obra/superpowers"]["reviewed_head"],
+            sources["obra/superpowers"]["origin_commit"],
+        )
+        for review in registry["reviews"]:
+            if review["decision"] == "KEEP":
+                self.assertEqual(
+                    review["reviewed_head"],
+                    sources[review["source"]]["reviewed_head"],
+                )
 
     def test_unreviewed_or_mutable_baseline_is_rejected(self) -> None:
         invalid = {

@@ -233,13 +233,12 @@ class CommunityContractTests(unittest.TestCase):
                 self.assertIn(canonical, read(relative))
 
     def test_both_html_sources_share_homepage_and_lifecycle_contract(self) -> None:
-        version = read("VERSION").strip()
         critical = (
-            f"python scripts/divan.py install --host both --ref v{version}",
-            f"python scripts/divan.py install --host both --ref v{version} --execute",
-            f"python scripts/divan.py doctor --host both --ref v{version}",
-            f"python scripts/divan.py update --host both --ref v{version}",
-            f"python scripts/divan.py update --host both --ref v{version} --execute",
+            "python scripts/divan.py install --host both --ref vX.Y.Z",
+            "python scripts/divan.py install --host both --ref vX.Y.Z --execute",
+            "python scripts/divan.py doctor --host both --ref vX.Y.Z",
+            "python scripts/divan.py update --host both --ref vX.Y.Z",
+            "python scripts/divan.py update --host both --ref vX.Y.Z --execute",
             ROLLBACK_COMMAND,
             UNINSTALL_COMMAND,
         )
