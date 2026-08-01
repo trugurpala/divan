@@ -6,9 +6,10 @@ geçmez. Neon robot, anlamsız küre ve rastgele parıltı kullanılmaz.
 
 ## Kanonik kaynak
 
-Figma dosyası: **Divan — Nizamlı Müşterek**. Düzenlenebilir kaynak bağlantısı,
-dosya oluşturulup ana çerçeveler doğrulandıktan sonra buraya ve README'lere
-eklenecektir.
+[Divan — Nizamlı Müşterek](https://www.figma.com/design/Z325Jjy36I7KLdizcaZAnZ)
+dosyası değişkenleri, yazı stillerini, auto-layout bileşenlerini, GitHub
+varlıklarını, masaüstü/mobil sayfaları ve üretim dışa aktarım kurallarını taşır.
+Repo çıktıları bu düzenlenebilir kaynaktan alınır.
 
 ## Üretim dosyaları
 

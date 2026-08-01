@@ -66,9 +66,18 @@ class ProseGateTests(unittest.TestCase):
             )
             report = PROSE.inspect(root, (path,))
             payload = json.loads(PROSE.to_json(report))
-        self.assertEqual(payload["status"], "warning")
-        self.assertGreater(payload["warning_count"], 0)
-        self.assertEqual(payload["error_count"], 0)
+            self.assertEqual(payload["status"], "warning")
+            self.assertGreater(payload["warning_count"], 0)
+            self.assertEqual(payload["error_count"], 0)
+
+    def test_prohibited_marketing_language_does_not_warn(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            path = root / "README.tr.md"
+            path.write_text("Dünya standardı iddiası yazmayın.\n", encoding="utf-8")
+            errors, warnings = PROSE._inspect_file(root, path)
+            self.assertEqual(errors, [])
+            self.assertEqual(warnings, [])
 
     def test_repository_prose_contract_is_clean(self):
         report = PROSE.inspect(ROOT, PROSE.public_files(ROOT))

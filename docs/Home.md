@@ -1,6 +1,6 @@
 # Divan Wiki · v1.1.0
 
-![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
+![Divan'ın doğrulanmış teslim mührü](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/github/muhurdar-seal.svg)
 
 **Hükümdar sensin.** Divan, vibe coder'ın niyetini planlı, denetlenebilir ve
 kalıcı bir teslim akışına çeviren tek üründür: tek repo, modüler çekirdek,

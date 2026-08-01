@@ -40,7 +40,7 @@ class PublicationTests(unittest.TestCase):
             for row in manifest["public_surfaces"]
             if row["id"] == "social-preview"
         )
-        self.assertEqual(surface["path"], "docs/assets/divan-social-preview.png")
+        self.assertEqual(surface["path"], "docs/assets/github/social-preview.png")
         self.assertEqual(
             surface["binary"],
             {"format": "png", "width": 1280, "height": 640, "max_bytes": 1_000_000},

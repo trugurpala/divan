@@ -1,6 +1,6 @@
 # Mühürdar
 
-![Mühürdar](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/muhurdar-idle.png)
+![Divan'ın doğrulanmış teslim mührü](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/github/muhurdar-seal.svg)
 
 Mühürdar, Divan'ın temkinli mühür bekçisidir: çalışmayı yapmaz, kanıtı gözetir.
 Bir ürün yetki katmanı veya yasal üretici değildir. Makine sözleşmesindeki

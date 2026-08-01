@@ -1,9 +1,9 @@
 # Divan
 
-![Divan social preview](docs/assets/divan-social-preview.png)
+![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.png)
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Release](https://img.shields.io/github/v/release/trugurpala/divan)](https://github.com/trugurpala/divan/releases/latest)
+[![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -166,6 +166,8 @@ server with `Ctrl+C`; do not reuse an example port from documentation.
 
 ## What evidence does Divan produce?
 
+![Divan evidence flow from Ferman to live publication](docs/assets/github/evidence-flow.png)
+
 Depending on the task, delivery can include test summaries, changed-file
 fingerprints, goal receipts, release checksums, an SPDX SBOM, attestations and
 live readback evidence. A verified clean-room task uses:
@@ -266,8 +268,9 @@ gates, not popularity or market adoption.
 ## Visual system and Figma source
 
 The visual direction uses midnight blue, ivory, turquoise, coral and gold with
-restrained İznik geometry. The editable Figma source and production export
-rules are documented in [docs/Gorsel-Sistem.md](docs/Gorsel-Sistem.md).
+restrained İznik geometry. Open the editable
+[Figma source](https://www.figma.com/design/Z325Jjy36I7KLdizcaZAnZ) or read the
+[production export rules](docs/Gorsel-Sistem.md).
 
 ## License and upstream attribution
 

@@ -118,7 +118,19 @@ def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding]
     for line_number, line in _visible_lines(text):
         if len(line) > 600:
             warnings.append(Finding("warning", "LONG_PARAGRAPH", path.relative_to(root).as_posix(), line_number, "paragraph is too long for quick reading"))
-        if MARKETING.search(line):
+        is_prohibition = any(
+            marker in line.lower()
+            for marker in (
+                "kullanmayın",
+                "yazmayın",
+                "yazılmaz",
+                "kanıtsız pazarlama",
+                "kanıtlanmayan",
+                "do not use",
+                "must not",
+            )
+        )
+        if MARKETING.search(line) and not is_prohibition:
             warnings.append(Finding("warning", "UNPROVEN_SUPERLATIVE", path.relative_to(root).as_posix(), line_number, "review marketing language and require evidence"))
         if PASSIVE_TR.search(line):
             warnings.append(Finding("warning", "PASSIVE_VOICE", path.relative_to(root).as_posix(), line_number, "prefer a direct active sentence"))

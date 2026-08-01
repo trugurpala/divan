@@ -1,9 +1,9 @@
 # Divan
 
-![Divan sosyal önizlemesi](docs/assets/divan-social-preview.png)
+![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
 [![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Sürüm](https://img.shields.io/github/v/release/trugurpala/divan)](https://github.com/trugurpala/divan/releases/latest)
+[![Sürüm 1.1.0](https://img.shields.io/badge/version-1.1.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
 [![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
 [![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
@@ -161,6 +161,8 @@ durdurun; belgelerdeki örnek portu yeniden kullanmayın.
 
 ## Hangi kanıtlar üretilir?
 
+![Ferman'dan canlı yayına Divan kanıt akışı](docs/assets/github/evidence-flow.png)
+
 Göreve göre test özeti, değişen dosya parmak izi, hedef makbuzu, release
 checksum'u, SPDX SBOM, attestation ve canlı geri okuma kanıtı üretilir.
 
@@ -254,8 +256,9 @@ popülerlik veya pazar benimsemesi değildir.
 ## Görsel sistem ve Figma kaynağı
 
 Görsel yön; gece mavisi, fildişi, firuze, mercan ve altını ölçülü İznik
-geometrisiyle birleştirir. Düzenlenebilir Figma kaynağı ve üretim dışa aktarım
-kuralları [docs/Gorsel-Sistem.md](docs/Gorsel-Sistem.md) içinde tutulur.
+geometrisiyle birleştirir. [Düzenlenebilir Figma kaynağını](https://www.figma.com/design/Z325Jjy36I7KLdizcaZAnZ)
+açabilir veya [üretim dışa aktarım kurallarını](docs/Gorsel-Sistem.md)
+okuyabilirsiniz.
 
 ## Lisans ve upstream atıfları
 
