@@ -83,6 +83,12 @@ Superpowers kayıtları: `brainstorming`, `dispatching-parallel-agents`,
 Dosya bazlı gerekçe, değişim listesi ve yerel SHA-256 kanıtı
 `registry/upstream-baselines.json` içindedir.
 
+1 Ağustos 2026 incelemesinde `brainstorming` için yerel karar yenilendi:
+kullanıcının açık “sorma, uygula” talebi yalnızca adı ve sınırı belli, geri
+alınabilir işlerde tasarım sonrası ilerleme izni sayılır. Yayın, sırlar, ödeme,
+mesajlaşma, hesap güvenliği ve yıkıcı işlemler bu istisnanın dışındadır. Upstream
+commit pini değiştirilmedi; yerel ağaç imzası yeni davranışla yeniden kaydedildi.
+
 ## GitHub Actions incelemesi (2026-07-21)
 
 Bu Actions kaynakları depoya kopyalanmaz; yalnız aşağıdaki incelenmiş tam commit
