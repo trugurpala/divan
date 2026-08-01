@@ -24,17 +24,10 @@ kanıta dayalı tutmalıdır.
    ve kökeni kanıtlanmamış içeriği kopyalama.
 3. Davranış değişikliğine kırmızı testle başla. Host politikasını Claude/Codex
    adaptörlerinden bağımsız tut ve alakasız kullanıcı eklentilerini koru.
-4. Yerel kapıların tamamını çalıştır:
+4. Tek kanonik yerel kapıyı çalıştır:
 
 ```bash
-python scripts/hygiene.py --check
-python scripts/validate.py
-python scripts/handoff.py --check
-python scripts/catalog.py --check
-python scripts/v1.py --check
-python scripts/release.py --check
-python evals/run.py --check
-python -m unittest discover -s tests -v
+python scripts/verify.py
 git diff --check
 ```
 
@@ -70,6 +63,8 @@ eval ve teftiş ayrı uygulama değişikliğinde tamamlanır.
 
 Ürünü değiştiren katkı README, katalog, kurulum belgesi, Wiki kaynağı, site,
 yayın manifesti ve lisans/köken kayıtlarını aynı değişiklikte eşitlemelidir.
+Kamuya açık yazılar [docs/Yazim-ve-Uslup.md](docs/Yazim-ve-Uslup.md)
+sözleşmesine uymalı ve `python scripts/prose.py --check` kapısından geçmelidir.
 `DCS-001` ile `DCS-011` arasındaki on bir zorunlu kuralı doğrulamak için:
 
 ```bash

@@ -2,9 +2,42 @@
 
 All notable changes to Divan are recorded here. The project follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and uses Semantic
-Versioning while the public API remains in initial development (`0.y.z`).
+Versioning.
 
 ## [Unreleased]
+
+## [1.2.0] - 2026-08-01
+
+### Added
+
+- Added a permanent Turkish/English writing and style contract, a stdlib prose
+  gate, and structured GitHub forms for bugs, features, documentation, skills,
+  source candidates, and clean-room evidence.
+- Added the editable `Divan — Nizamlı Müşterek` Figma source with semantic
+  variables, type styles, reusable component variants, desktop/mobile layouts,
+  and six tracked production assets.
+- Added governance, maintainer, roadmap, release, security, and support routes
+  written for first-time community contributors.
+
+### Changed
+
+- Rebuilt README information architecture around the questions a new user asks:
+  what Divan does, what it costs, which hosts work, how to install, what to type,
+  and which evidence proves completion.
+- Replaced the monthly Nöbet drift alarm with text, Markdown, and JSON reports
+  that record source, commits, files, category, license, local counterpart,
+  decision, rationale, and evidence. The workflow reuses one issue and closes it
+  when no review debt remains.
+- Replaced the previous social preview and Mühürdar illustration after every
+  public reference moved to the new canonical asset paths.
+
+### Verification
+
+- Added prose, TDK-safe spelling, README ordering, issue-form, Nöbet report,
+  single-issue workflow, Figma export dimension, SVG safety, social metadata,
+  and desktop/mobile public-surface tests.
+- Upstream review pins 31 distributed skill counterparts at current immutable
+  commits. No external repository or runtime was installed or forked.
 
 ## [1.1.0] - 2026-08-01
 

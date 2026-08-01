@@ -1,15 +1,16 @@
 # Kurulum
 
-v1.1.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
-kurulum için o zamana kadar son yayımlanan v1.0.3 release'ini seç.
+v1.2.0 güncel kaynak adayıdır. v1.2.0'i yalnız tag ve GitHub Release sayfası
+görünür olduktan sonra kullan. O zamana kadar [son yayımlanan sürümü](https://github.com/trugurpala/divan/releases/latest)
+seç.
 
 Divan yerel bir skill/plugin dağıtımıdır; model veya ayrı bir üçüncü taraf
 runtime değildir. Divan Engine aynı repodaki modüler, stdlib-only icra
 çekirdeğidir; Divan Nizamı Hükümdar öncelikli yetki düzenidir. İlk kez
-kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler Güncel kaynak sürümünü
-sabitler. Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref`
-komutlarında Son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
-Release'i bulunan bir ref'i kur. v1.0.3 artık son yayımlanan release'tir.
+kullanıyorsanız bu sırayı izleyin. Aşağıdaki örnekler güncel kaynak sürümünü
+sabitler. Kaynak sürümü son yayımlanan sürümden farklıysa bütün `--ref`
+komutlarında son yayımlanan sürümü kullan. Yalnız değişmez tag ve GitHub
+Release'i bulunan bir ref'i kur.
 
 ## Repo klonlamadan en hızlı ilk kurulum
 
@@ -17,7 +18,7 @@ Eşleşen GitHub Release yayımlandıktan sonra tek dosyalık kurucuyu ve checks
 dosyasını indirip doğrula:
 
 ```powershell
-$tag = "v1.0.3"
+$tag = (Invoke-RestMethod "https://api.github.com/repos/trugurpala/divan/releases/latest").tag_name
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
 Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
 $expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
@@ -62,11 +63,11 @@ Yalnız sorun veya yarım işlem varsa doctor tek bir `NEXT` komutu üretir.
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.1.0
-python scripts/divan.py install --host both --ref v1.1.0 --execute
-python scripts/divan.py doctor --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0 --execute
+python scripts/divan.py install --host both --ref v1.2.0
+python scripts/divan.py install --host both --ref v1.2.0 --execute
+python scripts/divan.py doctor --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -89,13 +90,13 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.1.0
+python scripts/divan.py install --host codex --profile auto --ref v1.2.0
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.1.0 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.2.0 --execute
 ```
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
@@ -339,11 +340,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.1.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.2.0 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.1.0/scripts/install_codex.sh | DIVAN_REF=v1.1.0 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.2.0/scripts/install_codex.sh | DIVAN_REF=v1.2.0 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

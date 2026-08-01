@@ -25,7 +25,7 @@ creating a second state registry. The `## Yayın durumu` section must contain:
 
 The evidence path must stay inside the repository, resolve to a regular file,
 and contain the same version and source commit. The handoff validator compares
-the latest-published version with the `## Sıradaki kesin adım` section. If that
+the latest-published version with the `## Sıradaki kesin iş` section. If that
 section tries to push, open a PR for, or publish the already-published version,
 handoff fails.
 

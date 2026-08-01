@@ -139,6 +139,7 @@ class VibeProgressContractTests(unittest.TestCase):
             " ".join(surface.split())
             for surface in (readme_tr, quick_start, install_guide)
         )
+        normalized_pages = " ".join(pages.split())
         if current == published:
             self.assertIn("İlk kez kuruyorum", pages)
             self.assertIn("Divan zaten kurulu", pages)
@@ -153,9 +154,12 @@ class VibeProgressContractTests(unittest.TestCase):
                     surface,
                 )
         else:
-            self.assertIn("yalnız tag/Release sonrası kullan", pages)
+            self.assertIn("Yayın durumu · değişmez tag ve GitHub Release ile doğrulanır", pages)
+            self.assertIn("Komutlar Windows, macOS ve Linux'ta aynıdır", normalized_pages)
+            self.assertIn("--ref vX.Y.Z", pages)
+            self.assertNotIn(f"--ref v{current}", pages)
             self.assertIn(
-                f"Use v{current} only after its tag and GitHub Release are visible",
+                f"use v{current} only after its tag and GitHub Release are visible",
                 readme_en,
             )
             for surface in normalized_turkish_surfaces:

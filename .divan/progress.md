@@ -4,34 +4,33 @@ Son güncelleme: 2026-08-01
 
 ## Yayın durumu
 
-- Latest published release: v1.0.3
-- Published commit: ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb
-- Publication evidence: .divan/evidence/teftis-20260801-v103-release.md
-- Release asset evidence: .divan/evidence/teftis-20260801-v103-release.md
+- Latest published release: v1.1.0
+- Published commit: aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0
+- Publication evidence: .divan/evidence/teftis-20260801-v110-release.md
+- Release asset evidence: seven checksummed and attested v1.1.0 assets
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-The approved v1.0.3 friction-removal slice is published. One-time setup,
-plain-language daily use, and maintenance are separate without weakening
-immutable refs, checksum verification, dry-run, transaction recovery, or
-evidence gates. Healthy doctor output stops at READY while preserving the
-public JSON field type; compatibility claims are scoped to evidenced host
-surfaces; README and Pages lead an installed user to one copyable ferman.
+Divan v1.2.0 will make the technically proven product understandable and
+contributable on first contact. The canonical writing contract, prose gate,
+question-led README, structured community intake, decision-ready Nöbet report,
+and editable Figma visual source must ship together without forking another
+repository or weakening the modular one-repo architecture.
 
-The approved design and executable plan are:
+## Sıradaki kesin iş
 
-- `docs/superpowers/specs/2026-08-01-v103-friendly-control-plane-design.md`
-- `docs/superpowers/plans/2026-08-01-v103-friendly-control-plane.md`
+Run the canonical repository verification on the complete v1.2.0 release
+candidate, resolve every failure, obtain independent code/security/license/UX
+review, then publish through PR, green CI, merge, tag, Release, Pages, Wiki,
+checksums, SBOM, attestations and live readback.
 
 ## Son yayımlanan durum
 
-The latest published release is immutable v1.0.3 at commit
-`ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb`. PR #82 published the friendly
-control-plane slice without changing Divan's product scope. PR checks and main
-`quality-gate`, `release`, `compatibility`,
-`codeql`, `site-tests`, `scorecard`, `wiki-sync`, `candidate-review`, and Pages
-all passed. The release workflow created tag/GitHub Release v1.0.3, seven
+The latest published release is immutable v1.1.0 at commit
+`aaa2d3ba9e99cc0181ce3d52128274d4067c0fd0`. PR #84 published the bounded UX
+council and `product-design-audit` slice. All required PR and main checks passed;
+the release workflow created tag/GitHub Release v1.1.0 with seven
 downloaded asset hashes matched their manifests, all seven release assets have
 verified GitHub attestations, and live Pages/Wiki/readback gates passed.
 
@@ -479,10 +478,3 @@ the current execution queue.
 - Eski Codex loose skill kopyaları veri kaybını önlemek için korundu. Eski
   manifest sahiplik hash'i taşımadığından güvenli otomatik migration uygulanmadı;
   native Divan paketleri ayrıca kurulu ve doğrulanmıştır.
-
-## Sıradaki kesin adım
-
-Keep v1.0.3 immutable. First exact action: collect real post-release usage
-friction, define one bounded product slice, and run the same
-verify → PR CI → main release/readback path without changing the v1.0.3 tag or
-release assets.

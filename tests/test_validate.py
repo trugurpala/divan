@@ -101,7 +101,7 @@ class RepositoryTests(unittest.TestCase):
                 "wiki-pages.json": '{"pages": [{"source": "docs/Home.md"}]}\n',
                 "docs/Aday-Meclisi.md": "never-auto-install\n",
                 "registry/candidates.json": '{"autonomy": "never-auto-install"}\n',
-                ".divan/progress.md": "## Sıradaki kesin adım\nEval runner\n",
+                ".divan/progress.md": "## Sıradaki kesin iş\nEval runner\n",
             }
             for relative, content in records.items():
                 (root / relative).write_text(content, encoding="utf-8")

@@ -72,6 +72,9 @@ surface through v1, not a second runtime.
 
 ## Standing orders
 
+- Kamuya açık metin yazarken repo kökündeki `docs/Yazim-ve-Uslup.md`
+  sözleşmesini uygula. Önce kullanıcı sonucunu anlat; iç mimariyi sonra ver.
+
 - Stay faithful to the requested scope. Include an implied prerequisite only
   when it is necessary, reversible and inside the same project; explain the
   assumption. Ask before irreversible, external or materially broader work.

@@ -8,10 +8,10 @@ from html import unescape
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 REPOSITORY = "https://github.com/trugurpala/divan"
 DISCUSSIONS_QA = f"{REPOSITORY}/discussions/categories/q-a"
-BUG_FORM = f"{REPOSITORY}/issues/new?template=hata.md"
+BUG_FORM = f"{REPOSITORY}/issues/new?template=bug.yml"
 PRIVATE_ADVISORY = f"{REPOSITORY}/security/advisories/new"
-CANDIDATE_FORM = f"{REPOSITORY}/issues/new?template=kaynak-adayi.yml"
-SKILL_FORM = f"{REPOSITORY}/issues/new?template=yeni-vezir.md"
+CANDIDATE_FORM = f"{REPOSITORY}/issues/new?template=source-candidate.yml"
+SKILL_FORM = f"{REPOSITORY}/issues/new?template=new-skill.yml"
 ACCEPTANCE_FORM = f"{REPOSITORY}/issues/new?template=kabul-kaniti.yml"
 PAGES_URL = "https://trugurpala.github.io/divan/"
 ROLLBACK_COMMAND = (
@@ -233,13 +233,12 @@ class CommunityContractTests(unittest.TestCase):
                 self.assertIn(canonical, read(relative))
 
     def test_both_html_sources_share_homepage_and_lifecycle_contract(self) -> None:
-        version = read("VERSION").strip()
         critical = (
-            f"python scripts/divan.py install --host both --ref v{version}",
-            f"python scripts/divan.py install --host both --ref v{version} --execute",
-            f"python scripts/divan.py doctor --host both --ref v{version}",
-            f"python scripts/divan.py update --host both --ref v{version}",
-            f"python scripts/divan.py update --host both --ref v{version} --execute",
+            "python scripts/divan.py install --host both --ref vX.Y.Z",
+            "python scripts/divan.py install --host both --ref vX.Y.Z --execute",
+            "python scripts/divan.py doctor --host both --ref vX.Y.Z",
+            "python scripts/divan.py update --host both --ref vX.Y.Z",
+            "python scripts/divan.py update --host both --ref vX.Y.Z --execute",
             ROLLBACK_COMMAND,
             UNINSTALL_COMMAND,
         )

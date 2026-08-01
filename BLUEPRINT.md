@@ -85,6 +85,12 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     yüksek etkili sınırlar korunur. Ayrıntı
     `docs/superpowers/specs/2026-08-01-v11-vibe-ux-council-design.md`
     belgesindedir.
+15. **İnsan odaklı topluluk ve görsel kaynak:** Kamu metni önce kullanıcının
+    sorusunu ve sonucu anlatır; teknik ayrıntı sonra gelir. Türkçe ve İngilizce
+    doğal yazılır, kanıtsız üstünlük iddiası kullanılmaz. Figma düzenlenebilir
+    marka kaynağıdır; repo yalnız doğrulanmış üretim çıktılarını taşır. Nöbet
+    dış kodu kurmaz, her farkı gerekçeli karara bağlar. Ayrıntı ADR 0012,
+    `docs/Yazim-ve-Uslup.md` ve `docs/Gorsel-Sistem.md` içindedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -106,6 +112,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 ## Yol Haritası
 
 ### Son yama hattı
+
+- **v1.2.0 ✓** Release candidate: insan odaklı README ve topluluk dosyaları, kalıcı yazım
+  sözleşmesi, prose kalite kapısı, karar üretmeye hazır Nöbet raporu ve
+  düzenlenebilir Figma görsel sistemi. Tek repo ve beş modüler paket korunur;
+  dış runtime veya fork eklenmez.
 
 - **v1.1.0 ✓** Aday UX konseyi: `product-design-audit`, 25 kayıtlı aday,
   42-skill dağıtım ve yüksek etkili sınırları koruyan açık ön yetkilendirme.

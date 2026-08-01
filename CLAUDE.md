@@ -6,6 +6,7 @@ Bu depo sohbet geçmişinden bağımsız yürütülür. Bir göreve başlamadan 
 2. `BLUEPRINT.md` — ürün yönü, mimari kararlar ve sürüm geçmişi.
 3. `.divan/progress.md` — gerçek mevcut durum ve sıradaki kesin adım.
 4. Yayında `release-manifest.json` ve `registry/v1-gates.json`.
+5. Kamuya açık metin yazarken `docs/Yazim-ve-Uslup.md`.
 
 ## Değişmez emirler
 
@@ -16,6 +17,9 @@ Bu depo sohbet geçmişinden bağımsız yürütülür. Bir göreve başlamadan 
 - Lisansı doğrulanmamış içeriği kopyalama; popülerlik güven kanıtı değildir.
 - Kanıt görmeden “bitti”, “main'de”, “canlı” veya “release yayımlandı” deme.
 - v1 için gereken dış kanıtı üretme veya varsayma.
+- README, Wiki, site, release, issue ve PR metnini
+  `docs/Yazim-ve-Uslup.md` sözleşmesine göre yaz ve `scripts/prose.py --check`
+  ile denetle.
 
 Önce `python scripts/handoff.py --check` çalıştır. Teslimden önce `AGENTS.md`
 içindeki bütün doğrulama komutlarını çalıştır. Yayında `/yayin` veya

@@ -1,0 +1,32 @@
+name: Yeni skill veya vezir
+description: Özgün ve tek amaçlı bir Divan yeteneği önerin
+title: "[Yeni skill]: "
+labels: [skill-proposal]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Önerilen kebab-case ad
+    validations: {required: true}
+  - type: textarea
+    id: trigger
+    attributes:
+      label: Ne zaman tetiklenir?
+    validations: {required: true}
+  - type: textarea
+    id: gap
+    attributes:
+      label: Mevcut skill'lerin kapatmadığı boşluk
+    validations: {required: true}
+  - type: textarea
+    id: evaluation
+    attributes:
+      label: Davranış nasıl ölçülür?
+    validations: {required: true}
+  - type: checkboxes
+    id: original
+    attributes:
+      label: Köken
+      options:
+        - label: Öneri özgündür; dış içerik varsa kaynak ve lisans ayrıca belirtilmiştir.
+          required: true

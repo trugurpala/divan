@@ -1,131 +1,133 @@
 # Divan
 
-![teftis](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)
-![version](https://img.shields.io/badge/version-1.1.0-1f6feb)
-![license](https://img.shields.io/badge/license-MIT-2ea44f)
+![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
-**Türkçe** · [English](README.en.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Değişiklikler](CHANGELOG.md) · [Yol haritası](BLUEPRINT.md)
+[![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
+[![Kaynak hattı 1.2.0](https://img.shields.io/badge/kaynak-1.2.0-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
+[![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
+[![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
 
-<img src="docs/assets/muhurdar-idle.png" alt="Divan'ın Mühürdar maskotu" width="128" align="right">
+**Türkçe** · [English](README.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Yol haritası](ROADMAP.md) · [Destek](SUPPORT.md)
 
-**Divan'a neyi bitirmek istediğini yaz. Kullandığın kodlama ajanını planlı,
-testli ve kanıtlanabilir bir teslim akışına çevirir.**
-Sonucu sade dille verirsin; Divan kapsamı daraltır, en küçük yetkin ekibi
-seçer, planlar, testle inşa eder, kanıtıyla teslim eder ve kaldığın yeri asla
-unutmaz. Claude Code ile Codex CLI'da doğrulanmış yerel plugin yaşam döngüsüne
-sahiptir; Cursor ve diğer Agent Skills uyumlu ajanlarda taşınabilir.
+Divan, kullandığınız kodlama ajanına plan, güvenli iş sırası, kalıcı proje
+hafızası ve kanıtlanabilir teslim ekler. Sonucu günlük dille anlatırsınız.
+Divan yalnız gereken yetenekleri seçer, işi görünür tutar ve doğrulanmayan
+sonuca “bitti” demez.
 
-Hükümdar/Divan dili sahibin son yetkili olduğu yönetişimi anlatır; ürünü
-kullanmak için öğrenmen gereken bir rol oyunu değildir. Dağıtım tek repo, 5
-odaklı paket ve 42 beceri olarak kalır.
+> **Önemli sınır:** Divan bir model, bulut kodlama hizmeti veya haricî ajan
+> çalışma zamanı değildir. Hostta bulunmayan aracı varmış gibi göstermez;
+> test edilmemiş iddiayı kanıta dönüştürmez.
 
-v1.1.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullan;
-kurulum için o zamana kadar son yayımlanan v1.0.3 release'ini seç.
+**Kaynak hattı:** v1.2.0 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 beceri** ·
+**5 modüler paket** · **8/8 hazırlık kapısı**
 
-Host desteği tek bir “uyumlu” pazarlama sözüyle değil, kanıt seviyesiyle
-yayınlanır. Bugün Claude Code ve Codex doğrulanmıştır; diğer hostların mevcut
-seviyesi, hedefi, yetenek haritası ve resmî kaynağı
-[host uyumluluk kaydında](registry/host-compatibility.json) ayrı tutulur.
-Her iddia belirli bir ürün yüzeyiyle sınırlıdır. Özellikle doğrulanmış Codex
-yaşam döngüsü CLI demektir. Desktop resmî bir plugin hedefidir fakat ayrı Divan
-UI canary kaydı oluşana kadar verified sayılmaz; IDE extension ve mobil
-istemciler de kapsam dışıdır.
+## Hızlı bağlantılar
 
-**Güncel kaynak:** v1.1.0 · **Son yayımlanan:** v1.0.3 · **Release:** https://github.com/trugurpala/divan/releases · **Canlı sayfa:** https://trugurpala.github.io/divan/ · **Canlı Wiki:** https://github.com/trugurpala/divan/wiki · **Katalog:** [docs/skill-catalog.md](docs/skill-catalog.md) · **Host uyumluluğu:** [docs/Host-Uyumlulugu.md](docs/Host-Uyumlulugu.md) · **v1 karnesi:** [docs/V1-Hazirlik.md](docs/V1-Hazirlik.md)
+- [Divan ne işe yarar?](#divan-ne-işe-yarar)
+- [Hangi kurulumu seçmelisiniz?](#hangi-kurulumu-seçmelisiniz)
+- [Tek komutla kurulum](#tek-komutla-kurulum)
+- [İlk gerçek iş](#ilk-gerçek-iş)
+- [İşin bittiğini nasıl anlarsınız?](#hangi-kanıtlar-üretilir)
+- [Soru sorun veya katkı verin](#topluluğa-katılın)
+
+## Divan ne işe yarar?
+
+Divan, bir isteği sınırlı plana, uygulama adımlarına, kontrollere ve teslim
+makbuzuna çevirir. Kararları ve ilerlemeyi projede saklar; yeni oturum son
+doğrulanmış durumdan devam eder. Son yetki proje sahibindedir. Divan ürün
+kimliğinde bu role Hükümdar der; kullanıcıdan rol yapmasını istemez.
+
+Divan şu işlerde kullanılır:
+
+- planı ve regresyon testini atlamadan özellik geliştirmek veya hata düzeltmek;
+- proje kurallarını ve kararlarını oturumlar arasında korumak;
+- yalnız mevcut teknolojiye uyan becerileri seçmek;
+- hazır, çalışıyor, doğrulanıyor, engelli ve tamamlandı durumlarını göstermek;
+- “bitti” sözünü test, dosya, makbuz ve yayın kanıtına bağlamak.
+
+## Divan ne yapmaz?
+
+- Claude Code, Codex veya uyumlu başka bir hostun yerine geçmez.
+- Bulduğu bütün popüler depoları kurmaz.
+- Yerel Seyir verisini bulut hizmetine göndermez.
+- Proje sahibinin yetkisi olmadan kapsamı büyütmez.
+- Gerçek davranış değerlendirmesi olmadan hız veya kalite artışı iddia etmez.
+
+## Nasıl çalışır?
+
+```text
+İsteğiniz
+→ Ferman (sınırları belirlenmiş iş tanımı)
+→ plan ve görev sırası
+→ en küçük yeterli paket takımıyla uygulama
+→ Teftiş (test ve kanıt kontrolü)
+→ doğrulanmış teslim ve kalıcı proje hafızası
+```
+
+Yalnız standart Python kütüphanesini kullanan Divan Engine bu depoda yaşar.
+Divan Nizamı, motorun çevresindeki sahip öncelikli yetki kuralıdır; ikinci bir
+ürün değildir. Kurulan [Divan Proje Sözleşmesi](docs/Project-Contract.tr.md)
+hedef projede geçerli kuralları, hedefleri ve kanıtları kaydeder.
+
+## Hangi kurulumu seçmelisiniz?
+
+| Durum | Seçim | Sonuç |
+|---|---|---|
+| Temiz bilgisayarda ilk kurulum | Release içindeki `divan.pyz` | Tek doğrulanmış dosya; repo klonlamadan kurulum |
+| Divan'ı geliştirmek | Repo checkout | Kaynak, test ve yayın araçları |
+| Host yerel eklentiyi destekliyor | Native profil | Komutlar, beceriler ve yaşam döngüsü |
+| Yerel eklenti yolu kanıtlanamıyor | Doğrulanmış fallback | Yalnız beceri ve talimat; sahte native iddiası yok |
+
+Claude Code ve Codex bugün doğrulanmış native hostlardır. Diğer Agent Skills
+uyumlu hostlar yalnız belgelenen kanıt düzeyinde taşınabilir beceri kullanır.
+
+## Tek komutla kurulum
+
+### Nasıl kurulur?
+
+Aynı değişmez sürümden `divan.pyz` ve checksum dosyasını indirin. Dosyayı
+doğrulayın, yazmayan planı görün, sonra uygulayın.
+
+```powershell
+$tag = (Invoke-RestMethod "https://api.github.com/repos/trugurpala/divan/releases/latest").tag_name
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
+Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
+$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
+$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 uyuşmuyor" }
+python .\divan.pyz doctor --host codex --json
+python .\divan.pyz install --host codex --profile auto
+python .\divan.pyz install --host codex --profile auto --execute
+```
+
+Güvenilen repo checkout yolunda iki host kurulumu:
+
+```powershell
+python scripts/divan.py install --host both --ref v1.2.0
+python scripts/divan.py install --host both --ref v1.2.0 --execute
+python scripts/divan.py doctor --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0
+python scripts/divan.py update --host both --ref v1.2.0 --execute
+```
+
+Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içinde
+v1.2.0'i yalnız tag ve GitHub Release sayfası görünür olduktan sonra kullanın.
+Silmeden önce [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
+
+## İlk gerçek iş
 
 ## Divan kuruluysa buradan başla
 
-Proje klasöründe yeni bir Codex veya Claude Code oturumu aç ve sonucu sade
-dille yaz. Skill adı veya repo komutu ezberlemen gerekmez:
+Paket veya beceri adı bilmeniz gerekmez. Projeyi açıp şunu yazın:
 
-> **Divan, bu işi devral. Önce mevcut durumu doğrula; planı yaz, testlerle
-> uygula ve kanıtıyla teslim et: [hedefin].**
-
-Divan en küçük yetkin paketi seçer. React Pack yalnız React ailesi bir proje
-kanıtlanırsa; Zanaat Pack yalnız yaratıcı üretim veya entegrasyon gerekiyorsa
-katılır. GitHub, Figma, Gmail, Slack veya MCP bağlantısının açık olması kendi
-başına yetki vermez; sınırı verdiğin görev belirler.
-
-### İlk kurulum
-
-[Repo klonlamadan doğrulanmış kurulum](#en-hızlı-ilk-kurulum-repo-klonlamadan-tek-doğrulanmış-dosya)
-yolunu bir kez uygula, ardından hostun eklentiyi yüklemesi için yeni oturum aç.
-İndirdiğin `divan.pyz` ile checksum dosyasını bakım ve kurtarma için birlikte
-sakla. Divan PATH veya kabuk profilini gizlice değiştirmez.
-
-### Bakım
-
-Sakladığın kurucuyu yalnız doctor, güncelleme veya kurtarma gerektiğinde kullan.
-Sağlıklı doctor `READY` ile biter ve yeniden kurulum önermez. Gerçek bir sorun
-varsa tek, kopyalanabilir komut verir.
-
-Divan Engine, ürünün yalnız Python standart kütüphanesiyle çalışan yerleşik
-icra çekirdeğidir. Divan Nizamı, Hükümdar öncelikli yetki düzenini tanımlar;
-ikinci bir ürün değildir. Çekirdek bu repoda modüler kalır ve başka bir agent
-runtime'ına veya dış repoya bağımlı olmaz.
-Divan Nizamı yerel iş akışı yönetişimidir, kimlik doğrulama sistemi değildir;
-güvenlik sınırı host işletim sistemi hesabı ile repo izinleridir.
-
-## Neden Divan?
-
-Tek tek iyi prompt'lar yetmez. Üretim işi; doğru yeteneğin seçilmesini, kararın
-diskte kalmasını, değişikliğin test edilmesini ve kullanıcının gördüğü yüzün de
-aynı turda yayımlanmasını ister.
-
-| Sorun | Divan'ın cevabı |
-|---|---|
-| Ajan plansız kodluyor | Sadrazam: brief → plan → icra → teftiş → takdim |
-| Her oturumda proje unutuluyor | Claude Code'un doğrudan okuduğu `CLAUDE.md` + AGENTS, BLUEPRINT ve `.divan/` kayıtları |
-| “Çalışıyor” deniyor, kanıt yok | Test, resmî doğrulayıcı ve bağımsız müfettiş kapısı |
-| Binlerce skill bağlamı ve güveni bozuyor | Kürasyon, lisans/köken denetimi ve aşamalı yükleme |
-| Harici swarm/harness karmaşık ve pahalı | Önce yerel tek oturum; gerekirse sınırlı subagent/worktree |
-| PR hazır ama ürün hâlâ eski | Yayın Kanunu: vitrin + Wiki + CHANGELOG + merge + canlı doğrulama |
-| Bağlı bir araç işin kapsamını büyütüyor | Divan Nizamı: kapsamı yalnız Hükümdar genişletebilir; her devir daha dardır |
-| Sohbette teknik işin takibi zorlaşıyor | Sade ilerleme sözleşmesi: şu an ne olduğunu, neden önemli olduğunu ve sıradakini bildir |
-
-Divan yeni bir model veya ayrı bir üçüncü taraf ajan runtime'ı değildir. Kendi
-modüler icra çekirdeğiyle mevcut kodlama ajanına **çalışma disiplini, uzmanlık
-ve teslim hafızası** ekleyen, denetlenebilir bir Agent Skills dağıtımıdır.
-
-## Divan Engine ve Divan Nizamı
-
-Skill adlarını ezberlemek yerine hedefi yaz. Sadrazam projeyi güvenli biçimde
-inceler, framework'ü belirler, en küçük yetkin ekibi seçer ve değişen dosyaların
-README, Wiki, site, test ve yayın etkilerini grafikte genişletir. Core Pack
-mühendislik disiplinini, UI Pack arayüz kalitesini sağlar. React Pack yalnız
-React projesinde; Zanaat Pack yalnız yaratıcı veya entegrasyon işinde devreye
-girer. Ayrıntılar: [Divan Engine](docs/Divan-Engine.tr.md).
-
-Proje keşfi kullanıcıya gerçek proje kökünü gösterir. Divan'a ait geçici
-worktree'leri, bağımlılık/derleme cache'lerini, fixture projelerini ve skill içi
-yardımcı klasörleri ekstra çalışma alanı gibi büyütmez; bu klasörlerden biri
-açıkça proje kökü verilirse yine incelenebilir.
-
-Nizâm-ı Sefer eksik olan icra muhakemesini ekler. Plan artık yapısal riski,
-host kesinliğini, ihtiyatlı bağlam bütçesini, gereken model sınıfını, sefer
-sayısını, görev bağımlılıklarını, devir noktasını, kanıtları ve en fazla üç
-paralel iş hattını açıklar. Model çağırmaz ve aday modelin hesapta bulunduğunu
-varsaymaz:
-
-```powershell
-python scripts/divan.py plan --project . --intent "API'yi güvenli yap, test et ve yayınla" --host-profile auto --json
-python scripts/divan.py plan --project . --intent "API'yi güvenli yap, test et ve yayınla" --host-profile codex --context-window 1050000 --target released --json
+```text
+Divan, bu işi devral. Önce mevcut durumu doğrula, kısa plan yap, en küçük doğru
+değişikliği uygula, gerçek kontrolleri çalıştır ve kanıtı bana günlük dille
+göster: [istediğiniz sonucu yazın]
 ```
 
-Son yetki Hükümdardadır. Ferman; sınırları belli işi Sadrazam ve Divan üzerinden
-uzmanlara ve sağlayıcılara devreder. Bir aracın bağlı olması yetki vermez;
-kapsamı yalnız Hükümdar genişletebilir. Dokuz modüllü sözleşmeyi yazmadan gör
-ve doğrula:
-
-```powershell
-python scripts/divan.py architecture --json
-python scripts/divan.py validate
-```
-
-Kanonik uzman komutu `/divan`dır. Eski `/company` ve `company-validate` adları
-v1 boyunca sınırlı uyumluluk takma adları olarak kalır.
-
-Aynı sözleşmeyi hedef projeye önce yazmayan önizlemeyle kur:
+Projeye Divan sözleşmesi eklemek için önce önizleyin, sonra uygulayın:
 
 ```powershell
 python scripts/divan.py init --project . --profile standard --locale auto
@@ -133,28 +135,36 @@ python scripts/divan.py init --project . --profile standard --locale auto --exec
 python scripts/divan.py audit --project . --format json
 ```
 
-Divan reposu `DCS-*`, kurulu proje ise yalnız uygulanabilir `DPS-*` kurallarını
-izler ve kanıtı `.divan/` altında tutar. Ayrıntılar:
-[Divan Proje Sözleşmesi](docs/Project-Contract.tr.md).
+**İlk kurulum**, eklenti ve proje sözleşmesidir. Günlük kullanım, yukarıdaki
+doğal dil isteğidir. **Bakım**, doctor, update, kurtarma veya kaldırmadır;
+sıradan görev akışını bölmemelidir.
 
-Kurulumdan sonra sahiplik ve sapmayı yazmadan oku; proje schema güncellemesini
-veya güvenli onarımı uygulamadan önce planını gör:
+## Kullanıcı ekranda ne görür?
+
+Divan mevcut sonucu, etkin adımın neden önemli olduğunu ve sırada ne bulunduğunu
+kısa biçimde yazar. Teknik komutlar yalnız hatayı açıklıyor veya sonucu
+kanıtlıyorsa öne çıkar. Görev durumu ile kanıt durumu birbirinden ayrılır.
+Sade ilerleme, kullanıcıya kısa bir hikâye gösterirken ayrıntılı mühendislik
+kanıtını arka planda erişilebilir tutar.
+
+### Yerel Seyir ekranı
+
+Seyir; hedef, görev, Git ve kanıt durumunu gösteren salt okunur yerel sayfadır.
+Bulut hizmeti veya API anahtarı kullanmaz; yalnız `127.0.0.1` adresine bağlanır.
 
 ```powershell
-python scripts/divan.py project status --project . --json
-python scripts/divan.py project update --project .
-python scripts/divan.py project update --project . --execute
-python scripts/divan.py project repair --project .
-python scripts/divan.py project repair --project . --execute
+python scripts/divan.py status --project . --open --lang auto
 ```
 
-Host `update`, Claude/Codex içindeki Divan paketlerini değiştirir. Project
-`update`, hedef repoda yalnız Divan'ın sahip olduğu yüzeyleri taşır. `audit`,
-DPS kalite kanıtını; `project status`, sahiplik parmak izlerini ve sapmayı
-değerlendirir. Doğrulanmış hedefler arşivlenebilir. Ana v1 kanıt yolu, Divan'dan
-ayrı gerçek projedeki görevi sınırlı test/regresyon kontrolleriyle bir kez
-çalıştırır, host sürümünü doğrudan gözler ve gizlilik sınırlı schema-2 makbuzu
-mühürler:
+Divan boş portu seçer ve çalışan geçici adresi yazar. Sunucuyu `Ctrl+C` ile
+durdurun; belgelerdeki örnek portu yeniden kullanmayın.
+
+## Hangi kanıtlar üretilir?
+
+![Ferman'dan canlı yayına Divan kanıt akışı](docs/assets/github/evidence-flow.png)
+
+Göreve göre test özeti, değişen dosya parmak izi, hedef makbuzu, release
+checksum'u, SPDX SBOM, attestation ve canlı geri okuma kanıtı üretilir.
 
 ```powershell
 python divan-project.pyz goal advance --project . --goal <goal-id> --to verified --evidence <uygulama-dosyası> <test-veya-doğrulama-dosyası>
@@ -164,279 +174,101 @@ python divan-project.pyz adoption prove --project . --goal <goal-id> --host code
 python divan-project.pyz adoption verify .divan/adoption/<proof-id>/adoption-receipt.json
 ```
 
-VERIFIED geçişi adı verilen proje-göreli dosyaları hedef makbuzuna atomik olarak
-hash'ler; yalnız plan dosyası kanıtı reddedilir. Önizleme yazmaz ve subprocess
-başlatmaz. Bakımcı ile dış kullanıcı aynı teknik
-kapıya tabidir; kişinin sıfatı uygunluğu değiştirmez. Yalnız
-`valid-clean-room-adoption` v1'e aday olabilir. Eski schema-1 export makbuzları
-doğrulanmaya devam eder fakat v1 kanıtı sayılmaz.
-İndirilen `divan-project.pyz` ile `divan-project.pyz.sha256` aynı klasörde
-kalmalıdır. Kanıt yürütmesi, izlenen kaynak sapmasını güvenli biçimde
-reddedebilmek için bir Git reposu da gerektirir.
+Bu teknik kapıyı yalnız `valid-clean-room-adoption` karşılar. Sonuç bağımsız
+kullanıcı sayısı, tavsiye, pazar benimsemesi veya kalite kazanımı değildir.
 
-## Kendi kendini nasıl geliştirir?
+## Modüler paketler
 
-Divan gelişmeyi “daha çok skill yükle” diye tanımlamaz:
+| Paket | Ne zaman katılır? |
+|---|---|
+| `sadrazam` | Uçtan uca sahiplenme, kalıcı karar ve sınırlı görev devri |
+| `core-pack` | Planlama, TDD, hata ayıklama, doğrulama ve kaynak inceleme |
+| `ui-pack` | Arayüz yönü, ürün denetimi ve tarayıcı testi |
+| `react-pack` | React, Next.js veya React Native kanıtlandığında |
+| `zanaat-pack` | Görsel üretim, MCP ve özel entegrasyon gerektiğinde |
 
-1. Kaynağı ve gerçek repo kimliğini bulur.
-2. Lisans, köken, hook/script ve araç yetkilerini denetler.
-3. Mevcut 42 beceriyle çakışmayı ve gerçek ürün boşluğunu ölçer.
-4. Haftalık **Meclis** keşfi ve yapılandırılmış topluluk formuyla aday üretir;
-   hiçbir adayı otomatik kurmaz.
-5. Kimlik, lisans, yürütme yüzeyi ve kanıta göre ADOPT, ADAPT, REFERENCE veya
-   REJECT kararını [aday defterine](docs/Aday-Meclisi.md) işler.
-6. Gerekirse en küçük özgün skill'i yazar ve davranış eval'ini ekler.
-7. Yerel test + Agent Skills + Claude Code doğrulamasını geçirir.
-8. `/yayin` ve `release-manifest.json` ile README, Wiki, site, CHANGELOG,
-   marketplace ve sürüm kaydındaki sapmayı CI'da durdurur.
-9. Yayın istenmişse PR'ı ara sonuç sayar; `main`, Pages ve Wiki aynı sürüme
-   gelince changelog'dan tag ile GitHub Release üretir.
+Bütün paketler bu depoda kalır. Divan, forklanmış çalışma zamanı veya ikinci
+ürün deposu gerektirmez.
 
-Bu döngünün son örneği: [40 repoluk kaynak kürasyonu](reports/2026-07-18-claude-repo-kurasyonu.md).
+Native Claude Code kurulumunda isteğe bağlı komut kısayolları da bulunur:
+`/ferman` sınırlı iş tanımını başlatır, `/sefer` iş sırasını yürütür, `/teftis`
+kanıtı kontrol eder, `/defter` kalıcı bağlamı yazar, `/vezir` beceri oluşturur,
+`/yayin` yayını hazırlar. Eski `/company` adı v1 uyumluluğu için korunur. Günlük
+kullanımda bu adları ezberlemeniz gerekmez.
 
-## İlerlemeyi yerelde izle
+## Host uyumluluğu ve kanıt düzeyleri
 
-Seyir; Divan'ın mevcut hedef, görev, Git, kontrol ve makbuz kanıtını sakin bir
-yerel sayfada gösterir. Salt okunurdur, bulut servisi veya API anahtarı
-kullanmaz ve yalnız `127.0.0.1` adresine bağlanır. İzlemek istediğin projede:
-
-```powershell
-python scripts/divan.py status --project . --open --lang auto
-```
-
-Divan boş bir port seçer, çalışan adresin tamamını terminale yazar ve `--open`
-varsa aynı adresi açar. Adres geçicidir; `Ctrl+C` ile kapatılır. Belgelerdeki
-örnek bir portu yeniden kullanma.
-
-Doğrulama uzun sürdüğünde Seyir artık sayfanın neden sessiz görünebildiğini,
-kanıta dayalı normal bekleme aralığını ve hangi eşiği geçince dikkat gerektiğini
-gösterir. Önde vibe coder için sakin bir ekran kalır; arkada ölçülmüş kontroller
-çalışmaya devam eder.
-
-## Kurulum
-
-Aşağıdaki komutlar Güncel kaynak sürümünü sabitler. Güncel kaynak Son yayımlanan
-sürümden farklıysa bütün `--ref` komutlarında Son yayımlanan sürümü kullan.
-Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. v1.0.3 artık son
-yayımlanan release'tir ve release-sabit kurulumlarda kullanılabilir.
-
-### En hızlı ilk kurulum: repo klonlamadan tek doğrulanmış dosya
-
-Eşleşen GitHub Release yayımlandıktan sonra bağımsız kurucuyu ve checksum
-dosyasını indir, bilgisayarında doğrula, yazmayan planı gör ve sonra uygula:
-
-```powershell
-$tag = "v1.0.3"
-Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz" -OutFile divan.pyz
-Invoke-WebRequest "https://github.com/trugurpala/divan/releases/download/$tag/divan.pyz.sha256" -OutFile divan.pyz.sha256
-$expected = ((Get-Content .\divan.pyz.sha256 -Raw).Trim() -split "\s+")[0].ToLowerInvariant()
-$actual = (Get-FileHash .\divan.pyz -Algorithm SHA256).Hash.ToLowerInvariant()
-if ($actual -ne $expected) { throw "Divan bootstrap SHA-256 eşleşmiyor" }
-python .\divan.pyz doctor --host codex --json
-python .\divan.pyz install --host codex --profile auto
-python .\divan.pyz install --host codex --profile auto --execute
-```
-
-Bu tek dosya release'in değişmez kaynak commit'ini, beş paketini ve 41
-becerilik tam kataloğunu taşır; başka kaynak veya ref'i reddeder. `divan.pyz`
-dosyasını sakla: yarım kalan bir işlem olursa doctor, aynı dosyayla çalışacak
-tam recovery komutunu üretir.
-
-Repo checkout'u içinden yazmayan planı görüp aynı sabit release'i iki hosta
-kurmak için:
-
-```powershell
-python scripts/divan.py install --host both --ref v1.1.0
-python scripts/divan.py install --host both --ref v1.1.0 --execute
-```
-
-Codex Desktop için tek bir açık `auto` profil komutu yerel CLI'ı tanılar ve
-kanıtlayabildiği en güçlü yolu seçer:
-
-```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.1.0
-python scripts/divan.py install --host codex --profile auto --ref v1.1.0 --execute
-```
-
-Codex CLI sağlıklıysa tam yerel plugin yolu korunur. CLI bulunamazsa,
-çalıştırılamazsa veya işletim sistemi erişimi reddederse checksum ile
-doğrulanan 42 becerilik fallback seçilir. Fallback skill ve talimatları sağlar;
-yerel komut, ajan, hook, MCP yapılandırması veya yerel yaşam döngüsü sağladığını
-iddia etmez. Host geçersiz JSON döndürürse gerçek uyumluluk sorunu gizlenmeden
-kurulum durur.
-
-Güvenlik için kurucu, kaynağı/ref'i kanıtlanamayan mevcut bir `divan` pazarının
-veya `@divan` eklentisinin üzerine yazmaz; kaydı olduğu gibi bırakıp açık bir
-hata verir.
-
-Kurucu Claude Code/Desktop Code ile Codex'in resmî plugin CLI'larını kullanır,
-mevcut eklentileri işlem kaydına alır ve alakasız eklentilere dokunmaz. Tek-host,
-elle kurulum, eski kopya göçü ve kaldırma: [docs/Kurulum.md](docs/Kurulum.md).
-
-Beş dakikalık güvenli yaşam döngüsü:
-
-```powershell
-python scripts/divan.py doctor --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0
-python scripts/divan.py update --host both --ref v1.1.0 --execute
-python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
-python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
-```
-
-Tek dosyalık `divan.pyz`, yükseltme sırasında içindeki değişmez release
-kimliğini kullanır; çıkarıldığı geçici klasörü Git checkout gibi yorumlamaz.
-
-Örnek günlük yolunu doctor çıktısındaki tam `recovery_command` ile değiştir.
-`install-...json` geri alması bu kurulumun oluşturduğu Divan kayıtlarını kaldırır;
-host'a göre elle kaldırma ve sahiplik sınırları: [docs/Kaldirma.md](docs/Kaldirma.md).
-
-## Temiz geliştirme
-
-```powershell
-python scripts/verify.py
-python scripts/hygiene.py --check
-python scripts/hygiene.py --clean
-```
-
-`verify.py`, yerel geliştirme ile CI'ın ortak doğrulama yoludur. Python
-bytecode'unu kapatır, araç cache'lerini repo dışına yönlendirir, çekirdek
-kapıları çalıştırır ve ikinci bir hijyen kontrolüyle biter. `--check`; birinci
-taraf metinde UTF-8/BOM/mojibake, locale'e bırakılmış metin
-subprocess'i ve repo cache'lerini reddeder. `--clean` yalnız sabit allowlist'teki
-yeniden üretilebilir cache'leri kalıcı siler; `.divan/evidence`, eval sonuçları,
-manifestler, worktree'ler ve kullanıcı/rollback yedeklerine dokunmaz. Repo metni
-UTF-8/LF, çekirdek Python karmaşıklık bütçesi McCabe 25 olarak CI'da sabittir.
-
-## Bir dakikada başla
-
-Skill adı ezberlemek zorunda değilsin. [Canlı ferman seçicide](https://trugurpala.github.io/divan/#basla)
-niyetini seç; Divan gerekli paketi, kopyalanabilir fermanı ve teslim akışını
-göstersin.
-
-| Niyet | Paket | Divan'ın ilk hareketi |
+| Düzey | Anlam | Güncel örnek |
 |---|---|---|
-| Özellik çıkar | `sadrazam` + `core-pack` | Brief → plan → TDD → teftiş → yayın |
-| Bug düzelt | `core-pack` | Belirti → kök neden → regresyon testi |
-| Arayüz tasarla | `ui-pack` + `react-pack` | Estetik yön → sistem → tarayıcı doğrulaması |
-| Projeyi tanı | `sadrazam` + `core-pack` | Kanıtlı arama → mimari/risk haritası → defter |
-| Kanıtla ve yayınla | `sadrazam` + `core-pack` | A/B eval → kör hakem → CI → canlı doğrulama |
+| Doğrulanmış native | Temiz kurulum, doctor, update ve kaldırma testli | Claude Code, Codex |
+| Taşınabilir beceri | Agent Skills dosyaları yüklenebilir; native yaşam döngüsü iddia edilmez | Registry'deki uyumlu hostlar |
+| Belgelenmiş hedef | Resmî yetenek biliniyor; Divan kanıtı eksik | Yalnız araştırma kayıtları |
 
-## Davranış eval'i
+Ayrıntılı kayıt [host uyumluluğu registry'sinde](registry/host-compatibility.json)
+hostu, yeteneği, resmî kaynağı ve kanıtı ayrı gösterir.
 
-Yapısal doğrulama “skill daha iyi çalışıyor” demek değildir. v0.10 serisi aynı
-vakayı baseline ve skill koşullarında gerçek ajan adaptörüyle çalıştıran,
-çıktıları A/B körleştiren ve isteğe bağlı hakem/eşik uygulayan koşucu ekler:
+## Güvenlik ve gizlilik
+
+Değişmez tag kullanın, checksum'u doğrulayın ve yazma işlemini önce önizleyin.
+Divan alakasız eklentileri korur, işlem kurtarmasını kaydeder ve kaynak kimliği
+kanıtlanamazsa durur. Kamu kanıtından token, e-posta, mutlak yol, müşteri verisi
+ve özel remote URL çıkarılır. Açığı public issue yerine
+[özel güvenlik bildirimiyle](SECURITY.md) gönderin.
+
+## Topluluk için ücretsiz
+
+Divan MIT lisanslı, ücretsiz ve açık kaynak bir projedir. Bu depoda ücretli
+katman yoktur. Model, hosting veya isteğe bağlı entegrasyon sağlayıcılarının
+kendi ücretleri olabilir; Divan bu dış maliyetleri gizlemez.
+
+## Topluluğa katılın
+
+Kullanım sorusunu Discussions'a yazın, hatayı yapılandırılmış formla bildirin,
+kaynak adayını kurmadan önerin veya bir belgeyi iyileştirin. Doğru ve güvenli
+yolu [SUPPORT.md](SUPPORT.md) gösterir.
+
+## Katkı verme
+
+[Türkçe katkı rehberini](CONTRIBUTING.tr.md) ve
+[yönetim modelini](GOVERNANCE.md) okuyun. Tek kanonik yerel kapı:
 
 ```bash
-python evals/run.py --check
-python evals/run.py --run --skill kaynak-kuratori \
-  --adapter "python /guvenilir/yol/agent_adapter.py" \
-  --judge "python /guvenilir/yol/judge_adapter.py" \
-  --provenance provenance.json
+python scripts/verify.py
+git diff --check
 ```
 
-Hakem veya gerçek adaptör yoksa koşucu başarı oranı uydurmaz; sonucu
-`review_required` olarak kaydeder. Provenance kaydı koşunun ajan/hakem/ortam
-kimliğini açıklar; tek başına kalite kanıtı değildir. v0.12.0'ın ilk gerçek
-Claude→Codex kör A/B koşusu üç vakada skill 0, baseline 1, beraberlik 2 sonucu
-verdi; önceden belirlenmiş eşik olmadığı ve skill galibiyeti bulunmadığı için
-kalite artışı iddiası değildir. Kamu sonucu:
-[evals/results/claude-codex-baglam-muhafizi-v012.json](evals/results/claude-codex-baglam-muhafizi-v012.json).
-Protokol: [evals/README.md](evals/README.md).
+Yapısal doğrulama 42 becerinin tamamını kapsar.
+5 özgün skill için 16 davranış vakası vardır. Gerçek ajan adaptörü ve kör hakem çalışmadan davranış iyileşmesi
+iddia edilmez.
 
-## Komutlar (Claude Code)
+## Yol haritası ve proje belgeleri
 
-| Komut | Ne yapar |
-|---|---|
-| `/ferman <iş>` | İşi Divan Protokolü ile baştan sona teslim eder |
-| `/sefer <iş>` | Tek oturum, subagent veya izole takım arasından en küçük güvenli düzeni seçer |
-| `/defter kur\|yaz\|oku\|karar` | Proje hafızası: kur, işle, kaldığın yeri özetle, ADR kaydet |
-| `/divan <iş>` | Divan Engine ile hedefi keşif, plan, etki ve kanıt zincirine taşır |
-| `/vezir <fikir>` | Uyumluluk komutu: Divan'a standartlara uygun yeni beceri geliştirir |
-| `/teftis` | Repoyu ve hafıza sağlığını denetler |
-| `/yayin <semver>` | Bütün sürüm yüzeylerini hazırlar; CI → canlı yüzey → tag/Release zincirini tamamlar |
+- [Yol haritası](ROADMAP.md)
+- [Ürün yönü ve geçmiş](BLUEPRINT.md)
+- [Yazım ve üslup sözleşmesi](docs/Yazim-ve-Uslup.md)
+- [Yayın süreci](RELEASE.md)
+- [Görsel sistem](docs/Gorsel-Sistem.md)
 
-## Paketler (42 beceri)
+## Son release ve doğrulama
 
-| Paket | Öne çıkanlar | Kaynak / Lisans |
-|---|---|---|
-| **sadrazam** (5) | Uçtan uca orkestratör · **ordu-nizamı** (yerel üç kademeli ajan sevki) · **defterdar** (kalıcı proje hafızası: AGENTS.md+BLUEPRINT+.divan) · **müşavir** (2026 stack danışmanı, tazelik protokollü) · vezir-yetiştirme. Ayrıca: kâşif+müfettiş subagent'ları, oturum başında defteri okuyan hook | Özgün, MIT |
-| **core-pack** (18) | Beyin fırtınası→plan→TDD→doğrulama zinciri, sistematik debugging, code review, worktrees · **kaynak-küratörü** (repo/lisans/köken süzgeci) · **arama-ustası** (kanıtlı rg + isteğe bağlı AST) · **bağlam-muhafızı** (bütçe, maskeleme, devir) · **temkin** · **kural-hazinesi** | superpowers MIT + özgün + MIT uyarlama + CC0 |
-| **ui-pack** (3) | Şablon kokmayan frontend tasarım, tarayıcıda Playwright testi, 84 stillik design-system üretici | Apache 2.0 + MIT |
-| **react-pack** (8) | React best practices, composition, view transitions, React Native, Vercel deploy/optimize, web tasarım ve yazım kuralları | Vercel Labs, MIT |
-| **zanaat-pack** (7) | Ehl-i Hiref: algoritmik sanat, canvas/poster, tema fabrikası, MCP inşası, web artifact, Slack GIF, Claude API | Anthropic, Apache 2.0 |
+[GitHub Releases sayfası](https://github.com/trugurpala/divan/releases/latest),
+son yayımlanan paketin doğru kaynağıdır. Değişmez v1.1.0 yayın kanıtı
+`.divan/evidence/` altında korunur; her yeni sürüm kendi checksum, SPDX SBOM,
+attestation ve canlı geri okuma kanıtını eklemelidir.
 
-## Nasıl çalışır
+Hazırlık puanı **8/8**'dir. Bu puan makine destekli teknik kapıları anlatır;
+popülerlik veya pazar benimsemesi değildir.
 
-`/ferman` → mevcut defter okunur; yeni hafıza yalnızca sen istersen kurulur → müşavir stack seçer →
-kâşif keşfeder → plan → temkinle TDD → **müfettiş bağımsız denetler** →
-kanıt `.divan/evidence/`e → Takdim. Ertesi oturumda hook kaldığın yeri okur.
-Para-dokunan işte (borsa/ödeme) spec-first + risk-register zorunlu.
+## Görsel sistem ve Figma kaynağı
 
-İş gerçekten bölünebiliyorsa `/sefer` üç kademeden en küçüğünü seçer: **Ocak**
-(tek oturum), **Sefer** (sınırları belirli subagent) veya **Ordu** (worktree ile
-izole paralel uygulama; Agent Teams yalnızca açık deneysel tercih). Karar ve
-aday karnesi: [docs/Orkestrasyon-Karari.md](docs/Orkestrasyon-Karari.md).
+Görsel yön; gece mavisi, fildişi, firuze, mercan ve altını ölçülü İznik
+geometrisiyle birleştirir. [Düzenlenebilir Figma kaynağını](https://www.figma.com/design/Z325Jjy36I7KLdizcaZAnZ)
+açabilir veya [üretim dışa aktarım kurallarını](docs/Gorsel-Sistem.md)
+okuyabilirsiniz.
 
-**Mühürdar**, Divan'ın temkinli mühür bekçisidir: çalışma sürerken kanıtı
-izler, teslimden önce teftişi hatırlatır. Maskot, ürün davranışını değiştiren
-bir ajan değil; Divan'ın doğrulama disiplininin görsel yüzüdür.
+## Lisans ve upstream atıfları
 
-## Güncellik ve namus
-
-Her push yerel test, resmî Agent Skills ve Claude Code doğrulayıcılarından geçer
-(klasör=name, ≤64/≤1024, çakışma, paket sürümü). **Aylık nöbet** upstream'leri
-SHA-256 ile simetrik kıyaslar,
-fark bulursa kendiliğinden issue açar. Lisanssız içerik ne kadar popüler
-olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
-
-## Dürüst durum
-
-Divan v1.0.3, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
-yayımlandı. 42 becerinin tamamı yapısal olarak doğrulanır; 5 özgün skill için 16 davranış vakası
-ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
-tek repo, beş modüler paket, stdlib-only Divan Engine, Hükümdar öncelikli Divan
-Nizamı, kurulu Divan Proje Sözleşmesi ve Claude Code/Codex yaşam döngüsünü
-korur. v1.0.3 sakin proje keşfini korurken kontrol düzlemini sadeleştirir:
-sağlıklı doctor READY sonucunda durur, kurtarma çıktısı tam komutu verir; ilk
-kurulum, günlük doğal dil kullanımı ve bakım birbirinden ayrılır. Değişmez tag,
-checksum ve attestation bağlı yedi varlık, SBOM, Pages, Wiki, temiz-host matrisi
-ve release geri okumaları
-[v1.0.3 yayın kanıtında](.divan/evidence/teftis-20260801-v103-release.md)
-kayıtlıdır. Temiz-proje sonucu sınırlı teknik akışı kanıtlar; bağımsız kullanıcı
-sayısı, üçüncü taraf onayı, pazar benimsemesi, hız, gelir, kalite artışı veya
-“dünyanın en iyisi” iddiası değildir.
-
-## Kaldırma
-
-Divan güvenli biçimde kaldırılabilir: [docs/Kaldirma.md](docs/Kaldirma.md).
-Skill metinlerinin yanında açık kaynak doğrulama/kurulum betikleri ve bazı
-üçüncü taraf varlıkları bulunur; otomatik telemetri veya eve arama yoktur.
-
-## Katkı
-
-[CONTRIBUTING.md](CONTRIBUTING.md) yolu anlatır; sadrazam kuruluysa
-"Divan'a yeni skill geliştir" demen yeterlidir. Blueprint ve durum günlüğü:
-[BLUEPRINT.md](BLUEPRINT.md).
-
-> Bu proje Anthropic, Claude, OpenAI veya Vercel ile bağlı ya da onlarca
-> onaylanmış değildir; uyumluluk ifadeleri yalnızca tanımlayıcıdır.
-> Lisans: derleme ve özgün skill'ler MIT; üçüncü taraflar kendi
-> lisanslarını korur — [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
-
-## Standartlar ve topluluk
-
-Divan'ın `DCS-001`–`DCS-011` arasındaki on bir zorunlu ürün kuralı
-[Topluluk Standartları](docs/Topluluk-Standartlari.md) sayfasında ve
-`python scripts/standards.py --check` kapısında yaşar. Kullanım sorusu, hata,
-özel güvenlik bildirimi, yetenek önerisi ve temiz-proje kabul kanıtı için tek doğru
-yollar [SUPPORT.md](SUPPORT.md) içindedir. Katkı rehberi:
-[Türkçe](CONTRIBUTING.tr.md) · [English](CONTRIBUTING.en.md).
-
-v1 hazırlık durumu: **8/8** kapı geçti. Değişmez v0.18.5, Windows 11, Codex ve
-Divan'dan ayrı gerçek bir projede makinece doğrulanabilir bir temiz-proje kanıtı
-üretti; gizlilik incelemesinden geçen makbuz repoya kaydedilip çevrimdışı yeniden
-doğrulandı. Bu sınırlı teknik kanıt; bağımsız kullanıcı sayısı, üçüncü taraf
-onayı, pazar benimsemesi, hız veya kalite artışı iddiası değildir.
-Önizleme bu özeti önce public GitHub Release API'sinden okur; yayın otoritesi
-doğrulanamazsa proje komutları başlamadan kapalı başarısız olur.
+Divan [MIT](LICENSE) lisanslıdır. Üçüncü taraf kökenleri, sabit commitler, yerel
+uyarlamalar ve lisans sınırları [UPSTREAM.md](UPSTREAM.md) ile
+[THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) içinde kayıtlıdır. Aday
+Meclisinde görünmek kurulmuş veya benimsenmiş olmak anlamına gelmez.

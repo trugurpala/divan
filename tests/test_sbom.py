@@ -242,6 +242,23 @@ class SbomTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "kanonik pin yok: obra/superpowers"):
                 sbom.build_spdx(root, "0.12.2", SOURCE_COMMIT)
 
+    def test_reviewed_head_cannot_replace_distribution_origin(self) -> None:
+        sbom = load_sbom()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            copy_sbom_fixture(root)
+            registry_path = root / "registry/upstream-baselines.json"
+            registry = json.loads(registry_path.read_text(encoding="utf-8"))
+            source = next(
+                item for item in registry["sources"]
+                if item["repository"] == "obra/superpowers"
+            )
+            source["origin_commit"] = "main"
+            registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "origin_commit tam Git SHA"):
+                sbom.build_spdx(root, "0.12.2", SOURCE_COMMIT)
+
     def test_cli_writes_stable_utf8_json_with_trailing_newline(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = pathlib.Path(temporary) / "divan.spdx.json"

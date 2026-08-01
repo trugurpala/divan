@@ -1,21 +1,37 @@
 from __future__ import annotations
 
-import importlib.util
+import importlib
 import json
 import pathlib
+import subprocess
+import sys
 import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location(
-    "divan_upstream", ROOT / "scripts" / "upstream_watch.py"
-)
-assert SPEC and SPEC.loader
-UPSTREAM = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(UPSTREAM)
+BASELINE = importlib.import_module("scripts.upstream_baseline")
+UPSTREAM = importlib.import_module("scripts.upstream_watch")
 
 
 class UpstreamGovernanceTests(unittest.TestCase):
+    def test_direct_module_and_legacy_entrypoints_load_the_same_controller(self) -> None:
+        commands = (
+            [sys.executable, "-B", "scripts/upstream_watch.py", "--help"],
+            [sys.executable, "-B", "-m", "scripts.upstream_watch", "--help"],
+            [sys.executable, "-B", "scripts/upstream-denetim.py", "--help"],
+        )
+        for command in commands:
+            with self.subTest(command=command):
+                result = subprocess.run(
+                    command,
+                    cwd=ROOT,
+                    capture_output=True,
+                    check=False,
+                    encoding="utf-8",
+                    timeout=10,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_text_hash_is_stable_across_line_endings(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upstream-eol-") as temporary:
             root = pathlib.Path(temporary)
@@ -23,7 +39,7 @@ class UpstreamGovernanceTests(unittest.TestCase):
             crlf = root / "crlf.md"
             lf.write_bytes(b"one\ntwo\n")
             crlf.write_bytes(b"one\r\ntwo\r\n")
-            self.assertEqual(UPSTREAM.sha256(lf), UPSTREAM.sha256(crlf))
+            self.assertEqual(BASELINE.sha256(lf), BASELINE.sha256(crlf))
 
     def test_tree_inventory_uses_platform_independent_paths(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upstream-") as temporary:
@@ -49,8 +65,44 @@ class UpstreamGovernanceTests(unittest.TestCase):
         errors, reviews = UPSTREAM.baseline_errors(ROOT)
 
         self.assertEqual(errors, [])
-        self.assertEqual(len(reviews), 15)
+        self.assertEqual(len(reviews), 31)
         self.assertEqual({review["decision"] for review in reviews}, {"KEEP"})
+
+    def test_nobet_formats_are_decision_ready(self) -> None:
+        records = [
+            {
+                "source_repository": "owner/repo",
+                "skill_or_package": "example",
+                "reviewed_commit": "a" * 40,
+                "current_commit": "b" * 40,
+                "changed_files": ["SKILL.md"],
+                "change_category": "skill-contract",
+                "license_status": "MIT",
+                "divan_counterpart": "plugins/core-pack/skills/example",
+                "decision": "KEEP",
+                "rationale": "The local contract remains validated.",
+                "evidence": "registry/upstream-baselines.json",
+                "review_debt": False,
+            }
+        ]
+
+        payload = UPSTREAM.render_report(records, "json")
+        decoded = json.loads(payload)
+        self.assertEqual(decoded["review_debt_count"], 0)
+        self.assertEqual(decoded["records"][0]["decision"], "KEEP")
+        self.assertIn("| Source |", UPSTREAM.render_report(records, "markdown"))
+        self.assertIn("Decision: KEEP", UPSTREAM.render_report(records, "text"))
+
+    def test_monthly_workflow_reuses_one_nobet_issue(self) -> None:
+        workflow = (ROOT / ".github/workflows/upstream-watch.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("--format markdown", workflow)
+        self.assertIn("issues.listForRepo", workflow)
+        self.assertIn("issues.update", workflow)
+        self.assertIn("upstream_issue_policy.py", workflow)
+        self.assertIn("nobet-plan.json", workflow)
+        self.assertIn("state: 'closed'", workflow)
 
     def test_canonical_source_inventory_includes_curated_distributed_sources(self) -> None:
         registry = json.loads(
@@ -68,6 +120,26 @@ class UpstreamGovernanceTests(unittest.TestCase):
         )
         self.assertNotIn("b044f956f021b6e8877f16781bcfc466a6a120e9", repr(UPSTREAM.KURASYON_KAYNAKLARI))
 
+    def test_keep_reviews_advance_observation_without_rewriting_origin(self) -> None:
+        registry = json.loads(
+            (ROOT / "registry/upstream-baselines.json").read_text(encoding="utf-8")
+        )
+        sources = {source["repository"]: source for source in registry["sources"]}
+        self.assertEqual(
+            sources["obra/superpowers"]["origin_commit"],
+            "d884ae04edebef577e82ff7c4e143debd0bbec99",
+        )
+        self.assertNotEqual(
+            sources["obra/superpowers"]["reviewed_head"],
+            sources["obra/superpowers"]["origin_commit"],
+        )
+        for review in registry["reviews"]:
+            if review["decision"] == "KEEP":
+                self.assertEqual(
+                    review["reviewed_head"],
+                    sources[review["source"]]["reviewed_head"],
+                )
+
     def test_unreviewed_or_mutable_baseline_is_rejected(self) -> None:
         invalid = {
             "source": "obra/superpowers",
@@ -75,7 +147,7 @@ class UpstreamGovernanceTests(unittest.TestCase):
             "decision": "PENDING",
             "local_tree_sha256": "not-a-hash",
         }
-        errors = UPSTREAM.review_errors(invalid)
+        errors = BASELINE.review_errors(invalid)
 
         self.assertTrue(any("reviewed_head" in error for error in errors))
         self.assertTrue(any("decision" in error for error in errors))

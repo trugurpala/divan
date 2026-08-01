@@ -110,7 +110,7 @@ def _evidence_hatalari(
 
 
 def _sonraki_adim_hatalari(progress_metin: str, yayin_surum: str) -> list[str]:
-    sonraki = _bolum(progress_metin, "Sıradaki kesin adım")
+    sonraki = _bolum(progress_metin, "Sıradaki kesin iş")
     if (
         sonraki is not None
         and yayin_surum.casefold() in sonraki.casefold()
@@ -153,8 +153,8 @@ def denetle(kok: pathlib.Path = KOK) -> list[str]:
     version = kok / "VERSION"
     if progress.is_file():
         progress_metin = progress.read_text(encoding="utf-8")
-        if "## Sıradaki kesin adım" not in progress_metin:
-            hatalar.append(".divan/progress.md sıradaki kesin adımı içermiyor")
+        if progress_metin.count("## Sıradaki kesin iş") != 1:
+            hatalar.append(".divan/progress.md tek bir sıradaki kesin iş içermeli")
         if version.is_file():
             hatalar.extend(
                 _yayin_durumunu_denetle(

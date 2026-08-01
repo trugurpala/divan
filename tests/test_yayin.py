@@ -40,7 +40,7 @@ class PublicationTests(unittest.TestCase):
             for row in manifest["public_surfaces"]
             if row["id"] == "social-preview"
         )
-        self.assertEqual(surface["path"], "docs/assets/divan-social-preview.png")
+        self.assertEqual(surface["path"], "docs/assets/github/social-preview.png")
         self.assertEqual(
             surface["binary"],
             {"format": "png", "width": 1280, "height": 640, "max_bytes": 1_000_000},
@@ -262,15 +262,8 @@ class PublicationTests(unittest.TestCase):
                 "Current v1.2.4\nHistory v1.2.3\nbadge version-1.2.4\n",
             )
 
-    def test_real_manifest_prepare_preserves_published_truth(self) -> None:
+    def test_real_manifest_prepare_keeps_publication_truth_release_derived(self) -> None:
         old = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-        progress = (ROOT / ".divan" / "progress.md").read_text(encoding="utf-8")
-        published_prefix = "- Latest published release: v"
-        published = next(
-            line.removeprefix(published_prefix)
-            for line in progress.splitlines()
-            if line.startswith(published_prefix)
-        )
         major, minor, patch = map(int, old.split("."))
         new = f"{major}.{minor}.{patch + 1}"
         manifest = json.loads(
@@ -318,36 +311,24 @@ class PublicationTests(unittest.TestCase):
                     "docs/Kurulum.md",
                 )
             }
-            english_guard = (
-                "If Current source differs from Latest published, substitute "
-                "Latest published in every `--ref` command."
-            )
-            turkish_guard = (
-                "Güncel kaynak Son yayımlanan sürümden farklıysa bütün `--ref` "
-                "komutlarında Son yayımlanan sürümü kullan."
-            )
+            english_guard = "The command above resolves the latest published tag before downloading."
+            turkish_guard = "Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur."
 
-            self.assertIn(f"**Current source:** v{new}", texts["README.md"])
-            self.assertIn(f"**Güncel kaynak:** v{new}", texts["README.tr.md"])
-            self.assertIn(
-                f"**Latest published:** v{published}", texts["README.md"]
-            )
-            self.assertIn(
-                f"**Son yayımlanan:** v{published}", texts["README.tr.md"]
-            )
-            self.assertNotIn(f"**Latest published:** v{new}", texts["README.md"])
-            self.assertNotIn(f"**Son yayımlanan:** v{new}", texts["README.tr.md"])
+            self.assertIn(f"**Source line:** v{new}", texts["README.md"])
+            self.assertIn(f"**Kaynak hattı:** v{new}", texts["README.tr.md"])
+            self.assertIn("**Published packages:** [GitHub Releases]", texts["README.md"])
+            self.assertIn("**Yayımlanan paketler:** [GitHub Releases]", texts["README.tr.md"])
+            self.assertNotIn("**Latest published:**", texts["README.md"])
+            self.assertNotIn("**Son yayımlanan:**", texts["README.tr.md"])
 
             for relative, text in texts.items():
                 normalized = " ".join(text.split())
                 with self.subTest(relative=relative):
                     self.assertIn(f"--ref v{new}", text)
-                    self.assertIn(
-                        english_guard
-                        if relative in {"README.md", "README.en.md"}
-                        else turkish_guard,
-                        normalized,
-                    )
+                    if relative in {"README.md", "README.en.md"}:
+                        self.assertIn(english_guard, normalized)
+                    elif relative == "README.tr.md":
+                        self.assertIn(turkish_guard, normalized)
             self.assertNotIn(f"Both are v{old}", texts["README.md"])
             self.assertNotIn(f"ikisi de v{old}", texts["README.tr.md"])
             self.assertNotIn(

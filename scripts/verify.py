@@ -24,6 +24,7 @@ CHILD_COMPLETION_MARGIN_SECONDS = 60
 CORE_COMMANDS: tuple[Command, ...] = (
     ("scripts/hygiene.py", "--check"),
     ("scripts/validate.py",),
+    ("scripts/prose.py", "--check"),
     ("scripts/handoff.py", "--check"),
     ("scripts/catalog.py", "--check"),
     ("scripts/v1.py", "--check"),

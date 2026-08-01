@@ -72,15 +72,15 @@ def _third_party_inventory(
     return licenses, repositories
 
 
-def _upstream_heads(root: pathlib.Path) -> dict[str, str]:
+def _upstream_origins(root: pathlib.Path) -> dict[str, str]:
     registry = _read_json(root / "registry" / "upstream-baselines.json")
     sources = registry.get("sources")
     if not isinstance(sources, list):
         raise ValueError("Upstream sources alani liste olmali")
-    heads = {str(item["repository"]): str(item["reviewed_head"]) for item in sources}
-    if any(SHA_PATTERN.fullmatch(head) is None for head in heads.values()):
-        raise ValueError("Upstream reviewed_head tam Git SHA olmali")
-    return heads
+    origins = {str(item["repository"]): str(item["origin_commit"]) for item in sources}
+    if any(SHA_PATTERN.fullmatch(commit) is None for commit in origins.values()):
+        raise ValueError("Upstream origin_commit tam Git SHA olmali")
+    return origins
 
 
 def _license_expression(licenses: set[str], package: str) -> str:
@@ -90,13 +90,13 @@ def _license_expression(licenses: set[str], package: str) -> str:
 
 
 def _source_info(
-    repositories: set[str], upstream_heads: dict[str, str]
+    repositories: set[str], origin_commits: dict[str, str]
 ) -> str:
-    missing = sorted(repositories - upstream_heads.keys())
+    missing = sorted(repositories - origin_commits.keys())
     if missing:
         raise ValueError("kanonik pin yok: " + ", ".join(missing))
     pinned = [
-        f"{repository}@{upstream_heads[repository]}"
+        f"{repository}@{origin_commits[repository]}"
         for repository in sorted(repositories)
     ]
     origin = ", ".join(pinned) if pinned else "original Divan work"
@@ -139,7 +139,7 @@ def _package(
     source_commit: str,
     inventory_licenses: dict[str, set[str]],
     inventory_repositories: dict[str, set[str]],
-    upstream_heads: dict[str, str],
+    origin_commits: dict[str, str],
 ) -> dict[str, Any]:
     name = str(manifest["name"])
     version = str(manifest["version"])
@@ -157,7 +157,7 @@ def _package(
         "licenseDeclared": expression,
         "copyrightText": "NOASSERTION",
         "supplier": "Organization: Divan",
-        "sourceInfo": _source_info(inventory_repositories[name], upstream_heads),
+        "sourceInfo": _source_info(inventory_repositories[name], origin_commits),
         "externalRefs": [
             {
                 "referenceCategory": "PACKAGE-MANAGER",
@@ -211,7 +211,7 @@ def build_spdx(
     if repository != "trugurpala/divan":
         raise ValueError("release-manifest repository trugurpala/divan olmali")
     inventory_licenses, inventory_repositories = _third_party_inventory(root)
-    upstream_heads = _upstream_heads(root)
+    upstream_origins = _upstream_origins(root)
     packages = [
         _package(
             root,
@@ -220,7 +220,7 @@ def build_spdx(
             source_commit,
             inventory_licenses,
             inventory_repositories,
-            upstream_heads,
+            upstream_origins,
         )
         for manifest in _marketplace_packages(root)
     ]
