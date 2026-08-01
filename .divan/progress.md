@@ -12,16 +12,17 @@ Son güncelleme: 2026-08-01
 
 ## Güncel hedef
 
-Divan v1.2.0 is published. The product is in stable maintenance and accepts
-community contributions. Public writing follows the canonical human-first
-contract; Nöbet reports zero review debt; and the editable Figma source remains
-the authority for repository visuals. Divan stays one modular repository.
+Divan v1.3.0 release candidate prepares Müşavir for task-specific capability
+audits. Divan v1.2.0 remains the latest immutable published release until the
+v1.3.0 tag, release assets, checksums, attestations, README, Pages, and Wiki are
+read back from GitHub.
 
 ## Sıradaki kesin iş
 
-Keep v1.2.0 immutable. Triage the next concrete user report or community
-contribution through the documented support path; do not create speculative
-product work while Nöbet and current GitHub Actions remain clean.
+Keep the previous immutable tag untouched while finishing v1.3.0 through the
+release path. Verify Müşavir capability-audit tests, open a PR, wait for CI,
+merge only green checks, publish v1.3.0, then record the public readback
+evidence.
 
 ## Son yayımlanan durum
 

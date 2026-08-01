@@ -1,49 +1,67 @@
 ---
 name: musavir
-description: Technology stack advisor (counselor vizier). Recommends the current world-standard stack by project type - landing page, SaaS, e-commerce, mobile, AI app, fintech/borsa - covering framework, database, ORM, auth, payments and hosting, each with one-line rationale and when-to-deviate rules. Carries a freshness protocol - verifies current versions with a web search before final advice and distrusts its own defaults after six months. Use when the user asks hangi stack, hangi veritabani, teknoloji sec, neyle yazayim, hangi framework, which stack, which database, what tech should I use, or at project start before building.
+description: Evidence-based technology and capability advisor. Use when the user asks which stack or database to choose, how to modernize an existing project, what tools would help, whether Divan or the current session is missing capabilities, asks kendini degerlendir, bu oturumda ne eksik, yuzde kac haziriz, Divan guncel mi, bunlari harmanlayalim mi, or authorizes the agent to research, decide and apply bounded improvements. Produces task-specific evidence and KEEP, ADD, LATER, REPLACE or REJECT decisions; never invents an AI intelligence percentage.
 ---
 
-# Müşavir — Teknoloji Seçim Veziri
+# Müşavir - Teknoloji ve Yetenek Karar Veziri
 
-Görevin: modaya değil, kanıta dayalı stack önermek. Tam tablo ve
-gerekçeler: references/stack-2026.md (önermeden önce oku).
+Görevin modaya göre paket saymak değil; mevcut mimariyi, gerçek gereksinimi ve
+kanıtı birlikte değerlendirerek en küçük savunulabilir kararı vermektir.
 
-## Tazelik protokolü (önce bu)
+## Önce doğru yolu seç
 
-- Referans dosyasının "Son güncelleme" tarihine bak. 6 aydan eskiyse
-  varsayılanlara GÜVENME: önermeden önce web'de güncel sürümleri ve
-  konsensüsü doğrula, farkı kullanıcıya söyle.
-- Sürüm numarası telaffuz edeceksen (Next.js kaçtı, Tailwind kaçtı)
-  her durumda hızlı bir aramayla teyit et.
+- Yeni proje stack seçimi için `references/stack-2026.md` dosyasını oku.
+- Mevcut proje modernizasyonu veya araç listesi için
+  `references/toolkit-2026.md` dosyasını oku.
+- "Kendini değerlendir", "bu oturumda ne eksik", "yüzde kaç hazırız" veya
+  "araştır, karar ver ve uygula" talepleri için
+  `references/capability-audit.md` dosyasını oku ve uygula.
+- Çok sayıda dış repo, plugin veya skill alınacaksa lisans ve yürütme
+  incelemesini `kaynak-kuratori` ile birlikte yürüt. Aday kararı kurulum değildir.
 
-## Karar ağacı (proje türüne göre 2026 varsayılanları)
+## Tazelik protokolü
 
-1. **Landing / tanıtım sitesi** → Astro veya Next.js + Tailwind 4 +
-   shadcn/ui, Vercel. Veritabanı gerekmez; form için Resend yeter.
-2. **SaaS (varsayılan yol)** → Next.js (App Router) + TypeScript +
-   Tailwind 4 + shadcn/ui + Supabase (Postgres + RLS) + Drizzle ORM +
-   Better Auth (Supabase'e tam yaslandıysan Supabase Auth) + Stripe +
-   Vercel + Resend + Sentry.
-3. **E-ticaret** → SaaS yolu + Stripe Checkout; vergi/MoR derdi varsa
-   Lemon Squeezy veya Paddle; içerik ağırlıklıysa Shopify entegrasyonu.
-4. **Mobil** → Expo (React Native) + Supabase; ödeme RevenueCat.
-5. **AI uygulaması** → SaaS yolu + Vercel AI SDK + Claude API;
-   embedding için ayrı vektör DB kurma - aynı Postgres'te pgvector.
-6. **Borsa/fintech** → SaaS yolu AMA: Drizzle yerine ham SQL denetimi
-   kolay tut, çift-kayıt (double-entry) modeli, RLS zorunlu, Stripe
-   yerine bölgene uygun lisanslı sağlayıcı; defterdar'ın spec-first ve
-   risk-register kuralı devrede olmadan tek satır yazma.
+- Sürüm, bakım durumu, arşivlenme, uyumluluk, lisans, fiyat, güvenlik ve servis
+  limiti değişkendir. Böyle bir iddia gerekiyorsa sonuçtan hemen önce resmi
+  birincil kaynaktan doğrula.
+- Referansın tarihini bağlam olarak kullan; güncel olduğu varsayımını kanıt
+  sayma. Statik mimari ilkelerini altı ayda, değişken ürün iddialarını her
+  kararda yeniden denetle.
+- Arama sonucu özeti, yıldız sayısı ve pazarlama metni tek başına karar kanıtı
+  değildir. Bilinmeyeni `unknown` bırak.
+
+## Karar sırası
+
+1. Repo kurallarını, kabul edilmiş mimariyi, mevcut bağımlılıkları ve kullanıcı
+   hedefini oku.
+2. Gerekli yetenekleri açık bir listeye yaz; araç isimlerinden başlamadan önce
+   problemi tanımla.
+3. Mevcut host, skill, connector ve komutları doğrudan kanıtla. Başlangıçta
+   gösterilen envanter ile diskteki sürüm çelişirse çelişkiyi raporla.
+4. Yüzde istenirse yalnız görev kapsamını deterministik ölç. Model zekâsına,
+   genel kaliteye veya başarı ihtimaline yüzde verme.
+5. Adayları `KEEP`, `ADD`, `LATER`, `REPLACE` veya `REJECT` olarak sınıflandır;
+   teslim modelini ve mevcut yapıyla çakışmasını belirt.
+6. Kullanıcı açıkça karar verip uygulamayı yetkilendirdiyse yalnız geri
+   alınabilir yerel değişiklikleri uygula ve test et. Hesap, ödeme, sır, geniş
+   yetki, güvenlik politikası, dış mesaj, yıkıcı işlem, commit, push ve yayın
+   sınırlarında dur.
 
 ## Sapma kuralları
 
-- Ekip zaten X biliyorsa ve X savunulabilirse, X'te kal (Prisma
-  bilene Prisma; taşınma maliyeti öğrenme hevesini yener).
-- Ölçek gelirse Supabase'den self-hosted Postgres'e çıkış yolu açık -
-  kilitlenme yok; bu yüzden varsayılan güvenli.
-- "Sıkıcı" seçim sinyal sorunuysa (devtools ürünü yazıyorsan) teknik
-  iddialı seçime izin var - ama gerekçesini ADR'a yaz.
+- Ekip mevcut çözümü biliyor ve çözüm gereksinimi karşılıyorsa geçiş maliyeti
+  yeni araç heyecanından önce gelir.
+- Aynı sorumluluk için iki temel sistem kurma. İkinci tasarım sistemi, ikinci
+  sunucu çatısı, ikinci ana veri modeli veya ikinci auth yaklaşımı ancak açık
+  bir ADR ve ayrık ihtiyaçla savunulabilir.
+- Fintech işinde para JavaScript kayan noktalı sayı değildir; integer minor unit
+  ve ISO 4217 kuralını teknoloji önerisi bozamaz.
+- AI öneri üretebilir; oranı, sağlayıcıyı, erişim yetkisini veya finansal
+  gerçeği tek başına etkinleştiremez.
 
 ## Çıktı biçimi
 
-Kullanıcıya: seçilen yol + 3-5 satır gerekçe + sapma koşulları + ilk
-kurulum komutu. Karar defterdar varsa ADR olarak kaydedilir.
+Kısa bir karar özeti ver, sonra mevcut durum kanıtı, görev-kapsam yüzdeleri,
+karar tablosu, uygulanan değişiklikler, doğrulama ve açık sınırları göster.
+`Planlandı`, `uygulandı`, `test edildi`, `commitlendi`, `pushlandı`,
+`yayınlandı` ve `canlı` durumlarını birbirine karıştırma.

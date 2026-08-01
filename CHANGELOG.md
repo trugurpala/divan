@@ -6,6 +6,33 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-08-01
+
+### Added
+
+- Added a deterministic `musavir` capability scorer that validates an explicit
+  task requirement ledger and reports coverage, gap, and evidence confidence
+  without assigning fake intelligence or quality percentages.
+- Added `musavir` audit, toolkit, and behavior-eval references for evidence
+  levels, technology decisions, autonomy boundaries, and state-separated
+  reporting.
+
+### Changed
+
+- Reframed `musavir` as an evidence-based technology and capability advisor. It
+  now separates `KEEP`, `ADD`, `LATER`, `REPLACE`, and `REJECT` decisions from
+  installation, commit, push, release, and live-state claims.
+- Updated the public skill catalog and Blueprint so capability-audit behavior is
+  part of Divan's documented product contract.
+
+### Verification
+
+- Added scorer unit tests for valid ledgers, malformed JSON, duplicate IDs,
+  unsupported statuses, invalid IDs, invalid evidence, and traceback-free
+  failures.
+- Added three `musavir` contract evals. They protect against fake AI-IQ scores,
+  conflicting stack dumps, and over-broad autonomous installation or publishing.
+
 ## [1.2.0] - 2026-08-01
 
 ### Added

@@ -46,7 +46,7 @@ Toplam **42 skill**, **5 paket**.
 | Skill / Beceri | Ne yapar / ne zaman |
 |---|---|
 | **defterdar** | Persistent project memory keeper for the USER's project (Ottoman treasurer-scribe). Creates and maintains AGENTS.md, BLUEPRINT.md (vision, ADR decision records, roadmap, status log), a .divan/ progress journal, decision records and a… |
-| **musavir** | Technology stack advisor (counselor vizier). Recommends the current world-standard stack by project type - landing page, SaaS, e-commerce, mobile, AI app, fintech/borsa - covering framework, database, ORM, auth, payments and hosting, each… |
+| **musavir** | Evidence-based technology and capability advisor. Use when the user asks which stack or database to choose, how to modernize an existing project, what tools would help, whether Divan or the current session is missing capabilities, asks… |
 | **ordu-nizami** | Native-first agent orchestration for Claude Code and Codex. Use when a task may benefit from subagents, parallel research, isolated worktrees, dynamic agent workflows, or experimental Agent Teams, and when the user asks for orchestration,… |
 | **sadrazam** | End-to-end delivery orchestrator (the "Grand Vizier"). Use whenever the user asks to build, create, produce, or ship anything substantial — a feature, an app, a document, a campaign — especially with phrases like "baştan sona", "hepsini… |
 | **vezir-yetistirme** | Skill-creation and evaluation coach for the Divan marketplace ("training a new vizier"). Use when the user wants to add, improve, benchmark or test a skill, write a SKILL.md, contribute to the marketplace, compare skill-enabled behavior… |
