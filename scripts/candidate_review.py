@@ -11,6 +11,7 @@ import os
 import pathlib
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
@@ -79,6 +80,19 @@ def _karar_durumunu_denetle(aday: dict, onek: str) -> None:
         raise ValueError(f"{onek}.execution_review geçersiz")
 
 
+def _lisans_kaniti_kanonik_mi(aday: dict) -> bool:
+    repo = urllib.parse.urlparse(aday["canonical_url"])
+    kanit = urllib.parse.urlparse(aday["license"]["evidence_url"])
+    if kanit.scheme != "https" or kanit.netloc.casefold() != "github.com":
+        return False
+    repo_yolu = repo.path.rstrip("/").casefold()
+    pin = aday["reviewed_head"].casefold()
+    kanit_yolu = kanit.path.rstrip("/").casefold()
+    return kanit_yolu == f"{repo_yolu}/tree/{pin}" or kanit_yolu.startswith(
+        f"{repo_yolu}/blob/{pin}/"
+    )
+
+
 def _immutable_kaniti_denetle(aday: dict, kanitlar: list[str], onek: str) -> None:
     if aday["decision"] == "PENDING":
         return
@@ -87,6 +101,8 @@ def _immutable_kaniti_denetle(aday: dict, kanitlar: list[str], onek: str) -> Non
         raise ValueError(f"{onek}.reviewed_head 40 haneli commit olmalı")
     if not any(reviewed_head in kanit for kanit in kanitlar):
         raise ValueError(f"{onek}.reviewed_head immutable kanıtlara bağlanmalı")
+    if not _lisans_kaniti_kanonik_mi(aday):
+        raise ValueError(f"{onek}: lisans kanıtı kanonik repo ve commit'e bağlanmalı")
 
 
 def _lisans_ve_kanitlari_denetle(aday: dict, onek: str) -> None:
@@ -137,13 +153,26 @@ def denetle(veri: dict) -> list[dict]:
     return adaylar
 
 
-def _github_istegi(url: str) -> urllib.request.Request:
+class _YonlendirmeYasak(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise urllib.error.HTTPError(newurl, code, "redirect rejected", headers, fp)
+
+
+def _guvenli_ac(request: urllib.request.Request, *, timeout: int):
+    return urllib.request.build_opener(_YonlendirmeYasak()).open(
+        request, timeout=timeout
+    )
+
+
+def _github_istegi(
+    url: str, *, kimlik_dogrula: bool = False
+) -> urllib.request.Request:
     basliklar = {
         "Accept": "application/vnd.github+json",
         "User-Agent": "divan-candidate-review/1",
     }
     token = os.environ.get("GITHUB_TOKEN", "").strip()
-    if token:
+    if token and kimlik_dogrula:
         basliklar["Authorization"] = f"Bearer {token}"
     return urllib.request.Request(url, headers=basliklar)
 
@@ -151,7 +180,7 @@ def _github_istegi(url: str) -> urllib.request.Request:
 def uzak_kanitlari_denetle(
     veri: dict,
     *,
-    opener=urllib.request.urlopen,
+    opener=None,
     timeout: int = 15,
 ) -> int:
     """Final Meclis kararlarının commit ve lisans URL'lerini GitHub'da çöz."""
@@ -165,12 +194,14 @@ def uzak_kanitlari_denetle(
             f"https://api.github.com/repos/{repo_yolu}/commits/"
             f"{aday['reviewed_head']}"
         )
-        for etiket, url in (
-            ("GitHub commit", commit_url),
-            ("lisans URL", aday["license"]["evidence_url"]),
+        ac = opener or _guvenli_ac
+        for etiket, url, kimlik_dogrula in (
+            ("GitHub commit", commit_url, True),
+            ("lisans URL", aday["license"]["evidence_url"], False),
         ):
             try:
-                with opener(_github_istegi(url), timeout=timeout) as yanit:
+                istek = _github_istegi(url, kimlik_dogrula=kimlik_dogrula)
+                with ac(istek, timeout=timeout) as yanit:
                     if getattr(yanit, "status", 200) != 200:
                         raise ValueError(f"HTTP {yanit.status}")
             except (OSError, urllib.error.URLError, ValueError) as hata:

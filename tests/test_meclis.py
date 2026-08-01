@@ -105,6 +105,15 @@ class MeclisTesti(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "reviewed_head.*kanıtlara bağlanmalı"):
             MECLIS.denetle(veri)
 
+    def test_license_evidence_cannot_leave_the_pinned_canonical_repository(self):
+        veri = copy.deepcopy(MECLIS.oku(KOK))
+        aday = veri["candidates"][0]
+        dis_url = f"https://attacker.example/{aday['reviewed_head']}"
+        aday["license"]["evidence_url"] = dis_url
+        aday["evidence"].append(dis_url)
+        with self.assertRaisesRegex(ValueError, "lisans kanıtı.*kanonik repo"):
+            MECLIS.denetle(veri)
+
     def test_remote_resolution_rejects_missing_commit(self):
         veri = copy.deepcopy(MECLIS.oku(KOK))
         veri["candidates"] = [veri["candidates"][0]]
@@ -120,7 +129,7 @@ class MeclisTesti(unittest.TestCase):
     def test_remote_resolution_checks_commit_and_license_url(self):
         veri = copy.deepcopy(MECLIS.oku(KOK))
         veri["candidates"] = [veri["candidates"][0]]
-        urls = []
+        istekler = []
 
         class Response:
             status = 200
@@ -132,15 +141,38 @@ class MeclisTesti(unittest.TestCase):
                 return False
 
         def opener(request, timeout):
-            urls.append(request.full_url)
+            istekler.append(request)
             return Response()
 
         with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "test-token"}):
             resolved = MECLIS.uzak_kanitlari_denetle(veri, opener=opener)
         self.assertEqual(resolved, 1)
-        self.assertEqual(len(urls), 2)
-        self.assertIn("api.github.com/repos/", urls[0])
-        self.assertEqual(urls[1], veri["candidates"][0]["license"]["evidence_url"])
+        self.assertEqual(len(istekler), 2)
+        self.assertIn("api.github.com/repos/", istekler[0].full_url)
+        self.assertEqual(
+            istekler[0].get_header("Authorization"), "Bearer test-token"
+        )
+        self.assertEqual(
+            istekler[1].full_url,
+            veri["candidates"][0]["license"]["evidence_url"],
+        )
+        self.assertIsNone(istekler[1].get_header("Authorization"))
+
+    def test_authenticated_github_request_rejects_redirects(self):
+        handler = MECLIS._YonlendirmeYasak()
+        request = MECLIS._github_istegi(
+            "https://api.github.com/repos/example/repo/commits/" + "a" * 40,
+            kimlik_dogrula=True,
+        )
+        with self.assertRaises(urllib.error.HTTPError):
+            handler.redirect_request(
+                request,
+                None,
+                302,
+                "Found",
+                {},
+                "https://attacker.example/token",
+            )
 
     def test_candidate_workflow_resolves_remote_provenance(self):
         workflow = (
