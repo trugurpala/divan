@@ -126,11 +126,10 @@ def _prose_source(path: pathlib.Path, text: str) -> str:
     )
 
 
-def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding], list[Finding]]:
-    text = path.read_text(encoding="utf-8")
-    prose = _prose_source(path, text)
+def _mechanical_errors(
+    root: pathlib.Path, path: pathlib.Path, prose: str
+) -> list[Finding]:
     errors: list[Finding] = []
-    warnings: list[Finding] = []
     hard_rules = [
         (MOJIBAKE, "MOJIBAKE", "text contains likely UTF-8 corruption"),
         (MISSPELLINGS, "TR_SPELLING", "text contains a known unambiguous Turkish spelling error"),
@@ -143,11 +142,24 @@ def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding]
     for pattern, code, message in hard_rules:
         for match in pattern.finditer(prose):
             errors.append(_finding("error", code, path, root, prose, match, message))
-    if path.suffix.casefold() == ".md":
-        for match in MARKDOWN_LINK.finditer(text):
-            message = _relative_link_error(root, path, match.group(1))
-            if message:
-                errors.append(_finding("error", "BROKEN_LINK", path, root, text, match, message))
+    return errors
+
+
+def _markdown_errors(
+    root: pathlib.Path, path: pathlib.Path, text: str
+) -> list[Finding]:
+    errors: list[Finding] = []
+    if path.suffix.casefold() != ".md":
+        return errors
+    for match in MARKDOWN_LINK.finditer(text):
+        message = _relative_link_error(root, path, match.group(1))
+        if message:
+            errors.append(_finding("error", "BROKEN_LINK", path, root, text, match, message))
+    return errors
+
+
+def _style_warnings(root: pathlib.Path, path: pathlib.Path, prose: str) -> list[Finding]:
+    warnings: list[Finding] = []
     for line_number, line in _visible_lines(prose):
         if len(line) > 600:
             warnings.append(Finding("warning", "LONG_PARAGRAPH", path.relative_to(root).as_posix(), line_number, "paragraph is too long for quick reading"))
@@ -169,7 +181,15 @@ def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding]
             warnings.append(Finding("warning", "PASSIVE_VOICE", path.relative_to(root).as_posix(), line_number, "prefer a direct active sentence"))
         if len(TECHNICAL_DENSITY.findall(line)) >= 4:
             warnings.append(Finding("warning", "TERM_DENSITY", path.relative_to(root).as_posix(), line_number, "explain dense technical terms in plain language"))
-    return errors, warnings
+    return warnings
+
+
+def _inspect_file(root: pathlib.Path, path: pathlib.Path) -> tuple[list[Finding], list[Finding]]:
+    text = path.read_text(encoding="utf-8")
+    prose = _prose_source(path, text)
+    errors = _mechanical_errors(root, path, prose)
+    errors.extend(_markdown_errors(root, path, text))
+    return errors, _style_warnings(root, path, prose)
 
 
 def _repository_contract_errors(root: pathlib.Path) -> list[Finding]:

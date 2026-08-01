@@ -30,7 +30,6 @@
     {"kind": "complexity", "target": "scripts/host_marketplaces.py:check", "value": 11},
     {"kind": "complexity", "target": "scripts/host_lifecycle.py:_verify_host", "value": 12},
     {"kind": "complexity", "target": "scripts/legacy_state.py:recover_legacy", "value": 24},
-    {"kind": "complexity", "target": "scripts/upstream_watch.py:baseline_errors", "value": 15},
     {"kind": "complexity", "target": "scripts/upstream_watch.py:denetle", "value": 13},
     {"kind": "complexity", "target": "scripts/v1.py:_validate_provenance", "value": 11},
     {"kind": "complexity", "target": "scripts/v1.py:oku", "value": 14},

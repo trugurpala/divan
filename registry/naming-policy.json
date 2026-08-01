@@ -32,6 +32,7 @@
     "scripts/hygiene.py",
     "scripts/handoff.py",
     "scripts/candidate_review.py",
+    "scripts/upstream_baseline.py",
     "scripts/upstream_watch.py",
     "scripts/upstream_issue_policy.py",
     "scripts/install_codex.ps1",

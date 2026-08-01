@@ -3,10 +3,18 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import sys
 import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+BASELINE_SPEC = importlib.util.spec_from_file_location(
+    "upstream_baseline", ROOT / "scripts" / "upstream_baseline.py"
+)
+assert BASELINE_SPEC and BASELINE_SPEC.loader
+BASELINE = importlib.util.module_from_spec(BASELINE_SPEC)
+sys.modules["upstream_baseline"] = BASELINE
+BASELINE_SPEC.loader.exec_module(BASELINE)
 SPEC = importlib.util.spec_from_file_location(
     "divan_upstream", ROOT / "scripts" / "upstream_watch.py"
 )
@@ -23,7 +31,7 @@ class UpstreamGovernanceTests(unittest.TestCase):
             crlf = root / "crlf.md"
             lf.write_bytes(b"one\ntwo\n")
             crlf.write_bytes(b"one\r\ntwo\r\n")
-            self.assertEqual(UPSTREAM.sha256(lf), UPSTREAM.sha256(crlf))
+            self.assertEqual(BASELINE.sha256(lf), BASELINE.sha256(crlf))
 
     def test_tree_inventory_uses_platform_independent_paths(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-upstream-") as temporary:
@@ -131,7 +139,7 @@ class UpstreamGovernanceTests(unittest.TestCase):
             "decision": "PENDING",
             "local_tree_sha256": "not-a-hash",
         }
-        errors = UPSTREAM.review_errors(invalid)
+        errors = BASELINE.review_errors(invalid)
 
         self.assertTrue(any("reviewed_head" in error for error in errors))
         self.assertTrue(any("decision" in error for error in errors))

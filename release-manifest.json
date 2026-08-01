@@ -219,6 +219,7 @@
     {"id": "maintainers", "path": "MAINTAINERS.md", "marker": "# Divan Maintainers", "replace_version": false},
     {"id": "roadmap", "path": "ROADMAP.md", "marker": "# Divan Roadmap", "replace_version": false},
     {"id": "release-guide", "path": "RELEASE.md", "marker": "# Divan Release Guide", "replace_version": false},
+    {"id": "upstream-baseline-validator", "path": "scripts/upstream_baseline.py", "marker": "def baseline_errors(", "replace_version": false},
     {"id": "upstream-watch-controller", "path": "scripts/upstream_watch.py", "marker": "def render_report(", "replace_version": false},
     {"id": "upstream-issue-policy", "path": "scripts/upstream_issue_policy.py", "marker": "def decide(", "replace_version": false},
     {"id": "upstream-watch-workflow", "path": ".github/workflows/upstream-watch.yml", "marker": "issues.listForRepo", "replace_version": false},
