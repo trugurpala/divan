@@ -98,15 +98,17 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.0.3 ✓** Kullanıcı dostu kontrol düzlemi yayın adayı: sağlıklı doctor
+- **v1.0.3 ✓** Yayımlanan kullanıcı dostu kontrol düzlemi: sağlıklı doctor
   yeniden kurulum önermez; ilk kurulum, günlük doğal dil fermanı ve
   bakım/kurtarma açıkça ayrılır. Codex için doğrulanmış yaşam döngüsü repo
   kanıtının çalıştırdığı CLI yüzeyiyle sınırlıdır; Desktop, IDE extension ve
   mobil ayrı canary oluşana kadar dışarıda kalır. Bozuk host registry değerleri
   doğrulayıcıyı çökertmez ve geçersiz terminal günlüğü boş yönlendirme yerine
   tam kurtarma komutu üretir. Güvenlik, checksum, dry-run, transaction ve
-  release kanıt kapıları gevşetilmedi; v1.0.2 etiketi ile varlıkları değişmez
-  kaldı.
+  release kanıt kapıları gevşetilmedi. PR #82
+  `ce0c87103a1e96f62ccabdf63dc6df9ee9b195fb` commit'inde birleşti; değişmez
+  v1.0.3 tag/Release'i, yedi varlık, checksumlar, SBOM, attestations ve gerçek
+  Windows/Codex CLI yükseltme geri-okuması doğrulandı.
 
 - **v1.0.2 ✓** Published quiet-discovery release: Seyir'in bekleme açıklaması ve Divan
   Engine'in sessiz workspace keşfi aynı kullanıcı-dostu hatta bağlandı.
@@ -537,6 +539,6 @@ yükseltmesiyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Keep v1.0.2 immutable. Next exact action: define the next bounded product slice
-from live user friction, open a fresh branch, and run it through the same
-evidence chain without changing the v1.0.2 tag or release assets.
+Keep v1.0.3 immutable. Next exact action: collect real post-release usage
+friction, define one bounded product slice, and run it through the same
+evidence chain without changing the v1.0.3 tag or release assets.
