@@ -7,14 +7,18 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import pathlib
 import re
+import urllib.error
+import urllib.request
 
 KOK = pathlib.Path(__file__).resolve().parent.parent
 DEFTER = KOK / "registry" / "candidates.json"
 KATALOG = KOK / "docs" / "Aday-Meclisi.md"
 ID_DESENI = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 GITHUB_DESENI = re.compile(r"^https://github\.com/[^/\s]+/[^/\s]+$")
+SHA_DESENI = re.compile(r"^[0-9a-f]{40}$")
 TIPLER = {"skill-plugin", "registry-index", "framework-library", "app-template", "standard-research"}
 KARARLAR = {"PENDING", "ADOPT", "ADAPT", "REFERENCE", "REJECT"}
 DURUMLAR = {"new", "triage", "audit", "accepted", "adapted", "reference", "rejected"}
@@ -98,9 +102,59 @@ def denetle(veri: dict) -> list[dict]:
             raise ValueError(f"{onek}: son karar en az iki kanıt ister")
         if lisans["evidence_url"] not in kanitlar:
             raise ValueError(f"{onek}: lisans kanıtı evidence içinde olmalı")
+        if aday["decision"] != "PENDING":
+            reviewed_head = aday.get("reviewed_head")
+            if not isinstance(reviewed_head, str) or not SHA_DESENI.fullmatch(reviewed_head):
+                raise ValueError(f"{onek}.reviewed_head 40 haneli commit olmalı")
+            if not any(reviewed_head in kanit for kanit in kanitlar):
+                raise ValueError(f"{onek}.reviewed_head immutable kanıtlara bağlanmalı")
         tarih(aday.get("observed_at"), f"{onek}.observed_at")
         tarih(aday.get("next_review"), f"{onek}.next_review")
     return adaylar
+
+
+def _github_istegi(url: str) -> urllib.request.Request:
+    basliklar = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "divan-candidate-review/1",
+    }
+    token = os.environ.get("GITHUB_TOKEN", "").strip()
+    if token:
+        basliklar["Authorization"] = f"Bearer {token}"
+    return urllib.request.Request(url, headers=basliklar)
+
+
+def uzak_kanitlari_denetle(
+    veri: dict,
+    *,
+    opener=urllib.request.urlopen,
+    timeout: int = 15,
+) -> int:
+    """Final Meclis kararlarının commit ve lisans URL'lerini GitHub'da çöz."""
+    adaylar = denetle(veri)
+    sayi = 0
+    for aday in adaylar:
+        if aday["decision"] == "PENDING":
+            continue
+        repo_yolu = aday["canonical_url"].removeprefix("https://github.com/")
+        commit_url = (
+            f"https://api.github.com/repos/{repo_yolu}/commits/"
+            f"{aday['reviewed_head']}"
+        )
+        for etiket, url in (
+            ("GitHub commit", commit_url),
+            ("lisans URL", aday["license"]["evidence_url"]),
+        ):
+            try:
+                with opener(_github_istegi(url), timeout=timeout) as yanit:
+                    if getattr(yanit, "status", 200) != 200:
+                        raise ValueError(f"HTTP {yanit.status}")
+            except (OSError, urllib.error.URLError, ValueError) as hata:
+                raise ValueError(
+                    f"{aday['id']}: {etiket} kanıtı çözümlenemedi: {url}"
+                ) from hata
+        sayi += 1
+    return sayi
 
 
 def katalog_uret(veri: dict) -> str:
@@ -148,8 +202,13 @@ def ana() -> int:
     kip = ayrac.add_mutually_exclusive_group(required=True)
     kip.add_argument("--check", action="store_true")
     kip.add_argument("--render", action="store_true")
+    kip.add_argument("--resolve", action="store_true")
     secim = ayrac.parse_args()
     veri = oku()
+    if secim.resolve:
+        sayi = uzak_kanitlari_denetle(veri)
+        print(json.dumps({"status": "resolved", "candidate_count": sayi}, ensure_ascii=False))
+        return 0
     beklenen = katalog_uret(veri)
     if secim.render:
         KATALOG.write_text(beklenen, encoding="utf-8", newline="\n")

@@ -60,6 +60,24 @@ class VibeUxCouncilTests(unittest.TestCase):
         self.assertIn("`product-design-audit`", licenses)
         self.assertIn("repository root MIT license", licenses)
 
+    def test_public_eval_counts_match_the_candidate_contract(self) -> None:
+        english = (ROOT / "README.md").read_text(encoding="utf-8")
+        alias = (ROOT / "README.en.md").read_text(encoding="utf-8")
+        turkish = (ROOT / "README.tr.md").read_text(encoding="utf-8")
+        self.assertEqual(english, alias)
+        self.assertIn("five original skills provide 16 behavioral cases", english)
+        self.assertIn("5 özgün skill için 16 davranış vakası", turkish)
+
+    def test_published_history_keeps_the_41_skill_truth(self) -> None:
+        blueprint = (ROOT / "BLUEPRINT.md").read_text(encoding="utf-8")
+        status = (ROOT / "docs" / "Durum-ve-Yol-Haritasi.md").read_text(
+            encoding="utf-8"
+        )
+        for historical in ("v0.9.0 ✓** 41 skill", "v0.10.3 ✓** 41 skill"):
+            self.assertIn(historical, blueprint)
+        self.assertIn("5 paket ve 41 beceri", status)
+        self.assertIn("v1.1.0 adayı", status)
+
 
 if __name__ == "__main__":
     unittest.main()

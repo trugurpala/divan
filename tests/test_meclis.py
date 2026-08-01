@@ -2,6 +2,8 @@ import copy
 import importlib.util
 import pathlib
 import unittest
+import urllib.error
+from unittest import mock
 
 KOK = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
@@ -95,6 +97,57 @@ class MeclisTesti(unittest.TestCase):
         aday["license"]["spdx"] = "UNKNOWN"
         with self.assertRaisesRegex(ValueError, "lisansı belirsiz"):
             MECLIS.denetle(veri)
+
+    def test_reviewed_head_and_license_evidence_are_bound(self):
+        veri = copy.deepcopy(MECLIS.oku(KOK))
+        aday = veri["candidates"][0]
+        aday["reviewed_head"] = "0" * 40
+        with self.assertRaisesRegex(ValueError, "reviewed_head.*kanıtlara bağlanmalı"):
+            MECLIS.denetle(veri)
+
+    def test_remote_resolution_rejects_missing_commit(self):
+        veri = copy.deepcopy(MECLIS.oku(KOK))
+        veri["candidates"] = [veri["candidates"][0]]
+
+        def opener(request, timeout):
+            raise urllib.error.HTTPError(
+                request.full_url, 422, "No commit found", {}, None
+            )
+
+        with self.assertRaisesRegex(ValueError, "GitHub commit kanıtı çözümlenemedi"):
+            MECLIS.uzak_kanitlari_denetle(veri, opener=opener)
+
+    def test_remote_resolution_checks_commit_and_license_url(self):
+        veri = copy.deepcopy(MECLIS.oku(KOK))
+        veri["candidates"] = [veri["candidates"][0]]
+        urls = []
+
+        class Response:
+            status = 200
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+        def opener(request, timeout):
+            urls.append(request.full_url)
+            return Response()
+
+        with mock.patch.dict("os.environ", {"GITHUB_TOKEN": "test-token"}):
+            resolved = MECLIS.uzak_kanitlari_denetle(veri, opener=opener)
+        self.assertEqual(resolved, 1)
+        self.assertEqual(len(urls), 2)
+        self.assertIn("api.github.com/repos/", urls[0])
+        self.assertEqual(urls[1], veri["candidates"][0]["license"]["evidence_url"])
+
+    def test_candidate_workflow_resolves_remote_provenance(self):
+        workflow = (
+            KOK / ".github" / "workflows" / "candidate-review.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("python scripts/candidate_review.py --resolve", workflow)
+        self.assertIn("GITHUB_TOKEN: ${{ github.token }}", workflow)
 
     def test_katalog_defterden_ayrilmiyor(self):
         beklenen = MECLIS.katalog_uret(MECLIS.oku(KOK))

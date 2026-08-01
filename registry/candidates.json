@@ -10,18 +10,19 @@
       "status": "reference",
       "decision": "REFERENCE",
       "user_gap": "MCP ekosistemi keşfi ve topluluk ölçekli aday kabul akışı",
+      "reviewed_head": "375407c7290dd99d305938983f37adffa9d44275",
       "license": {
         "spdx": "MIT",
-        "evidence_url": "https://github.com/punkpeye/awesome-mcp-servers/blob/main/LICENSE",
+        "evidence_url": "https://github.com/punkpeye/awesome-mcp-servers/blob/375407c7290dd99d305938983f37adffa9d44275/LICENSE",
         "scope_note": "MIT yalnız indeks deposunu kapsar; listelenen her sunucunun lisansı ayrıca denetlenir."
       },
       "execution_review": "metadata-only",
       "risk_notes": "Yaklaşık üç bin bağlantılık bir indeks; Glama puanı lisans, kod güvenliği veya Divan ürün uyumu yerine geçmez.",
       "evidence": [
         "https://github.com/punkpeye/awesome-mcp-servers",
-        "https://github.com/punkpeye/awesome-mcp-servers/blob/main/CONTRIBUTING.md",
-        "https://github.com/punkpeye/awesome-mcp-servers/blob/main/.github/workflows/check-glama.yml",
-        "https://github.com/punkpeye/awesome-mcp-servers/blob/main/LICENSE"
+        "https://github.com/punkpeye/awesome-mcp-servers/blob/375407c7290dd99d305938983f37adffa9d44275/CONTRIBUTING.md",
+        "https://github.com/punkpeye/awesome-mcp-servers/blob/375407c7290dd99d305938983f37adffa9d44275/.github/workflows/check-glama.yml",
+        "https://github.com/punkpeye/awesome-mcp-servers/blob/375407c7290dd99d305938983f37adffa9d44275/LICENSE"
       ],
       "observed_at": "2026-07-18",
       "next_review": "2026-10-18",
@@ -355,58 +356,58 @@
     },
     {
       "id": "ibelick-ui-skills", "name": "UI Skills", "canonical_url": "https://github.com/ibelick/ui-skills", "type": "skill-plugin", "status": "adapted", "decision": "ADAPT",
-      "user_gap": "Accessible interface baselines and reusable UI review routines.", "reviewed_head": "ac5edc7ac29a84e2ff70bf2bf612b2a5523f17f4",
-      "license": {"spdx": "MIT", "evidence_url": "https://github.com/ibelick/ui-skills/blob/ac5edc7ac29a84e2ff70bf2bf612b2a5523f17f4/LICENSE", "scope_note": "MIT verified at the reviewed commit; no source is copied by this record."},
+      "user_gap": "Accessible interface baselines and reusable UI review routines.", "reviewed_head": "ac5edc7ff5c615e9f4c90e704eecbddb27c09010",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/ibelick/ui-skills/blob/ac5edc7ff5c615e9f4c90e704eecbddb27c09010/LICENSE", "scope_note": "MIT verified at the reviewed commit; no source is copied by this record."},
       "execution_review": "metadata-only", "risk_notes": "Overlap with Divan UI skills requires clean-room consolidation, not bulk installation.",
-      "evidence": ["https://github.com/ibelick/ui-skills", "https://github.com/ibelick/ui-skills/blob/ac5edc7ac29a84e2ff70bf2bf612b2a5523f17f4/LICENSE"],
+      "evidence": ["https://github.com/ibelick/ui-skills", "https://github.com/ibelick/ui-skills/blob/ac5edc7ff5c615e9f4c90e704eecbddb27c09010/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "ADAPT: use the small, task-specific audit idea while preserving Divan's evidence and authority rules."
     },
     {
       "id": "addyosmani-agent-skills", "name": "Addy Osmani Agent Skills", "canonical_url": "https://github.com/addyosmani/agent-skills", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "Frontend engineering review patterns for production interfaces.", "reviewed_head": "7829ffd8e190167e7bb62f68c8a67610c7b68982",
-      "license": {"spdx": "MIT", "evidence_url": "https://github.com/addyosmani/agent-skills/blob/7829ffd8e190167e7bb62f68c8a67610c7b68982/LICENSE", "scope_note": "MIT verified at the reviewed commit; reference only."},
+      "user_gap": "Frontend engineering review patterns for production interfaces.", "reviewed_head": "7829ffd90d973b6325f5f12f1b1226dcace74443",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/addyosmani/agent-skills/blob/7829ffd90d973b6325f5f12f1b1226dcace74443/LICENSE", "scope_note": "MIT verified at the reviewed commit; reference only."},
       "execution_review": "metadata-only", "risk_notes": "Broad frontend scope overlaps existing React and UI packs.",
-      "evidence": ["https://github.com/addyosmani/agent-skills", "https://github.com/addyosmani/agent-skills/blob/7829ffd8e190167e7bb62f68c8a67610c7b68982/LICENSE"],
+      "evidence": ["https://github.com/addyosmani/agent-skills", "https://github.com/addyosmani/agent-skills/blob/7829ffd90d973b6325f5f12f1b1226dcace74443/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: compare coverage before adding any new frontend surface."
     },
     {
       "id": "emilkowalski-skills", "name": "Emil Kowalski Skills", "canonical_url": "https://github.com/emilkowalski/skills", "type": "skill-plugin", "status": "adapted", "decision": "ADAPT",
-      "user_gap": "Interaction and motion critique grounded in product behavior.", "reviewed_head": "70744e39abb36cd71a276ffab4c110e05d61037f",
-      "license": {"spdx": "MIT", "evidence_url": "https://github.com/emilkowalski/skills/blob/70744e39abb36cd71a276ffab4c110e05d61037f/LICENSE", "scope_note": "MIT verified at the reviewed commit; no prompt text is redistributed."},
+      "user_gap": "Interaction and motion critique grounded in product behavior.", "reviewed_head": "70744e3816f1d93eafb697161a8b880a7384c5ff",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/emilkowalski/skills/blob/70744e3816f1d93eafb697161a8b880a7384c5ff/LICENSE", "scope_note": "MIT verified at the reviewed commit; no prompt text is redistributed."},
       "execution_review": "metadata-only", "risk_notes": "Motion advice must preserve reduced-motion and performance constraints.",
-      "evidence": ["https://github.com/emilkowalski/skills", "https://github.com/emilkowalski/skills/blob/70744e39abb36cd71a276ffab4c110e05d61037f/LICENSE"],
+      "evidence": ["https://github.com/emilkowalski/skills", "https://github.com/emilkowalski/skills/blob/70744e3816f1d93eafb697161a8b880a7384c5ff/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "ADAPT: interaction critique is a real gap; implementation remains original and accessibility-first."
     },
     {
       "id": "ehmo-platform-design-skills", "name": "Platform Design Skills", "canonical_url": "https://github.com/ehmo/platform-design-skills", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "Cross-platform interface design guidance.", "reviewed_head": "dc2be82d9296834318656bce84ac4bdad02d38f8",
-      "license": {"spdx": "MIT", "evidence_url": "https://github.com/ehmo/platform-design-skills/blob/dc2be82d9296834318656bce84ac4bdad02d38f8/LICENSE", "scope_note": "MIT verified at the reviewed commit; reference only."},
+      "user_gap": "Cross-platform interface design guidance.", "reviewed_head": "dc2be825d8b439caea78e9eaa8fb3ac23b0ff3e9",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/ehmo/platform-design-skills/blob/dc2be825d8b439caea78e9eaa8fb3ac23b0ff3e9/LICENSE", "scope_note": "MIT verified at the reviewed commit; reference only."},
       "execution_review": "metadata-only", "risk_notes": "Platform breadth is larger than Divan's current web-first evidence path.",
-      "evidence": ["https://github.com/ehmo/platform-design-skills", "https://github.com/ehmo/platform-design-skills/blob/dc2be82d9296834318656bce84ac4bdad02d38f8/LICENSE"],
+      "evidence": ["https://github.com/ehmo/platform-design-skills", "https://github.com/ehmo/platform-design-skills/blob/dc2be825d8b439caea78e9eaa8fb3ac23b0ff3e9/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: retain as a comparison source until a platform-specific user case exists."
     },
     {
       "id": "raintree-hig-doctor", "name": "HIG Doctor", "canonical_url": "https://github.com/raintree-technology/hig-doctor", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "Apple Human Interface Guidelines audit coverage.", "reviewed_head": "0fe06840b42777390485153e22e58e58c62ce397",
-      "license": {"spdx": "MIT", "evidence_url": "https://github.com/raintree-technology/hig-doctor/blob/0fe06840b42777390485153e22e58e58c62ce397/LICENSE", "scope_note": "MIT verified at the reviewed commit; Apple guidance remains platform-specific."},
+      "user_gap": "Apple Human Interface Guidelines audit coverage.", "reviewed_head": "0fe0684f3d080c8572a8f9bc590b3e32ea378afb",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/raintree-technology/hig-doctor/blob/0fe0684f3d080c8572a8f9bc590b3e32ea378afb/LICENSE", "scope_note": "The repository skill files use MIT; referenced Apple guidance remains Apple's intellectual property and is not redistributed."},
       "execution_review": "metadata-only", "risk_notes": "Fourteen platform-specific skills would add substantial catalog weight.",
-      "evidence": ["https://github.com/raintree-technology/hig-doctor", "https://github.com/raintree-technology/hig-doctor/blob/0fe06840b42777390485153e22e58e58c62ce397/LICENSE"],
+      "evidence": ["https://github.com/raintree-technology/hig-doctor", "https://github.com/raintree-technology/hig-doctor/blob/0fe0684f3d080c8572a8f9bc590b3e32ea378afb/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: use only when a real Apple-platform project justifies the added surface."
     },
     {
       "id": "meodai-color-expert", "name": "Color Expert Skill", "canonical_url": "https://github.com/meodai/skill.color-expert", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "Color-system and contrast expertise.", "reviewed_head": "00ba5c6572040da7bc0bd0e3969a9c40c13f752a",
-      "license": {"spdx": "CC-BY-4.0", "evidence_url": "https://github.com/meodai/skill.color-expert/blob/00ba5c6572040da7bc0bd0e3969a9c40c13f752a/LICENSE", "scope_note": "CC-BY-4.0 verified; attribution and very large reference content make redistribution unsuitable here."},
+      "user_gap": "Color-system and contrast expertise.", "reviewed_head": "00ba5c6850b7277dfe6b061c636c68ef7977afc4",
+      "license": {"spdx": "CC-BY-4.0", "evidence_url": "https://github.com/meodai/skill.color-expert/blob/00ba5c6850b7277dfe6b061c636c68ef7977afc4/LICENSE", "scope_note": "CC-BY-4.0 verified; attribution and very large reference content make redistribution unsuitable here."},
       "execution_review": "metadata-only", "risk_notes": "Large reference corpus creates context cost and attribution obligations.",
-      "evidence": ["https://github.com/meodai/skill.color-expert", "https://github.com/meodai/skill.color-expert/blob/00ba5c6572040da7bc0bd0e3969a9c40c13f752a/LICENSE"],
+      "evidence": ["https://github.com/meodai/skill.color-expert", "https://github.com/meodai/skill.color-expert/blob/00ba5c6850b7277dfe6b061c636c68ef7977afc4/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: consult for color research; do not vendor the corpus."
     },
     {
       "id": "microsoft-skills", "name": "Microsoft Skills", "canonical_url": "https://github.com/microsoft/skills", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "Frontend design-review patterns from a maintained multi-skill repository.", "reviewed_head": "4a2873f30d272347eeb6b57fdb8433bee1cb64b5",
-      "license": {"spdx": "MIT", "evidence_url": "https://github.com/microsoft/skills/blob/4a2873f30d272347eeb6b57fdb8433bee1cb64b5/LICENSE", "scope_note": "MIT verified at the reviewed commit; repository remains reference-only."},
+      "user_gap": "Frontend design-review patterns from a maintained multi-skill repository.", "reviewed_head": "4a2873faffc1b101a33a0b59c24713d4ed78142f",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/microsoft/skills/blob/4a2873faffc1b101a33a0b59c24713d4ed78142f/LICENSE", "scope_note": "MIT verified at the reviewed commit; repository remains reference-only."},
       "execution_review": "metadata-only", "risk_notes": "Multi-domain repository must be reviewed skill by skill before adoption.",
-      "evidence": ["https://github.com/microsoft/skills", "https://github.com/microsoft/skills/blob/4a2873f30d272347eeb6b57fdb8433bee1cb64b5/LICENSE"],
+      "evidence": ["https://github.com/microsoft/skills", "https://github.com/microsoft/skills/blob/4a2873faffc1b101a33a0b59c24713d4ed78142f/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: useful benchmark, but current Divan coverage already addresses the main user gap."
     },
     {
@@ -419,26 +420,26 @@
     },
     {
       "id": "google-stitch-skills", "name": "Stitch Skills", "canonical_url": "https://github.com/google-labs-code/stitch-skills", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "Design-system workflows around generated interfaces.", "reviewed_head": "535b08808afbc092c4540e5f1de8d5c044db17c2",
-      "license": {"spdx": "Apache-2.0", "evidence_url": "https://github.com/google-labs-code/stitch-skills/blob/535b08808afbc092c4540e5f1de8d5c044db17c2/LICENSE", "scope_note": "Apache-2.0 verified at the reviewed commit; provider-specific workflow remains optional."},
+      "user_gap": "Design-system workflows around generated interfaces.", "reviewed_head": "535b0889a46868c9b08f8a7f7084db3c1958a2b6",
+      "license": {"spdx": "Apache-2.0", "evidence_url": "https://github.com/google-labs-code/stitch-skills/blob/535b0889a46868c9b08f8a7f7084db3c1958a2b6/LICENSE", "scope_note": "Apache-2.0 verified at the reviewed commit; provider-specific workflow remains optional."},
       "execution_review": "metadata-only", "risk_notes": "Requires a provider workflow that is not part of Divan's default local path.",
-      "evidence": ["https://github.com/google-labs-code/stitch-skills", "https://github.com/google-labs-code/stitch-skills/blob/535b08808afbc092c4540e5f1de8d5c044db17c2/LICENSE"],
+      "evidence": ["https://github.com/google-labs-code/stitch-skills", "https://github.com/google-labs-code/stitch-skills/blob/535b0889a46868c9b08f8a7f7084db3c1958a2b6/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: revisit only if users request a Stitch provider integration."
     },
     {
       "id": "fabricioctelles-skills", "name": "Design System Skills", "canonical_url": "https://github.com/fabricioctelles/skills", "type": "skill-plugin", "status": "reference", "decision": "REFERENCE",
-      "user_gap": "DESIGN.md validation and design-system consistency workflows.", "reviewed_head": "799ce3a10a2d5f7b0ba81b2cf463eb4073acf2d4",
-      "license": {"spdx": "Apache-2.0", "evidence_url": "https://github.com/fabricioctelles/skills/blob/799ce3a10a2d5f7b0ba81b2cf463eb4073acf2d4/LICENSE", "scope_note": "Apache-2.0 verified at the reviewed commit; no content is copied."},
+      "user_gap": "DESIGN.md validation and design-system consistency workflows.", "reviewed_head": "799ce3a394288f2409d55183b8496d851033c532",
+      "license": {"spdx": "Apache-2.0", "evidence_url": "https://github.com/fabricioctelles/skills/blob/799ce3a394288f2409d55183b8496d851033c532/LICENSE", "scope_note": "Apache-2.0 verified at the reviewed commit; no content is copied."},
       "execution_review": "metadata-only", "risk_notes": "Design-system creation is a separate job from auditing an existing product.",
-      "evidence": ["https://github.com/fabricioctelles/skills", "https://github.com/fabricioctelles/skills/blob/799ce3a10a2d5f7b0ba81b2cf463eb4073acf2d4/LICENSE"],
+      "evidence": ["https://github.com/fabricioctelles/skills", "https://github.com/fabricioctelles/skills/blob/799ce3a394288f2409d55183b8496d851033c532/LICENSE"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REFERENCE: evaluate later as a bounded design-system feature, not as audit scope."
     },
     {
       "id": "ramzesenok-ios-accessibility", "name": "iOS Accessibility Audit Skill", "canonical_url": "https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill", "type": "skill-plugin", "status": "rejected", "decision": "REJECT",
-      "user_gap": "iOS accessibility audit guidance.", "reviewed_head": "8214fbf663b75186736972fc71bd0cbded3d9954",
-      "license": {"spdx": "UNKNOWN", "evidence_url": "https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill/tree/8214fbf663b75186736972fc71bd0cbded3d9954", "scope_note": "No LICENSE, COPYING, or NOTICE file was present at the reviewed commit."},
+      "user_gap": "iOS accessibility audit guidance.", "reviewed_head": "8214fbf61e3ab6ff71e880061bfb5ee581414fac",
+      "license": {"spdx": "UNKNOWN", "evidence_url": "https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill/tree/8214fbf61e3ab6ff71e880061bfb5ee581414fac", "scope_note": "No LICENSE, COPYING, or NOTICE file was present at the reviewed commit."},
       "execution_review": "metadata-only", "risk_notes": "Missing redistribution license blocks adoption or adaptation.",
-      "evidence": ["https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill", "https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill/tree/8214fbf663b75186736972fc71bd0cbded3d9954"],
+      "evidence": ["https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill", "https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill/tree/8214fbf61e3ab6ff71e880061bfb5ee581414fac"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REJECT: do not copy or install content without a verified license."
     }
   ]

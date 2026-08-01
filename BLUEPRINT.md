@@ -152,7 +152,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   `2f73e0514d97d4ec9597b3d313f20c82d7770b77` commit'inde birleşti. Değişmez
   tag/GitHub Release, yedi checksummed ve strict-attested varlık, SPDX SBOM,
   Windows/macOS/Linux temiz-host kapıları, Chromium, Pages ve Wiki doğrulandı.
-  Tek repo, beş modüler paket, 42 beceri, stdlib-only Divan Engine, Hükümdar
+  Tek repo, beş modüler paket, 41 beceri, stdlib-only Divan Engine, Hükümdar
   öncelikli Divan Nizamı ve Divan Proje Sözleşmesi kararlı ürün sınırıdır.
 - **v0.18.5 ✓** Published Windows trust fix: temiz-proje host sürüm probu,
   çalıştırılamayan uzantısız npm shim'i yerine çalışan `.cmd` veya `.exe`
@@ -185,7 +185,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   stdlib-only.
 - **v0.18.1 ✓** Published Codex Desktop auto-install release: explicit `auto`
   profile, safe CLI diagnosis, honest native/fallback capability boundary, and
-  checksum-backed 42-skill verification. PR #58, all nine main/publication
+  checksum-backed 41-skill verification. PR #58, all nine main/publication
   workflows, immutable tag/Release, five checksummed and SLSA-verified assets,
   SPDX 2.3 SBOM, and a remote Windows install/discovery/remove canary are bound
   in the v0.18.1 evidence. The canary preserved an unrelated skill and fallback
@@ -227,7 +227,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 - **v0.1–v0.7 ✓** 5 paket, 37 skill, landing, CI, hafıza, lisans/köken
   kayıtları, topluluk ve güvenlik dosyaları
-- **v0.9.0 ✓** 42 skill; yerel orkestrasyon, kanıtlı arama, bağlam disiplini,
+- **v0.9.0 ✓** 41 skill; yerel orkestrasyon, kanıtlı arama, bağlam disiplini,
   kaynak kürasyonu, İngilizce vitrin, CHANGELOG ve Yayın Kanunu
 - **v0.10.0 ✓** niyetten pakete/fermana giden etkileşimli vibe coder yüzeyi;
   4 skill/12 vaka için sağlayıcı-bağımsız, kör A/B davranış eval koşucusu
@@ -237,7 +237,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 - **v0.10.2 ✓** yapılandırılmış kaynak-adayı formu, makine-okunur Aday Meclisi,
   haftalık salt-okunur GitHub keşfi ve otomatik kurulum yapmayan
   PENDING→ADOPT/ADAPT/REFERENCE/REJECT yaşam döngüsü
-- **v0.10.3 ✓** 42 skill frontmatter'ından deterministik Vezir Kataloğu,
+- **v0.10.3 ✓** 41 skill frontmatter'ından deterministik Vezir Kataloğu,
   Wiki ilk-sayfa preflight'ı ve Node 24 tabanlı güncel GitHub Actions zinciri
 - **v0.11.0 ✓** tek komutlu yayın yüzeyi hazırlığı ve sapma kapısı; Pages +
   Wiki canlı eşliğinden sonra CHANGELOG kaynaklı otomatik tag/GitHub Release;
@@ -393,19 +393,19 @@ yükseltmesiyle doğrulanmıştır.
   published version. Asset bytes, attestations, canary, global-host delivery,
   and independent adoption were not inferred; v1 remains 7/8.
 - 2026-07-24: v0.16.0 adoption/drift scope was implemented test-first in the
-  isolated `codex/v016-adoption-drift` worktree. Existing 5 packages/42 skills
+  isolated `codex/v016-adoption-drift` worktree. Existing 5 packages/41 skills
   remain unchanged. Local preparation does not claim PR, merge, release,
   canary, Pages/Wiki, provenance, or dual-host delivery, and v1 stays 7/8.
 - 2026-07-24: v0.15.0 release surfaces were prepared only through the canonical
   `scripts/release.py --prepare 0.15.0` path after an approved whole-branch
   review. The preflight passed 452 tests (10 platform-specific skips), Ruff,
   mypy, Clean Code, and 71% branch coverage against the 64% floor. Five
-  packages/42 skills and v1 readiness at 7/8 are unchanged. No PR, merge, tag,
+  packages/41 skills and v1 readiness at 7/8 are unchanged. No PR, merge, tag,
   GitHub Release, Pages/Wiki publication, or global-host delivery claim is made
   by this local preparation record.
 - 2026-07-21: v0.13.0 local release candidate prepared after 223 tests (2
   platform-specific skips), Ruff, mypy, Clean Code, actionlint 1.7.10,
-  skills-ref 0.1.1 validation of 42 skills, and Claude Code 2.1.212 validation
+  skills-ref 0.1.1 validation of 41 skills, and Claude Code 2.1.212 validation
   of the marketplace plus five packages. The 1280x640 social preview is
   release-tracked and under 1 MB. No PR/main/ruleset/tag/Release/global-host
   claim is made yet; v1 remains 7/8.
@@ -433,7 +433,7 @@ yükseltmesiyle doğrulanmıştır.
   Rollback'in kendisi başarısız olursa korunan kurtarma yedeğinin tam yolu hata
   raporuna yazılır.
 - 2026-07-19: v0.12 kanıt zinciri adayı Windows/Codex kurulum sözleşmesini gerçek
-  PowerShell yaşam döngüsü testiyle eşitledi: 42 skill kuruldu, çakışan skill
+  PowerShell yaşam döngüsü testiyle eşitledi: 41 skill kuruldu, çakışan skill
   yedeklendi, kayıtla kaldırıldı ve kullanıcı dosyası geri yüklendi. Gerçek eval
   sonuçları artık redakte edilmiş ajan/hakem/sürüm/commit/ortam provenance'ını
   kamu sonucuna yazabiliyor; kör eşleme ayrı kalıyor ve `sk-` benzeri değerler

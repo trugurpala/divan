@@ -368,8 +368,8 @@ The latest example is the [40-repository source curation audit](reports/2026-07-
 ## Honest status
 
 Divan v1.0.3 is published after all eight machine-backed readiness gates passed.
-All 42 skills receive structural validation; four original skills provide 13
-behavioral cases and a provider-neutral A/B runner. The stable contract keeps
+All 42 skills receive structural validation; five original skills provide 16 behavioral cases
+and a provider-neutral A/B runner. The stable contract keeps
 one repository, five modular packages, the stdlib-only Divan Engine,
 owner-first Divan Nizamı governance, the installed Divan Project Contract, and
 Claude Code/Codex lifecycle support. v1.0.3 keeps the quieter project discovery

@@ -393,8 +393,8 @@ olursa olsun alınmaz — kararlar [UPSTREAM.md](UPSTREAM.md) tablosundadır.
 ## Dürüst durum
 
 Divan v1.0.3, makine destekli sekiz hazırlık kapısının tamamı geçtikten sonra
-yayımlandı. 42 becerinin tamamı yapısal olarak doğrulanır; 5 özgün skill için
-13 davranış vakası ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
+yayımlandı. 42 becerinin tamamı yapısal olarak doğrulanır; 5 özgün skill için 16 davranış vakası
+ve sağlayıcı-bağımsız A/B koşucusu vardır. Kararlı sözleşme;
 tek repo, beş modüler paket, stdlib-only Divan Engine, Hükümdar öncelikli Divan
 Nizamı, kurulu Divan Proje Sözleşmesi ve Claude Code/Codex yaşam döngüsünü
 korur. v1.0.3 sakin proje keşfini korurken kontrol düzlemini sadeleştirir:

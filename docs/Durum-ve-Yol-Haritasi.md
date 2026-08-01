@@ -12,11 +12,11 @@ Son durum tarihi: 2026-08-01.
 
 - Değişmez `v1.0.3` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
-- 5 paket ve 42 beceri.
+- 5 paket ve 41 beceri.
 - Vibe coder için beş niyetli ferman seçici.
 - 4 özgün skill / 13 vaka için sağlayıcı-bağımsız kör A/B eval koşucusu;
   Claude gerçek ajanı ve read-only kör Codex hakemi adaptörleri.
-- Claude ve Codex için aynı 5 paket/42 beceriyi sunan yerel pazarlar ile
+- Claude ve Codex için aynı 5 paket/41 beceriyi sunan yerel pazarlar ile
   dry-run-first işlemsel çift-host kurucu.
 - Yerel teftiş, Agent Skills, iki host pazarı, Claude Code plugin doğrulaması,
   CodeQL, Ruff, mypy, Coverage ve actionlint kapıları.
@@ -28,11 +28,18 @@ Son durum tarihi: 2026-08-01.
   Wiki eşliğinden CHANGELOG kaynaklı tag/GitHub Release'a giden yayın kapısı.
 - Claude Code resmî doğrulaması ve Linux/macOS/Windows Codex kur-keşfet-kaldır matrisi.
 - Codex Desktop için açık `auto` profil; sağlıklı CLI'da native kurulum, kanıtlı
-  çalıştırma engelinde sınırları belirtilen checksum-backed 42-skill fallback.
+  çalıştırma engelinde sınırları belirtilen checksum-backed 41-skill fallback.
 - Vibe coder için yalnız loopback'te çalışan, yetenek URL'siyle korunan iki
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
   dikkat eşiğini açıklar; kullanıcı sessiz ekranı çökme zannetmez.
+
+## v1.1.0 adayı
+
+- `product-design-audit` ile katalog 42 beceriye çıkar.
+- Beş özgün skill için 16 davranış vakası bulunur.
+- Bu sayılar yalnız v1.1.0 tag ve GitHub Release yayımlandıktan sonra
+  yayımlanmış ürün gerçeği olur.
 - Divan Engine, üst proje taramasında `.worktrees`, fixture projeleri ve skill
   içi yardımcı klasörlerden gelen eski ajan/test gürültüsünü workspace veya test
   hedefi gibi göstermez; açıkça proje kökü verilirse yine inceler.
