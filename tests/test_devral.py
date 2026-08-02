@@ -158,7 +158,7 @@ class DevralTesti(unittest.TestCase):
 
         version = (KOK / "VERSION").read_text(encoding="utf-8").strip()
         self.assertIn(f"v{version} ✓**", blueprint)
-        self.assertIn("Keep v1.3.3 immutable", current_next)
+        self.assertIn("immutable v1.3.3 release unchanged", current_next)
         self.assertNotIn("Keep v1.0.3 immutable", current_next)
         self.assertIn(f"--ref v{version} --execute", host_guide)
 
