@@ -1,6 +1,7 @@
 # Divan
 
-![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.png)
+![Divan turns a plain-language intent into a verified delivery](docs/assets/github/hero.en.png)
+<!-- The Turkish README keeps the canonical Turkish export at docs/assets/github/hero.png. -->
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
 [![Source line 1.3.1](https://img.shields.io/badge/source-1.3.2-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
