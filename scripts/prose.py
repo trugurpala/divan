@@ -226,9 +226,26 @@ def _version_copy_errors(root: pathlib.Path) -> list[Finding]:
     if version is None or not canonical.is_file():
         return []
     version = version.strip()
-    if f"**Source line:** v{version}" in canonical.read_text(encoding="utf-8"):
-        return []
-    return [Finding("error", "STALE_VERSION", "README.md", 1, "README source line does not match VERSION")]
+    errors: list[Finding] = []
+    canonical_text = canonical.read_text(encoding="utf-8")
+    if f"**Source line:** v{version}" not in canonical_text:
+        errors.append(Finding("error", "STALE_VERSION", "README.md", 1, "README source line does not match VERSION"))
+    turkish = root / "README.tr.md"
+    if turkish.is_file() and f"**Kaynak hattı:** v{version}" not in turkish.read_text(encoding="utf-8"):
+        errors.append(Finding("error", "STALE_VERSION_TR", "README.tr.md", 1, "Turkish README source line does not match VERSION"))
+    badge_patterns = (
+        (canonical, r"\[!\[Source line [^\]]+\]\([^)]*source-[^-)]*-") ,
+        (turkish, r"\[!\[Kaynak hattı [^\]]+\]\([^)]*kaynak-[^-)]*-") ,
+    )
+    for path, pattern in badge_patterns:
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        slug = "source-" if path == canonical else "kaynak-"
+        if f"{version}" not in text or f"{slug}{version}-" not in text:
+            code = "STALE_VERSION_BADGE_TR" if path == turkish else "STALE_VERSION_BADGE"
+            errors.append(Finding("error", code, path.relative_to(root).as_posix(), 1, "README release badge does not match VERSION"))
+    return errors
 
 
 def _retired_path_errors(root: pathlib.Path) -> list[Finding]:

@@ -112,6 +112,24 @@ class ProseGateTests(unittest.TestCase):
             report = PROSE.inspect(root, PROSE.public_files(root))
         self.assertIn("STALE_RELEASE_COPY", {finding.code for finding in report.errors})
 
+    def test_release_badges_and_turkish_source_line_follow_version(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            (root / "VERSION").write_text("1.3.1\n", encoding="utf-8")
+            (root / "README.md").write_text(
+                "**Source line:** v1.3.1\n[![Source line 1.2.0](https://img.shields.io/badge/source-1.2.0-red)](x)\n",
+                encoding="utf-8",
+            )
+            (root / "README.tr.md").write_text(
+                "**Kaynak hattı:** v1.2.0\n[![Kaynak hattı 1.2.0](https://img.shields.io/badge/kaynak-1.2.0-red)](x)\n",
+                encoding="utf-8",
+            )
+            errors = PROSE._version_copy_errors(root)
+        self.assertEqual(
+            {finding.code for finding in errors},
+            {"STALE_VERSION_TR", "STALE_VERSION_BADGE", "STALE_VERSION_BADGE_TR"},
+        )
+
     def test_public_inventory_matches_the_writing_contract(self):
         relative = {
             path.relative_to(ROOT).as_posix()
