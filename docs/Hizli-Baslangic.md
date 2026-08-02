@@ -39,16 +39,16 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesini, sonra aynı sabit sürümün uygulamasını çalıştır:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.1
-python scripts/divan.py install --host both --ref v1.3.1 --execute
+python scripts/divan.py install --host both --ref v1.3.2
+python scripts/divan.py install --host both --ref v1.3.2 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.3.1
-python scripts/divan.py update --host both --ref v1.3.1
-python scripts/divan.py update --host both --ref v1.3.1 --execute
+python scripts/divan.py doctor --host both --ref v1.3.2
+python scripts/divan.py update --host both --ref v1.3.2
+python scripts/divan.py update --host both --ref v1.3.2 --execute
 ```
 
 v1.3.1 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
