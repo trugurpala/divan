@@ -1965,7 +1965,7 @@ class ProjectAuditTests(unittest.TestCase):
                                 "reason": "migration",
                                 "owner": "maintainer",
                                 "created_on": "2026-07-01",
-                                "expires_on": "2026-08-01",
+                                "expires_on": "2026-12-20",
                                 "evidence": "missing-proof.md",
                             }
                         ],
