@@ -260,3 +260,12 @@ fixes from deferred repository-setting and large-refactor work.
 - [ ] **Step 5: Observe required CI**
 
 Do not report completion while required GitHub checks are pending or failing.
+
+### Review correction: PowerShell checksum portability
+
+The full local verification found that Windows PowerShell 5.1 launched from a
+PowerShell 7 environment can inherit a module path without `Get-FileHash`.
+Keep checksum verification fail-closed, but calculate the SHA-256 digest through
+the built-in .NET API instead. The existing mismatch test must set an empty
+`PSModulePath` and still receive a `SHA-256 uyusmazligi` result before any
+archive extraction.
