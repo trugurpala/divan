@@ -12,6 +12,10 @@ Son güncelleme: 2026-08-01
 
 ## Güncel hedef
 
+v1.3.2 release adayı, v1.3.1 sonrası Türkçe README rozeti ve iki dilli sürüm
+gerçeği kapısını yayımlanmış kaynakla eşitler. Tag ve GitHub Release görünene
+kadar bu sürüm yayımlanmış kabul edilmez.
+
 Divan v1.3.1 closes the publication-truth gap left after v1.3.0: onboarding
 surfaces now name the current immutable release, and the prose gate fails when
 a public page presents a published release as a candidate.

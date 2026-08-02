@@ -123,7 +123,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.3.2 (hazırlanıyor)** Kamuya açık İngilizce ve Türkçe README sürüm
+- **v1.3.2 ✓** (release adayı, henüz yayımlanmadı) Kamuya açık İngilizce ve Türkçe README sürüm
   satırları ile rozetleri `VERSION` dosyasına bağlanır. Prose kapısı eski sürüm
   gösteren yüzeyi merge öncesinde durdurur; tek repo, beş modüler paket ve
   harici runtime bağımlılığı olmayan yapı korunur.
