@@ -123,7 +123,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.3.4 ✓** Topluluk bakım hattı: Windows PowerShell 5.1, PowerShell 7'nin
+- **v1.3.4 ✓** Yayımlanan topluluk bakım hattı: Windows PowerShell 5.1, PowerShell 7'nin
   modül yolunu devraldığında da eski-host checksum doğrulamasını .NET SHA-256
   ile çalıştırır. Bu yol `PSModulePath` temizlenerek regresyon testiyle
   doğrulanır. Önceki kaynak-kökeni, public-komut, bağımlılık gözlemi ve
@@ -593,8 +593,6 @@ yükseltmesiyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Keep the immutable v1.3.3 release unchanged. Verify and publish the prepared
-v1.3.4 patch only after its release PR and the `main` Quality Gate, CodeQL,
-compatibility, site, Pages, Wiki, checksum, SBOM, and attestation readbacks
-are all green. Then record the evidence and return to bounded community
-maintenance.
+Keep v1.3.4 and all earlier release tags immutable. Triage real community
+reports and contributions through the structured forms, then use the bounded
+evidence-first path before every later change or release.
