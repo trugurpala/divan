@@ -56,6 +56,18 @@ class SiteMarkupTests(unittest.TestCase):
                 self.assertIn("Günlük kullanım", html)
                 self.assertIn("Bakım ve kurtarma", html)
 
+    def test_first_installation_card_links_directly_to_the_latest_release(self) -> None:
+        release_url = "https://github.com/trugurpala/divan/releases/latest"
+        sources = []
+        for relative in ("docs/index.html", "site/index.html"):
+            with self.subTest(relative=relative):
+                html = (ROOT / relative).read_text(encoding="utf-8")
+                sources.append(html)
+                hero = html.split("</header>", 1)[0]
+                self.assertIn(release_url, hero)
+                self.assertIn("GitHub Release’ini aç", hero)
+        self.assertEqual(sources[0], sources[1])
+
     def test_public_metadata_and_structured_data_are_complete(self) -> None:
         required = (
             '<meta name="description"',
