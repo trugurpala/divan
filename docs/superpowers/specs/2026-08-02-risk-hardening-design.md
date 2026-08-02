@@ -69,4 +69,3 @@ The work is accepted only when:
 - `python scripts/verify.py`, `python scripts/verify.py --coverage`, and
   `git diff --check` pass from the isolated branch;
 - the pull request's required GitHub checks are green.
-

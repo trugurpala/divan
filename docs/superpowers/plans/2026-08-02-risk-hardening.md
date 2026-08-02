@@ -260,4 +260,3 @@ fixes from deferred repository-setting and large-refactor work.
 - [ ] **Step 5: Observe required CI**
 
 Do not report completion while required GitHub checks are pending or failing.
-
