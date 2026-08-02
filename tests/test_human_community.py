@@ -94,10 +94,10 @@ class HumanCommunityContractTests(unittest.TestCase):
         self.assertEqual(progress.count("## Sıradaki kesin iş"), 1)
         next_action = progress.split("## Sıradaki kesin iş", 1)[1].split("\n## ", 1)[0]
         normalized = " ".join(next_action.split())
-        self.assertIn("v1.3.3 tag and release immutable", normalized)
-        self.assertIn("new PR", normalized)
-        self.assertIn("green checks", normalized)
-        self.assertIn("public readback evidence", normalized)
+        self.assertIn("v1.3.4 release PR", normalized)
+        self.assertIn("release PR", normalized)
+        self.assertIn("required checks are green", normalized)
+        self.assertIn("README from `main`", normalized)
 
 
 if __name__ == "__main__":

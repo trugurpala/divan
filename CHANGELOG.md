@@ -6,6 +6,26 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-08-02
+
+### Fixed
+
+- Made the Windows legacy-host checksum path independent of the PowerShell
+  `Get-FileHash` cmdlet. The installer now uses the .NET SHA-256 API, so it
+  remains available when Windows PowerShell 5.1 inherits a PowerShell 7 module
+  path.
+- Kept the risk-hardening checks from the preceding `main` changes in the
+  published source line: distributed skill provenance, public-command
+  validation, dependency observation, and duplicate verification work remain
+  covered by the bounded checks that introduced them.
+
+### Verification
+
+- Added a Windows regression that clears `PSModulePath` before exercising the
+  checksum helper, the environment that exposed the portability failure.
+- No runtime dependency, external repository fork, or unmeasured quality or
+  speed claim was added.
+
 ## [1.3.3] - 2026-08-02
 
 ### Fixed

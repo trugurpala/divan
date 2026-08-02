@@ -1,12 +1,13 @@
 # Divan İlerleme Defteri
 
-## Güncel çalışma: v1.3.4 risk sertleştirme
+## Güncel çalışma: v1.3.4 topluluk bakım yayını
 
-`codex/v134-risk-hardening` dalı, dağıtılan üç skill'deki kanıtlanmış güvenlik
-ve doğruluk açıklarını kapatır; public komut örneklerini düzeltir; Quality Gate'i
-testleri iki kez çalıştırmadan coverage üretecek biçimde sadeleştirir; Python
-bağımlılık gözlemini ve nested skill impact sınıflandırmasını ekler. v1.3.3
-etiketi ve release varlıkları değişmez kalır.
+`main`, dağıtılan skill'lerdeki kanıtlanmış güvenlik/doğruluk açıklarını,
+public komut örneklerini, bağımlılık gözlemini, nested skill impact
+sınıflandırmasını ve Quality Gate'in tekrarlanan test işini zaten kapattı.
+Windows eski-host checksum yolu artık PowerShell modül komutuna bağlı değildir.
+v1.3.3 etiketi ve release varlıkları değişmez kalır; v1.3.4 bu sınırlı topluluk
+bakım düzeltmelerinin ayrı, doğrulanabilir yayınıdır.
 
 ## Ajan kurulum canary'si
 
@@ -36,12 +37,10 @@ a public page presents a published release as a candidate.
 
 ## Sıradaki kesin iş
 
-Keep the v1.3.3 tag and release immutable. Commit the bounded implementation
-on `codex/v134-risk-hardening`, run the
-canonical default and coverage verification paths from a clean tree, then prepare
-a new PR for review. Do not merge, tag, dismiss CodeQL alerts, or change repository
-security settings without a separate explicit publication/security approval. Collect
-green checks and public readback evidence before any later publication decision.
+Run the canonical coverage verifier on `codex/v134-community-release`, open the
+bounded v1.3.4 release PR, and merge only after all required checks are green.
+Then verify the immutable tag, release assets, attestations, Pages, Wiki, and
+README from `main`; record the evidence and leave a bounded maintenance action.
 
 ## Son yayımlanan durum
 
