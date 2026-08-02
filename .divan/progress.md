@@ -43,13 +43,13 @@ checksums, attestations, Pages, Wiki, and README.
 
 ## Son yayımlanan durum
 
-The latest published release is immutable v1.3.2 at commit
-`2faec200facb6a5c902f59ab97d96f646c0f35eb`. PR #94 published the bilingual
-release-truth patch after PR #93 merged the guard and its regression tests. All
-PR and main checks passed. The release workflow published seven assets;
-downloaded hashes, SBOM, attestations, Pages, Wiki and README readbacks are
-recorded in `teftis-20260802-v132-release.md`. Nöbet issue #85 remains closed
-with zero review debt.
+The latest published release is immutable v1.3.3 at commit
+`d65c36c22c4d4c3f27bd892d2cf56f34e551ad57`. PR #100 published the
+evidence-driven installation and timeout fixes after PR #99 merged them. All
+PR, main and publication checks passed. The release workflow published seven
+assets; downloaded hashes, SBOM, attestations, Pages, Wiki and README readbacks
+are recorded in `teftis-20260802-v133-release.md`. Nöbet issue #85 remains
+closed with zero review debt.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
