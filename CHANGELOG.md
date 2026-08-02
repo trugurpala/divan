@@ -6,6 +6,22 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.3] - 2026-08-02
+
+### Fixed
+
+- Raised the verified test timeout policy from 600 to 720 seconds so the full
+  repository verifier is not cut off before completion.
+- Prevented post-install doctor from scanning the same transaction journal a
+  second time, allowing native Codex and Claude installation checks to finish
+  with a truthful `READY` result.
+
+### Verification
+
+- GitHub CI passed native Claude and Codex installation checks on Windows,
+  macOS, and Linux, plus CodeQL, Playwright, and full validation.
+- No runtime dependency or external repository fork was added.
+
 ## [1.3.2] - 2026-08-02
 
 ### Fixed

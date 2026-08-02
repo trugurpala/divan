@@ -148,7 +148,7 @@ class TimeoutPolicyTests(unittest.TestCase):
         self.assertEqual(decision.source, "default-insufficient-samples")
         self.assertEqual(decision.configured_seconds, 720)
         self.assertEqual(corrupt.source, "default-invalid-benchmark")
-        self.assertEqual(corrupt.configured_seconds, 600)
+        self.assertEqual(corrupt.configured_seconds, 720)
         self.assertEqual(unknown.source, "safe-fallback")
         self.assertEqual(unknown.configured_seconds, 300)
 
@@ -177,10 +177,10 @@ class TimeoutPolicyTests(unittest.TestCase):
             "verify",
             self.policy,
             self.benchmarks,
-            override_seconds=450,
+            override_seconds=720,
         )
         self.assertEqual(decision.source, "override")
-        self.assertEqual(decision.configured_seconds, 450)
+        self.assertEqual(decision.configured_seconds, 720)
         with self.assertRaisesRegex(ValueError, "safety bounds"):
             self.timeouts.resolve(
                 "verify",

@@ -123,7 +123,9 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.3.2 ✓** (release adayı, henüz yayımlanmadı) Kamuya açık İngilizce ve Türkçe README sürüm
+- **v1.3.3 ✓** (yayın adayı) Kurulum sonrası doğrulamanın iki kez işlem kaydı taramasını
+  engeller; timeout benchmark policy’sini 720 saniyelik doğrulanmış sınıra taşır.
+  Windows, macOS ve Linux native kurulumları CI’da doğrulanır. Kamuya açık İngilizce ve Türkçe README sürüm
   satırları ile rozetleri `VERSION` dosyasına bağlanır. Prose kapısı eski sürüm
   gösteren yüzeyi merge öncesinde durdurur; tek repo, beş modüler paket ve
   harici runtime bağımlılığı olmayan yapı korunur.
