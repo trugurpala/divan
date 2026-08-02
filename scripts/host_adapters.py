@@ -317,13 +317,16 @@ def doctor(
     expected: dict[str, dict[str, Any]],
     normalize: Normalizer,
     hosts: tuple[str, ...],
+    include_transactions: bool = True,
 ) -> dict[str, Any]:
     """Inspect host state through read-only CLI queries."""
     results = {
         host: _doctor_host(host, options, expected, runner, normalize) for host in hosts
     }
     issues = [issue for result in results.values() for issue in result["issues"]]
-    transaction = _unfinished_transaction(options.state_dir)
+    transaction = (
+        _unfinished_transaction(options.state_dir) if include_transactions else None
+    )
     if transaction is not None:
         issues.append("unfinished transaction")
     statuses = {result["status"] for result in results.values()}

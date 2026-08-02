@@ -13,13 +13,21 @@ from collections.abc import Callable
 from typing import Any
 
 import bootstrap_contract
+import host_install_result
 import host_probe
+import host_profile_inventory
 import legacy_state
 
 FALLBACK_CLI_STATUSES = {"missing", "not-executable", "access-denied"}
 NATIVE_MODE = "native"
 FALLBACK_MODE = "verified-skill-fallback"
 BLOCKED_MODE = "blocked"
+
+
+install_result_fields = host_install_result.install_result_fields
+_contained = host_profile_inventory.contained
+_expected_package_count = host_profile_inventory.expected_package_count
+_expected_skill_names = host_profile_inventory.expected_skill_names
 
 _CAPABILITIES = {
     NATIVE_MODE: {
@@ -180,6 +188,20 @@ def execute_fallback_remove(root: pathlib.Path) -> int:
 
 
 def fallback_plan(options: Any, root: pathlib.Path, cli_status: str) -> dict[str, Any]:
+    version_path = root / "VERSION"
+    version = version_path.read_text(encoding="utf-8").strip() if version_path.is_file() else options.ref.removeprefix("v")
+    fields = install_result_fields(
+        version=version,
+        source_ref=options.ref,
+        source_commit=None,
+        host=options.host,
+        profile=options.profile,
+        package_count=_expected_package_count(root),
+        skill_count=len(_expected_skill_names(root)),
+        doctor_status="not-run",
+        selected_mode=FALLBACK_MODE,
+        recovery_command=None,
+    )
     return {
         "schema": 1,
         "operation": "install",
@@ -193,6 +215,7 @@ def fallback_plan(options: Any, root: pathlib.Path, cli_status: str) -> dict[str
         "environment": {"DIVAN_REF": options.ref},
         "planned_commands": [fallback_command(root)],
         "rollback_command": subprocess.list2cmdline(rollback_command(root)),
+        **fields,
     }
 
 
@@ -205,16 +228,11 @@ def subprocess_fallback_runner(
 
 
 def _fallback_state_dir() -> pathlib.Path:
-    return pathlib.Path(
-        os.environ.get("DIVAN_STATE_DIR", pathlib.Path.home() / ".codex")
-    ).expanduser()
-
+    return pathlib.Path(os.environ.get("DIVAN_STATE_DIR", pathlib.Path.home() / ".codex")).expanduser()
 
 def _fallback_skills_dir() -> pathlib.Path:
     return pathlib.Path(
-        os.environ.get(
-            "CODEX_SKILLS_DIR", pathlib.Path.home() / ".codex" / "skills"
-        )
+        os.environ.get("CODEX_SKILLS_DIR", pathlib.Path.home() / ".codex" / "skills")
     ).expanduser()
 
 
@@ -227,29 +245,6 @@ def _installer_payload(stdout: str) -> dict[str, Any]:
         if isinstance(value, dict) and value.get("status") == "installed":
             return value
     raise ValueError("fallback installer did not return an installed manifest")
-
-
-def _contained(path: pathlib.Path, root: pathlib.Path) -> bool:
-    try:
-        path.relative_to(root)
-    except ValueError:
-        return False
-    return True
-
-
-def _expected_skill_names(root: pathlib.Path) -> set[str]:
-    try:
-        bundled = bootstrap_contract.load(root)
-    except bootstrap_contract.ContractError as error:
-        raise ValueError(str(error)) from error
-    if bundled is not None:
-        return {
-            skill for row in bundled[1].values() for skill in row["skills"]
-        }
-    return {
-        path.parent.name
-        for path in root.glob("plugins/*/skills/*/SKILL.md")
-    }
 
 
 def _single_manifest_value(
@@ -360,6 +355,9 @@ def execute_fallback(
         raise ValueError(f"fallback installer failed ({result.returncode}): {detail}")
     payload = _installer_payload(result.stdout)
     verified = _verify_manifest(options, root, payload)
+    version = verified.get("version") or "unknown"
+    commit = verified.get("source_commit") or "unknown"
+    installed = verified.get("installed_sha256", {})
     return {
         "schema": 1,
         "operation": "install",
@@ -372,6 +370,18 @@ def execute_fallback(
         "capabilities": capabilities(FALLBACK_MODE),
         "rollback_command": subprocess.list2cmdline(rollback_command(root)),
         "next_command": "Restart Codex, then open a new task.",
+        **install_result_fields(
+            version=version,
+            source_ref=options.ref,
+            source_commit=commit,
+            host=options.host,
+            profile=options.profile,
+            package_count=_expected_package_count(root),
+            skill_count=len(installed),
+            doctor_status="not-applicable",
+            selected_mode=FALLBACK_MODE,
+            recovery_command=subprocess.list2cmdline(rollback_command(root)),
+        ),
         **verified,
     }
 

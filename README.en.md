@@ -4,7 +4,7 @@
 <!-- The Turkish README keeps the canonical Turkish export at docs/assets/github/hero.png. -->
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Source line 1.3.1](https://img.shields.io/badge/source-1.3.2-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.3.2](https://img.shields.io/badge/source-1.3.2-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -90,6 +90,22 @@ Claude Code and Codex are the currently verified native hosts. Other Agent
 Skills-compatible hosts can use portable skills only at their documented
 evidence level.
 
+## Install with an agent
+
+Give this repository URL to Codex or Claude and write:
+
+```text
+Install Divan from this GitHub repository. Use the safe immutable-release
+path, preview before changing anything, execute the installation, run doctor,
+and tell me whether I must restart the desktop app.
+```
+
+The agent reads [`INSTALL_FOR_AGENTS.md`](INSTALL_FOR_AGENTS.md), resolves the
+latest immutable release, verifies its checksum and source commit, previews,
+executes, and reports `READY` only when doctor is healthy. It preserves other
+plugins. After a successful result, close the desktop application completely
+and open a new session; daily use is natural language, not terminal commands.
+
 ## Install with one command
 
 Download `divan.pyz` and its checksum from the same immutable release. Verify
@@ -120,10 +136,11 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 ```
 
 The command above resolves the latest published tag before downloading. The
-checkout commands pin the published v1.3.1 tag. See
+checkout commands pin the published v1.3.2 tag. See
 [removal and recovery](docs/Kaldirma.md) before deleting anything.
 
-The v1.3.1 tag and GitHub Release are the current immutable installation source.
+The latest non-draft GitHub Release is the immutable installation source. The
+agent and bootstrap resolve that release; they do not install from `main`.
 
 ## Your first real task
 
@@ -269,9 +286,9 @@ made.
 ## Latest release and verification
 
 The [GitHub Releases page](https://github.com/trugurpala/divan/releases/latest)
-is the authority for the latest published package. The immutable v1.3.1
+is the authority for the latest published package. The immutable v1.3.2
 publication evidence is recorded in
-`.divan/evidence/teftis-20260801-v131-release.md`; every new release must add its
+`.divan/evidence/teftis-20260802-v132-release.md`; every new release must add its
 own checksum, SPDX SBOM, attestation and live-readback evidence.
 
 The readiness score is **8/8**. That score describes machine-backed technical

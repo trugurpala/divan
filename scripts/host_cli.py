@@ -73,11 +73,23 @@ def _print_install(record: dict[str, Any]) -> None:
         print("NO-OP - installed Divan already matches target.")
         return
     if record.get("selected_mode") != host_profiles.FALLBACK_MODE:
-        print(f"VERIFIED - transaction: {record['transaction_path']}")
+        print(
+            f"INSTALLED - Divan {record.get('version', 'unknown')} "
+            f"on {record.get('host', 'requested host')} "
+            f"({record.get('profile', 'native')} profile)."
+        )
+        print(f"READY - doctor: {record.get('doctor_status', 'unknown')}")
+        print(record.get("next_action", "Close the host and start a new session."))
         return
     print(
         "VERIFIED SKILL FALLBACK "
-        f"- {record['skill_count']}/42 skills; manifest: {record['manifest']}"
+        f"- Divan {record.get('version', 'unknown')}, "
+        f"{record['skill_count']}/42 skills; manifest: {record['manifest']}"
+    )
+    print(
+        f"HOST - {record.get('host', 'codex')} / "
+        f"{record.get('profile', 'auto')} profile; "
+        f"doctor: {record.get('doctor_status', 'not-applicable')}"
     )
     print(
         "CAPABILITIES - skills/instructions available; "
@@ -97,6 +109,12 @@ def main(argv: list[str] | None, lifecycle: Any) -> int:
         record = _dispatch(options, lifecycle)
     except lifecycle["InstallError"] as exc:
         print(f"HATA: {exc}", file=sys.stderr)
+        if options.execute:
+            print(
+                "NEXT: use the recovery_command from the transaction result "
+                "before trying the installation again.",
+                file=sys.stderr,
+            )
         return 1
     if options.doctor:
         _print_doctor(record, options.json_output)

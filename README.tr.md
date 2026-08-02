@@ -3,7 +3,7 @@
 ![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
 [![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Kaynak hattı 1.3.1](https://img.shields.io/badge/kaynak-1.3.2-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Kaynak hattı 1.3.2](https://img.shields.io/badge/kaynak-1.3.2-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
 [![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
 [![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
@@ -84,6 +84,23 @@ hedef projede geçerli kuralları, hedefleri ve kanıtları kaydeder.
 Claude Code ve Codex bugün doğrulanmış native hostlardır. Diğer Agent Skills
 uyumlu hostlar yalnız belgelenen kanıt düzeyinde taşınabilir beceri kullanır.
 
+## Ajanla kurulum
+
+Bu depo adresini Codex veya Claude masaüstü uygulamasına verin ve şunu yazın:
+
+```text
+Bu GitHub deposundaki Divan'ı bilgisayarıma kur. Güvenli ve değişmez release
+yolunu kullan, önce yazmayan önizlemeyi göster, kurulumu uygula, doctor ile
+doğrula ve masaüstü uygulamasını ne zaman yeniden başlatmam gerektiğini söyle.
+```
+
+Ajan [`INSTALL_FOR_AGENTS.md`](INSTALL_FOR_AGENTS.md) dosyasını okur; en yeni
+değişmez GitHub Release sürümünü bulur, checksum ve kaynak commit'ini doğrular,
+önizler, uygular ve doctor sonucu `READY` olmadan kurulumu başarılı saymaz.
+Diğer eklentilere dokunmaz. Başarılı sonuçtan sonra masaüstü uygulamasını
+tamamen kapatıp yeni bir oturum açın. Günlük kullanım komut satırı değil,
+doğal dildir.
+
 ## Tek komutla kurulum
 
 ### Nasıl kurulur?
@@ -114,10 +131,11 @@ python scripts/divan.py update --host both --ref v1.3.2 --execute
 ```
 
 Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içindeki
-komutlar yayımlanmış v1.3.1 etiketini sabitler. Silmeden önce
+komutlar yayımlanmış v1.3.2 etiketini sabitler. Silmeden önce
 [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
 
-v1.3.1 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
+En yeni taslak olmayan GitHub Release değişmez kurulum kaynağıdır. Ajan ve
+bootstrap `main` dalından kurulum yapmaz.
 
 ## İlk gerçek iş
 
@@ -256,8 +274,8 @@ iddia edilmez.
 ## Son release ve doğrulama
 
 [GitHub Releases sayfası](https://github.com/trugurpala/divan/releases/latest),
-son yayımlanan paketin doğru kaynağıdır. Değişmez v1.3.1 yayın kanıtı
-`.divan/evidence/teftis-20260801-v131-release.md` dosyasında kayıtlıdır. Her yeni
+son yayımlanan paketin doğru kaynağıdır. Değişmez v1.3.2 yayın kanıtı
+`.divan/evidence/teftis-20260802-v132-release.md` dosyasında kayıtlıdır. Her yeni
 sürüm kendi checksum, SPDX SBOM, attestation ve canlı geri okuma kanıtını
 eklemelidir.
 

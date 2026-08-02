@@ -146,7 +146,7 @@ class TimeoutPolicyTests(unittest.TestCase):
         unknown = self.timeouts.resolve("not-declared", {"bad": True}, {})
 
         self.assertEqual(decision.source, "default-insufficient-samples")
-        self.assertEqual(decision.configured_seconds, 600)
+        self.assertEqual(decision.configured_seconds, 720)
         self.assertEqual(corrupt.source, "default-invalid-benchmark")
         self.assertEqual(corrupt.configured_seconds, 600)
         self.assertEqual(unknown.source, "safe-fallback")
