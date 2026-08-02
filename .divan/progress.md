@@ -1,35 +1,36 @@
 # Divan İlerleme Defteri
 
-## Güncel çalışma: v1.3.4 topluluk bakım yayını
+## Güncel çalışma: v1.3.4 yayımlanan topluluk bakımı
 
 `main`, dağıtılan skill'lerdeki kanıtlanmış güvenlik/doğruluk açıklarını,
 public komut örneklerini, bağımlılık gözlemini, nested skill impact
 sınıflandırmasını ve Quality Gate'in tekrarlanan test işini zaten kapattı.
 Windows eski-host checksum yolu artık PowerShell modül komutuna bağlı değildir.
-v1.3.3 etiketi ve release varlıkları değişmez kalır; v1.3.4 bu sınırlı topluluk
-bakım düzeltmelerinin ayrı, doğrulanabilir yayınıdır.
+v1.3.3 etiketi ve release varlıkları değişmez kalır. v1.3.4, bu sınırlı
+topluluk bakım düzeltmelerinin ayrı, doğrulanabilir yayını olarak yayımlandı.
 
 ## Ajan kurulum canary'si
 
-Yeni kurulum sözleşmesini temiz bir Windows 11 Codex ve Claude oturumunda
-canary olarak çalıştır; doctor `healthy`/`READY` sonucunu ve yeni oturumdaki
-Divan keşfini kaydet. Bu kanıt alınmadan yeni release yayımlandı denmez.
+Yeni kurulum sözleşmesi temiz bir Windows 11 Codex ve Claude oturumunda
+canary olarak yeniden çalıştırılabilir. Bu, yayımlanmış v1.3.4 kanıtını
+genişletecek bakım çalışmasıdır; release'in varlığı için ön koşul değildir.
 
 Son güncelleme: 2026-08-02
 
 ## Yayın durumu
 
-- Latest published release: v1.3.3
-- Published commit: d65c36c22c4d4c3f27bd892d2cf56f34e551ad57
-- Publication evidence: .divan/evidence/teftis-20260802-v133-release.md
-- Release asset evidence: seven checksummed and attested v1.3.3 assets
+- Latest published release: v1.3.4
+- Published commit: 0fe544124daab90de9c4600349d411f79946857b
+- Publication evidence: .divan/evidence/teftis-20260802-v134-release.md
+- Release asset evidence: seven checksummed and attested v1.3.4 assets
 - Release idempotency evidence: .divan/evidence/teftis-20260725-release-idempotency.md
 
 ## Güncel hedef
 
-Divan v1.3.3 is the current immutable publication. It carries the
-evidence-driven installation and timeout fixes; tag, assets, checksums,
-attestations, Pages, Wiki and README readbacks passed in the release workflow.
+Divan v1.3.4 is the current immutable publication. It carries the portable
+Windows checksum repair and the bounded risk-hardening work; tag, assets,
+checksums, attestations, Pages, Wiki and README readbacks passed in the release
+workflow.
 
 Divan v1.3.1 closes the publication-truth gap left after v1.3.0: onboarding
 surfaces now name the current immutable release, and the prose gate fails when
@@ -37,20 +38,20 @@ a public page presents a published release as a candidate.
 
 ## Sıradaki kesin iş
 
-Run the canonical coverage verifier on `codex/v134-community-release`, open the
-bounded v1.3.4 release PR, and merge only after all required checks are green.
-Then verify the immutable tag, release assets, attestations, Pages, Wiki, and
-README from `main`; record the evidence and leave a bounded maintenance action.
+Maintain the community path: triage a real bug, documentation correction,
+source candidate, or first contribution only when it arrives; keep the v1.3.4
+tag and assets immutable, and use the same evidence-first release path for any
+future change.
 
 ## Son yayımlanan durum
 
-The latest published release is immutable v1.3.3 at commit
-`d65c36c22c4d4c3f27bd892d2cf56f34e551ad57`. PR #100 published the
-evidence-driven installation and timeout fixes after PR #99 merged them. All
-PR, main and publication checks passed. The release workflow published seven
-assets; downloaded hashes, SBOM, attestations, Pages, Wiki and README readbacks
-are recorded in `teftis-20260802-v133-release.md`. Nöbet issue #85 remains
-closed with zero review debt.
+The latest published release is immutable v1.3.4 at commit
+`0fe544124daab90de9c4600349d411f79946857b`. PR #106 published the portable
+Windows checksum repair and current community surfaces after all PR checks
+passed. The release workflow published seven assets; downloaded hashes, SBOM,
+attestations, Pages, Wiki and README readbacks are recorded in
+`teftis-20260802-v134-release.md`. Nöbet issue #85 remains closed with zero
+review debt.
 
 Divan remains one product and one repository. Divan Engine is the canonical
 stdlib-only modular core; Divan Nizamı is the owner-first governance model; the
