@@ -55,6 +55,9 @@ Divan will use a risk-first, three-part change:
   pinned integrity value.
 - Coverage mode fails with the existing child exit code and timeout rules; it
   does not introduce a second test process.
+- Windows installer checksum verification must not depend on a PowerShell module
+  lookup. It uses the built-in .NET SHA-256 API so an inherited or restricted
+  `PSModulePath` still reaches the fail-closed mismatch check before extraction.
 
 ## Verification
 

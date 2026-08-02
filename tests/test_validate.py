@@ -261,6 +261,7 @@ class RepositoryTests(unittest.TestCase):
                     "DIVAN_SOURCE_COMMIT": "fixture-commit",
                     "CODEX_SKILLS_DIR": str(skills_dir),
                     "DIVAN_STATE_DIR": str(base / "state"),
+                    "PSModulePath": "",
                 }
             )
             result = subprocess.run(

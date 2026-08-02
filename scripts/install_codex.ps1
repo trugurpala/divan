@@ -15,6 +15,22 @@ $stateDir = if ($env:DIVAN_STATE_DIR) {
 }
 $work = Join-Path ([IO.Path]::GetTempPath()) ("divan-kur-" + [Guid]::NewGuid())
 
+function Get-Sha256Hex {
+  param([Parameter(Mandatory = $true)][string]$Path)
+
+  $algorithm = [System.Security.Cryptography.SHA256]::Create()
+  try {
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+      return ([System.BitConverter]::ToString($algorithm.ComputeHash($stream))).Replace('-', '').ToLowerInvariant()
+    } finally {
+      $stream.Dispose()
+    }
+  } finally {
+    $algorithm.Dispose()
+  }
+}
+
 try {
   New-Item -ItemType Directory -Force -Path $work | Out-Null
   $archiveSha256 = if ($env:DIVAN_ARCHIVE_SHA256) {
@@ -60,7 +76,7 @@ try {
     if ($expectedSha256 -notmatch '^[0-9a-f]{64}$') {
       throw "Gecersiz SHA-256 kaydi: $expectedSha256"
     }
-    $archiveSha256 = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+    $archiveSha256 = Get-Sha256Hex -Path $zip
     if ($archiveSha256 -ne $expectedSha256) {
       throw "SHA-256 uyusmazligi: beklenen $expectedSha256, bulunan $archiveSha256"
     }
