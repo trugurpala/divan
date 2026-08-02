@@ -6,6 +6,23 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-08-02
+
+### Fixed
+
+- Corrected the Turkish README release badge so every current-language badge
+  points at the published source line.
+- Extended the prose gate to check English and Turkish source lines and release
+  badges against `VERSION`, preventing silent onboarding drift.
+
+### Verification
+
+- Added a regression test for bilingual release-line and badge drift.
+- Stabilized the waiver evidence test so it remains valid as calendar time
+  advances.
+- The change adds no runtime dependency and does not vendor or fork another
+  repository.
+
 ## [1.3.1] - 2026-08-01
 
 ### Fixed
