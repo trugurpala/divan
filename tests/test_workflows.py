@@ -301,7 +301,7 @@ class WorkflowHardeningTests(unittest.TestCase):
 
     def test_development_tools_are_exactly_pinned(self) -> None:
         requirements = (ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
-        self.assertIn("ruff==0.15.22", requirements)
+        self.assertIn("ruff==0.16.0", requirements)
         self.assertIn("mypy==2.3.0", requirements)
         self.assertIn("coverage==7.15.2", requirements)
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
