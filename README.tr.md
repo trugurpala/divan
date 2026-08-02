@@ -10,6 +10,8 @@
 
 **Türkçe** · [English](README.md) · [Wiki](https://github.com/trugurpala/divan/wiki) · [Yol haritası](ROADMAP.md) · [Destek](SUPPORT.md)
 
+> Bu, Divan'ın Türkçe ana sayfasıdır. İngilizce sürüm için [README.md](README.md) dosyasını açın.
+
 Divan, kullandığınız kodlama ajanına plan, güvenli iş sırası, kalıcı proje
 hafızası ve kanıtlanabilir teslim ekler. Sonucu günlük dille anlatırsınız.
 Divan yalnız gereken yetenekleri seçer, işi görünür tutar ve doğrulanmayan
