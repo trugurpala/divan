@@ -26,9 +26,9 @@ Son güncelleme: 2026-08-02
 
 ## Güncel hedef
 
-Divan v1.3.2 is published. It carries the bilingual README release-truth guard
-and the time-stable waiver evidence test; the immutable tag, assets and public
-readbacks are recorded below.
+Divan v1.3.3 is the next publication target. It carries the evidence-driven
+installation and timeout fixes; the immutable tag, assets and public readbacks
+will be recorded after the release workflow completes.
 
 Divan v1.3.1 closes the publication-truth gap left after v1.3.0: onboarding
 surfaces now name the current immutable release, and the prose gate fails when
@@ -36,9 +36,11 @@ a public page presents a published release as a candidate.
 
 ## Sıradaki kesin iş
 
-Keep the v1.3.2 tag and release immutable. For the next change, update the
-progress record only after a new PR, green checks, and public readback evidence
-for tag, assets, checksums, attestations, Pages, Wiki, and README.
+Keep the v1.3.2 tag and release immutable; for the next change, update the
+progress record only after a new PR and while preparing v1.3.3 from the
+merged de0f3a6 main commit. Update this record only after green checks and
+public readback evidence for tag, assets, checksums, attestations, Pages, Wiki,
+and README.
 
 ## Son yayımlanan durum
 
