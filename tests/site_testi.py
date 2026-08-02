@@ -40,6 +40,13 @@ with sync_playwright() as p:
         or repo_link.get_attribute("href") != "https://github.com/trugurpala/divan"
     ):
         hatalar.append("Gorunur kanonik repo baglantisi yok")
+    release_link = sayfa.get_by_role("link", name="GitHub Release’ini aç")
+    if (
+        not release_link.is_visible()
+        or release_link.get_attribute("href")
+        != "https://github.com/trugurpala/divan/releases/latest"
+    ):
+        hatalar.append("Ilk kurulum icin gorunur dogrudan Release baglantisi yok")
     if not sayfa.get_by_text(f"v{SURUM}").first.is_visible():
         hatalar.append(f"v{SURUM} vitrinde gorunmuyor")
     if sayfa.locator("main#main-content").count() != 1:

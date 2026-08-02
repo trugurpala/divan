@@ -111,6 +111,8 @@ h2{font-family:Georgia,'Times New Roman',serif;font-weight:600;font-size:clamp(3
 .rota{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
 .rota a{display:flex;align-items:center;min-height:44px;padding:10px 14px;border:1px solid rgba(59,184,168,.55);border-radius:5px;text-decoration:none;touch-action:manipulation}
 .niyet,.kopyala{min-height:44px;touch-action:manipulation}
+.release-cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:16px;padding:10px 14px;border:1px solid var(--altin);border-radius:5px;background:var(--altin);color:var(--gece);font:700 14px system-ui,-apple-system,'Segoe UI',sans-serif;text-decoration:none;touch-action:manipulation}
+.release-cta:hover,.release-cta:focus-visible{background:var(--fildisi);border-color:var(--fildisi);color:var(--gece)}
 
 /* Mühürdar */
 .muhurdar{display:flex;align-items:center;gap:28px;border:1px solid rgba(201,162,39,.35);border-radius:8px;padding:24px;background:rgba(201,162,39,.06)}
@@ -146,6 +148,7 @@ footer p+p{margin-top:10px}
         <p>Release'ten indirdiğin ve SHA-256 ile doğruladığın kurucuda önce önizlemeyi, sonra uygulamayı çalıştır.</p>
         <code>python .\divan.pyz install --host codex --profile auto
 python .\divan.pyz install --host codex --profile auto --execute</code>
+        <a class="release-cta" href="https://github.com/trugurpala/divan/releases/latest">GitHub Release’ini aç</a>
       </article>
       <article class="hero-yol">
         <h2>Divan zaten kurulu</h2>
