@@ -123,7 +123,7 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
-- **v1.3.3 ✓** (yayın adayı) Kurulum sonrası doğrulamanın iki kez işlem kaydı taramasını
+- **v1.3.3 ✓** Yayımlanan bakım hattı: Kurulum sonrası doğrulamanın iki kez işlem kaydı taramasını
   engeller; timeout benchmark policy’sini 720 saniyelik doğrulanmış sınıra taşır.
   Windows, macOS ve Linux native kurulumları CI’da doğrulanır. Kamuya açık İngilizce ve Türkçe README sürüm
   satırları ile rozetleri `VERSION` dosyasına bağlanır. Prose kapısı eski sürüm
@@ -586,6 +586,6 @@ yükseltmesiyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Keep v1.0.3 immutable. Next exact action: collect real post-release usage
-friction, define one bounded product slice, and run it through the same
-evidence chain without changing the v1.0.3 tag or release assets.
+Keep v1.3.3 immutable. Next exact action: close the actionable code-scanning,
+public-command, dependency-observation, and duplicate-test risks in a new pull
+request without changing the v1.3.3 tag or release assets.

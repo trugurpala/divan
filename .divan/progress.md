@@ -1,12 +1,12 @@
 # Divan İlerleme Defteri
 
-## Güncel çalışma: ajanla kurulum
+## Güncel çalışma: v1.3.4 risk sertleştirme
 
-Divan'ın bir GitHub deposundan Codex veya Claude masaüstü uygulamasına kurulumu
-artık değişmez release, önizleme, uygulama, doctor ve yeniden başlatma adımları
-olan tek bir kullanıcı yoludur. Makinece okunabilir sözleşme
-`divan-install.json`, ajan yönergesi `INSTALL_FOR_AGENTS.md` ve kurulum
-sonuç alanları aynı değişiklikte tutulur.
+`codex/v134-risk-hardening` dalı, dağıtılan üç skill'deki kanıtlanmış güvenlik
+ve doğruluk açıklarını kapatır; public komut örneklerini düzeltir; Quality Gate'i
+testleri iki kez çalıştırmadan coverage üretecek biçimde sadeleştirir; Python
+bağımlılık gözlemini ve nested skill impact sınıflandırmasını ekler. v1.3.3
+etiketi ve release varlıkları değişmez kalır.
 
 ## Ajan kurulum canary'si
 
@@ -36,10 +36,12 @@ a public page presents a published release as a candidate.
 
 ## Sıradaki kesin iş
 
-Keep the v1.3.3 tag and release immutable. For the next change, use a new PR
-from the merged main commit; do not rewrite this release. Update this record
-only after green checks and public readback evidence for tag, assets,
-checksums, attestations, Pages, Wiki, and README.
+Keep the v1.3.3 tag and release immutable. Commit the bounded implementation
+on `codex/v134-risk-hardening`, run the
+canonical default and coverage verification paths from a clean tree, then prepare
+a new PR for review. Do not merge, tag, dismiss CodeQL alerts, or change repository
+security settings without a separate explicit publication/security approval. Collect
+green checks and public readback evidence before any later publication decision.
 
 ## Son yayımlanan durum
 

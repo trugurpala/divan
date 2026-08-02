@@ -1250,6 +1250,21 @@ class ImpactTests(unittest.TestCase):
         self.assertIn("python scripts/catalog.py --check", result["checks"])
         self.assertIn("python evals/run.py --check", result["checks"])
 
+    def test_nested_skill_code_and_dependabot_are_classified(self) -> None:
+        result = self.engine.calculate_impact(
+            [
+                "plugins/core-pack/skills/brainstorming/scripts/server.cjs",
+                "plugins/react-pack/skills/vercel-optimize/lib/verify-claim.mjs",
+                ".github/dependabot.yml",
+            ],
+            self.contracts,
+        )
+
+        self.assertEqual(result["unclassified_paths"], [])
+        self.assertIn("skill-implementation", result["matched_rules"])
+        self.assertIn("repository-security", result["matched_rules"])
+        self.assertIn("release-validation", result["effects"])
+
     def test_ui_change_requires_accessibility_and_browser_evidence(self) -> None:
         result = self.engine.calculate_impact(["site/index.html"], self.contracts)
         self.assertIn("accessibility", result["effects"])

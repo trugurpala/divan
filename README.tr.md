@@ -154,7 +154,7 @@ Projeye Divan sözleşmesi eklemek için önce önizleyin, sonra uygulayın:
 ```powershell
 python scripts/divan.py init --project . --profile standard --locale auto
 python scripts/divan.py init --project . --profile standard --locale auto --execute
-python scripts/divan.py audit --project . --format json
+python scripts/divan.py audit --project . --json
 ```
 
 **İlk kurulum**, eklenti ve proje sözleşmesidir. Günlük kullanım, yukarıdaki

@@ -36,6 +36,12 @@
       "checks": ["python scripts/validate.py"]
     },
     {
+      "id": "skill-implementation",
+      "patterns": ["plugins/*/skills/*/**"],
+      "effects": ["catalog", "evaluation", "marketplace-validation"],
+      "checks": ["python scripts/validate.py"]
+    },
+    {
       "id": "plugin-inventory",
       "patterns": ["plugins/*/.claude-plugin/plugin.json", "plugins/*/.codex-plugin/plugin.json", ".agents/plugins/marketplace.json", ".claude-plugin/marketplace.json"],
       "effects": ["catalog", "marketplace-validation"],
@@ -198,6 +204,12 @@
       "patterns": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
       "effects": ["release-validation"],
       "checks": ["actionlint", "python -m unittest tests.test_workflows -v"]
+    },
+    {
+      "id": "repository-security",
+      "patterns": [".github/dependabot.yml", "SECURITY.md"],
+      "effects": ["release-validation"],
+      "checks": ["python -m unittest tests.test_workflows -v"]
     },
     {
       "id": "test-contract",

@@ -60,7 +60,8 @@ class CleanCodeTests(unittest.TestCase):
                 "plugins/sadrazam/company"
             ),
         )
-        self.assertIn("coverage report --fail-under=64", workflow)
+        self.assertIn("python scripts/verify.py --coverage", workflow)
+        self.assertNotIn("coverage run -m unittest discover -s tests", workflow)
 
         manifest = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
         paths = {surface["path"] for surface in manifest["public_surfaces"]}

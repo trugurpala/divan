@@ -264,15 +264,21 @@ class WorkflowHardeningTests(unittest.TestCase):
         text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
         for command in (
             "pip install -r requirements-dev.txt",
-            "python scripts/verify.py",
+            "python scripts/verify.py --coverage",
             "python scripts/standards.py --check",
             "ruff check .",
             "mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company",
-            "coverage run -m unittest discover -s tests",
-            "coverage report",
             '"$(go env GOPATH)/bin/actionlint"',
         ):
             self.assertIn(command, text)
+        self.assertNotIn("coverage run -m unittest discover -s tests", text)
+        self.assertNotIn("coverage report --fail-under", text)
+
+    def test_dependabot_observes_actions_and_python_dependencies(self) -> None:
+        text = (ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+        self.assertIn("package-ecosystem: github-actions", text)
+        self.assertIn("package-ecosystem: pip", text)
+        self.assertIn("directory: /", text)
 
     def test_primary_audit_keeps_tool_caches_outside_checkout(self) -> None:
         text = (WORKFLOWS / "quality-gate.yml").read_text(encoding="utf-8")
@@ -304,7 +310,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("[tool.mypy]", pyproject)
         self.assertIn("[tool.coverage.run]", pyproject)
         self.assertIn("fail_under = 64", pyproject)
-        self.assertIn("coverage report --fail-under=64", workflow)
+        self.assertIn("python scripts/verify.py --coverage", workflow)
 
 
 if __name__ == "__main__":
