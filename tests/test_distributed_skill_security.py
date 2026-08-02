@@ -6,6 +6,8 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from html.parser import HTMLParser
+from urllib.parse import urlparse
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 NODE = shutil.which("node")
@@ -34,6 +36,19 @@ ALGORITHMIC_VIEWER = (
     / "viewer.html"
 )
 P5_SRI = "sha384-Mhzoc5EVkjFUVtIW2M3h8BgXtFlUsUpu9lTCThPrV7+k6MN6vTi079rew0LkvgFb"
+P5_PATH = "/ajax/libs/p5.js/1.7.0/p5.min.js"
+
+
+class ScriptCollector(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.scripts: list[dict[str, str]] = []
+
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
+        if tag == "script":
+            self.scripts.append({key: value or "" for key, value in attrs})
 
 
 @unittest.skipUnless(NODE, "Node.js is required for distributed skill tests")
@@ -117,12 +132,19 @@ console.log(JSON.stringify(resolve('example-package/widget')));
 
     def test_remote_p5_script_has_pinned_subresource_integrity(self) -> None:
         viewer = ALGORITHMIC_VIEWER.read_text(encoding="utf-8")
-        script_line = next(
-            line for line in viewer.splitlines() if "cdnjs.cloudflare.com" in line
+        parser = ScriptCollector()
+        parser.feed(viewer)
+        p5_script = next(
+            attributes
+            for attributes in parser.scripts
+            if urlparse(attributes.get("src", "")).hostname == "cdnjs.cloudflare.com"
         )
 
-        self.assertIn(f'integrity="{P5_SRI}"', script_line)
-        self.assertIn('crossorigin="anonymous"', script_line)
+        parsed_source = urlparse(p5_script["src"])
+        self.assertEqual(parsed_source.scheme, "https")
+        self.assertEqual(parsed_source.path, P5_PATH)
+        self.assertEqual(p5_script.get("integrity"), P5_SRI)
+        self.assertEqual(p5_script.get("crossorigin"), "anonymous")
 
 
 if __name__ == "__main__":
