@@ -10,6 +10,8 @@
 
 [Türkçe](README.tr.md) · **English** · [Wiki](https://github.com/trugurpala/divan/wiki) · [Roadmap](ROADMAP.md) · [Support](SUPPORT.md)
 
+> Türkçe ana sayfa için [README.tr.md](README.tr.md) dosyasını açın.
+
 Divan adds a plan, a safe work order, persistent project memory and verifiable
 delivery to the coding agent you already use. You describe the outcome in
 ordinary language. Divan selects the smallest relevant capability set, keeps
