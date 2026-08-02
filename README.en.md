@@ -15,7 +15,7 @@ delivery to the coding agent you already use. You describe the outcome in
 ordinary language. Divan selects the smallest relevant capability set, keeps
 the work visible and refuses to call an unverified result complete.
 
-> **Important limit:** Divan is not a model, a cloud coding service or an
+> **Önemli sınır:** Divan is not a model, a cloud coding service or an
 > external agent runtime. It cannot make an unavailable host tool appear, and
 > it does not turn an untested claim into evidence.
 
