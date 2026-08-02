@@ -1,6 +1,6 @@
 # Hızlı Başlangıç
 
-v1.3.1, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
+v1.3.4, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
 [son yayımlanan sürüm](https://github.com/trugurpala/divan/releases/latest)
 sayfasını kullan.
 
@@ -39,19 +39,19 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesini, sonra aynı sabit sürümün uygulamasını çalıştır:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.3
-python scripts/divan.py install --host both --ref v1.3.3 --execute
+python scripts/divan.py install --host both --ref v1.3.4
+python scripts/divan.py install --host both --ref v1.3.4 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.3.3
-python scripts/divan.py update --host both --ref v1.3.3
-python scripts/divan.py update --host both --ref v1.3.3 --execute
+python scripts/divan.py doctor --host both --ref v1.3.4
+python scripts/divan.py update --host both --ref v1.3.4
+python scripts/divan.py update --host both --ref v1.3.4 --execute
 ```
 
-v1.3.1 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
+v1.3.4 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
 

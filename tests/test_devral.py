@@ -156,10 +156,11 @@ class DevralTesti(unittest.TestCase):
         current_next = blueprint.split("## Sıradaki Kesin Adım", maxsplit=1)[1]
         host_guide = (KOK / "docs/Host-Uyumlulugu.md").read_text(encoding="utf-8")
 
-        self.assertIn("v1.3.3 ✓** Yayımlanan", blueprint)
+        version = (KOK / "VERSION").read_text(encoding="utf-8").strip()
+        self.assertIn(f"v{version} ✓**", blueprint)
         self.assertIn("Keep v1.3.3 immutable", current_next)
         self.assertNotIn("Keep v1.0.3 immutable", current_next)
-        self.assertIn("--ref v1.3.3 --execute", host_guide)
+        self.assertIn(f"--ref v{version} --execute", host_guide)
 
 
 if __name__ == "__main__":
