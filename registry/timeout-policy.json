@@ -58,10 +58,12 @@
       ]
     },
     "test": {
-      "default_seconds": 600,
+      "default_seconds": 720,
       "minimum_seconds": 60,
       "maximum_seconds": 1200,
-      "workflows": []
+      "workflows": [
+        "quality-gate.yml"
+      ]
     },
     "verify": {
       "default_seconds": 600,

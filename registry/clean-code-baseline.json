@@ -56,7 +56,7 @@
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/project_os.py", "value": 2932},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/providers.py", "value": 1233},
     {"kind": "module-lines", "target": "plugins/sadrazam/divan_runtime/receipts.py", "value": 787},
-    {"kind": "module-lines", "target": "scripts/host_lifecycle.py", "value": 635},
+    {"kind": "module-lines", "target": "scripts/host_lifecycle.py", "value": 630},
     {"kind": "module-lines", "target": "scripts/legacy_state.py", "value": 507},
     {"kind": "module-lines", "target": "scripts/validate.py", "value": 429}
   ]

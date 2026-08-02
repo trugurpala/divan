@@ -8,7 +8,6 @@ import pathlib
 import re
 import subprocess
 import sys
-import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
@@ -17,6 +16,7 @@ import bootstrap_contract as _bootstrap_contract
 import host_adapters as _host_adapters
 import host_controller as _host_controller
 import host_install_journal as _host_install_journal
+import host_install_result as _host_install_result
 import host_journal as _host_journal
 import host_options as _host_options
 import host_probe as _host_probe
@@ -394,6 +394,9 @@ def _annotate_profile(
     )
 
 
+_annotate_result = _host_install_result.annotate_result
+
+
 def _install_target(
     repository: pathlib.Path, expected_packages: dict[str, dict[str, str]], options: Options, runner: Runner
 ) -> tuple[_host_install_journal.InstallIO, dict[str, Any]]:
@@ -470,53 +473,6 @@ def _install_host(
     _persist_record(transaction_path, record)
 
 
-def _migrate_legacy_if_requested(
-    transaction_path: pathlib.Path,
-    record: dict[str, Any],
-    options: Options,
-    repository: pathlib.Path,
-    runner: Runner,
-    stamp: str,
-) -> None:
-    if not options.migrate_legacy:
-        return
-    legacy_journal = (
-        options.state_dir / f"legacy-{stamp}-{uuid.uuid4().hex[:8]}.json"
-    )
-    _begin_mutation(
-        transaction_path,
-        record,
-        _host_install_journal.intent(
-            "forward", "legacy-migration", "codex", journal=str(legacy_journal)
-        ),
-    )
-    record["legacy_migration"] = _migrate_legacy(
-        repository, runner, legacy_journal
-    )
-    _finish_mutation(transaction_path, record)
-
-
-def _start_install_transaction(
-    options: Options, record: dict[str, Any]
-) -> tuple[pathlib.Path, str]:
-    options.state_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
-    transaction_path = (
-        options.state_dir / f"install-{stamp}-{uuid.uuid4().hex[:8]}.json"
-    )
-    record.update(
-        {
-            "transaction_path": str(transaction_path),
-            "started_at": datetime.now(UTC).isoformat(),
-            "before": {},
-            "status": "in-progress",
-            "pending": None,
-        }
-    )
-    _persist_record(transaction_path, record)
-    return transaction_path, stamp
-
-
 @_host_controller.serialized(_normalize_source, InstallError)
 def install(
     options: Options,
@@ -539,11 +495,21 @@ def install(
     )
     if not options.execute:
         _annotate_profile(record, options, selected_mode, selected_cli_status)
+        _annotate_result(
+            record,
+            options,
+            repository,
+            expected_packages,
+            selected_mode or _host_profiles.NATIVE_MODE,
+            "not-run",
+        )
         return record
     install_io, record["target"] = _install_target(
         repository, expected_packages, options, runner
     )
-    transaction_path, stamp = _start_install_transaction(options, record)
+    transaction_path, stamp = _host_install_result.start_transaction(
+        options, record, _persist_record
+    )
 
     try:
         for host in _hosts(options.host):
@@ -557,12 +523,38 @@ def install(
                 install_io,
             )
 
-        record["status"] = "verified"
-        _migrate_legacy_if_requested(
-            transaction_path, record, options, repository, runner, stamp
+        diagnosis = _host_install_result.post_install_doctor(
+            options,
+            runner,
+            repository,
+            doctor,
+            _subprocess_runner,
+            InstallError,
         )
-        record["finished_at"] = datetime.now(UTC).isoformat()
-        _annotate_profile(record, options, selected_mode, selected_cli_status)
+        _host_install_result.migrate_legacy_if_requested(
+            options,
+            transaction_path,
+            record,
+            repository,
+            runner,
+            stamp,
+            _begin_mutation,
+            _finish_mutation,
+            _host_install_journal.intent,
+            _migrate_legacy,
+        )
+        _host_install_result.finalize_record(
+            record,
+            options,
+            repository,
+            expected_packages,
+            selected_mode or _host_profiles.NATIVE_MODE,
+            diagnosis["status"],
+            datetime.now(UTC).isoformat(),
+            subprocess.list2cmdline(_host_profiles.recovery_command(transaction_path)),
+            _annotate_profile,
+            selected_cli_status,
+        )
         _persist_record(transaction_path, record)
         return record
     except BaseException as exc:
@@ -613,6 +605,7 @@ def doctor(
     *,
     runner: Runner = _subprocess_runner,
     root: pathlib.Path | None = None,
+    include_transactions: bool = True,
 ) -> dict[str, Any]:
     expected = _expected_packages(root or pathlib.Path(__file__).resolve().parent.parent)
     result = _host_adapters.doctor(
@@ -620,8 +613,10 @@ def doctor(
         runner=runner,
         expected=expected,
         normalize=_normalize_source,
-        hosts=_hosts(options.host),
+        hosts=_hosts(options.host), include_transactions=include_transactions,
     )
+    if not include_transactions:
+        return result
     return _host_journal.augment_doctor(result, options.state_dir, _normalize_source)
 
 

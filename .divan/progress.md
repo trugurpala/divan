@@ -1,5 +1,19 @@
 # Divan İlerleme Defteri
 
+## Güncel çalışma: ajanla kurulum
+
+Divan'ın bir GitHub deposundan Codex veya Claude masaüstü uygulamasına kurulumu
+artık değişmez release, önizleme, uygulama, doctor ve yeniden başlatma adımları
+olan tek bir kullanıcı yoludur. Makinece okunabilir sözleşme
+`divan-install.json`, ajan yönergesi `INSTALL_FOR_AGENTS.md` ve kurulum
+sonuç alanları aynı değişiklikte tutulur.
+
+## Ajan kurulum canary'si
+
+Yeni kurulum sözleşmesini temiz bir Windows 11 Codex ve Claude oturumunda
+canary olarak çalıştır; doctor `healthy`/`READY` sonucunu ve yeni oturumdaki
+Divan keşfini kaydet. Bu kanıt alınmadan yeni release yayımlandı denmez.
+
 Son güncelleme: 2026-08-02
 
 ## Yayın durumu
