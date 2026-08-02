@@ -36,7 +36,7 @@ a public page presents a published release as a candidate.
 
 ## Sıradaki kesin iş
 
-Keep the v1.3.3 tag and release immutable. For the next change, open a new PR
+Keep the v1.3.3 tag and release immutable. For the next change, use a new PR
 from the merged main commit; do not rewrite this release. Update this record
 only after green checks and public readback evidence for tag, assets,
 checksums, attestations, Pages, Wiki, and README.

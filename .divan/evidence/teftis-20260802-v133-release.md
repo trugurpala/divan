@@ -1,5 +1,8 @@
 # v1.3.3 yayın teftişi
 
+- Version: v1.3.3
+- Source commit: d65c36c22c4d4c3f27bd892d2cf56f34e551ad57
+
 ## Sonuç
 
 v1.3.3 değişmez etiketi ve GitHub Release'i yayımlandı. Release taslak veya
@@ -7,6 +10,8 @@ v1.3.3 değişmez etiketi ve GitHub Release'i yayımlandı. Release taslak veya
 
 ## Kanıt
 
+- Version: v1.3.3
+- Source commit: d65c36c22c4d4c3f27bd892d2cf56f34e551ad57
 - Ana dal commit'i: `d65c36c22c4d4c3f27bd892d2cf56f34e551ad57`
 - Release: https://github.com/trugurpala/divan/releases/tag/v1.3.3
 - Release workflow: `30755947059` — başarılı
