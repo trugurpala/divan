@@ -37,11 +37,9 @@ jobs:
           ruff check .
           python scripts/clean_code.py --check
           mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company
-          coverage run -m unittest discover -s tests
-          coverage report --fail-under=64
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
           "$(go env GOPATH)/bin/actionlint"
-          python scripts/verify.py
+          python scripts/verify.py --coverage
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1

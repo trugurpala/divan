@@ -27,7 +27,7 @@ Durum değiştiren her komut, `--execute` verilene kadar dry-run'dır:
 ```powershell
 python scripts/divan.py init --project . --profile standard --locale auto
 python scripts/divan.py init --project . --profile standard --locale auto --execute
-python scripts/divan.py audit --project . --format json
+python scripts/divan.py audit --project . --json
 ```
 
 Kurulum yalnız `.divan/` yüzeyine ve `AGENTS.md` / `CLAUDE.md` içindeki işaretli

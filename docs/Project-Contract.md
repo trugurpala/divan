@@ -27,7 +27,7 @@ Every mutating command is a dry run until `--execute` is present:
 ```powershell
 python scripts/divan.py init --project . --profile standard --locale auto
 python scripts/divan.py init --project . --profile standard --locale auto --execute
-python scripts/divan.py audit --project . --format json
+python scripts/divan.py audit --project . --json
 ```
 
 Initialization owns only `.divan/` and marked blocks in `AGENTS.md` or

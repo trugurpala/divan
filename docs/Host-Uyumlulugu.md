@@ -54,7 +54,7 @@ döngüsünü anlatır. Tek bir Windows kurulumundaki AppX/ACL veya PATH durumu 
 yerel sonucu değiştirebilir. Bu nedenle Divan aşağıdaki açık profili sunar:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.0.2 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.3.3 --execute
 ```
 
 Komut `missing`, `not-executable`, `access-denied`, `invalid-json` ve `healthy`

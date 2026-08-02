@@ -46,16 +46,17 @@
       "source": "obra/superpowers",
       "reviewed_head": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
       "decision": "KEEP",
-      "local_tree_sha256": "ee7ea7a6225cc23415431e5f58a30dbdf999177b50184756dc2fc8a6e02a5bcb",
+      "local_tree_sha256": "9fa2721208c263ee11941a78d77ebb7048a296e360bbab2bf2810448f465ea95",
       "changed_files": [
         "SKILL.md",
         "scripts/helper.js",
+        "scripts/server.cjs",
         "scripts/start-server.sh",
         "scripts/stop-server.sh",
         "spec-document-reviewer-prompt.md",
         "visual-companion.md"
       ],
-      "reason": "Keep Divan's dependency-light design gate and record the v1.1 bounded pre-approval rule: an explicit do-not-ask instruction can advance only reversible named work, never publication, secrets, payments, messaging, account security, or destructive actions."
+      "reason": "Keep Divan's dependency-light design gate and bounded pre-approval rule. The local browser helper now keeps the session secret in its HttpOnly cookie and emits only static bootstrap HTML, preventing executable reflection or browser storage exposure."
     },
     {
       "skill": "dispatching-parallel-agents",
@@ -257,11 +258,12 @@
       "source": "anthropics/skills",
       "reviewed_head": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
       "decision": "KEEP",
-      "local_tree_sha256": "c126ba30599faa6fee7ba7e92c226bfee2532fef3e528c1dcdfbb543b716dc46",
+      "local_tree_sha256": "0be2b3716049f09e1a55788bdb6eab163ee88e5f284ab590c9263d74c0aaec7b",
       "changed_files": [
-        "SKILL.md"
+        "SKILL.md",
+        "templates/viewer.html"
       ],
-      "reason": "The upstream source advanced without changing this local counterpart; keep the byte-reviewed Divan copy and reopen review on the next source or local change."
+      "reason": "Keep the byte-reviewed Divan copy and pin the existing p5.js CDN asset with SHA-384 subresource integrity and anonymous CORS so a changed CDN response cannot execute silently."
     },
     {
       "skill": "canvas-design",
@@ -345,11 +347,15 @@
       "source": "vercel-labs/agent-skills",
       "reviewed_head": "7c180d9044c9ae2b442b567aad4e42a28dd5ed62",
       "decision": "KEEP",
-      "local_tree_sha256": "d106dd94e6ae6331721c752ab848ed6329d38e0b4bf127007b80f911cf800ebb",
+      "local_tree_sha256": "87364783433955c796578b67491d5c70dc496b73d2904eb093722c7b87045569",
       "changed_files": [
-        "SKILL.md"
+        "SKILL.md",
+        "lib/cost-coverage.mjs",
+        "lib/render-report.mjs",
+        "lib/verify-claim.mjs",
+        "lib/workspace-resolver.mjs"
       ],
-      "reason": "The upstream source advanced without changing this local counterpart; keep the byte-reviewed Divan copy and reopen review on the next source or local change."
+      "reason": "Keep the reviewed local bundle with literal-only claim matching, complete Markdown cell escaping, and all-star workspace export replacement; these security and correctness patches remain local until upstream is reviewed again."
     },
     {
       "skill": "vercel-react-native-skills",

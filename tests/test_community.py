@@ -205,6 +205,19 @@ class CommunityContractTests(unittest.TestCase):
                 self.assertIn("scripts/divan.py audit", content)
                 self.assertIn("Project-Contract", content)
 
+    def test_active_project_audit_examples_use_the_real_json_flag(self) -> None:
+        for relative in (
+            "README.md",
+            "README.en.md",
+            "README.tr.md",
+            "docs/Project-Contract.md",
+            "docs/Project-Contract.tr.md",
+        ):
+            content = read(relative)
+            with self.subTest(relative=relative):
+                self.assertIn("audit --project . --json", content)
+                self.assertNotIn("audit --project . --format json", content)
+
     def test_readmes_lead_installed_users_to_plain_language_daily_use(self) -> None:
         turkish = read("README.tr.md")
         for content in (read("README.md"), read("README.en.md")):

@@ -1203,14 +1203,10 @@ function escapeRegExp(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Supports `/pattern/flags` literal-regex form OR plain escaped string. Caller flags merge with embedded flags via Set dedup.
+// Claim text is always literal. Executing an agent-provided regex would allow
+// regex injection and pathological backtracking against repository contents.
 function compilePattern(pattern, flags) {
-  const m = pattern.match(/^\/(.+)\/([gimsu]*)$/);
-  if (m) {
-    const mergedFlags = [...new Set(((m[2] || '') + (flags || '')).split(''))].join('');
-    return new RegExp(m[1], mergedFlags);
-  }
-  return new RegExp(pattern.replace(/[.+^${}()|[\]\\?*]/g, '\\$&'), flags);
+  return new RegExp(escapeRegExp(pattern), flags);
 }
 
 async function readClaimFile(claim) {

@@ -151,6 +151,16 @@ class DevralTesti(unittest.TestCase):
                 for marker in markers:
                     self.assertIn(marker, text)
 
+    def test_blueprint_and_active_host_guide_follow_the_current_release(self):
+        blueprint = (KOK / "BLUEPRINT.md").read_text(encoding="utf-8")
+        current_next = blueprint.split("## Sıradaki Kesin Adım", maxsplit=1)[1]
+        host_guide = (KOK / "docs/Host-Uyumlulugu.md").read_text(encoding="utf-8")
+
+        self.assertIn("v1.3.3 ✓** Yayımlanan", blueprint)
+        self.assertIn("Keep v1.3.3 immutable", current_next)
+        self.assertNotIn("Keep v1.0.3 immutable", current_next)
+        self.assertIn("--ref v1.3.3 --execute", host_guide)
+
 
 if __name__ == "__main__":
     unittest.main()

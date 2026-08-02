@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import os
 import pathlib
 import subprocess
@@ -33,13 +34,48 @@ CORE_COMMANDS: tuple[Command, ...] = (
     ("-m", "unittest", "discover", "-s", "tests", "-v"),
     ("scripts/hygiene.py", "--check"),
 )
+COVERAGE_TEST_COMMAND: Command = (
+    "-m",
+    "coverage",
+    "run",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-v",
+)
+COVERAGE_REPORT_COMMAND: Command = (
+    "-m",
+    "coverage",
+    "report",
+    "--fail-under=64",
+)
 
 
 def command_class(arguments: Command) -> str:
     """Map one fixed verification child to its bounded timeout class."""
-    if arguments[:3] == ("-m", "unittest", "discover"):
+    if arguments[:3] == ("-m", "unittest", "discover") or arguments[:5] == (
+        "-m",
+        "coverage",
+        "run",
+        "-m",
+        "unittest",
+    ):
         return "test"
     return "fast-check"
+
+
+def coverage_commands(commands: Sequence[Command]) -> tuple[Command, ...]:
+    """Replace the unittest child with one instrumented run and its report."""
+    unittest_command = ("-m", "unittest", "discover", "-s", "tests", "-v")
+    expanded: list[Command] = []
+    for command in commands:
+        if command == unittest_command:
+            expanded.extend((COVERAGE_TEST_COMMAND, COVERAGE_REPORT_COMMAND))
+        else:
+            expanded.append(command)
+    return tuple(expanded)
 
 
 def verification_environment(
@@ -136,8 +172,18 @@ def run(
         return _run(root.resolve(), commands, pathlib.Path(temporary))
 
 
-def main() -> int:
-    return run()
+def main(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Run Divan's canonical hygiene-stable verification sequence."
+    )
+    parser.add_argument(
+        "--coverage",
+        action="store_true",
+        help="instrument the single unittest run and enforce the coverage floor",
+    )
+    arguments = parser.parse_args(argv)
+    commands = coverage_commands(CORE_COMMANDS) if arguments.coverage else CORE_COMMANDS
+    return run(commands=commands)
 
 
 if __name__ == "__main__":

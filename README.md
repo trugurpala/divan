@@ -159,7 +159,7 @@ For a project-owned contract, preview and then apply initialization:
 ```powershell
 python scripts/divan.py init --project . --profile standard --locale auto
 python scripts/divan.py init --project . --profile standard --locale auto --execute
-python scripts/divan.py audit --project . --format json
+python scripts/divan.py audit --project . --json
 ```
 
 **First setup** is installation and project initialization. Daily use is the

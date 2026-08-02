@@ -40,6 +40,19 @@ class VerificationRunnerTests(unittest.TestCase):
             verify.CORE_COMMANDS,
         )
 
+    def test_coverage_mode_substitutes_one_instrumented_test_run(self) -> None:
+        verify = load_verify()
+        self.assertIsNotNone(verify)
+
+        commands = verify.coverage_commands(verify.CORE_COMMANDS)
+
+        self.assertNotIn(
+            ("-m", "unittest", "discover", "-s", "tests", "-v"), commands
+        )
+        self.assertEqual(commands.count(verify.COVERAGE_TEST_COMMAND), 1)
+        self.assertEqual(commands.count(verify.COVERAGE_REPORT_COMMAND), 1)
+        self.assertEqual(verify.command_class(verify.COVERAGE_TEST_COMMAND), "test")
+
     def test_environment_keeps_generated_caches_outside_repository(self) -> None:
         verify = load_verify()
         self.assertIsNotNone(verify)

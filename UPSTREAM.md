@@ -50,6 +50,9 @@ izlenir; lisansı belirsiz içerik alınmaz.
 |---|---|---|
 | `zanaat-pack/skills/claude-api/SKILL.md` | `description` kısaltıldı | Upstream açıklaması 1024 karakter sınırını aşıyor; gövde ve referanslar korunuyor |
 | `react-pack/skills/vercel-react-best-practices/AGENTS.md` | Üç göreli bağlantıya `rules/` eklendi | Upstream derleme belgesindeki üç bağlantı gerçek dosya konumuna gitmiyordu |
+| `core-pack/skills/brainstorming/scripts/{server.cjs,helper.js}` | Oturum anahtarı HTML ve `sessionStorage` dışına çıkarıldı | Anahtar yalnız `HttpOnly` çerezde kalır; çalıştırılabilir HTML'e kullanıcı girdisi yansıtılmaz |
+| `react-pack/skills/vercel-optimize/lib/*.mjs` | Kullanıcı kalıpları literal eşleşir; Markdown ve yıldız dönüşümleri tamamlandı | Regex enjeksiyonu, eksik hücre kaçışları ve çoklu `*` dışa aktarım hataları engellenir |
+| `zanaat-pack/skills/algorithmic-art/templates/viewer.html` | p5.js CDN betiğine SHA-384 SRI ve anonim CORS eklendi | Sabit sürümün beklenmeyen CDN içeriği sessizce çalıştırılmaz |
 
 Vercel'in `<ViewTransition>` ve `<file-or-pattern>` değerleri upstream ile aynı
 tutulur. Agent Skills standardı açılı ayraçları genel olarak yasaklamaz.
