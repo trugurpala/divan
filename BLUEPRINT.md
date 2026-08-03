@@ -123,6 +123,12 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
+- **v1.3.4 ✓** Yayımlanan topluluk bakım hattı: Windows PowerShell 5.1, PowerShell 7'nin
+  modül yolunu devraldığında da eski-host checksum doğrulamasını .NET SHA-256
+  ile çalıştırır. Bu yol `PSModulePath` temizlenerek regresyon testiyle
+  doğrulanır. Önceki kaynak-kökeni, public-komut, bağımlılık gözlemi ve
+  doğrulama tekrarını önleyen sertleştirmeler korunur. Yeni runtime, dış repo
+  fork'u veya ölçülmemiş performans/kalite iddiası eklenmez.
 - **v1.3.3 ✓** Yayımlanan bakım hattı: Kurulum sonrası doğrulamanın iki kez işlem kaydı taramasını
   engeller; timeout benchmark policy’sini 720 saniyelik doğrulanmış sınıra taşır.
   Windows, macOS ve Linux native kurulumları CI’da doğrulanır. Kamuya açık İngilizce ve Türkçe README sürüm
@@ -586,6 +592,6 @@ yükseltmesiyle doğrulanmıştır.
 
 ## Sıradaki Kesin Adım
 
-Keep v1.3.3 immutable. Next exact action: close the actionable code-scanning,
-public-command, dependency-observation, and duplicate-test risks in a new pull
-request without changing the v1.3.3 tag or release assets.
+Keep v1.3.4 and all earlier release tags immutable. Triage real community
+reports and contributions through the structured forms, then use the bounded
+evidence-first path before every later change or release.

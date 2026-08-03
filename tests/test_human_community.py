@@ -88,16 +88,15 @@ class HumanCommunityContractTests(unittest.TestCase):
 
     def test_progress_records_current_published_release(self):
         progress = read(".divan/progress.md")
-        self.assertIn("Latest published release: v1.3.3", progress)
-        self.assertIn("teftis-20260802-v133-release.md", progress)
+        self.assertIn("Latest published release: v1.3.4", progress)
+        self.assertIn("teftis-20260802-v134-release.md", progress)
         self.assertNotIn("The latest published release is immutable v1.3.2", progress)
         self.assertEqual(progress.count("## Sıradaki kesin iş"), 1)
         next_action = progress.split("## Sıradaki kesin iş", 1)[1].split("\n## ", 1)[0]
         normalized = " ".join(next_action.split())
-        self.assertIn("v1.3.3 tag and release immutable", normalized)
-        self.assertIn("new PR", normalized)
-        self.assertIn("green checks", normalized)
-        self.assertIn("public readback evidence", normalized)
+        self.assertIn("community", normalized)
+        self.assertIn("v1.3.4", normalized)
+        self.assertIn("evidence-first", normalized)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,12 @@
-# Durum ve Yol Haritası · v1.3.3
+# Durum ve Yol Haritası · v1.3.4
 
-Son durum tarihi: 2026-08-01.
+Son durum tarihi: 2026-08-02.
 
-> **Yayımlanan paketlerin güncel listesi [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) sayfasındadır.** v1.3.1, Müşavir yetenek denetimi ve yayın gerçeği eşitlemesiyle yayımlanmıştır. Etiket, yedi varlık, checksum, SPDX SBOM, attestations, Pages ve Wiki geri okuması yayın kapısından geçti.
+> **Yayımlanan paketlerin güncel listesi [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) sayfasındadır.** v1.3.4, Windows checksum doğrulamasını PowerShell modül yolundan bağımsızlaştırır ve önceki risk sertleştirmelerini taşır. Etiket, yedi varlık, checksum, SPDX SBOM, attestations, Pages ve Wiki geri okuması yayın kapısından geçti.
 
 ## Şu anda yayımlanan
 
-- Değişmez `v1.3.1` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
+- Değişmez `v1.3.4` etiketi ve ona bağlı GitHub Release, yedi varlık, checksum
   manifestleri, SPDX SBOM, attestations, Pages ve Wiki kanıtı.
 - 5 paket ve 42 beceri.
 - Vibe coder için beş niyetli ferman seçici.
@@ -29,6 +29,16 @@ Son durum tarihi: 2026-08-01.
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve
   dikkat eşiğini açıklar; kullanıcı sessiz ekranı çökme zannetmez.
+
+## v1.3.4 bakım güncellemesi
+
+- Windows eski-host checksum doğrulaması, PowerShell modül yolundan bağımsız
+  .NET SHA-256 API'sini kullanır. Bu, Windows PowerShell 5.1 ile PowerShell 7
+  birlikte bulunduğunda da aynı kurulum kontrolünün çalışmasını sağlar.
+- Dağıtılan skill kökeni, public komut, bağımlılık gözlemi ve tekrar eden
+  doğrulama işine yönelik önceki sertleştirmeler bu kaynak hattında korunur.
+- Bu sürüm yeni bir çalışma zamanı, dış kod ya da ölçülmüş kalite/hız iddiası
+  getirmez.
 
 ## v1.3.1 kaynak hattı
 

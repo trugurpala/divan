@@ -111,6 +111,8 @@ h2{font-family:Georgia,'Times New Roman',serif;font-weight:600;font-size:clamp(3
 .rota{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
 .rota a{display:flex;align-items:center;min-height:44px;padding:10px 14px;border:1px solid rgba(59,184,168,.55);border-radius:5px;text-decoration:none;touch-action:manipulation}
 .niyet,.kopyala{min-height:44px;touch-action:manipulation}
+.release-cta{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin-top:16px;padding:10px 14px;border:1px solid var(--altin);border-radius:5px;background:var(--altin);color:var(--gece);font:700 14px system-ui,-apple-system,'Segoe UI',sans-serif;text-decoration:none;touch-action:manipulation}
+.release-cta:hover,.release-cta:focus-visible{background:var(--fildisi);border-color:var(--fildisi);color:var(--gece)}
 
 /* Mühürdar */
 .muhurdar{display:flex;align-items:center;gap:28px;border:1px solid rgba(201,162,39,.35);border-radius:8px;padding:24px;background:rgba(201,162,39,.06)}
@@ -137,7 +139,7 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Niyetten doğrulanmış yayına</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Bitirmek istediğin işi normal cümlelerle yaz.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>planlı, testli ve kanıtlanabilir bir teslim akışına</b> çevirir; yerel skill/plugin dağıtımıdır, model veya runtime değildir. Divan Nizamı ürünün yetki düzenidir. İşi Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.3.3 kaynak hattı · yayımlanan paketler GitHub Releases'ta · 42 beceri · 5 paket · v1 hazırlık: 8/8.</p>
+    <p class="tez"><b>Bitirmek istediğin işi normal cümlelerle yaz.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>planlı, testli ve kanıtlanabilir bir teslim akışına</b> çevirir; yerel skill/plugin dağıtımıdır, model veya runtime değildir. Divan Nizamı ürünün yetki düzenidir. İşi Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.3.4 kaynak hattı · yayımlanan paketler GitHub Releases'ta · 42 beceri · 5 paket · v1 hazırlık: 8/8.</p>
     <p class="ferman-etiket">Yayın durumu · değişmez tag ve GitHub Release ile doğrulanır</p>
     <p class="hero-notu">Hükümdar sensin — son yetki sende; bu dil kullanmak için öğrenmen gereken bir rol oyunu değil.</p>
     <div class="hero-yollar" aria-label="Başlangıç yolları">
@@ -146,6 +148,7 @@ footer p+p{margin-top:10px}
         <p>Release'ten indirdiğin ve SHA-256 ile doğruladığın kurucuda önce önizlemeyi, sonra uygulamayı çalıştır.</p>
         <code>python .\divan.pyz install --host codex --profile auto
 python .\divan.pyz install --host codex --profile auto --execute</code>
+        <a class="release-cta" href="https://github.com/trugurpala/divan/releases/latest">GitHub Release’ini aç</a>
       </article>
       <article class="hero-yol">
         <h2>Divan zaten kurulu</h2>
