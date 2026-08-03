@@ -24,6 +24,8 @@ on:
       - '.github/ISSUE_TEMPLATE/kaynak-adayi.yml'
       - '.github/workflows/meclis.yml'
 
+permissions: read-all
+
 jobs:
   check:
     if: github.event_name == 'pull_request' || github.event_name == 'push'
