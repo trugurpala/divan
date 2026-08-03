@@ -40,6 +40,32 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertNotIn("secrets.", text)
         self.assertNotIn("environment:", text)
 
+    def test_writable_workflows_default_to_read_only_permissions(self) -> None:
+        for filename in (
+            "candidate-review.yml",
+            "codeql.yml",
+            "release.yml",
+            "scorecard.yml",
+            "wiki-sync.yml",
+        ):
+            with self.subTest(filename=filename):
+                text = (WORKFLOWS / filename).read_text(encoding="utf-8")
+                header = text[: text.index("\njobs:")]
+                self.assertIn("\npermissions: read-all\n", header)
+
+        codeql = (WORKFLOWS / "codeql.yml").read_text(encoding="utf-8")
+        codeql_header = codeql[: codeql.index("\njobs:")]
+        self.assertNotIn("security-events: write", codeql_header)
+        self.assertIn(
+            "  analyze:\n"
+            "    runs-on: ubuntu-latest\n"
+            "    timeout-minutes: 15\n"
+            "    permissions:\n"
+            "      contents: read\n"
+            "      security-events: write\n",
+            codeql,
+        )
+
     def test_all_actions_are_pinned_to_full_commit_sha(self) -> None:
         mutable: list[str] = []
         for path in sorted(WORKFLOWS.glob("*.yml")):

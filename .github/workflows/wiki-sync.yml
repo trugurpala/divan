@@ -26,6 +26,8 @@ on:
       - 'VERSION'
       - '.github/workflows/wiki-sync.yml'
 
+permissions: read-all
+
 concurrency:
   group: divan-wiki
   cancel-in-progress: false
