@@ -2,7 +2,49 @@
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 $ErrorActionPreference = "Stop"
 
-$ref = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { "v1.3.6" }
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$defaultRef = "v1.3.7"
+$versionFile = Join-Path $scriptDir "..\VERSION"
+if (Test-Path $versionFile) {
+  $versionValue = (Get-Content -LiteralPath $versionFile -Raw).Trim()
+  if ($versionValue) {
+    $defaultRef = "v$versionValue"
+  }
+}
+
+$requestedRef = if ($env:DIVAN_REF) { $env:DIVAN_REF } else { $defaultRef }
+
+function Resolve-DivanRef {
+  param([Parameter(Mandatory = $true)][string]$Ref)
+
+  if ($Ref -in @("main", "master", "latest")) {
+    throw "Degisebilir DIVAN_REF kabul edilmez: $Ref"
+  }
+
+  $tagOutput = & git ls-remote --exit-code https://github.com/trugurpala/divan.git "refs/tags/$Ref" 2>$null
+  if ($LASTEXITCODE -ne 0 -or -not $tagOutput) {
+    $latestRef = ""
+    try {
+      $release = Invoke-RestMethod -Uri "https://api.github.com/repos/trugurpala/divan/releases/latest" -Headers @{ "User-Agent" = "divan-installer" } -TimeoutSec 10
+      $latestRef = $release.tag_name
+    } catch {
+      throw "DIVAN_REF etiket bulunamadi ve latest release okunamadi: $Ref"
+    }
+    if (-not $latestRef) {
+      throw "DIVAN_REF etiket bulunamadi: $Ref"
+    }
+    $latestTagOutput = & git ls-remote --exit-code https://github.com/trugurpala/divan.git "refs/tags/$latestRef" 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $latestTagOutput) {
+      throw "En son yayımlanmış etiket doğrulanamadi: $latestRef"
+    }
+    Write-Host "UYARI: İstenen DIVAN_REF '$Ref' bulunamadı; otomatik olarak son yayımlanmış $latestRef kullanılıyor."
+    return $latestRef
+  }
+
+  return $Ref
+}
+
+$ref = Resolve-DivanRef -Ref $requestedRef
 $dst = if ($env:CODEX_SKILLS_DIR) {
   $env:CODEX_SKILLS_DIR
 } else {

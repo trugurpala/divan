@@ -187,7 +187,7 @@
     {"id": "eval-provenance", "path": "evals/provenance.py", "marker": "_bind_provenance", "replace_version": false},
     {"id": "eval-result-contracts", "path": "evals/result_contracts.py", "marker": "run_evaluations", "replace_version": false},
     {"id": "fallback-windows", "path": "scripts/install_codex.ps1", "marker": "v{version}", "replace_version": true, "version_patterns": ["\"v{version}\""]},
-    {"id": "fallback-posix", "path": "scripts/install_codex.sh", "marker": "v{version}", "replace_version": true, "version_patterns": ["DIVAN_REF:-v{version}"]},
+    {"id": "fallback-posix", "path": "scripts/install_codex.sh", "marker": "v{version}", "replace_version": true, "version_patterns": ["DEFAULT_REF=\"v{version}\""]},
     {"id": "fallback-uninstall-windows", "path": "scripts/uninstall_codex.ps1", "marker": "DIVAN_PYTHON", "replace_version": false},
     {"id": "fallback-uninstall-posix", "path": "scripts/uninstall_codex.sh", "marker": "DIVAN_PYTHON", "replace_version": false},
     {"id": "claude-agent-adapter", "path": "evals/adapters/claude_agent.py", "marker": "DIVAN_CLAUDE_MODEL", "replace_version": false},

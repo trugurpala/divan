@@ -123,6 +123,11 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
+- **v1.3.7 ✓** Yayın yüzeyi hazırlığı tamamlandı: `VERSION`, wiki/site/README,
+  marketplace metadata, kurulum betikleri ve host yaşam döngüsü referansları `v1.3.7`
+  olarak senkronize edildi. Doğrulama kapıları, kaynak hattını ve önceki
+  `v1.3.6` yayımlanan davranışı koruyarak kapanışa alındı.
+
 - **v1.3.6 ✓** Source line ve kurulum yüzeyi kapalı çevrimde güvenli hale getirildi:
   host yaşam döngüsü için tek kaynaktan karar veren `host_state` modeli eklendi,
   fallback yolları ve doğruluk ipuçları açıkça ayrıldı; `scripts/release.py` ile

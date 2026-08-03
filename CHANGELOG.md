@@ -6,6 +6,33 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.7] - 2026-08-03
+
+### Added
+
+- Added an aligned release-surface preparation for `v1.3.7` with host-state and
+  onboarding surfaces synchronized as immutable source for this branch.
+
+### Changed
+
+- Synchronized public-facing surfaces that should resolve to the current release:
+  README files (including bilingual variants), onboarding docs, `docs/Home`,
+  marketplace manifests, installer defaults, and runtime version markers.
+- Refreshed install and verification command examples so they point to the
+  `v1.3.7` release line.
+
+### Fixed
+
+- Eliminated remaining `v1.3.6` source references in public install and host
+  command texts.
+- Removed stale onboarding reference drift that could appear after a `VERSION`
+  bump when only runtime surfaces were updated.
+
+### Verification
+
+- `scripts/release.py --check`, `python scripts/prose.py --check --json`, and full
+  `python scripts/verify.py` pass after 1.3.7 surface synchronization.
+
 ## [1.3.6] - 2026-08-03
 
 ### Added
@@ -32,8 +59,10 @@ Versioning.
 
 - `VERSION`, `scripts/release.py --check`, `python scripts/prose.py --check --json`,
   and full `python scripts/verify.py` pass for this release preparation branch.
-- `python scripts/divan.py doctor --host codex --ref v1.3.6` returned `healthy`
-  after the runtime and host cleanup.
+- `python scripts/divan.py doctor --host codex --ref v1.3.6` returned `attention`
+  for marketplace source/ref verification on some non-default installations; this is
+  expected until the corresponding release source provenance is exercised through the
+  published host state path.
 
 ## [1.3.5] - 2026-08-02
 

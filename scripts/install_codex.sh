@@ -2,8 +2,58 @@
 # Canonical macOS/Linux fallback installer for Codex.
 # DIVAN_REF ile bir tag/commit, CODEX_SKILLS_DIR ile hedef sabitlenebilir.
 set -Eeuo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-REF="${DIVAN_REF:-v1.3.6}"
+resolve_release_ref() {
+  local requested="$1"
+  local latest_ref=""
+
+  case "$requested" in
+    main|master|latest)
+      echo "HATA: Degisebilir DIVAN_REF kabul edilmez: $requested" >&2
+      return 1
+      ;;
+  esac
+
+  if ! git ls-remote --exit-code https://github.com/trugurpala/divan.git "refs/tags/$requested" >/dev/null 2>&1; then
+    latest_ref="$(python3 - <<'PY'
+import json
+import urllib.request
+import sys
+
+url = "https://api.github.com/repos/trugurpala/divan/releases/latest"
+try:
+    with urllib.request.urlopen(url, timeout=10) as response:
+        payload = response.read().decode("utf-8")
+    tag = json.loads(payload).get("tag_name", "").strip()
+    if tag:
+        print(tag)
+except Exception:
+    sys.exit(0)
+PY
+)"
+    if [[ -z "$latest_ref" ]]; then
+      echo "HATA: DIVAN_REF etiket bulunamadi ve latest release okunamadi: $requested" >&2
+      return 1
+    fi
+    if ! git ls-remote --exit-code https://github.com/trugurpala/divan.git "refs/tags/$latest_ref" >/dev/null 2>&1; then
+      echo "HATA: latest release etiketi dogrulanamadi: $latest_ref" >&2
+      return 1
+    fi
+    echo "UYARI: İstenen DIVAN_REF '$requested' bulunamadı; otomatik olarak en son yayımlanmış $latest_ref kullanılıyor." >&2
+    printf '%s\n' "$latest_ref"
+  else
+    printf '%s\n' "$requested"
+  fi
+}
+
+DEFAULT_REF="v1.3.7"
+if [[ -f "$SCRIPT_DIR/../VERSION" ]]; then
+  DEFAULT_REF="v$(tr -d '\r\n' < "$SCRIPT_DIR/../VERSION")"
+fi
+DEFAULT_REF="${DEFAULT_REF:-v1.3.7}"
+REQUESTED_REF="${DIVAN_REF:-$DEFAULT_REF}"
+REF="$(resolve_release_ref "$REQUESTED_REF")"
 DST="${CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
 STATE_DIR="${DIVAN_STATE_DIR:-$HOME/.codex}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/divan-kur.XXXXXX")"
