@@ -129,7 +129,6 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   doğrulanır. Önceki kaynak-kökeni, public-komut, bağımlılık gözlemi ve
   doğrulama tekrarını önleyen sertleştirmeler korunur. Yeni runtime, dış repo
   fork'u veya ölçülmemiş performans/kalite iddiası eklenmez.
-
 - **v1.3.3 ✓** Yayımlanan bakım hattı: Kurulum sonrası doğrulamanın iki kez işlem kaydı taramasını
   engeller; timeout benchmark policy’sini 720 saniyelik doğrulanmış sınıra taşır.
   Windows, macOS ve Linux native kurulumları CI’da doğrulanır. Kamuya açık İngilizce ve Türkçe README sürüm

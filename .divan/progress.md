@@ -1,5 +1,13 @@
 # Divan İlerleme Defteri
 
+## Hedef Güncellemesi (2026-08-03)
+
+- `python scripts/verify.py` 776 test ile geçti; `git diff --check` temiz.
+- `python scripts/prose.py --check --json` temiz, `scripts/release.py --check` yüzeylerini doğruladı.
+- `python scripts/divan.py doctor --host codex --ref v1.3.4 --json` `healthy` döndürdü.
+- `BLUEPRINT.md`da sadece bir satır düzeltmesi kaldı; süreç ve kanıt kapıları kapanmamış durumda.
+- Bir sonraki adım: bu dalın PR/merge hattını açıp main'e taşıyarak yeni bir `release` adımı sonrası canlı doğrulama ile kapanışı yapmak.
+
 ## Güncel çalışma: v1.3.4 yayımlanan topluluk bakımı
 
 `main`, dağıtılan skill'lerdeki kanıtlanmış güvenlik/doğruluk açıklarını,
