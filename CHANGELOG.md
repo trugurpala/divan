@@ -6,6 +6,60 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.6] - 2026-08-03
+
+### Added
+
+- Added a deterministic host-state layer for install lifecycle evidence with explicit
+  fallback behavior and fail-closed validation gates.
+- Added a source-line alignment path for new public hosts and fallback installers with
+  safer evidence checks.
+
+### Changed
+
+- Updated release-facing and onboarding surfaces for `v1.3.6` by design, including
+  wiki/community pages, install references, marketplace metadata and install scripts.
+- Improved local runtime checks around host installation and recovery command paths to keep
+  clean-room behavior deterministic.
+
+### Fixed
+
+- Hardened `scripts/host_state.py` to fail safely when evidence checkout is not exact.
+- Prevented verification false-positives in environments with strict cache directories by
+  keeping release checks and install defaults deterministic.
+
+### Verification
+
+- `VERSION`, `scripts/release.py --check`, `python scripts/prose.py --check --json`,
+  and full `python scripts/verify.py` pass for this release preparation branch.
+- `python scripts/divan.py doctor --host codex --ref v1.3.6` returned `healthy`
+  after the runtime and host cleanup.
+
+## [1.3.5] - 2026-08-02
+
+### Changed
+
+- Synchronized release surfaces to source line 1.3.5 for runtime references,
+  install targets, README/Wiki/site pages, marketplace metadata, and installer
+  defaults that previously still pointed to v1.3.4.
+- Hardened remote script handling in tests and docs to avoid parsing regressions
+  while preserving backwards-compatible fallback behavior.
+
+### Fixed
+
+- Made Windows native checksum verification independent from PowerShell module path
+  side effects.
+- Tightened site release CTA and install entrypoints to always resolve the
+  immutable latest release as authoritative source.
+
+### Verification
+
+- Existing release evidence for v1.3.4 remains immutable; v1.3.5 was prepared as a
+  source-line update and documentation/evidence-surface alignment pass.
+- `python scripts/release.py --check`, `python scripts/prose.py --check --json`,
+  and full `python scripts/verify.py` passed on this branch after v1.3.5 surface
+  updates.
+
 ## [1.3.4] - 2026-08-02
 
 ### Fixed

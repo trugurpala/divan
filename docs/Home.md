@@ -1,4 +1,4 @@
-# Divan Wiki · v1.3.4
+# Divan Wiki · v1.3.6
 
 ![Divan'ın doğrulanmış teslim mührü](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/github/muhurdar-seal.svg)
 
@@ -42,7 +42,7 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Kaynak hattı:** v1.3.4 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · `main` ürün kaynağı · Wiki bu repodaki
+> **Kaynak hattı:** v1.3.6 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

@@ -123,6 +123,17 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
+- **v1.3.6 ✓** Source line ve kurulum yüzeyi kapalı çevrimde güvenli hale getirildi:
+  host yaşam döngüsü için tek kaynaktan karar veren `host_state` modeli eklendi,
+  fallback yolları ve doğruluk ipuçları açıkça ayrıldı; `scripts/release.py` ile
+  v1.3.6 yüzey eşitlemesi ve belgeler arasındaki sürüm tutarlılığı tamamlandı.
+  Yayın kanıtı ve önceki kapıların bütünlüğü korunarak, `v1.3.4` immutable
+  yayın ilkesi değişmeden bırakıldı.
+
+- **v1.3.5 ✓** Source line güncellemesi: kaynak hattı ve kurulum referansları 1.3.5’e taşındı; bu sürümde
+  önceki yayın yüzeyi doğrulamalarını koruyan risk sertleştirmeleri ve site yayını CTA eşitlemesi
+  aynı anda ilerletildi. `v1.3.4` immutable yayın ve ona bağlı etiket/kanıt hattı korunur.
+
 - **v1.3.4 ✓** Yayımlanan topluluk bakım hattı: Windows PowerShell 5.1, PowerShell 7'nin
   modül yolunu devraldığında da eski-host checksum doğrulamasını .NET SHA-256
   ile çalıştırır. Bu yol `PSModulePath` temizlenerek regresyon testiyle

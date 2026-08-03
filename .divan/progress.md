@@ -2,11 +2,13 @@
 
 ## Hedef Güncellemesi (2026-08-03)
 
-- `python scripts/verify.py` 776 test ile geçti; `git diff --check` temiz.
-- `python scripts/prose.py --check --json` temiz, `scripts/release.py --check` yüzeylerini doğruladı.
-- `python scripts/divan.py doctor --host codex --ref v1.3.4 --json` `healthy` döndürdü.
-- `BLUEPRINT.md`da sadece bir satır düzeltmesi kaldı; süreç ve kanıt kapıları kapanmamış durumda.
-- Bir sonraki adım: bu dalın PR/merge hattını açıp main'e taşıyarak yeni bir `release` adımı sonrası canlı doğrulama ile kapanışı yapmak.
+- `python scripts/verify.py` 778 test ile geçti; `git diff --check` temiz.
+- `python scripts/verify.py` sonrası `python scripts/prose.py --check --json` ve
+  `scripts/release.py --check` yüzeyleri doğrulandı.
+- `python scripts/divan.py doctor --host codex --ref v1.3.6 --json` `healthy` döndürdü.
+- Son güncel çalışma: sürüm hattı `v1.3.6` olarak eşitlendi; `BLUEPRINT` ve `CHANGELOG`
+  buna göre güncellendi. Kanıt adımları şimdi `v1.3.6` yayın hazırlığına geçti.
+- Bir sonraki adım: `v1.3.6` için publish kanıtını tamamlayıp, yayın öncesi CI geçişini doğrulamak.
 
 ## Güncel çalışma: v1.3.4 yayımlanan topluluk bakımı
 

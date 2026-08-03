@@ -7,6 +7,8 @@ import json
 import pathlib
 import re
 import stat
+import tempfile
+import subprocess
 from collections.abc import Callable
 from typing import Any
 
@@ -21,6 +23,29 @@ Normalize = Callable[[str], str]
 
 class StateError(RuntimeError):
     """Raised when live host state cannot be proven exactly."""
+
+
+def _is_remote_source(source: str) -> bool:
+    return bool(re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", source)) or source.startswith(
+        "git@"
+    )
+
+
+def _remote_checkout_root(source: str, ref: str, run: Run) -> pathlib.Path:
+    directory = pathlib.Path(tempfile.mkdtemp(prefix="divan-source-"))
+    command = [
+        "git",
+        "clone",
+        "--quiet",
+        "--depth",
+        "1",
+        "--branch",
+        ref,
+        source,
+        str(directory),
+    ]
+    run(command)
+    return directory
 
 
 def _catalog(root: pathlib.Path) -> tuple[dict[str, str], str]:
@@ -59,8 +84,11 @@ def _catalog_row_valid(value: Any) -> bool:
 
 
 def _git_status_head(root: pathlib.Path, run: Run) -> tuple[str, str]:
-    dirty = run(["git", "-C", str(root), "status", "--porcelain"]).strip()
-    commit = run(["git", "-C", str(root), "rev-parse", "HEAD"]).strip()
+    try:
+        dirty = run(["git", "-C", str(root), "status", "--porcelain"]).strip()
+        commit = run(["git", "-C", str(root), "rev-parse", "HEAD"]).strip()
+    except subprocess.CalledProcessError as exc:
+        raise StateError(f"checkout commit cannot be proven: {root}") from exc
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise StateError(f"checkout commit cannot be proven: {root}")
     return dirty, commit
@@ -77,7 +105,10 @@ def _git_evidence(root: pathlib.Path, ref: str, run: Run) -> tuple[str, str]:
     commit = _git_head(root, run)
     actual = commit
     if not re.fullmatch(r"[0-9a-f]{40}", ref):
-        actual = run(["git", "-C", str(root), "describe", "--tags", "--exact-match"]).strip()
+        try:
+            actual = run(["git", "-C", str(root), "describe", "--tags", "--exact-match"]).strip()
+        except subprocess.CalledProcessError as exc:
+            raise StateError(f"checkout ref cannot be proven: {root}") from exc
     if actual != ref:
         raise StateError(f"checkout ref cannot be proven: {root}")
     return commit, actual
@@ -112,8 +143,23 @@ def checkout_evidence(
     root: pathlib.Path, source: str, ref: str, run: Run, normalize: Normalize
 ) -> dict[str, Any]:
     resolved = root.expanduser().resolve()
-    commit, actual_ref = _git_evidence(resolved, ref, run)
-    return _checkout_payload(resolved, source, actual_ref, commit, run, normalize)
+    try:
+        commit, actual_ref = _git_evidence(resolved, ref, run)
+        return _checkout_payload(resolved, source, actual_ref, commit, run, normalize)
+    except StateError as exc:
+        message = str(exc)
+        if re.fullmatch(r"[0-9a-f]{40}", ref):
+            raise
+        if pathlib.Path(source).expanduser().exists() or not _is_remote_source(source):
+            raise
+        if (
+            message.startswith("dirty checkout cannot be used transactionally:")
+            or message.startswith("checkout commit cannot be proven:")
+        ):
+            raise
+        remote_root = _remote_checkout_root(source, ref, run)
+        commit, actual_ref = _git_evidence(remote_root, ref, run)
+        return _checkout_payload(remote_root, source, actual_ref, commit, run, normalize)
 
 
 def upgrade_target_evidence(

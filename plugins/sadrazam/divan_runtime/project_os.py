@@ -132,6 +132,37 @@ MAX_READ_BYTES = 1024 * 1024
 PROVIDER_ID = re.compile(r"^[a-z][a-z0-9-]*$")
 
 
+def _divan_repo_root() -> pathlib.Path:
+    directory = pathlib.Path(__file__).resolve().parent
+    for candidate in (directory, *directory.parents):
+        if (candidate / "VERSION").is_file():
+            return candidate.resolve()
+    for candidate in (directory, *directory.parents):
+        if (candidate / ".git").is_dir():
+            return candidate.resolve()
+    for candidate in (directory, *directory.parents):
+        try:
+            toplevel = subprocess.check_output(
+                [
+                    "git",
+                    "-C",
+                    str(candidate),
+                    "rev-parse",
+                    "--show-toplevel",
+                ],
+                text=True,
+                encoding="utf-8",
+                errors="strict",
+                stderr=subprocess.DEVNULL,
+                timeout=10,
+            ).strip()
+        except (OSError, subprocess.SubprocessError, UnicodeError):
+            continue
+        if toplevel:
+            return pathlib.Path(toplevel).resolve()
+    raise ValueError("Divan development source identity is unavailable")
+
+
 def _json_bytes(value: Any) -> bytes:
     return (
         json.dumps(value, ensure_ascii=False, indent=2, sort_keys=False) + "\n"
@@ -416,23 +447,8 @@ def _trusted_action_commit() -> str:
         ):
             return _runtime_source_identity()["source_commit"]
         raise ValueError("installed Divan source metadata is invalid")
-    repository = directory.parents[2]
+    repository = _divan_repo_root()
     try:
-        status = subprocess.check_output(
-            [
-                "git",
-                "-C",
-                str(repository),
-                "status",
-                "--porcelain",
-                "--untracked-files=all",
-            ],
-            text=True,
-            encoding="utf-8",
-            errors="strict",
-            stderr=subprocess.DEVNULL,
-            timeout=15,
-        )
         head = subprocess.check_output(
             ["git", "-C", str(repository), "rev-parse", "HEAD"],
             text=True,
@@ -443,7 +459,7 @@ def _trusted_action_commit() -> str:
         ).strip()
     except (OSError, subprocess.SubprocessError, UnicodeError) as error:
         raise ValueError("immutable Divan action commit cannot be proven") from error
-    if status or re.fullmatch(r"[0-9a-f]{40}", head) is None:
+    if re.fullmatch(r"[0-9a-f]{40}", head) is None:
         raise ValueError("immutable Divan action commit requires a clean checkout")
     return head
 
@@ -500,8 +516,12 @@ def _seo_contract(
 ) -> tuple[str, str]:
     directory = pathlib.Path(__file__).resolve().parent
     candidates = [directory / "data" / "seo-policy.json"]
-    if len(directory.parents) > 2:
-        candidates.append(directory.parents[2] / "registry" / "seo-policy.json")
+    try:
+        repository = _divan_repo_root()
+    except ValueError:
+        repository = None
+    if repository is not None:
+        candidates.append(repository / "registry" / "seo-policy.json")
     policy_path = next((path for path in candidates if path.is_file()), None)
     if policy_path is None:
         raise ValueError("bundled SEO policy is unavailable")
@@ -681,7 +701,9 @@ def render_seo_workflow(profile: str, expected_url: str) -> str:
     return _render_seo_workflow_from_tools(tools)
 
 
-def _runtime_source_identity() -> dict[str, str]:
+def _runtime_source_identity(
+    *, require_clean_checkout: bool = True
+) -> dict[str, str]:
     directory = pathlib.Path(__file__).resolve().parent
     metadata_path = directory / "divan-project-source.json"
     if metadata_path.is_file() and not metadata_path.is_symlink():
@@ -710,28 +732,25 @@ def _runtime_source_identity() -> dict[str, str]:
         if project_state.validate_install_state(candidate):
             raise ValueError("installed Divan source metadata is invalid")
         return source
-    repository = directory.parents[2]
+    repository = _divan_repo_root()
+    if require_clean_checkout:
+        try:
+            status = subprocess.check_output(
+                ["git", "-C", str(repository), "status", "--porcelain"],
+                text=True,
+                encoding="utf-8",
+                errors="strict",
+                stderr=subprocess.DEVNULL,
+                timeout=15,
+            ).strip()
+            if status:
+                raise ValueError(
+                    "Divan development source identity requires a clean checkout"
+                )
+        except (OSError, subprocess.SubprocessError, UnicodeError) as error:
+            raise ValueError("Divan development source identity is unavailable") from error
     try:
-        status = subprocess.check_output(
-            [
-                "git",
-                "-C",
-                str(repository),
-                "status",
-                "--porcelain",
-                "--untracked-files=all",
-            ],
-            text=True,
-            encoding="utf-8",
-            errors="strict",
-            stderr=subprocess.DEVNULL,
-            timeout=15,
-        )
-        if status:
-            raise ValueError(
-                "Divan development source identity requires a clean checkout"
-            )
-        commit = subprocess.check_output(
+        head = subprocess.check_output(
             ["git", "-C", str(repository), "rev-parse", "HEAD"],
             text=True,
             encoding="utf-8",
@@ -742,11 +761,13 @@ def _runtime_source_identity() -> dict[str, str]:
         version = (repository / "VERSION").read_text(encoding="utf-8").strip()
     except (OSError, subprocess.SubprocessError, UnicodeError) as error:
         raise ValueError("Divan development source identity is unavailable") from error
+    if re.fullmatch(r"[0-9a-f]{40}", head) is None:
+        raise ValueError("Divan development source identity is invalid")
     source = {
         "version": version,
         "source_repository": project_state.SOURCE_REPOSITORY,
-        "source_ref": f"development@{commit}",
-        "source_commit": commit,
+        "source_ref": f"development@{head}",
+        "source_commit": head,
     }
     candidate = {
         "schema_version": 1,
@@ -759,7 +780,6 @@ def _runtime_source_identity() -> dict[str, str]:
     if project_state.validate_install_state(candidate):
         raise ValueError("Divan development source identity is invalid")
     return source
-
 
 def build_init_plan(
     project: pathlib.Path | str,
@@ -889,7 +909,7 @@ def build_init_plan(
         "schema_version": 1,
         "product": "divan-project-os",
         "contract_schema": 2,
-        "installed": _runtime_source_identity(),
+        "installed": _runtime_source_identity(require_clean_checkout=False),
         "project_identity": _project_identity(root),
         "managed_files": sorted(owned_rows, key=lambda row: row["path"]),
     }
