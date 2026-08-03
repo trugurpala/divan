@@ -40,7 +40,7 @@ body:
     id: receipt
     attributes:
       label: Redakte edilmiş schema-2 makbuzu
-      description: `adoption-receipt.json` gövdesini ekleyin. Ham komut çıktısı, mutlak yol, remote URL, e-posta, token veya müşteri verisi eklemeyin.
+      description: "`adoption-receipt.json` gövdesini ekleyin. Ham komut çıktısı, mutlak yol, remote URL, e-posta, token veya müşteri verisi eklemeyin."
       render: json
     validations:
       required: true
