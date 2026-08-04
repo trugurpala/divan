@@ -4,7 +4,7 @@
 <!-- The Turkish README keeps the canonical Turkish export at docs/assets/github/hero.png. -->
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Source line 1.3.4](https://img.shields.io/badge/source-1.3.4-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.3.4](https://img.shields.io/badge/source-1.3.8-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -22,7 +22,7 @@ the work visible and refuses to call an unverified result complete.
 > external agent runtime. It cannot make an unavailable host tool appear, and
 > it does not turn an untested claim into evidence.
 
-**Source line:** v1.3.4 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
+**Source line:** v1.3.8 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
 **5 modular packages** · **8/8 readiness gates**
 
 **Host compatibility:** [English guide](#host-compatibility) ·
@@ -131,11 +131,11 @@ python .\divan.pyz install --host codex --profile auto --execute
 From a trusted checkout, the equivalent two-host lifecycle is:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.4
-python scripts/divan.py install --host both --ref v1.3.4 --execute
-python scripts/divan.py doctor --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4 --execute
+python scripts/divan.py install --host both --ref v1.3.8
+python scripts/divan.py install --host both --ref v1.3.8 --execute
+python scripts/divan.py doctor --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```

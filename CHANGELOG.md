@@ -6,6 +6,8 @@ Versioning.
 
 ## [Unreleased]
 
+## [1.3.8] - 2026-08-04
+
 ### Added
 
 - Added a typed initial plan continuation that exposes ready task IDs and one

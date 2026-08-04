@@ -1,4 +1,4 @@
-# Divan Wiki · v1.3.4
+# Divan Wiki · v1.3.8
 
 ![Divan'ın doğrulanmış teslim mührü](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/github/muhurdar-seal.svg)
 
@@ -47,7 +47,7 @@ shell-free argv ile manuel kontrolleri ayrılmış tek deterministik `Sıradaki`
 görevi typed olarak gösterir. Bu devam kaydı görev çalıştırmaz ve yürütme
 yetkisi vermez.
 
-> **Kaynak hattı:** v1.3.4 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · `main` ürün kaynağı · Wiki bu repodaki
+> **Kaynak hattı:** v1.3.8 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 

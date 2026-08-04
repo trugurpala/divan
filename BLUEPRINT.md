@@ -109,6 +109,15 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     uyarı taşır. Anti-pattern filtresi yalnız tam çelişen ifadeyi kaldırır,
     “dark mode'da düşük kontrast” gibi güvenlik uyarılarını korur. Bu mekanik
     doğruluk sözleşmesi estetik kalite veya ajan başarısı iddiası değildir.
+18. **Tek kaynaklı değişmez yayın kimliği:** Release üretimi salt okunur,
+    credentialsız build işi ile dar yetkili publish işini ayırır. Uzak tag
+    kaynak seçerse bu kod yalnız build alanında çalışır; publish indirilen kodu
+    çalıştırmaz ve yalnız digest doğrulanmış sekiz dosyalı aktarımı kabul eder.
+    `main`, değişmez tag, iki runner kaynağı ve checksum kaynağı aynı commit
+    değilse yayın durur. Mevcut release eksik, fazla, yinelenen veya farklı
+    byte içeriyorsa üzerine yazılmaz. Ayrıntı
+    `docs/superpowers/specs/2026-08-04-v138-release-repair-design.md`
+    belgesindedir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -148,6 +157,10 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
   kez ölçüldü; yalnız typed aday 12/12 mekanik sözleşme kapısını geçti ve ürün
   üzerinde üç kez tekrarlandı. Bu kayıt gerçek ajan kalitesi veya hız artışı
   iddiası değildir.
+- **v1.3.8 ✓** Doğrulama adayı: kurtarılabilir host kurulumu, yetki vermeyen
+  typed plan devamı, host-bağımsız UI/UX tasarım zekâsı ve tek commit'e bağlı
+  salt-okunur build / dar yetkili publish release hattı. Bu işaret yerel sürüm
+  hazırlığını gösterir; tag ve Release ancak `main` sonrası kanıtla yayımlanır.
 - **v1.3.4 ✓** Yayımlanan topluluk bakım hattı: Windows PowerShell 5.1, PowerShell 7'nin
   modül yolunu devraldığında da eski-host checksum doğrulamasını .NET SHA-256
   ile çalıştırır. Bu yol `PSModulePath` temizlenerek regresyon testiyle
