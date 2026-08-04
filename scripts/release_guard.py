@@ -19,6 +19,13 @@ FIXED_ASSETS = {
     "divan.pyz",
     "divan.pyz.sha256",
 }
+PACKAGE_NAMES = (
+    "core-pack",
+    "react-pack",
+    "sadrazam",
+    "ui-pack",
+    "zanaat-pack",
+)
 SOURCE_COMMIT = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -146,12 +153,14 @@ def require_release_bundle(root: pathlib.Path, tag: str) -> str:
     )
     if len(lines) != len(hashed_names) + 2:
         raise ReleaseGuardError("release bundle checksum contract is invalid")
+    asset_digests: dict[str, str] = {}
     for line, name in zip(lines[: len(hashed_names)], hashed_names, strict=True):
         match = re.fullmatch(r"([0-9a-f]{64})  ([A-Za-z0-9][A-Za-z0-9._-]*)", line)
         if match is None or match.group(2) != name:
             raise ReleaseGuardError("release bundle checksum contract is invalid")
         if _sha256_file(root / name) != match.group(1):
             raise ReleaseGuardError(f"release bundle asset digest differs: {name}")
+        asset_digests[name] = match.group(1)
 
     source_prefix = "source_commit="
     tag_prefix = "tag="
@@ -182,7 +191,12 @@ def require_release_bundle(root: pathlib.Path, tag: str) -> str:
             "version": tag.removeprefix("v"),
         },
     )
-    _require_sbom_identity(root / f"divan-{tag}.spdx.json", tag, source_commit)
+    _require_sbom_identity(
+        root / f"divan-{tag}.spdx.json",
+        tag,
+        source_commit,
+        asset_digests,
+    )
     return source_commit
 
 
@@ -205,7 +219,12 @@ def _require_runner_identity(
         raise ReleaseGuardError("release runner embedded source identity is invalid")
 
 
-def _require_sbom_identity(path: pathlib.Path, tag: str, source_commit: str) -> None:
+def _require_sbom_identity(
+    path: pathlib.Path,
+    tag: str,
+    source_commit: str,
+    asset_digests: dict[str, str],
+) -> None:
     value = load_json(path)
     version = tag.removeprefix("v")
     expected = {
@@ -217,8 +236,79 @@ def _require_sbom_identity(path: pathlib.Path, tag: str, source_commit: str) -> 
             f"https://spdx.org/spdxdocs/divan-{version}-{source_commit}"
         ),
     }
-    if not isinstance(value, dict) or any(value.get(key) != item for key, item in expected.items()):
+    if not isinstance(value, dict) or any(
+        value.get(key) != item for key, item in expected.items()
+    ):
         raise ReleaseGuardError("release SBOM source identity is invalid")
+
+    package_ids = [f"SPDXRef-Package-{name}" for name in PACKAGE_NAMES]
+    expected_packages = [
+        {
+            "SPDXID": package_id,
+            "name": name,
+            "downloadLocation": (
+                "https://github.com/trugurpala/divan/tree/"
+                f"{source_commit}/plugins/{name}"
+            ),
+        }
+        for name, package_id in zip(PACKAGE_NAMES, package_ids, strict=True)
+    ]
+    packages = value.get("packages")
+    if (
+        not isinstance(packages, list)
+        or len(packages) != len(expected_packages)
+        or any(
+            not isinstance(actual, dict)
+            or any(actual.get(key) != item for key, item in expected_package.items())
+            for actual, expected_package in zip(
+                packages, expected_packages, strict=True
+            )
+        )
+    ):
+        raise ReleaseGuardError("release SBOM package identities are invalid")
+
+    artifact_names = (
+        "divan-project.pyz",
+        "divan-project.pyz.sha256",
+        "divan.pyz",
+        "divan.pyz.sha256",
+    )
+    expected_files = [
+        {
+            "SPDXID": "SPDXRef-File-" + re.sub(r"[^A-Za-z0-9-]", "-", name),
+            "fileName": name,
+            "checksums": [
+                {"algorithm": "SHA256", "checksumValue": asset_digests[name]}
+            ],
+        }
+        for name in artifact_names
+    ]
+    files = value.get("files")
+    if (
+        not isinstance(files, list)
+        or len(files) != len(expected_files)
+        or any(
+            not isinstance(actual, dict)
+            or any(actual.get(key) != item for key, item in expected_file.items())
+            for actual, expected_file in zip(files, expected_files, strict=True)
+        )
+    ):
+        raise ReleaseGuardError("release SBOM artifact identities are invalid")
+
+    described = [*package_ids, *(row["SPDXID"] for row in expected_files)]
+    relationships = [
+        {
+            "spdxElementId": "SPDXRef-DOCUMENT",
+            "relationshipType": "DESCRIBES",
+            "relatedSpdxElement": identifier,
+        }
+        for identifier in described
+    ]
+    if (
+        value.get("documentDescribes") != described
+        or value.get("relationships") != relationships
+    ):
+        raise ReleaseGuardError("release SBOM relationships are invalid")
 
 
 def _require_bundle_entries(root: pathlib.Path, expected: set[str]) -> None:

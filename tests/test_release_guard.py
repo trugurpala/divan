@@ -73,6 +73,38 @@ class ReleaseGuardTests(unittest.TestCase):
                     sort_keys=True,
                 ),
             )
+        for name in ("divan-project.pyz.sha256", "divan.pyz.sha256"):
+            (root / name).write_bytes(f"fixture:{name}\n".encode())
+        artifact_names = (
+            "divan-project.pyz",
+            "divan-project.pyz.sha256",
+            "divan.pyz",
+            "divan.pyz.sha256",
+        )
+        package_names = (
+            "core-pack",
+            "react-pack",
+            "sadrazam",
+            "ui-pack",
+            "zanaat-pack",
+        )
+        package_ids = [f"SPDXRef-Package-{name}" for name in package_names]
+        files = [
+            {
+                "SPDXID": "SPDXRef-File-" + name.replace(".", "-"),
+                "fileName": name,
+                "checksums": [
+                    {
+                        "algorithm": "SHA256",
+                        "checksumValue": hashlib.sha256(
+                            (root / name).read_bytes()
+                        ).hexdigest(),
+                    }
+                ],
+            }
+            for name in artifact_names
+        ]
+        described = [*package_ids, *(row["SPDXID"] for row in files)]
         (root / f"divan-{tag}.spdx.json").write_text(
             json.dumps(
                 {
@@ -83,6 +115,29 @@ class ReleaseGuardTests(unittest.TestCase):
                     "documentNamespace": (
                         f"https://spdx.org/spdxdocs/divan-{version}-{source_commit}"
                     ),
+                    "documentDescribes": described,
+                    "packages": [
+                        {
+                            "SPDXID": package_id,
+                            "name": name,
+                            "downloadLocation": (
+                                "https://github.com/trugurpala/divan/tree/"
+                                f"{source_commit}/plugins/{name}"
+                            ),
+                        }
+                        for name, package_id in zip(
+                            package_names, package_ids, strict=True
+                        )
+                    ],
+                    "files": files,
+                    "relationships": [
+                        {
+                            "spdxElementId": "SPDXRef-DOCUMENT",
+                            "relationshipType": "DESCRIBES",
+                            "relatedSpdxElement": identifier,
+                        }
+                        for identifier in described
+                    ],
                 },
                 sort_keys=True,
             ),
@@ -306,6 +361,34 @@ class ReleaseGuardTests(unittest.TestCase):
                 RELEASE_GUARD.ReleaseGuardError, "SBOM source identity"
             ):
                 RELEASE_GUARD.require_release_bundle(root, "v1.2.3")
+
+    def test_release_bundle_rejects_incomplete_or_misdirected_sbom(self) -> None:
+        cases = ("missing-packages", "missing-files", "wrong-package-commit")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory(
+                prefix="divan-release-bundle-"
+            ) as temporary:
+                root = pathlib.Path(temporary)
+                self._bundle(root)
+                sbom = root / "divan-v1.2.3.spdx.json"
+                value = json.loads(sbom.read_text(encoding="utf-8"))
+                if case == "missing-packages":
+                    value["packages"] = []
+                elif case == "missing-files":
+                    value["files"] = []
+                else:
+                    value["packages"][0]["downloadLocation"] = (
+                        "https://github.com/trugurpala/divan/tree/"
+                        + "b" * 40
+                        + "/plugins/core-pack"
+                    )
+                sbom.write_text(json.dumps(value), encoding="utf-8")
+                self._rewrite_asset_digest(root, sbom.name)
+
+                with self.assertRaisesRegex(
+                    RELEASE_GUARD.ReleaseGuardError, "SBOM"
+                ):
+                    RELEASE_GUARD.require_release_bundle(root, "v1.2.3")
 
     @staticmethod
     def _rewrite_asset_digest(root: pathlib.Path, asset: str) -> None:
