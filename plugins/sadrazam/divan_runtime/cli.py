@@ -44,6 +44,7 @@ TEXT = {
         "effects": "Effects",
         "checks": "Checks",
         "execution": "Execution",
+        "next": "Next",
     },
     "tr": {
         "project": "Proje",
@@ -54,6 +55,7 @@ TEXT = {
         "effects": "Etkiler",
         "checks": "Kontroller",
         "execution": "Yürütme",
+        "next": "Sıradaki",
     },
 }
 
@@ -145,6 +147,12 @@ def _write_human(value: dict[str, Any], language: str) -> None:
             f"{orchestration['recommended_sefers']} sefer / "
             f"{orchestration['lane']} / {model['capability_class']}\n"
         )
+        continuation = _safe_output(execution.get("continuation"), "continuation")
+        task = continuation.get("task") if isinstance(continuation, dict) else None
+        if isinstance(task, dict):
+            sys.stdout.write(
+                f"{labels['next']}: {task.get('id')} / "
+                f"{task.get('stage')} / {task.get('owner_role')}\n")
 
 
 def _write_proof_preview(value: dict[str, Any], language: str) -> None:
