@@ -27,7 +27,7 @@ GitHub Actions, GitHub CLI/API, Agent Skills Markdown.
 - The isolated checkout is
   `C:\Users\User\Desktop\Codex\divan\.worktrees\v138-release-repair`.
 - The isolated branch is `codex/v138-release-implementation`, based on the
-  approved plan commit `d0112e4`.
+  current approved-plan `HEAD` of `codex/v138-recovery-tag-ambiguity`.
 - Never reset, clean, stash, stage, or rewrite the source checkout.
 - Never move, delete, replace, or republish `v1.3.7`.
 - Never use a paid API, paid runner, subscription, or new global dependency.
@@ -57,9 +57,9 @@ git rev-parse origin/main
 git diff --check
 ```
 
-Expected: branch `codex/v138-recovery-tag-ambiguity`, HEAD `d0112e4`, and the
-pre-existing dirty paths remain visible. Save the command output in the task
-transcript, not in the repository.
+Expected: branch `codex/v138-recovery-tag-ambiguity`; record its exact HEAD, and
+the pre-existing dirty paths remain visible. Save the command output in the
+task transcript, not in the repository.
 
 - [ ] **Step 2: Prove the worktree container is ignored**
 
@@ -78,12 +78,12 @@ single safety change before continuing.
 Run:
 
 ```powershell
-git worktree add .worktrees/v138-release-repair -b codex/v138-release-implementation d0112e4
+git worktree add .worktrees/v138-release-repair -b codex/v138-release-implementation HEAD
 git -C .worktrees/v138-release-repair status --short
 git -C .worktrees/v138-release-repair rev-parse HEAD
 ```
 
-Expected: empty status and HEAD `d0112e4`.
+Expected: empty status and the same recorded approved-plan HEAD.
 
 - [ ] **Step 4: Run the clean baseline**
 
@@ -538,9 +538,9 @@ not publish if the builds differ.
 Run:
 
 ```powershell
-git log --oneline d0112e4..HEAD
-git diff --stat d0112e4..HEAD
-git diff --check d0112e4..HEAD
+git log --oneline origin/main..HEAD
+git diff --stat origin/main..HEAD
+git diff --check origin/main..HEAD
 git status --short
 ```
 
