@@ -4,7 +4,7 @@
 <!-- The Turkish README keeps the canonical Turkish export at docs/assets/github/hero.png. -->
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Source line 1.3.4](https://img.shields.io/badge/source-1.3.8-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.3.8](https://img.shields.io/badge/source-1.3.8-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -141,7 +141,7 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 ```
 
 The command above resolves the latest published tag before downloading. The
-checkout commands pin the published v1.3.4 tag. See
+checkout commands pin the published v1.3.8 tag. See
 [removal and recovery](docs/Kaldirma.md) before deleting anything.
 If a native Codex receipt proves that a pending marketplace has the requested
 source/ref and exact target package contract, while no Divan marketplace or

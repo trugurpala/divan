@@ -9,6 +9,7 @@ import json
 import pathlib
 import re
 import sys
+import zipfile
 from typing import Any
 
 TAG = re.compile(r"^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
@@ -159,7 +160,63 @@ def require_release_bundle(root: pathlib.Path, tag: str) -> str:
     source_commit = lines[-2].removeprefix(source_prefix)
     if not SOURCE_COMMIT.fullmatch(source_commit):
         raise ReleaseGuardError("release bundle source identity is invalid")
+    _require_runner_identity(
+        root / "divan.pyz",
+        "divan-bootstrap-source.json",
+        {
+            "schema_version": 1,
+            "source_commit": source_commit,
+            "source_ref": tag,
+            "source_repository": "https://github.com/trugurpala/divan.git",
+        },
+    )
+    _require_runner_identity(
+        root / "divan-project.pyz",
+        "divan_runtime/divan-project-source.json",
+        {
+            "schema_version": 2,
+            "source_commit": source_commit,
+            "source_ref": tag,
+            "source_repository": "https://github.com/trugurpala/divan",
+        },
+    )
+    _require_sbom_identity(root / f"divan-{tag}.spdx.json", tag, source_commit)
     return source_commit
+
+
+def _require_runner_identity(
+    path: pathlib.Path,
+    member_name: str,
+    expected: dict[str, object],
+) -> None:
+    try:
+        with zipfile.ZipFile(path) as archive:
+            matches = [item for item in archive.infolist() if item.filename == member_name]
+            if len(matches) != 1 or matches[0].file_size > 4096:
+                raise ReleaseGuardError("release runner embedded source identity is invalid")
+            value = json.loads(archive.read(matches[0]))
+    except (OSError, KeyError, UnicodeError, zipfile.BadZipFile, json.JSONDecodeError) as exc:
+        raise ReleaseGuardError(
+            "release runner embedded source identity is unreadable"
+        ) from exc
+    if value != expected:
+        raise ReleaseGuardError("release runner embedded source identity is invalid")
+
+
+def _require_sbom_identity(path: pathlib.Path, tag: str, source_commit: str) -> None:
+    value = load_json(path)
+    version = tag.removeprefix("v")
+    expected = {
+        "spdxVersion": "SPDX-2.3",
+        "dataLicense": "CC0-1.0",
+        "SPDXID": "SPDXRef-DOCUMENT",
+        "name": f"Divan-{tag}",
+        "documentNamespace": (
+            f"https://spdx.org/spdxdocs/divan-{version}-{source_commit}"
+        ),
+    }
+    if not isinstance(value, dict) or any(value.get(key) != item for key, item in expected.items()):
+        raise ReleaseGuardError("release SBOM source identity is invalid")
 
 
 def _require_bundle_entries(root: pathlib.Path, expected: set[str]) -> None:

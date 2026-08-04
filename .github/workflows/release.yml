@@ -176,17 +176,10 @@ jobs:
               echo "HATA: yerel $tag etiketi uzak etiketle eşleşmiyor." >&2
               exit 1
             fi
-            source_commit="$remote_tag_commit"
-            git fetch --no-tags origin "refs/tags/$tag"
-            git cat-file -e "$source_commit^{commit}"
-            git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA" || {
-              echo "HATA: $tag etiketi $source_commit commit'inde ve $GITHUB_SHA soyunda degil." >&2
+            if [[ "$remote_tag_commit" != "$GITHUB_SHA" ]]; then
+              echo "HATA: $tag etiketi güncel main commit'iyle eşleşmiyor." >&2
               exit 1
-            }
-            source_root="$RUNNER_TEMP/source-$tag"
-            git worktree add --detach "$source_root" "$source_commit"
-            trap 'git worktree remove --force "$source_root"' EXIT
-            test "$(cat "$source_root/VERSION")" = "$version"
+            fi
           elif [[ -n "$local_tag_commit" ]]; then
             echo "HATA: yerel $tag etiketi uzak depoda bulunamadi." >&2
             exit 1
@@ -293,7 +286,12 @@ jobs:
           releases="$RUNNER_TEMP/releases-before-$tag.json"
           gh api --paginate --slurp \
             "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$releases"
+          live_main_commit="$(
+            gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha'
+          )"
           unset GH_TOKEN
+          test "$live_main_commit" = "$GITHUB_SHA"
+          test "$source_commit" = "$live_main_commit"
           release_state="$(
             python scripts/release_guard.py releases "$releases" --tag "$tag"
           )"
@@ -305,15 +303,10 @@ jobs:
               echo "HATA: yerel $tag etiketi uzak etiketle eşleşmiyor." >&2
               exit 1
             fi
-            if [[ "$source_commit" != "$remote_tag_commit" ]]; then
-              echo "HATA: uzak $tag etiketi varlık kaynağıyla eşleşmiyor." >&2
+            if [[ "$remote_tag_commit" != "$live_main_commit" ]]; then
+              echo "HATA: uzak $tag etiketi güncel main ile eşleşmiyor." >&2
               exit 1
             fi
-            git cat-file -e "$source_commit^{commit}"
-            git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA" || {
-              echo "HATA: $tag etiketi $source_commit commit'inde ve $GITHUB_SHA soyunda degil." >&2
-              exit 1
-            }
             if [[ "$release_state" == published ]]; then
               published_release=true
             fi
@@ -393,16 +386,20 @@ jobs:
           sbom="$RELEASE_SBOM"
           source_commit="$RELEASE_SOURCE_COMMIT"
           tag="$RELEASE_TAG"
+          live_main_commit="$(
+            gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha'
+          )"
+          test "$live_main_commit" = "$GITHUB_SHA"
+          test "$source_commit" = "$live_main_commit"
           live_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
           if [[ -z "$live_tag_commit" ]]; then
-            test "$source_commit" = "$GITHUB_SHA"
             gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
               --field ref="refs/tags/$tag" \
               --field sha="$source_commit"
             live_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
           fi
-          if [[ "$live_tag_commit" != "$source_commit" ]]; then
-            echo "HATA: uzak $tag etiketi $live_tag_commit, varlik kaynagi $source_commit." >&2
+          if [[ "$live_tag_commit" != "$live_main_commit" ]]; then
+            echo "HATA: uzak $tag etiketi $live_tag_commit, güncel main $live_main_commit." >&2
             exit 1
           fi
           releases="$RUNNER_TEMP/releases-publish-$tag.json"
@@ -430,6 +427,13 @@ jobs:
             cmp --silent "$bootstrap_checksum" "$existing/$(basename "$bootstrap_checksum")"
             echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
           else
+            live_main_commit="$(
+              gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha'
+            )"
+            live_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
+            test "$live_main_commit" = "$GITHUB_SHA"
+            test "$source_commit" = "$live_main_commit"
+            test "$live_tag_commit" = "$live_main_commit"
             gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
             test "$(python scripts/release_tag.py --remote origin --tag "$tag")" = "$source_commit"
             gh api --paginate --slurp \

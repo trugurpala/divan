@@ -24,7 +24,7 @@ Son durum tarihi: 2026-08-02.
   Wiki eşliğinden CHANGELOG kaynaklı tag/GitHub Release'a giden yayın kapısı.
 - Claude Code resmî doğrulaması ve Linux/macOS/Windows Codex kur-keşfet-kaldır matrisi.
 - Codex Desktop için açık `auto` profil; sağlıklı CLI'da native kurulum, kanıtlı
-  çalıştırma engelinde sınırları belirtilen checksum-backed 41-skill fallback.
+  çalıştırma engelinde sınırları belirtilen checksum-backed 42-skill fallback.
 - Vibe coder için yalnız loopback'te çalışan, yetenek URL'siyle korunan iki
   dilli Seyir ekranı; aktif hedefi, kanıtlı adımı ve sıradaki işi gösterir.
 - Seyir, uzun doğrulamalarda benchmark'a dayalı normal bekleme aralığını ve

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import json
 import pathlib
 import tempfile
 import unittest
+import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
@@ -40,10 +42,55 @@ class ReleaseGuardTests(unittest.TestCase):
             "divan.pyz",
             "divan.pyz.sha256",
         )
+        version = tag.removeprefix("v")
+        with zipfile.ZipFile(root / f"divan-{tag}.zip", "w") as archive:
+            archive.writestr("fixture.txt", "fixture\n")
+        with zipfile.ZipFile(root / "divan-project.pyz", "w") as archive:
+            archive.writestr(
+                "divan_runtime/divan-project-source.json",
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "source_commit": source_commit,
+                        "source_ref": tag,
+                        "source_repository": "https://github.com/trugurpala/divan",
+                    },
+                    sort_keys=True,
+                ),
+            )
+        with zipfile.ZipFile(root / "divan.pyz", "w") as archive:
+            archive.writestr(
+                "divan-bootstrap-source.json",
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "source_commit": source_commit,
+                        "source_ref": tag,
+                        "source_repository": "https://github.com/trugurpala/divan.git",
+                    },
+                    sort_keys=True,
+                ),
+            )
+        (root / f"divan-{tag}.spdx.json").write_text(
+            json.dumps(
+                {
+                    "spdxVersion": "SPDX-2.3",
+                    "dataLicense": "CC0-1.0",
+                    "SPDXID": "SPDXRef-DOCUMENT",
+                    "name": f"Divan-{tag}",
+                    "documentNamespace": (
+                        f"https://spdx.org/spdxdocs/divan-{version}-{source_commit}"
+                    ),
+                },
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
         lines: list[str] = []
         for name in names:
-            payload = f"fixture:{name}\n".encode()
-            (root / name).write_bytes(payload)
+            if not (root / name).exists():
+                (root / name).write_bytes(f"fixture:{name}\n".encode())
+            payload = (root / name).read_bytes()
             lines.append(f"{hashlib.sha256(payload).hexdigest()}  {name}")
         lines.extend((f"source_commit={source_commit}", f"tag={tag}"))
         (root / f"divan-{tag}.sha256").write_text(
@@ -205,6 +252,71 @@ class ReleaseGuardTests(unittest.TestCase):
 
                 with self.assertRaises(RELEASE_GUARD.ReleaseGuardError):
                     RELEASE_GUARD.require_release_bundle(root, "v1.2.3")
+
+    def test_release_bundle_rejects_mismatched_embedded_source_identity(self) -> None:
+        cases = (
+            ("divan.pyz", "divan-bootstrap-source.json"),
+            ("divan-project.pyz", "divan_runtime/divan-project-source.json"),
+        )
+        for asset, member in cases:
+            with self.subTest(asset=asset), tempfile.TemporaryDirectory(
+                prefix="divan-release-bundle-"
+            ) as temporary:
+                root = pathlib.Path(temporary)
+                self._bundle(root)
+                with zipfile.ZipFile(root / asset, "w") as archive:
+                    archive.writestr(
+                        member,
+                        json.dumps(
+                            {
+                                "schema_version": 1 if asset == "divan.pyz" else 2,
+                                "source_commit": "b" * 40,
+                                "source_ref": "v1.2.3",
+                                "source_repository": (
+                                    "https://github.com/trugurpala/divan.git"
+                                    if asset == "divan.pyz"
+                                    else "https://github.com/trugurpala/divan"
+                                ),
+                            }
+                        ),
+                    )
+                self._rewrite_asset_digest(root, asset)
+
+                with self.assertRaisesRegex(
+                    RELEASE_GUARD.ReleaseGuardError, "embedded source identity"
+                ):
+                    RELEASE_GUARD.require_release_bundle(root, "v1.2.3")
+
+    def test_release_bundle_rejects_mismatched_sbom_source_identity(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-release-bundle-") as temporary:
+            root = pathlib.Path(temporary)
+            self._bundle(root)
+            sbom = root / "divan-v1.2.3.spdx.json"
+            value = json.loads(sbom.read_text(encoding="utf-8"))
+            value["documentNamespace"] = (
+                "https://spdx.org/spdxdocs/divan-1.2.3-" + "b" * 40
+            )
+            sbom.write_text(json.dumps(value), encoding="utf-8")
+            self._rewrite_asset_digest(root, sbom.name)
+
+            with self.assertRaisesRegex(
+                RELEASE_GUARD.ReleaseGuardError, "SBOM source identity"
+            ):
+                RELEASE_GUARD.require_release_bundle(root, "v1.2.3")
+
+    @staticmethod
+    def _rewrite_asset_digest(root: pathlib.Path, asset: str) -> None:
+        checksum = root / "divan-v1.2.3.sha256"
+        lines = checksum.read_text(encoding="utf-8").splitlines()
+        digest = hashlib.sha256((root / asset).read_bytes()).hexdigest()
+        checksum.write_text(
+            "\n".join(
+                f"{digest}  {asset}" if line.endswith(f"  {asset}") else line
+                for line in lines
+            )
+            + "\n",
+            encoding="utf-8",
+        )
 
     def test_rejects_non_stable_tag(self) -> None:
         with self.assertRaisesRegex(

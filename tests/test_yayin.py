@@ -117,6 +117,41 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(result["version"], current)
         self.assertGreaterEqual(result["surface_count"], 10)
 
+    def test_active_install_surfaces_follow_current_release_and_catalog(self) -> None:
+        current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        expected = {
+            "README.md": (
+                f"Source line {current}",
+                f"checkout commands pin the published v{current} tag",
+            ),
+            "README.en.md": (
+                f"Source line {current}",
+                f"checkout commands pin the published v{current} tag",
+            ),
+            "README.tr.md": (
+                f"Kaynak hattı {current}",
+                f"komutlar yayımlanmış v{current} etiketini sabitler",
+            ),
+            "docs/Hizli-Baslangic.md": (
+                f"v{current}, değişmez tag ve GitHub Release ile yayımlanmıştır",
+                f"v{current} etiketi ve GitHub Release sayfası",
+            ),
+            "docs/Kurulum.md": (
+                f"v{current}, değişmez tag ve GitHub Release ile yayımlanmıştır",
+                f"v{current} etiketi ve GitHub Release sayfası",
+            ),
+        }
+        for relative, markers in expected.items():
+            text = (ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(relative=relative):
+                for marker in markers:
+                    self.assertIn(marker, text)
+
+        roadmap = (ROOT / "docs/Durum-ve-Yol-Haritasi.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("checksum-backed 42-skill fallback", roadmap)
+
     def test_release_notes_come_from_current_changelog(self) -> None:
         current = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         notes = YAYIN.release_notu(ROOT)

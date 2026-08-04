@@ -90,7 +90,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn('cmp --silent "$archive"', text)
         self.assertIn('cmp --silent "$checksum"', text)
 
-    def test_existing_release_is_rebuilt_from_remote_tag_without_duplicate_attestation(
+    def test_existing_release_is_rebuilt_only_when_tag_equals_current_main(
         self,
     ) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
@@ -100,16 +100,13 @@ class WorkflowHardeningTests(unittest.TestCase):
             '--remote origin --tag "$tag")"',
             text,
         )
-        self.assertIn('source_commit="$remote_tag_commit"', text)
-        self.assertIn('git fetch --no-tags origin "refs/tags/$tag"', text)
         self.assertIn(
-            'git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA"',
+            'if [[ "$remote_tag_commit" != "$GITHUB_SHA" ]]; then',
             text,
         )
-        self.assertIn(
-            'git worktree add --detach "$source_root" "$source_commit"',
-            text,
-        )
+        self.assertNotIn('source_commit="$remote_tag_commit"', text)
+        self.assertNotIn('git merge-base --is-ancestor', text)
+        self.assertNotIn('git worktree add --detach', text)
         self.assertIn(
             'python "$source_root/scripts/build_project_runner.py" '
             '--root "$source_root"',
@@ -119,6 +116,7 @@ class WorkflowHardeningTests(unittest.TestCase):
             'python "$source_root/scripts/sbom.py" --root "$source_root"',
             text,
         )
+        self.assertIn('source_root="$GITHUB_WORKSPACE"', text)
         self.assertIn("TZ: UTC", text)
         self.assertIn("published_release=true", text)
         self.assertIn(
@@ -147,7 +145,17 @@ class WorkflowHardeningTests(unittest.TestCase):
             text,
         )
         self.assertNotIn('git push origin "refs/tags/$tag"', text)
-        self.assertIn('"$live_tag_commit" != "$source_commit"', text)
+        self.assertIn('"$live_tag_commit" != "$live_main_commit"', text)
+        self.assertGreaterEqual(
+            text.count(
+                'gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" '
+                "--jq '.object.sha'"
+            ),
+            2,
+        )
+        self.assertIn('test "$live_main_commit" = "$GITHUB_SHA"', text)
+        self.assertIn('test "$source_commit" = "$live_main_commit"', text)
+        self.assertIn('test "$live_tag_commit" = "$live_main_commit"', text)
         self.assertNotIn("--target", text)
         release_lines = [
             line for line in text.splitlines() if "gh release create" in line
@@ -294,6 +302,22 @@ class WorkflowHardeningTests(unittest.TestCase):
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
         publish_job = text[text.index("  publish:") :]
         self.assertIn("if: github.ref == 'refs/heads/main'", publish_job)
+
+    def test_release_requires_live_main_tag_and_bundle_exact_equality(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        publish = text[text.index("  publish:") :]
+
+        self.assertNotIn("git merge-base --is-ancestor", text)
+        self.assertGreaterEqual(
+            publish.count(
+                'gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" '
+                "--jq '.object.sha'"
+            ),
+            2,
+        )
+        self.assertIn('test "$live_main_commit" = "$GITHUB_SHA"', publish)
+        self.assertIn('test "$source_commit" = "$live_main_commit"', publish)
+        self.assertIn('test "$live_tag_commit" = "$live_main_commit"', publish)
 
     def test_remote_tag_code_is_isolated_from_release_authority(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")

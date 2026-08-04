@@ -3,7 +3,7 @@
 ![Divan günlük dille yazılan isteği doğrulanmış teslime dönüştürür](docs/assets/github/hero.png)
 
 [![Kalite kapısı](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Kaynak hattı 1.3.4](https://img.shields.io/badge/kaynak-1.3.8-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Kaynak hattı 1.3.8](https://img.shields.io/badge/kaynak-1.3.8-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![Lisans: MIT](https://img.shields.io/badge/lisans-MIT-2ea44f)](LICENSE)
 [![Doğrulanmış hostlar](https://img.shields.io/badge/doğrulanmış%20hostlar-Claude%20Code%20%2B%20Codex-14b8a6)](#host-uyumluluğu-ve-kanıt-düzeyleri)
 [![Topluluk için ücretsiz](https://img.shields.io/badge/topluluk%20için-ücretsiz-d4a72c)](#topluluk-için-ücretsiz)
@@ -136,7 +136,7 @@ python scripts/divan.py update --host both --ref v1.3.8 --execute
 ```
 
 Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içindeki
-komutlar yayımlanmış v1.3.4 etiketini sabitler. Silmeden önce
+komutlar yayımlanmış v1.3.8 etiketini sabitler. Silmeden önce
 [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
 Native Codex makbuzu bekleyen marketplace'in istenen source/ref ve tam hedef
 paket sözleşmesini kanıtlıyor, işlem öncesinde Divan marketplace veya eklentisi

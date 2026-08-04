@@ -1,6 +1,6 @@
 # Kurulum
 
-v1.3.4, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
+v1.3.8, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
 [son yayımlanan sürüm](https://github.com/trugurpala/divan/releases/latest)
 sayfasını kullan.
 
@@ -103,7 +103,7 @@ Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 python scripts/divan.py install --host codex --profile auto --ref v1.3.8 --execute
 ```
 
-v1.3.4 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
+v1.3.8 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
 Codex CLI sonucunu şu şekilde ayırır:
