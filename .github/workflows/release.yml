@@ -170,7 +170,9 @@ jobs:
           source_commit="$GITHUB_SHA"
           source_root="$GITHUB_WORKSPACE"
           remote_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
-          local_tag_commit="$(git rev-parse "$tag^{commit}" 2>/dev/null || true)"
+          local_tag_commit="$(
+            git rev-parse --verify --quiet "refs/tags/$tag^{commit}" 2>/dev/null || true
+          )"
           if [[ -n "$remote_tag_commit" ]]; then
             if [[ -n "$local_tag_commit" && "$local_tag_commit" != "$remote_tag_commit" ]]; then
               echo "HATA: yerel $tag etiketi uzak etiketle eşleşmiyor." >&2
@@ -296,7 +298,9 @@ jobs:
             python scripts/release_guard.py releases "$releases" --tag "$tag"
           )"
           remote_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
-          local_tag_commit="$(git rev-parse "$tag^{commit}" 2>/dev/null || true)"
+          local_tag_commit="$(
+            git rev-parse --verify --quiet "refs/tags/$tag^{commit}" 2>/dev/null || true
+          )"
           published_release=false
           if [[ -n "$remote_tag_commit" ]]; then
             if [[ -n "$local_tag_commit" && "$local_tag_commit" != "$remote_tag_commit" ]]; then
