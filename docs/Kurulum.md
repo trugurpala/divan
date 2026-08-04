@@ -1,6 +1,6 @@
 # Kurulum
 
-v1.3.4, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
+v1.3.8, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
 [son yayımlanan sürüm](https://github.com/trugurpala/divan/releases/latest)
 sayfasını kullan.
 
@@ -45,6 +45,11 @@ Host yeni oturumda Divan paketlerini keşfeder. Günlük çalışma arayüzü do
 dildir; `divan.pyz` kurulum, doctor, güncelleme ve recovery için saklanan bakım
 aracıdır. Divan PATH veya kabuk profilini otomatik değiştirmez.
 
+Kaynak checkout'unda `python scripts/divan.py plan --project . --intent
+"hedefin"` komutu hiçbir görev yürütmeden hazır görevleri ve deterministik ilk
+`Sıradaki` görevi gösterir. Typed kayıt owner, gerekli kanıt ve shell-free
+argv'yi taşır; manuel kontrolleri ayrı tutar ve yürütme yetkisi vermez.
+
 Kurulumu yazmadan denetlemek için sakladığın dosyayı çalıştır:
 
 ```powershell
@@ -62,11 +67,11 @@ Yalnız sorun veya yarım işlem varsa doctor tek bir `NEXT` komutu üretir.
 Repo checkout'u kullanan iki-host yaşam döngüsü:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.4
-python scripts/divan.py install --host both --ref v1.3.4 --execute
-python scripts/divan.py doctor --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4 --execute
+python scripts/divan.py install --host both --ref v1.3.8
+python scripts/divan.py install --host both --ref v1.3.8 --execute
+python scripts/divan.py doctor --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
@@ -89,16 +94,16 @@ anahtarı kullanılmaz.
 Codex Desktop'ta önce hiçbir şey yazmadan kararı gör:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.3.4
+python scripts/divan.py install --host codex --profile auto --ref v1.3.8
 ```
 
 Aynı sabit release'i uygulamak için yalnız `--execute` ekle:
 
 ```powershell
-python scripts/divan.py install --host codex --profile auto --ref v1.3.4 --execute
+python scripts/divan.py install --host codex --profile auto --ref v1.3.8 --execute
 ```
 
-v1.3.4 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
+v1.3.8 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
 
 `auto` profili kendiliğinden etkinleşmez; kullanıcının açık seçimidir. Divan
 Codex CLI sonucunu şu şekilde ayırır:
@@ -249,6 +254,21 @@ Aynı recovery komutu idempotenttir; dış komut başarıdan hemen sonra kesilmi
 olsa bile mevcut durumu yeniden okuyup eksik adımdan güvenle devam eder.
 Eski marketplace geri eklendiğinde source/ref/root/commit/katalog özeti tam
 parmak izi, herhangi bir eski paket kurulmadan önce yeniden doğrulanır.
+Token yolu yalnız native Codex makbuzu bekleyen marketplace'in aynı source/ref
+ile tam hedef paket sözleşmesini kanıtlarken, işlem öncesinde Divan marketplace
+bulunmuyorsa ve kurulu `@divan` eklentisi yoksa açılır. Bu kanıtlardan biri
+eksikse recovery token üretmeden güvenli biçimde durur. Bu koşullar sağlanmış
+olsa da commit veya katalog özeti işlem hedefinden farklıysa recovery kaydı
+otomatik olarak işlemin malı saymaz. Hiçbir şeyi silmeden gözlenen kök, commit,
+katalog özeti ve bunlara bağlı kesin bir
+`--confirm-pending-marketplace <token>` komutu gösterir. Bu kesin checkout'un
+kaldırılmasını onaylıyorsanız aynı recovery komutunu bu seçenekle yeniden
+çalıştırın. Token işlem yolu ve tam marketplace parmak izine bağlıdır; arada
+checkout değişirse recovery yine durur. Doğrulanan parmak izi journala
+kaydedilir, ancak Codex CLI yalnız marketplace adına göre silebildiği için
+recovery otomatik silme yapmaz. Kaydı yeniden kontrol edin, çıktıda verilen
+`codex plugin marketplace remove divan --json` komutunu elle çalıştırın ve
+recovery komutunu son kez yeniden çalıştırın.
 
 Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel
@@ -341,11 +361,11 @@ codex plugin add zanaat-pack@divan
 Doğrudan skill kopyalayan `kur-codex.ps1`/`.sh` yolu yalnız eski hostlar için
 uyumluluk fallback'idir; yerel plugin pazarı destekleniyorsa bu yolu kullanma.
 
-v1.3.4 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
+v1.3.8 eski-host fallback kaydı; betik release arşivini indirmeden önce eşlik
 eden SHA-256 kaydını alır ve uyuşmayan arşivi açmadan durur:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.3.4/scripts/install_codex.sh | DIVAN_REF=v1.3.4 bash
+curl -fsSL https://raw.githubusercontent.com/trugurpala/divan/v1.3.8/scripts/install_codex.sh | DIVAN_REF=v1.3.8 bash
 ```
 
 ## Cursor / diğer Agent Skills uyumlu ajanlar

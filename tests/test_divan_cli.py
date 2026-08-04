@@ -542,6 +542,17 @@ class RepositoryDivanCliTests(unittest.TestCase):
                 cli.main(["doctor", "--ref", "v0.14.0", "--json"]), 0
             )
             self.assertEqual(cli.main(["recover", "transaction.json"]), 0)
+            self.assertEqual(
+                cli.main(
+                    [
+                        "recover",
+                        "transaction.json",
+                        "--confirm-pending-marketplace",
+                        "f" * 64,
+                    ]
+                ),
+                0,
+            )
 
         self.assertEqual(
             lifecycle.call_args_list,
@@ -559,6 +570,14 @@ class RepositoryDivanCliTests(unittest.TestCase):
                     ]
                 ),
                 mock.call(["--rollback-transaction", "transaction.json"]),
+                mock.call(
+                    [
+                        "--rollback-transaction",
+                        "transaction.json",
+                        "--confirm-pending-marketplace",
+                        "f" * 64,
+                    ]
+                ),
             ],
         )
 

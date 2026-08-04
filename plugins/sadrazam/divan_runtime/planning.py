@@ -221,6 +221,75 @@ def _tasks(route: dict[str, Any]) -> list[dict[str, Any]]:
     return tasks
 
 
+def _continuation_task(task: dict[str, Any]) -> dict[str, Any]:
+    commands: list[dict[str, Any]] = []
+    manual_checks: list[str] = []
+    for command in task["commands"]:
+        argv = command.get("argv")
+        if isinstance(argv, list):
+            commands.append(
+                {
+                    "kind": command["kind"],
+                    "workspace": command["workspace"],
+                    "argv": list(argv),
+                    "shell": False,
+                    "auto_execute": False,
+                }
+            )
+        else:
+            manual_checks.append(command["display"])
+    return {
+        "id": task["id"],
+        "workflow": task["workflow"],
+        "stage": task["stage"],
+        "owner_role": task["owner_role"],
+        "depends_on": list(task["depends_on"]),
+        "required_evidence": list(task["required_evidence"]),
+        "commands": commands,
+        "manual_checks": manual_checks,
+    }
+
+
+def _initial_continuation(tasks: list[dict[str, Any]]) -> dict[str, Any]:
+    ready = sorted((task for task in tasks if not task["depends_on"]), key=lambda task: task["id"])
+    if not ready:
+        raise ValueError("execution plan requires an initial ready task")
+    return {
+        "schema_version": 1,
+        "kind": "initial-task",
+        "selection_policy": "first-ready-by-task-id",
+        "ready_task_ids": [task["id"] for task in ready],
+        "task": _continuation_task(ready[0]),
+        "auto_execute": False,
+        "execution_authority": "not-granted",
+    }
+
+
+def _route_id(execution: dict[str, Any]) -> str:
+    encoded = json.dumps(
+        execution, ensure_ascii=False, separators=(",", ":"), sort_keys=True
+    ).encode("utf-8")
+    return f"route-{hashlib.sha256(encoded).hexdigest()[:16]}"
+
+
+def _pre_continuation_route_matches(existing: Any, current: dict[str, Any]) -> bool:
+    if type(existing) is not dict or type(current) is not dict:
+        return False
+    existing_value, current_value = existing.get("execution_plan"), current.get("execution_plan")
+    if type(existing_value) is not dict or type(current_value) is not dict:
+        return False
+    existing_execution, current_execution = dict(existing_value), dict(current_value)
+    try:
+        existing_route_id = existing_execution.pop("route_id")
+        current_execution.pop("route_id")
+        current_execution.pop("continuation")
+    except KeyError:
+        return False
+    existing_route = {**existing, "execution_plan": existing_execution}
+    current_route = {**current, "execution_plan": current_execution}
+    return existing_route_id == _route_id(existing_execution) and existing_route == current_route
+
+
 def _sefer_count(
     complexity: dict[str, Any], budget: dict[str, Any], task_count: int
 ) -> int:
@@ -318,6 +387,7 @@ def build_execution_plan(
         "sefers": _sefers(tasks, count),
         "workstreams": workstreams,
         "tasks": tasks,
+        "continuation": _initial_continuation(tasks),
         "handoff": {
             "at_each_sefer_boundary": True,
             "at_context_tokens": budget["handoff_at_tokens"],
@@ -326,10 +396,4 @@ def build_execution_plan(
         },
         "obligations": _obligations(route, normalized_target),
     }
-    encoded = json.dumps(
-        result, ensure_ascii=False, separators=(",", ":"), sort_keys=True
-    ).encode("utf-8")
-    return {
-        **result,
-        "route_id": f"route-{hashlib.sha256(encoded).hexdigest()[:16]}",
-    }
+    return {**result, "route_id": _route_id(result)}

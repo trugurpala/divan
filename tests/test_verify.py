@@ -172,6 +172,21 @@ class VerificationRunnerTests(unittest.TestCase):
         self.assertIn("python scripts/verify.py", workflow)
         self.assertIn('"path": "scripts/verify.py"', manifest)
 
+    def test_agents_contract_requires_evidence_first_benchmarking(self) -> None:
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+        for requirement in (
+            "Baseline'ı en az üç bağımsız ölçümle çalıştır",
+            "en az üç anlamlı",
+            "her adayı da en az üç kez ölç",
+            "tam commit SHA'sı",
+            "ölçüm gürültüsünden büyükse",
+            "kullanıcının başlangıç değişikliklerine dokunma",
+            "Windows 11 + PowerShell + Codex",
+            "Timeout",
+        ):
+            self.assertIn(requirement, agents)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,6 @@
 # Hızlı Başlangıç
 
-v1.3.4, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
+v1.3.8, değişmez tag ve GitHub Release ile yayımlanmıştır. İndirme için
 [son yayımlanan sürüm](https://github.com/trugurpala/divan/releases/latest)
 sayfasını kullan.
 
@@ -17,6 +17,17 @@ Sadrazam'ın ilerleme sözleşmesi, çalışma uzadığında host ajanını ham 
 günlük yerine işe başlarken ve anlamlı aşama değişimlerinde ne yaptığını, bunun
 neden önemli olduğunu ve sırada ne bulunduğunu kısa biçimde söylemeye
 yönlendirir.
+
+Planı ve güvenli ilk devam kaydını görmek için hiçbir şey yürütmeyen komutu
+kullan:
+
+```powershell
+python scripts/divan.py plan --project . --intent "İstediğim sonucu yaz"
+```
+
+Plan hazır görevleri ve owner, kanıt, shell-free argv ile manuel kontrolleri
+ayrılmış tek deterministik `Sıradaki` görevi gösterir. Bu kayıt yürütme yetkisi
+vermez.
 
 ## Yerel Seyir ekranını aç
 
@@ -39,19 +50,19 @@ Yalnız değişmez tag ve GitHub Release'i bulunan bir ref'i kur. Önce yazmayan
 kurulum önizlemesini, sonra aynı sabit sürümün uygulamasını çalıştır:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.4
-python scripts/divan.py install --host both --ref v1.3.4 --execute
+python scripts/divan.py install --host both --ref v1.3.8
+python scripts/divan.py install --host both --ref v1.3.8 --execute
 ```
 
 Durumu değiştirmeyen doctor ve kontrollü yükseltme:
 
 ```powershell
-python scripts/divan.py doctor --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4 --execute
+python scripts/divan.py doctor --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8 --execute
 ```
 
-v1.3.4 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
+v1.3.8 etiketi ve GitHub Release sayfası güncel, değişmez kurulum kaynağıdır.
 
 Kesinti/başarısızlıkta günlüğün gösterdiği yolla geri al:
 
@@ -65,6 +76,18 @@ yalnız bu işlemin oluşturduğu Divan kayıtlarıyla geri almak/kaldırmak iç
 ```powershell
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
+
+Token yolu yalnız native Codex makbuzu aynı source/ref ile tam hedef paket
+sözleşmesini kanıtlarken, işlem öncesinde Divan marketplace bulunmuyorsa ve
+kurulu `@divan` eklentisi yoksa açılır. Bu kanıtlardan biri eksikse recovery
+token üretmeden güvenli biçimde durur. Commit veya katalog özeti journal
+hedefinden farklıysa kök, commit ve katalog özetini inceleyin; yalnız o kesin
+checkout'u kaldırmayı onaylıyorsanız çıktının verdiği
+`--confirm-pending-marketplace <token>` seçeneğiyle aynı komutu yeniden
+çalıştırın. Bu ikinci adım parmak izini journala kaydeder, fakat yalnız ada göre
+silen Codex komutunu otomatik çalıştırmaz. Marketplace'i yeniden kontrol edin,
+çıktıda verilen `codex plugin marketplace remove divan --json` komutunu elle
+çalıştırın ve recovery komutunu son kez yeniden çalıştırın.
 
 Host'a göre elle kaldırma: [docs/Kaldirma.md](Kaldirma.md). Ayrıntı ve tek-host
 seçenekleri: [[Kurulum]].

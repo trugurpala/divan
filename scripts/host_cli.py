@@ -23,9 +23,18 @@ def _recover(arguments: list[str], lifecycle: Any) -> int | None:
         return None
     parser = argparse.ArgumentParser(description="Recover an interrupted Divan install")
     parser.add_argument("--rollback-transaction", type=pathlib.Path, required=True)
+    parser.add_argument("--confirm-pending-marketplace")
     recovery = parser.parse_args(arguments)
     try:
-        record = lifecycle["rollback_transaction"](recovery.rollback_transaction)
+        keywords = (
+            {"confirm_pending_marketplace": recovery.confirm_pending_marketplace}
+            if recovery.confirm_pending_marketplace is not None
+            else {}
+        )
+        record = lifecycle["rollback_transaction"](
+            recovery.rollback_transaction,
+            **keywords,
+        )
     except lifecycle["InstallError"] as exc:
         print(f"HATA: {exc}", file=sys.stderr)
         return 1

@@ -79,6 +79,15 @@ The plan contains:
 - canonical-source, documentation, public-surface, provider, and handoff
   obligations.
 
+The `continuation` object names all initially ready task IDs and selects one
+deterministic task by ID. It carries that task's workflow, stage, owner,
+dependencies, required evidence, shell-free command objects, and separate
+display-only manual checks. It never invokes a command or grants execution
+authority; human output shows the same choice as `Next`.
+An existing valid v1 goal route from before this field remains immutable and
+restarts as `legacy-unchanged`; only that additive schema difference is
+accepted.
+
 On Codex, current official OpenAI guidance maps economy to `gpt-5.6-luna`,
 balanced to `gpt-5.6-terra`, and frontier to `gpt-5.6-sol`. These are candidates,
 not availability claims. The host must confirm the model. Exact

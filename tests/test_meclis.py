@@ -18,10 +18,15 @@ class MeclisTesti(unittest.TestCase):
     def test_guncel_defter_gecerli(self):
         veri = MECLIS.oku(KOK)
         adaylar = MECLIS.denetle(veri)
-        self.assertEqual(len(adaylar), 25)
+        self.assertEqual(len(adaylar), 26)
         self.assertEqual(
             next(aday["decision"] for aday in adaylar if aday["id"] == "punkpeye-awesome-mcp-servers"),
             "REFERENCE",
+        )
+        ecc = next(aday for aday in adaylar if aday["id"] == "affaan-m-ecc")
+        self.assertEqual(
+            (ecc["decision"], ecc["reviewed_head"], ecc["license"]["spdx"]),
+            ("ADAPT", "0c1d7be9a750627fb2a6534c78a998cc46d03f9c", "MIT"),
         )
 
     def test_project_os_adaylari_sabit_pin_ve_lisans_kanitiyla_kayitli(self):

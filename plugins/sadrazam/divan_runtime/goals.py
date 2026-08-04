@@ -12,7 +12,7 @@ import unicodedata
 from collections.abc import Mapping
 from typing import Any
 
-from . import engine, receipts, seyir_state
+from . import engine, planning, receipts, seyir_state
 
 TARGETS = ("VERIFIED", "PREVIEWED", "RELEASED", "OBSERVED")
 GOAL_ID_PATTERN = re.compile(r"^goal-[0-9a-f]{12}$")
@@ -215,26 +215,48 @@ def _planning_identity(
 
 
 def _legacy_goal_is_unchanged(
+    root: pathlib.Path,
     spec_root: pathlib.Path,
     receipt_path: pathlib.Path,
     identifier: str,
     intent: str,
     target: str,
+    route: dict[str, Any],
+    artifacts: dict[str, bytes],
+    allow_route_less: bool,
 ) -> bool:
-    if (spec_root / "route.json").exists() or not receipt_path.is_file():
+    route_path = spec_root / "route.json"
+    if not receipt_path.is_file():
+        return False
+    _safe_goal_path(root, route_path)
+    if route_path.exists() and not route_path.is_file():
         return False
     verification = receipts.verify_receipt(receipt_path)
     if not verification["ok"]:
         return False
     value = json.loads(receipt_path.read_text(encoding="utf-8"))
-    required = {
-        f".divan/specs/{identifier}/{name}"
-        for name in ("spec.md", "plan.md", "tasks.md")
-    }
+    if route_path.is_file():
+        existing_route = json.loads(route_path.read_text(encoding="utf-8"))
+        if not planning._pre_continuation_route_matches(existing_route, route):
+            return False
+        expected = {**artifacts, "route.json": route_path.read_bytes()}
+        route_required = {
+            f".divan/specs/{identifier}/{name}": hashlib.sha256(content).hexdigest()
+            for name, content in expected.items()
+        }
+        artifact_match = value.get("artifacts") == route_required
+    elif allow_route_less:
+        legacy_required = {
+            f".divan/specs/{identifier}/{name}"
+            for name in ("spec.md", "plan.md", "tasks.md")
+        }
+        artifact_match = set(value.get("artifacts", {})) == legacy_required
+    else:
+        return False
     return (
         value.get("intent") == intent
         and value.get("target") == target
-        and set(value.get("artifacts", {})) == required
+        and artifact_match
     )
 
 
@@ -265,9 +287,7 @@ def start_goal(
         context_window,
         environment,
     )
-    identity = _planning_identity(
-        route, host_profile, context_window, environment
-    )
+    identity = _planning_identity(route, host_profile, context_window, environment)
     identifier = goal_id(safe_intent, normalized_target, snapshot, identity)
     artifacts = _artifact_values(
         identifier, safe_intent, normalized_target, snapshot, route
@@ -294,8 +314,9 @@ def start_goal(
         "writes": [path.relative_to(root).as_posix() for path in paths],
         "receipt": receipt_path.relative_to(root).as_posix(),
     }
-    if identity is None and _legacy_goal_is_unchanged(
-        spec_root, receipt_path, identifier, safe_intent, normalized_target
+    if _legacy_goal_is_unchanged(
+        root, spec_root, receipt_path, identifier, safe_intent,
+        normalized_target, route, artifacts, identity is None
     ):
         result.update(
             {
@@ -303,12 +324,8 @@ def start_goal(
                 "migration_required": True,
                 "writes": [
                     path.relative_to(root).as_posix()
-                    for path in (
-                        spec_root / "spec.md",
-                        spec_root / "plan.md",
-                        spec_root / "tasks.md",
-                        receipt_path,
-                    )
+                    for path in paths
+                    if path.is_file()
                 ],
             }
         )
@@ -320,12 +337,8 @@ def start_goal(
     receipt_value = receipts.new_receipt(
         identifier, safe_intent, normalized_target, relative_artifacts
     )
-    desired[receipt_path] = (
-        json.dumps(
-            receipt_value, ensure_ascii=False, indent=2, sort_keys=True
-        )
-        + "\n"
-    ).encode("utf-8")
+    encoded_receipt = json.dumps(receipt_value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    desired[receipt_path] = encoded_receipt.encode("utf-8")
     for path in desired:
         _safe_goal_path(root, path)
     changed = False

@@ -104,9 +104,18 @@ def _load_runtime_cli() -> Iterator[ModuleType]:
         sys.path[:] = previous_path
 
 
+def _recovery_arguments(options: argparse.Namespace) -> list[str]:
+    arguments = ["--rollback-transaction", str(options.transaction)]
+    if options.confirm_pending_marketplace is not None:
+        arguments.extend(
+            ["--confirm-pending-marketplace", options.confirm_pending_marketplace]
+        )
+    return arguments
+
+
 def _host_arguments(options: argparse.Namespace) -> list[str]:
     if options.command == "recover":
-        return ["--rollback-transaction", str(options.transaction)]
+        return _recovery_arguments(options)
     arguments = [
         "--host",
         options.host,
@@ -184,6 +193,7 @@ def _parser() -> argparse.ArgumentParser:
 
     recover = commands.add_parser("recover", help="recover an interrupted transaction")
     recover.add_argument("transaction", type=pathlib.Path)
+    recover.add_argument("--confirm-pending-marketplace")
     commands.add_parser("_fallback-remove", help=argparse.SUPPRESS)
     return parser
 

@@ -255,6 +255,16 @@ class BundledUpgradeRunner(UpgradeRunner):
         return super()._git(command)
 
 
+class MultipleExactTagsRunner(UpgradeRunner):
+    def _git(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        result = super()._git(command)
+        if "tag" in command:
+            return subprocess.CompletedProcess(
+                command, 0, f"{OLD_REF}\nv1.3.7\n", ""
+            )
+        return result
+
+
 class HostUpgradeTests(unittest.TestCase):
     def _codex_metadata(
         self,
@@ -313,6 +323,40 @@ class HostUpgradeTests(unittest.TestCase):
 
         self.assertEqual(captured["ref"], OLD_REF)
         self.assertEqual(captured["commit"], "a" * 40)
+        self.assertEqual(runner.mutations, [])
+
+    def test_codex_native_metadata_disambiguates_multiple_exact_tags(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-codex-metadata-tags-") as temporary:
+            runner = MultipleExactTagsRunner(pathlib.Path(temporary))
+            self._codex_metadata(runner)
+            io = self._upgrade_io(runner)
+
+            captured = HOSTS._host_upgrade._capture_before("codex", SOURCE, io)
+
+        self.assertEqual(captured["ref"], OLD_REF)
+        self.assertEqual(captured["commit"], "a" * 40)
+        self.assertEqual(runner.mutations, [])
+
+    def test_codex_commit_metadata_remains_valid_when_head_also_has_tags(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-codex-metadata-commit-") as temporary:
+            runner = MultipleExactTagsRunner(pathlib.Path(temporary))
+            self._codex_metadata(runner, {"ref_name": "a" * 40})
+            io = self._upgrade_io(runner)
+
+            captured = HOSTS._host_upgrade._capture_before("codex", SOURCE, io)
+
+        self.assertEqual(captured["ref"], "a" * 40)
+        self.assertEqual(captured["commit"], "a" * 40)
+        self.assertEqual(runner.mutations, [])
+
+    def test_codex_multiple_exact_tags_without_metadata_remain_ambiguous(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-codex-tags-") as temporary:
+            runner = MultipleExactTagsRunner(pathlib.Path(temporary))
+            io = self._upgrade_io(runner)
+
+            with self.assertRaisesRegex(HOSTS.InstallError, "ambiguous exact tags"):
+                HOSTS._host_upgrade._capture_before("codex", SOURCE, io)
+
         self.assertEqual(runner.mutations, [])
 
     def test_codex_native_metadata_tampering_is_rejected_before_mutation(self) -> None:

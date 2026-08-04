@@ -66,7 +66,21 @@ class UpstreamGovernanceTests(unittest.TestCase):
 
         self.assertEqual(errors, [])
         self.assertEqual(len(reviews), 31)
-        self.assertEqual({review["decision"] for review in reviews}, {"KEEP"})
+        self.assertEqual(
+            [
+                review["skill"]
+                for review in reviews
+                if review["decision"] == "ADAPT"
+            ],
+            ["ui-ux-pro-max"],
+        )
+        self.assertTrue(
+            all(
+                review["decision"] == "KEEP"
+                for review in reviews
+                if review["skill"] != "ui-ux-pro-max"
+            )
+        )
 
     def test_nobet_formats_are_decision_ready(self) -> None:
         records = [

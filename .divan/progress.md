@@ -1,5 +1,19 @@
 # Divan İlerleme Defteri
 
+## Hedef Güncellemesi (2026-08-04)
+
+- `v1.3.8` adayı host recovery, typed continuation, host-bağımsız
+  `ui-ux-pro-max` ve tek kaynaklı release kimliği değişikliklerini taşır.
+- Temiz baseline `python -B scripts/verify.py --coverage` ile 777 testte,
+  451 saniyede geçti; önceki uzun koşum takılma değil test süresiydi.
+- Yeni release guard/tag testleri, UI davranış testleri, recovery testleri ve
+  provenance kapıları yerelde geçti.
+- `v1.3.7` etiketi ve Release kaydı tarihsel kanıt olarak değişmeden kalır;
+  yeni yayın onun üzerine yazmaz veya etiketi taşımaz.
+- Sıradaki kesin adım: `v1.3.8` adayının kanonik doğrulamasını tamamlamak,
+  tek PR ile `main`e taşımak ve yalnız tüm zorunlu GitHub kontrolleri yeşilse
+  değişmez tag/Release kimliğini yayımdan sonra yeniden okumaktır.
+
 ## Hedef Güncellemesi (2026-08-03)
 
 - `python scripts/verify.py` 776 test ile geçti; `git diff --check` temiz.

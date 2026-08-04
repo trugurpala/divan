@@ -9,6 +9,8 @@ on:
       - 'CHANGELOG.md'
       - 'release-manifest.json'
       - 'scripts/release.py'
+      - 'scripts/release_guard.py'
+      - 'scripts/release_tag.py'
       - 'scripts/sbom.py'
       - 'scripts/build_project_runner.py'
       - 'scripts/build_bootstrap.py'
@@ -78,24 +80,24 @@ jobs:
           & ./scripts/uninstall_codex.ps1
           if (@(Get-ChildItem $env:CODEX_SKILLS_DIR -Filter SKILL.md -Recurse).Count -ne 0) { throw "Kaldirma tamamlanmadi" }
 
-  publish:
+  release_build:
+    name: Release varlıklarını salt okunur hazırla
     needs: codex-clean-host
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production-release
     timeout-minutes: 25
+    outputs:
+      artifact_id: ${{ steps.release_assets_upload.outputs.artifact-id }}
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       TZ: UTC
     permissions:
-      contents: write
-      id-token: write
-      attestations: write
-      artifact-metadata: write
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.12'
@@ -150,38 +152,37 @@ jobs:
           pip install playwright==1.61.0
           playwright install chromium --with-deps
           DIVAN_SITE_URL=https://trugurpala.github.io/divan/ python tests/site_testi.py
-      - name: Sürüm notunu üret ve etiketi/Release sayfasını eşitle
-        id: release-assets
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Sürüm varlıklarını üret
         run: |
           set -euo pipefail
           version="$(cat VERSION)"
           tag="v${version}"
-          notes="$RUNNER_TEMP/divan-release-notes.md"
-          archive="$RUNNER_TEMP/divan-${tag}.zip"
-          checksum="$RUNNER_TEMP/divan-${tag}.sha256"
-          sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"
-          runner="$RUNNER_TEMP/divan-project.pyz"
-          runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"
-          bootstrap="$RUNNER_TEMP/divan.pyz"
-          bootstrap_checksum="$RUNNER_TEMP/divan.pyz.sha256"
+          assets_dir="$RUNNER_TEMP/release-assets"
+          mkdir -p "$assets_dir"
+          notes="$assets_dir/divan-release-notes.md"
+          archive="$assets_dir/divan-${tag}.zip"
+          checksum="$assets_dir/divan-${tag}.sha256"
+          sbom="$assets_dir/divan-${tag}.spdx.json"
+          runner="$assets_dir/divan-project.pyz"
+          runner_checksum="$assets_dir/divan-project.pyz.sha256"
+          bootstrap="$assets_dir/divan.pyz"
+          bootstrap_checksum="$assets_dir/divan.pyz.sha256"
           source_commit="$GITHUB_SHA"
           source_root="$GITHUB_WORKSPACE"
-          published_release=false
-          if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
-            source_commit="$(git rev-parse "$tag^{commit}")"
-            git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA" || {
-              echo "HATA: $tag etiketi $source_commit commit'inde ve $GITHUB_SHA soyunda degil." >&2
+          remote_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
+          local_tag_commit="$(git rev-parse "$tag^{commit}" 2>/dev/null || true)"
+          if [[ -n "$remote_tag_commit" ]]; then
+            if [[ -n "$local_tag_commit" && "$local_tag_commit" != "$remote_tag_commit" ]]; then
+              echo "HATA: yerel $tag etiketi uzak etiketle eşleşmiyor." >&2
               exit 1
-            }
-            source_root="$RUNNER_TEMP/source-$tag"
-            git worktree add --detach "$source_root" "$source_commit"
-            trap 'git worktree remove --force "$source_root"' EXIT
-            test "$(cat "$source_root/VERSION")" = "$version"
-            if gh release view "$tag" >/dev/null 2>&1; then
-              published_release=true
             fi
+            if [[ "$remote_tag_commit" != "$GITHUB_SHA" ]]; then
+              echo "HATA: $tag etiketi güncel main commit'iyle eşleşmiyor." >&2
+              exit 1
+            fi
+          elif [[ -n "$local_tag_commit" ]]; then
+            echo "HATA: yerel $tag etiketi uzak depoda bulunamadi." >&2
+            exit 1
           fi
           python "$source_root/scripts/release.py" --notes "$notes"
           git archive --format=zip --prefix="divan-${tag}/" --output="$archive" "$source_commit"
@@ -204,6 +205,120 @@ jobs:
           archive_sha256="$(sha256sum "$archive" | awk '{print $1}')"
           sbom_sha256="$(sha256sum "$sbom" | awk '{print $1}')"
           printf '%s  %s\n%s  %s\n%s  %s\n%s  %s\n%s  %s\n%s  %s\nsource_commit=%s\ntag=%s\n' "$archive_sha256" "$(basename "$archive")" "$sbom_sha256" "$(basename "$sbom")" "$runner_sha256" "$(basename "$runner")" "$runner_checksum_sha256" "$(basename "$runner_checksum")" "$bootstrap_sha256" "$(basename "$bootstrap")" "$bootstrap_checksum_sha256" "$(basename "$bootstrap_checksum")" "$source_commit" "$tag" > "$checksum"
+          test "$(
+            python scripts/release_guard.py bundle "$assets_dir" --tag "$tag"
+          )" = "$source_commit"
+      - name: Doğrulanmış varlık paketini aktar
+        id: release_assets_upload
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: divan-release-assets
+          path: ${{ runner.temp }}/release-assets
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Doğrulanmış release varlıklarını yayımla
+    needs: release_build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production-release
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      TZ: UTC
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+      - name: GitHub yayın politikasını admin-read kanıtıyla doğrula
+        env:
+          GH_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "${GH_TOKEN:-}" || {
+            echo "HATA: production-release/DIVAN_RELEASE_ADMIN_TOKEN gerekli." >&2
+            exit 1
+          }
+          tag="v$(cat VERSION)"
+          immutable="$RUNNER_TEMP/immutable-releases.json"
+          ruleset="$RUNNER_TEMP/stable-tag-ruleset.json"
+          gh api "repos/$GITHUB_REPOSITORY/immutable-releases" > "$immutable"
+          gh api "repos/$GITHUB_REPOSITORY/rulesets/20332879" > "$ruleset"
+          unset GH_TOKEN
+          python scripts/release_guard.py immutable "$immutable"
+          python scripts/release_guard.py ruleset "$ruleset" --tag "$tag"
+      - name: Salt okunur işin doğrulanmış varlıklarını indir
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ needs.release_build.outputs.artifact_id }}
+          path: ${{ runner.temp }}/release-assets
+          digest-mismatch: error
+      - name: Varlık kimliğini ve canlı Release durumunu doğrula
+        id: release_assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(cat VERSION)"
+          tag="v${version}"
+          assets_dir="$RUNNER_TEMP/release-assets"
+          archive="$assets_dir/divan-${tag}.zip"
+          bootstrap="$assets_dir/divan.pyz"
+          bootstrap_checksum="$assets_dir/divan.pyz.sha256"
+          checksum="$assets_dir/divan-${tag}.sha256"
+          notes="$assets_dir/divan-release-notes.md"
+          runner="$assets_dir/divan-project.pyz"
+          runner_checksum="$assets_dir/divan-project.pyz.sha256"
+          sbom="$assets_dir/divan-${tag}.spdx.json"
+          source_commit="$(
+            python scripts/release_guard.py bundle "$assets_dir" --tag "$tag"
+          )"
+          releases="$RUNNER_TEMP/releases-before-$tag.json"
+          gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$releases"
+          live_main_commit="$(
+            gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha'
+          )"
+          unset GH_TOKEN
+          test "$live_main_commit" = "$GITHUB_SHA"
+          test "$source_commit" = "$live_main_commit"
+          release_state="$(
+            python scripts/release_guard.py releases "$releases" --tag "$tag"
+          )"
+          remote_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
+          local_tag_commit="$(git rev-parse "$tag^{commit}" 2>/dev/null || true)"
+          published_release=false
+          if [[ -n "$remote_tag_commit" ]]; then
+            if [[ -n "$local_tag_commit" && "$local_tag_commit" != "$remote_tag_commit" ]]; then
+              echo "HATA: yerel $tag etiketi uzak etiketle eşleşmiyor." >&2
+              exit 1
+            fi
+            if [[ "$remote_tag_commit" != "$live_main_commit" ]]; then
+              echo "HATA: uzak $tag etiketi güncel main ile eşleşmiyor." >&2
+              exit 1
+            fi
+            if [[ "$release_state" == published ]]; then
+              published_release=true
+            fi
+          elif [[ -n "$local_tag_commit" ]]; then
+            echo "HATA: yerel $tag etiketi uzak depoda bulunamadi." >&2
+            exit 1
+          elif [[ "$release_state" == published ]]; then
+            echo "HATA: yayimlanmis $tag Release kaydinin uzak etiketi yok." >&2
+            exit 1
+          else
+            test "$source_commit" = "$GITHUB_SHA"
+          fi
           {
             echo "archive=$archive"
             echo "bootstrap=$bootstrap"
@@ -218,30 +333,47 @@ jobs:
             echo "published_release=$published_release"
           } >> "$GITHUB_OUTPUT"
       - name: Attest every release asset before publication
-        if: steps.release-assets.outputs.published_release != 'true'
+        if: steps.release_assets.outputs.published_release != 'true'
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: |
-            ${{ steps.release-assets.outputs.archive }}
-            ${{ steps.release-assets.outputs.sbom }}
-            ${{ steps.release-assets.outputs.runner }}
-            ${{ steps.release-assets.outputs.runner_checksum }}
-            ${{ steps.release-assets.outputs.bootstrap }}
-            ${{ steps.release-assets.outputs.bootstrap_checksum }}
-            ${{ steps.release-assets.outputs.checksum }}
+            ${{ steps.release_assets.outputs.archive }}
+            ${{ steps.release_assets.outputs.sbom }}
+            ${{ steps.release_assets.outputs.runner }}
+            ${{ steps.release_assets.outputs.runner_checksum }}
+            ${{ steps.release_assets.outputs.bootstrap }}
+            ${{ steps.release_assets.outputs.bootstrap_checksum }}
+            ${{ steps.release_assets.outputs.checksum }}
+      - name: GitHub yayın politikasını yayımdan hemen önce yeniden doğrula
+        env:
+          GH_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
+          RELEASE_TAG: ${{ steps.release_assets.outputs.tag }}
+        run: |
+          set -euo pipefail
+          test -n "${GH_TOKEN:-}" || {
+            echo "HATA: production-release/DIVAN_RELEASE_ADMIN_TOKEN gerekli." >&2
+            exit 1
+          }
+          immutable="$RUNNER_TEMP/immutable-releases-publish.json"
+          ruleset="$RUNNER_TEMP/stable-tag-ruleset-publish.json"
+          gh api "repos/$GITHUB_REPOSITORY/immutable-releases" > "$immutable"
+          gh api "repos/$GITHUB_REPOSITORY/rulesets/20332879" > "$ruleset"
+          unset GH_TOKEN
+          python scripts/release_guard.py immutable "$immutable"
+          python scripts/release_guard.py ruleset "$ruleset" --tag "$RELEASE_TAG"
       - name: Publish or verify immutable GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_ARCHIVE: ${{ steps.release-assets.outputs.archive }}
-          RELEASE_BOOTSTRAP: ${{ steps.release-assets.outputs.bootstrap }}
-          RELEASE_BOOTSTRAP_CHECKSUM: ${{ steps.release-assets.outputs.bootstrap_checksum }}
-          RELEASE_CHECKSUM: ${{ steps.release-assets.outputs.checksum }}
-          RELEASE_NOTES: ${{ steps.release-assets.outputs.notes }}
-          RELEASE_RUNNER: ${{ steps.release-assets.outputs.runner }}
-          RELEASE_RUNNER_CHECKSUM: ${{ steps.release-assets.outputs.runner_checksum }}
-          RELEASE_SBOM: ${{ steps.release-assets.outputs.sbom }}
-          RELEASE_SOURCE_COMMIT: ${{ steps.release-assets.outputs.source_commit }}
-          RELEASE_TAG: ${{ steps.release-assets.outputs.tag }}
+          RELEASE_ARCHIVE: ${{ steps.release_assets.outputs.archive }}
+          RELEASE_BOOTSTRAP: ${{ steps.release_assets.outputs.bootstrap }}
+          RELEASE_BOOTSTRAP_CHECKSUM: ${{ steps.release_assets.outputs.bootstrap_checksum }}
+          RELEASE_CHECKSUM: ${{ steps.release_assets.outputs.checksum }}
+          RELEASE_NOTES: ${{ steps.release_assets.outputs.notes }}
+          RELEASE_RUNNER: ${{ steps.release_assets.outputs.runner }}
+          RELEASE_RUNNER_CHECKSUM: ${{ steps.release_assets.outputs.runner_checksum }}
+          RELEASE_SBOM: ${{ steps.release_assets.outputs.sbom }}
+          RELEASE_SOURCE_COMMIT: ${{ steps.release_assets.outputs.source_commit }}
+          RELEASE_TAG: ${{ steps.release_assets.outputs.tag }}
         run: |
           set -euo pipefail
           archive="$RELEASE_ARCHIVE"
@@ -254,29 +386,59 @@ jobs:
           sbom="$RELEASE_SBOM"
           source_commit="$RELEASE_SOURCE_COMMIT"
           tag="$RELEASE_TAG"
-          if git rev-parse "$tag^{commit}" >/dev/null 2>&1; then
-            if gh release view "$tag" >/dev/null 2>&1; then
-              existing="$RUNNER_TEMP/existing-$tag"
-              mkdir -p "$existing"
-              gh release download "$tag" --pattern "$(basename "$archive")" --dir "$existing"
-              gh release download "$tag" --pattern "$(basename "$checksum")" --dir "$existing"
-              gh release download "$tag" --pattern "$(basename "$sbom")" --dir "$existing"
-              gh release download "$tag" --pattern "$(basename "$runner")" --dir "$existing"
-              gh release download "$tag" --pattern "$(basename "$runner_checksum")" --dir "$existing"
-              gh release download "$tag" --pattern "$(basename "$bootstrap")" --dir "$existing"
-              gh release download "$tag" --pattern "$(basename "$bootstrap_checksum")" --dir "$existing"
-              cmp --silent "$archive" "$existing/$(basename "$archive")"
-              cmp --silent "$checksum" "$existing/$(basename "$checksum")"
-              cmp --silent "$sbom" "$existing/$(basename "$sbom")"
-              cmp --silent "$runner" "$existing/$(basename "$runner")"
-              cmp --silent "$runner_checksum" "$existing/$(basename "$runner_checksum")"
-              cmp --silent "$bootstrap" "$existing/$(basename "$bootstrap")"
-              cmp --silent "$bootstrap_checksum" "$existing/$(basename "$bootstrap_checksum")"
-              echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
-            else
-              gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
-            fi
+          live_main_commit="$(
+            gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha'
+          )"
+          test "$live_main_commit" = "$GITHUB_SHA"
+          test "$source_commit" = "$live_main_commit"
+          live_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
+          if [[ -z "$live_tag_commit" ]]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" \
+              --field ref="refs/tags/$tag" \
+              --field sha="$source_commit"
+            live_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
+          fi
+          if [[ "$live_tag_commit" != "$live_main_commit" ]]; then
+            echo "HATA: uzak $tag etiketi $live_tag_commit, güncel main $live_main_commit." >&2
+            exit 1
+          fi
+          releases="$RUNNER_TEMP/releases-publish-$tag.json"
+          gh api --paginate --slurp \
+            "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$releases"
+          release_state="$(
+            python scripts/release_guard.py releases "$releases" --tag "$tag"
+          )"
+          if [[ "$release_state" == published ]]; then
+            existing="$RUNNER_TEMP/existing-$tag"
+            mkdir -p "$existing"
+            gh release download "$tag" --pattern "$(basename "$archive")" --dir "$existing"
+            gh release download "$tag" --pattern "$(basename "$checksum")" --dir "$existing"
+            gh release download "$tag" --pattern "$(basename "$sbom")" --dir "$existing"
+            gh release download "$tag" --pattern "$(basename "$runner")" --dir "$existing"
+            gh release download "$tag" --pattern "$(basename "$runner_checksum")" --dir "$existing"
+            gh release download "$tag" --pattern "$(basename "$bootstrap")" --dir "$existing"
+            gh release download "$tag" --pattern "$(basename "$bootstrap_checksum")" --dir "$existing"
+            cmp --silent "$archive" "$existing/$(basename "$archive")"
+            cmp --silent "$checksum" "$existing/$(basename "$checksum")"
+            cmp --silent "$sbom" "$existing/$(basename "$sbom")"
+            cmp --silent "$runner" "$existing/$(basename "$runner")"
+            cmp --silent "$runner_checksum" "$existing/$(basename "$runner_checksum")"
+            cmp --silent "$bootstrap" "$existing/$(basename "$bootstrap")"
+            cmp --silent "$bootstrap_checksum" "$existing/$(basename "$bootstrap_checksum")"
+            echo "$tag Release varliklari byte-byte dogrulandi; hicbir varlik degistirilmedi."
           else
-            test "$source_commit" = "$GITHUB_SHA"
-            gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum" --target "$source_commit" --title "Divan $tag" --notes-file "$notes"
+            live_main_commit="$(
+              gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha'
+            )"
+            live_tag_commit="$(python scripts/release_tag.py --remote origin --tag "$tag")"
+            test "$live_main_commit" = "$GITHUB_SHA"
+            test "$source_commit" = "$live_main_commit"
+            test "$live_tag_commit" = "$live_main_commit"
+            gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner" "$runner_checksum" "$bootstrap" "$bootstrap_checksum" --verify-tag --title "Divan $tag" --notes-file "$notes"
+            test "$(python scripts/release_tag.py --remote origin --tag "$tag")" = "$source_commit"
+            gh api --paginate --slurp \
+              "repos/$GITHUB_REPOSITORY/releases?per_page=100" > "$releases"
+            test "$(
+              python scripts/release_guard.py releases "$releases" --tag "$tag"
+            )" = published
           fi

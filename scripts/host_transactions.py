@@ -29,7 +29,7 @@ def persist_record(path: pathlib.Path, record: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
-def begin_mutation(path: pathlib.Path, record: dict[str, Any], pending: dict[str, str]) -> None:
+def begin_mutation(path: pathlib.Path, record: dict[str, Any], pending: dict[str, Any]) -> None:
     record["pending"] = pending
     persist_record(path, record)
 

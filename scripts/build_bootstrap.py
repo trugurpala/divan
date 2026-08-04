@@ -29,6 +29,8 @@ HOST_FILES = (
     "host_install_authority.py",
     "host_install_result.py",
     "host_install_journal.py",
+    "host_install_marketplace.py",
+    "host_install_recovery.py",
     "host_journal.py",
     "host_journal_scan.py",
     "host_journal_transitions.py",

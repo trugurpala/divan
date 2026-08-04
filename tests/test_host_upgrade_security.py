@@ -543,6 +543,28 @@ class HostUpgradeSecurityTests(unittest.TestCase):
         rollback.assert_called_once_with(path)
         self.assertEqual(errors.getvalue(), "")
 
+    def test_recovery_parser_forwards_pending_marketplace_confirmation(self) -> None:
+        path = pathlib.Path("fixture-install.json").resolve()
+        payload = {"transaction_path": str(path), "status": "recovered"}
+        confirmation = "f" * 64
+        output, errors = io.StringIO(), io.StringIO()
+        with mock.patch.object(HOSTS, "rollback_transaction", return_value=payload) as rollback:
+            with redirect_stdout(output), redirect_stderr(errors):
+                result = HOSTS.main(
+                    [
+                        f"--rollback-transaction={path}",
+                        "--confirm-pending-marketplace",
+                        confirmation,
+                    ]
+                )
+
+        self.assertEqual(result, 0)
+        rollback.assert_called_once_with(
+            path,
+            confirm_pending_marketplace=confirmation,
+        )
+        self.assertEqual(errors.getvalue(), "")
+
 
 if __name__ == "__main__":
     unittest.main()

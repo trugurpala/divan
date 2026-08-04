@@ -139,7 +139,7 @@ footer p+p{margin-top:10px}
   <div class="wrap">
     <p class="tugra">Niyetten doğrulanmış yayına</p>
     <h1>Divan<span class="nokta">.</span></h1>
-    <p class="tez"><b>Bitirmek istediğin işi normal cümlelerle yaz.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>planlı, testli ve kanıtlanabilir bir teslim akışına</b> çevirir; yerel skill/plugin dağıtımıdır, model veya runtime değildir. Divan Nizamı ürünün yetki düzenidir. İşi Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.3.4 kaynak hattı · yayımlanan paketler GitHub Releases'ta · 42 beceri · 5 paket · v1 hazırlık: 8/8.</p>
+    <p class="tez"><b>Bitirmek istediğin işi normal cümlelerle yaz.</b> Divan, kullandığın kodlama ajanını tek repo içinde <b>planlı, testli ve kanıtlanabilir bir teslim akışına</b> çevirir; yerel skill/plugin dağıtımıdır, model veya runtime değildir. Divan Nizamı ürünün yetki düzenidir. İşi Seyir'de takip ettirir ve kanıtıyla teslim eder. v1.3.8 kaynak hattı · yayımlanan paketler GitHub Releases'ta · 42 beceri · 5 paket · v1 hazırlık: 8/8.</p>
     <p class="ferman-etiket">Yayın durumu · değişmez tag ve GitHub Release ile doğrulanır</p>
     <p class="hero-notu">Hükümdar sensin — son yetki sende; bu dil kullanmak için öğrenmen gereken bir rol oyunu değil.</p>
     <div class="hero-yollar" aria-label="Başlangıç yolları">
@@ -193,7 +193,9 @@ python .\divan.pyz install --host codex --profile auto --execute</code>
     <p class="tez">Divan Engine projeyi kod çalıştırmadan inceler; Divan Nizamı
       Hükümdarın fermanını göreve ve framework'e göre en küçük yetkin ekibe
       yönlendirir. Her değişikliği test, README, Wiki, site ve yayın
-      bağımlılıklarına kadar izler.</p>
+      bağımlılıklarına kadar izler. Plan, hazır görevleri ve owner ile kanıtı
+      belli tek deterministik <b>Sıradaki</b> görevi gösterir; shell-free argv
+      ile manuel kontrolleri ayırır ve yürütme yetkisi vermez.</p>
     <p>Keşif ekranı gerçek proje köküne odaklanır: Divan'a ait geçici
       <code>.worktrees</code>, fixture projeleri, dependency/build cache'leri ve
       skill içi yardımcı klasörler eski ajan dalları gibi kullanıcı planına
@@ -264,6 +266,8 @@ python .\divan.pyz install --host codex --profile auto --execute</code>
       <li><div><b>Kurulumu yalnız işlem sahipliğiyle kaldır</b><code>python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"</code></div></li>
     </ol>
     <p style="margin-top:18px"><code>auto</code> profili Codex CLI sağlıklıysa tam yerel plugin kurulumunu kullanır; Windows erişimi engellerse checksum ile doğrulanan 42 becerilik fallback'i seçer. Fallback skill ve talimat sağlar; yerel komut, ajan, hook, MCP veya yerel yaşam döngüsü varmış gibi göstermez.</p>
+    <p style="margin-top:18px">Token yolu yalnız native Codex makbuzu aynı source/ref ile tam hedef paket sözleşmesini kanıtlarken, işlem öncesinde Divan marketplace bulunmuyorsa ve kurulu <code>@divan</code> eklentisi yoksa açılır; kanıt eksikse recovery token üretmeden güvenli biçimde durur.</p>
+    <p style="margin-top:18px">Commit veya katalog özeti işlem hedefinden farklıysa bildirilen kök ve parmak izini incele; yalnız o kesin checkout'u kaldırmayı onaylıyorsan çıktının verdiği <code>--confirm-pending-marketplace &lt;token&gt;</code> seçeneğiyle aynı komutu yeniden çalıştır. Bu adım parmak izini kaydeder fakat yalnız ada göre silen Codex komutunu çağırmaz. Marketplace'i yeniden kontrol et, gösterilen <code>codex plugin marketplace remove divan --json</code> komutunu elle çalıştır ve recovery komutunu son kez çalıştır.</p>
     <p style="margin-top:18px">Tam kaldırma ve sahiplik sınırları: <a href="https://github.com/trugurpala/divan/blob/main/docs/Kaldirma.md">docs/Kaldirma.md</a>.</p>
   </div>
 </section>
@@ -372,7 +376,7 @@ python .\divan.pyz install --host codex --profile auto --execute</code>
 const seciciVeri={
   ship:{paket:'sadrazam + core-pack',neden:'Plan, TDD, teftiş ve yayın zinciri',komut:"Bu özelliği baştan sona planla, testle ve main'de doğrula.",akis:['Brief','Plan','TDD','Teftiş','Yayın']},
   fix:{paket:'core-pack',neden:'Kök neden, regresyon testi ve dar düzeltme',komut:"Bu bug'ın kök nedenini bul, önce regresyon testini yaz, sonra en küçük düzeltmeyi yap.",akis:['Belirti','Kök neden','Test','Düzeltme','Doğrula']},
-  design:{paket:'ui-pack + react-pack',neden:'Estetik yön, üretim kodu ve tarayıcı testi',komut:'Bu arayüz için ayırt edici bir estetik seç, üretim kodunu yaz ve tarayıcıda doğrula.',akis:['Niyet','Estetik','Sistem','İnşa','Tarayıcı']},
+  design:{paket:'ui-pack + react-pack',neden:'Estetik yön, tutarlı tema/palet, üretim kodu ve tarayıcı testi',komut:'Bu arayüz için ayırt edici bir estetik seç, üretim kodunu yaz ve tarayıcıda doğrula.',akis:['Niyet','Estetik','Sistem','İnşa','Tarayıcı']},
   learn:{paket:'sadrazam + core-pack',neden:'Kanıtlı arama ve kalıcı proje hafızası',komut:'Bu projeyi değiştirmeden tanı; mimariyi, riskleri ve sıradaki kesin adımı kanıtlarıyla deftere yaz.',akis:['Kapsam','Ara','Harita','Risk','Defter']},
   prove:{paket:'sadrazam + core-pack',neden:'A/B eval, CI, varsayılan dal ve canlı kanıt',komut:'Bu değişikliği baseline ile karşılaştır, ölçülemeyeni iddia etme, CI ve canlı yüzey kanıtıyla yayınla.',akis:['Vaka','A/B koşu','Kör hakem','CI','Canlı']}
 };

@@ -4,7 +4,7 @@
 <!-- The Turkish README keeps the canonical Turkish export at docs/assets/github/hero.png. -->
 
 [![Quality Gate](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml/badge.svg)](https://github.com/trugurpala/divan/actions/workflows/quality-gate.yml)
-[![Source line 1.3.4](https://img.shields.io/badge/source-1.3.4-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
+[![Source line 1.3.8](https://img.shields.io/badge/source-1.3.8-1E4FA8)](https://github.com/trugurpala/divan/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
 [![Hosts: Claude Code + Codex](https://img.shields.io/badge/verified%20hosts-Claude%20Code%20%2B%20Codex-14b8a6)](#host-compatibility-and-evidence-levels)
 [![Free for the community](https://img.shields.io/badge/community-free-d4a72c)](#free-for-the-community)
@@ -22,7 +22,7 @@ the work visible and refuses to call an unverified result complete.
 > external agent runtime. It cannot make an unavailable host tool appear, and
 > it does not turn an untested claim into evidence.
 
-**Source line:** v1.3.4 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
+**Source line:** v1.3.8 · **Published packages:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · **42 skills** ·
 **5 modular packages** · **8/8 readiness gates**
 
 **Host compatibility:** [English guide](#host-compatibility) ·
@@ -71,6 +71,11 @@ Your request
 → Teftiş (tests and evidence review)
 → verified delivery and durable project memory
 ```
+
+The plan also exposes the ready task IDs and one deterministic first task with
+its owner, dependencies, required evidence, shell-free argv, and separate
+manual checks. Human output names it as `Next`; the record sets
+`auto_execute: false` and grants no execution authority.
 
 The stdlib-only Divan Engine lives in this repository. Divan Nizamı is the
 owner-first governance rule around that engine, not a second product. The
@@ -126,18 +131,28 @@ python .\divan.pyz install --host codex --profile auto --execute
 From a trusted checkout, the equivalent two-host lifecycle is:
 
 ```powershell
-python scripts/divan.py install --host both --ref v1.3.4
-python scripts/divan.py install --host both --ref v1.3.4 --execute
-python scripts/divan.py doctor --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4
-python scripts/divan.py update --host both --ref v1.3.4 --execute
+python scripts/divan.py install --host both --ref v1.3.8
+python scripts/divan.py install --host both --ref v1.3.8 --execute
+python scripts/divan.py doctor --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8
+python scripts/divan.py update --host both --ref v1.3.8 --execute
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\upgrade-20260721-120000.json"
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
 The command above resolves the latest published tag before downloading. The
-checkout commands pin the published v1.3.4 tag. See
+checkout commands pin the published v1.3.8 tag. See
 [removal and recovery](docs/Kaldirma.md) before deleting anything.
+If a native Codex receipt proves that a pending marketplace has the requested
+source/ref and exact target package contract, while no Divan marketplace or
+plugin existed before the transaction, recovery may print a
+`--confirm-pending-marketplace` token for a commit or catalog-digest mismatch.
+If any prerequisite cannot be proved, it fails closed without a token. Review
+the reported root, commit, and catalog digest. Rerunning with the token records
+the exact fingerprint but does not call Codex's name-only removal command.
+Recheck the marketplace, run the printed
+`codex plugin marketplace remove divan --json` command manually only while it
+is still that checkout, then rerun recovery.
 
 The latest non-draft GitHub Release is the immutable installation source. The
 agent and bootstrap resolve that release; they do not install from `main`.
@@ -211,7 +226,7 @@ independent-user count, endorsement, market-adoption claim or quality win.
 |---|---|
 | `sadrazam` | End-to-end ownership, durable decisions and bounded delegation |
 | `core-pack` | Planning, TDD, debugging, verification and source review |
-| `ui-pack` | Interface direction, product audit and browser testing |
+| `ui-pack` | Interface direction, host-neutral local design-system search, product audit and browser testing |
 | `react-pack` | Detected React, Next.js or React Native work |
 | `zanaat-pack` | Creative assets, MCP work and specialist integrations |
 

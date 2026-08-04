@@ -1,4 +1,4 @@
-# Divan Wiki · v1.3.4
+# Divan Wiki · v1.3.8
 
 ![Divan'ın doğrulanmış teslim mührü](https://raw.githubusercontent.com/trugurpala/divan/main/docs/assets/github/muhurdar-seal.svg)
 
@@ -42,7 +42,12 @@ göre görev grafiğine, en fazla üç bağımsız çalışma hattına ve kalıc
 kapasitesini doğrulamadan varmış gibi göstermez. Bu özellik değişmez
 `v0.18.0` kurulumunun parçasıdır.
 
-> **Kaynak hattı:** v1.3.4 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · `main` ürün kaynağı · Wiki bu repodaki
+Güncel kaynak planı ayrıca hazır görev kimliklerini ve owner, bağımlılık, kanıt,
+shell-free argv ile manuel kontrolleri ayrılmış tek deterministik `Sıradaki`
+görevi typed olarak gösterir. Bu devam kaydı görev çalıştırmaz ve yürütme
+yetkisi vermez.
+
+> **Kaynak hattı:** v1.3.8 · **Yayımlanan paketler:** [GitHub Releases](https://github.com/trugurpala/divan/releases/latest) · `main` ürün kaynağı · Wiki bu repodaki
 > `docs/*.md` kaynaklarından otomatik yayımlanır. Elle Wiki düzenlemek yerine
 > kaynak belgeyi değiştir; teftiş ve eşitleme zinciri farkı yakalasın.
 
@@ -63,7 +68,7 @@ köküne odaklı kalır.
 |---|---|---|
 | Bir özellik çıkar | [[Hızlı Başlangıç|Hizli-Baslangic]] | Brief → plan → TDD → kanıt → yayın |
 | Bir bug düzelt | [[Test ve Teftiş|Test-ve-Teftis]] | Kök neden → regresyon testi → dar düzeltme |
-| Arayüz tasarla | [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] | Estetik yön → sistem → tarayıcı kanıtı |
+| Arayüz tasarla | [[Vibe Coder İçin Değer|Vibe-Coder-Icin-Deger]] | Estetik yön → tutarlı tema/palet → sistem → tarayıcı kanıtı |
 | Divan'ı kur | [[Kurulum]] | Hostuna uygun en küçük kurulum yolu |
 | Projenin ilerlemesini izle | [[Hızlı Başlangıç|Hizli-Baslangic]] | Yerel Seyir → şu anki görev → sıradaki adım |
 | Divan'ın sürüm durumunu gör | [[Durum ve Yol Haritası|Durum-ve-Yol-Haritasi]] | Yayımlanan, açık ve sıradaki sürüm ayrımı |

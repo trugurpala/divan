@@ -90,23 +90,23 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn('cmp --silent "$archive"', text)
         self.assertIn('cmp --silent "$checksum"', text)
 
-    def test_existing_release_is_rebuilt_from_tag_without_duplicate_attestation(
+    def test_existing_release_is_rebuilt_only_when_tag_equals_current_main(
         self,
     ) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
 
         self.assertIn(
-            'source_commit="$(git rev-parse "$tag^{commit}")"',
+            'remote_tag_commit="$(python scripts/release_tag.py '
+            '--remote origin --tag "$tag")"',
             text,
         )
         self.assertIn(
-            'git merge-base --is-ancestor "$source_commit" "$GITHUB_SHA"',
+            'if [[ "$remote_tag_commit" != "$GITHUB_SHA" ]]; then',
             text,
         )
-        self.assertIn(
-            'git worktree add --detach "$source_root" "$source_commit"',
-            text,
-        )
+        self.assertNotIn('source_commit="$remote_tag_commit"', text)
+        self.assertNotIn('git merge-base --is-ancestor', text)
+        self.assertNotIn('git worktree add --detach', text)
         self.assertIn(
             'python "$source_root/scripts/build_project_runner.py" '
             '--root "$source_root"',
@@ -116,16 +116,75 @@ class WorkflowHardeningTests(unittest.TestCase):
             'python "$source_root/scripts/sbom.py" --root "$source_root"',
             text,
         )
+        self.assertIn('source_root="$GITHUB_WORKSPACE"', text)
         self.assertIn("TZ: UTC", text)
         self.assertIn("published_release=true", text)
         self.assertIn(
-            "if: steps.release-assets.outputs.published_release != 'true'",
+            "if: steps.release_assets.outputs.published_release != 'true'",
             text,
         )
-        self.assertNotIn(
-            'test "$tagged_commit" = "$source_commit"',
+        self.assertIn('"$local_tag_commit" != "$remote_tag_commit"', text)
+
+    def test_release_rechecks_and_creates_remote_tag_before_publication(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+
+        self.assertTrue((ROOT / "scripts" / "release_guard.py").is_file())
+        self.assertTrue((ROOT / "scripts" / "release_tag.py").is_file())
+        release_guard = (ROOT / "scripts" / "release_guard.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("require_exact_assets", release_guard)
+        self.assertGreaterEqual(
+            text.count(
+                'python scripts/release_tag.py --remote origin --tag "$tag"'
+            ),
+            3,
+        )
+        self.assertIn(
+            'gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs"',
             text,
         )
+        self.assertNotIn('git push origin "refs/tags/$tag"', text)
+        self.assertIn('"$live_tag_commit" != "$live_main_commit"', text)
+        self.assertGreaterEqual(
+            text.count(
+                'gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" '
+                "--jq '.object.sha'"
+            ),
+            2,
+        )
+        self.assertIn('test "$live_main_commit" = "$GITHUB_SHA"', text)
+        self.assertIn('test "$source_commit" = "$live_main_commit"', text)
+        self.assertIn('test "$live_tag_commit" = "$live_main_commit"', text)
+        self.assertNotIn("--target", text)
+        release_lines = [
+            line for line in text.splitlines() if "gh release create" in line
+        ]
+        self.assertTrue(release_lines)
+        self.assertTrue(all("--verify-tag" in line for line in release_lines))
+        self.assertGreaterEqual(
+            text.count("scripts/release_guard.py immutable"),
+            2,
+        )
+        self.assertGreaterEqual(
+            text.count("scripts/release_guard.py ruleset"),
+            2,
+        )
+        self.assertGreaterEqual(
+            text.count("scripts/release_guard.py releases"),
+            3,
+        )
+        self.assertGreaterEqual(
+            text.count("secrets.DIVAN_RELEASE_ADMIN_TOKEN"),
+            2,
+        )
+        self.assertGreaterEqual(
+            text.count("repos/$GITHUB_REPOSITORY/rulesets/20332879"),
+            2,
+        )
+        self.assertEqual(text.count("unset GH_TOKEN"), 3)
+        self.assertIn("production-release/DIVAN_RELEASE_ADMIN_TOKEN", text)
+        self.assertNotIn('gh release view "$tag"', text)
 
     def test_scorecard_is_pinned_and_publishes_sarif_with_narrow_permissions(self) -> None:
         text = (WORKFLOWS / "scorecard.yml").read_text(encoding="utf-8")
@@ -160,7 +219,7 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn("id-token: write", text)
         self.assertIn("attestations: write", text)
         self.assertIn("artifact-metadata: write", text)
-        self.assertIn('sbom="$RUNNER_TEMP/divan-${tag}.spdx.json"', text)
+        self.assertIn('sbom="$assets_dir/divan-${tag}.spdx.json"', text)
         self.assertIn(
             'python "$source_root/scripts/sbom.py" --root "$source_root"',
             text,
@@ -174,8 +233,8 @@ class WorkflowHardeningTests(unittest.TestCase):
             "actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1",
             text,
         )
-        self.assertIn("${{ steps.release-assets.outputs.archive }}", text)
-        self.assertIn("${{ steps.release-assets.outputs.sbom }}", text)
+        self.assertIn("${{ steps.release_assets.outputs.archive }}", text)
+        self.assertIn("${{ steps.release_assets.outputs.sbom }}", text)
         self.assertIn(
             'python "$source_root/scripts/build_project_runner.py" '
             '--root "$source_root"',
@@ -184,14 +243,14 @@ class WorkflowHardeningTests(unittest.TestCase):
         self.assertIn('runner_sha256="$(sha256sum "$runner"', text)
         self.assertIn('cmp --silent "$runner"', text)
         self.assertIn('gh release create "$tag" "$archive" "$checksum" "$sbom" "$runner"', text)
-        self.assertIn("${{ steps.release-assets.outputs.runner }}", text)
-        self.assertIn("${{ steps.release-assets.outputs.checksum }}", text)
+        self.assertIn("${{ steps.release_assets.outputs.runner }}", text)
+        self.assertIn("${{ steps.release_assets.outputs.checksum }}", text)
         self.assertIn("environment: production-release", text)
         self.assertIn("if: github.ref == 'refs/heads/main'", text)
         attest = text.index("actions/attest-build-provenance@")
         publish = text.index('gh release create "$tag"')
         self.assertLess(attest, publish)
-        self.assertIn('runner_checksum="$RUNNER_TEMP/divan-project.pyz.sha256"', text)
+        self.assertIn('runner_checksum="$assets_dir/divan-project.pyz.sha256"', text)
         self.assertIn('--artifact "$(basename "$runner")=$runner_sha256"', text)
         self.assertIn(
             '--artifact "$(basename "$runner_checksum")=$runner_checksum_sha256"',
@@ -201,15 +260,15 @@ class WorkflowHardeningTests(unittest.TestCase):
     def test_release_publishes_and_reverifies_clean_host_bootstrap(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
 
-        self.assertIn('bootstrap="$RUNNER_TEMP/divan.pyz"', text)
-        self.assertIn('bootstrap_checksum="$RUNNER_TEMP/divan.pyz.sha256"', text)
+        self.assertIn('bootstrap="$assets_dir/divan.pyz"', text)
+        self.assertIn('bootstrap_checksum="$assets_dir/divan.pyz.sha256"', text)
         self.assertIn(
             'python "$source_root/scripts/build_bootstrap.py" --root "$source_root"',
             text,
         )
-        self.assertIn("${{ steps.release-assets.outputs.bootstrap }}", text)
+        self.assertIn("${{ steps.release_assets.outputs.bootstrap }}", text)
         self.assertIn(
-            "${{ steps.release-assets.outputs.bootstrap_checksum }}",
+            "${{ steps.release_assets.outputs.bootstrap_checksum }}",
             text,
         )
         self.assertIn('cmp --silent "$bootstrap"', text)
@@ -244,6 +303,79 @@ class WorkflowHardeningTests(unittest.TestCase):
         publish_job = text[text.index("  publish:") :]
         self.assertIn("if: github.ref == 'refs/heads/main'", publish_job)
 
+    def test_release_requires_live_main_tag_and_bundle_exact_equality(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        publish = text[text.index("  publish:") :]
+
+        self.assertNotIn("git merge-base --is-ancestor", text)
+        self.assertGreaterEqual(
+            publish.count(
+                'gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" '
+                "--jq '.object.sha'"
+            ),
+            2,
+        )
+        self.assertIn('test "$live_main_commit" = "$GITHUB_SHA"', publish)
+        self.assertIn('test "$source_commit" = "$live_main_commit"', publish)
+        self.assertIn('test "$live_tag_commit" = "$live_main_commit"', publish)
+
+    def test_remote_tag_code_is_isolated_from_release_authority(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        build_start = text.index("  release_build:")
+        publish_start = text.index("  publish:")
+        build = text[build_start:publish_start]
+        publish = text[publish_start:]
+
+        self.assertIn("permissions:\n      contents: read", build)
+        self.assertIn("persist-credentials: false", build)
+        self.assertIn(
+            "actions/upload-artifact@"
+            "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1",
+            build,
+        )
+        self.assertIn('python "$source_root/scripts/release.py"', build)
+        self.assertIn('python "$source_root/scripts/sbom.py"', build)
+        for forbidden in (
+            ": write",
+            "environment:",
+            "secrets.",
+            "GH_TOKEN",
+            "${{ github.token }}",
+        ):
+            with self.subTest(job="build", forbidden=forbidden):
+                self.assertNotIn(forbidden, build)
+
+        self.assertIn("environment: production-release", publish)
+        self.assertIn("contents: write", publish)
+        self.assertIn("id-token: write", publish)
+        self.assertIn("persist-credentials: false", publish)
+        self.assertIn(
+            "actions/download-artifact@"
+            "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1",
+            publish,
+        )
+        self.assertIn(
+            "artifact-ids: ${{ needs.release_build.outputs.artifact_id }}",
+            publish,
+        )
+        self.assertIn("digest-mismatch: error", publish)
+        self.assertIn("scripts/release_guard.py bundle", publish)
+        self.assertIn(
+            'gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs"',
+            publish,
+        )
+        for forbidden in (
+            "git worktree",
+            "git fetch",
+            "git push",
+            "$source_root/scripts/",
+            "build_project_runner.py",
+            "build_bootstrap.py",
+            "scripts/sbom.py",
+        ):
+            with self.subTest(job="publish", forbidden=forbidden):
+                self.assertNotIn(forbidden, publish)
+
     def test_supply_chain_actions_are_attributed_and_release_tracked(self) -> None:
         upstream = (ROOT / "UPSTREAM.md").read_text(encoding="utf-8")
         licenses = (ROOT / "THIRD_PARTY_LICENSES.md").read_text(encoding="utf-8")
@@ -253,6 +385,16 @@ class WorkflowHardeningTests(unittest.TestCase):
             (
                 "actions/dependency-review-action",
                 "a1d282b36b6f3519aa1f3fc636f609c47dddb294",
+                "MIT",
+            ),
+            (
+                "actions/upload-artifact",
+                "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
+                "MIT",
+            ),
+            (
+                "actions/download-artifact",
+                "3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c",
                 "MIT",
             ),
             (
