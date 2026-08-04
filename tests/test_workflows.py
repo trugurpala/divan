@@ -125,6 +125,16 @@ class WorkflowHardeningTests(unittest.TestCase):
         )
         self.assertIn('"$local_tag_commit" != "$remote_tag_commit"', text)
 
+    def test_absent_local_release_tag_does_not_emit_a_false_revision(self) -> None:
+        text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
+        safe_lookup = (
+            'git rev-parse --verify --quiet "refs/tags/$tag^{commit}" '
+            "2>/dev/null || true"
+        )
+
+        self.assertGreaterEqual(text.count(safe_lookup), 2)
+        self.assertNotIn('git rev-parse "$tag^{commit}"', text)
+
     def test_release_rechecks_and_creates_remote_tag_before_publication(self) -> None:
         text = (WORKFLOWS / "release.yml").read_text(encoding="utf-8")
 
