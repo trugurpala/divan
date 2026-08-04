@@ -67,6 +67,11 @@ Divan şu işlerde kullanılır:
 → doğrulanmış teslim ve kalıcı proje hafızası
 ```
 
+Plan ayrıca hazır görev kimliklerini ve owner, bağımlılık, gerekli kanıt,
+shell-free argv ile ayrı manuel kontrollerini taşıyan tek deterministik ilk
+görevi açıklar. İnsan çıktısı bunu `Sıradaki` diye gösterir; kayıt
+`auto_execute: false` kullanır ve yürütme yetkisi vermez.
+
 Yalnız standart Python kütüphanesini kullanan Divan Engine bu depoda yaşar.
 Divan Nizamı, motorun çevresindeki sahip öncelikli yetki kuralıdır; ikinci bir
 ürün değildir. Kurulan [Divan Proje Sözleşmesi](docs/Project-Contract.tr.md)
@@ -133,6 +138,15 @@ python scripts/divan.py update --host both --ref v1.3.4 --execute
 Yukarıdaki komut, indirmeden önce son yayımlanan etiketi bulur. Repo içindeki
 komutlar yayımlanmış v1.3.4 etiketini sabitler. Silmeden önce
 [kaldırma ve kurtarma](docs/Kaldirma.md) rehberini okuyun.
+Native Codex makbuzu bekleyen marketplace'in istenen source/ref ve tam hedef
+paket sözleşmesini kanıtlıyor, işlem öncesinde Divan marketplace veya eklentisi
+bulunmuyorsa recovery commit ya da katalog özeti uyuşmazlığı için
+`--confirm-pending-marketplace` tokenı gösterebilir. Bu önkoşullardan biri
+kanıtlanamazsa token üretmeden güvenli biçimde durur. Bildirilen kök, commit ve
+katalog özetini inceleyin. Tokenla ikinci çalıştırma tam parmak izini kaydeder
+ama Codex'in yalnız ada göre çalışan silme komutunu çağırmaz. Marketplace hâlâ
+aynı checkout ise gösterilen `codex plugin marketplace remove divan --json`
+komutunu elle çalıştırın; ardından recovery komutunu yeniden çalıştırın.
 
 En yeni taslak olmayan GitHub Release değişmez kurulum kaynağıdır. Ajan ve
 bootstrap `main` dalından kurulum yapmaz.
@@ -205,7 +219,7 @@ kullanıcı sayısı, tavsiye, pazar benimsemesi veya kalite kazanımı değildi
 |---|---|
 | `sadrazam` | Uçtan uca sahiplenme, kalıcı karar ve sınırlı görev devri |
 | `core-pack` | Planlama, TDD, hata ayıklama, doğrulama ve kaynak inceleme |
-| `ui-pack` | Arayüz yönü, ürün denetimi ve tarayıcı testi |
+| `ui-pack` | Arayüz yönü, host bağımsız yerel tasarım sistemi araması, ürün denetimi ve tarayıcı testi |
 | `react-pack` | React, Next.js veya React Native kanıtlandığında |
 | `zanaat-pack` | Görsel üretim, MCP ve özel entegrasyon gerektiğinde |
 

@@ -101,6 +101,14 @@ kitle: AI ajanlarıyla üretim yapan vibe coder'lar.
     ayrıca korunur. Ayrıntı
     `docs/superpowers/specs/2026-08-01-musavir-capability-audit-design.md`
     belgesindedir.
+17. **Host bağımsız UI tasarım zekâsı:** `ui-ux-pro-max` çalışma yolu, plugin
+    kökü veya mevcut çalışma dizini yerine hostun yüklediği `SKILL.md`
+    dizinine bağlanır. Tema niyetinde açık istek, stil varsayımından önce gelir;
+    negatif ve çelişkili istekler sessizce koyuya çevrilmez. Palet modu ile
+    foreground/background WCAG 4.5:1 kapısı ayrı ölçülür; eşleşme yoksa sonuç
+    uyarı taşır. Anti-pattern filtresi yalnız tam çelişen ifadeyi kaldırır,
+    “dark mode'da düşük kontrast” gibi güvenlik uyarılarını korur. Bu mekanik
+    doğruluk sözleşmesi estetik kalite veya ajan başarısı iddiası değildir.
 
 ## Standartlar
 - Agent Skills açık standardı (agentskills.io): SKILL.md frontmatter,
@@ -123,6 +131,23 @@ YASAK: sızdırılmış system-prompt depoları (x1xhlol vb.) — lisanssız + e
 
 ### Son yama hattı
 
+- **Unreleased — host bağımsız ve tutarlı UI tasarım sistemi:** İncelenen
+  `nextlevelbuilder/ui-ux-pro-max-skill` davranışı Divan'ın mevcut vendored
+  skill'ine karşı ölçüldü. Upstream çözümü negatif/açık tema niyetini ve
+  erişilebilirlik uyarılarını korumadığı için doğrudan alınmadı. Üç adaydan
+  36/36 mekanik kapıyı üç koşuda geçen iki yaklaşım arasında daha küçük ve
+  açık hard-filter kullanan intent-first çözüm bağımsız uyarlandı. Komutlar
+  yüklenen skill dizininden çalışır ve vendored testler kanonik doğrulamaya
+  dahildir.
+- **Unreleased — typed plan continuation:** ECC'nin
+  `0c1d7be9a750627fb2a6534c78a998cc46d03f9c` plan-to-action görünürlüğü,
+  kod/prompt/hook kopyalanmadan Divan'ın mevcut görev grafiğine uyarlandı. Plan
+  hazır görevleri ve owner, bağımlılık, kanıt, shell-free argv ile manuel
+  kontrolleri ayrılmış tek deterministik ilk görevi açıklar; yürütme yetkisi
+  vermez. Baseline ve üç adayın her biri birer ölçüm dışı ısınmadan sonra üçer
+  kez ölçüldü; yalnız typed aday 12/12 mekanik sözleşme kapısını geçti ve ürün
+  üzerinde üç kez tekrarlandı. Bu kayıt gerçek ajan kalitesi veya hız artışı
+  iddiası değildir.
 - **v1.3.4 ✓** Yayımlanan topluluk bakım hattı: Windows PowerShell 5.1, PowerShell 7'nin
   modül yolunu devraldığında da eski-host checksum doğrulamasını .NET SHA-256
   ile çalıştırır. Bu yol `PSModulePath` temizlenerek regresyon testiyle

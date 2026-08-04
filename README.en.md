@@ -72,6 +72,11 @@ Your request
 → verified delivery and durable project memory
 ```
 
+The plan also exposes the ready task IDs and one deterministic first task with
+its owner, dependencies, required evidence, shell-free argv, and separate
+manual checks. Human output names it as `Next`; the record sets
+`auto_execute: false` and grants no execution authority.
+
 The stdlib-only Divan Engine lives in this repository. Divan Nizamı is the
 owner-first governance rule around that engine, not a second product. The
 installed [Divan Project Contract](docs/Project-Contract.md) records applicable
@@ -138,6 +143,16 @@ python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-202607
 The command above resolves the latest published tag before downloading. The
 checkout commands pin the published v1.3.4 tag. See
 [removal and recovery](docs/Kaldirma.md) before deleting anything.
+If a native Codex receipt proves that a pending marketplace has the requested
+source/ref and exact target package contract, while no Divan marketplace or
+plugin existed before the transaction, recovery may print a
+`--confirm-pending-marketplace` token for a commit or catalog-digest mismatch.
+If any prerequisite cannot be proved, it fails closed without a token. Review
+the reported root, commit, and catalog digest. Rerunning with the token records
+the exact fingerprint but does not call Codex's name-only removal command.
+Recheck the marketplace, run the printed
+`codex plugin marketplace remove divan --json` command manually only while it
+is still that checkout, then rerun recovery.
 
 The latest non-draft GitHub Release is the immutable installation source. The
 agent and bootstrap resolve that release; they do not install from `main`.
@@ -211,7 +226,7 @@ independent-user count, endorsement, market-adoption claim or quality win.
 |---|---|
 | `sadrazam` | End-to-end ownership, durable decisions and bounded delegation |
 | `core-pack` | Planning, TDD, debugging, verification and source review |
-| `ui-pack` | Interface direction, product audit and browser testing |
+| `ui-pack` | Interface direction, host-neutral local design-system search, product audit and browser testing |
 | `react-pack` | Detected React, Next.js or React Native work |
 | `zanaat-pack` | Creative assets, MCP work and specialist integrations |
 

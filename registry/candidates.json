@@ -441,6 +441,14 @@
       "execution_review": "metadata-only", "risk_notes": "Missing redistribution license blocks adoption or adaptation.",
       "evidence": ["https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill", "https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill/tree/8214fbf61e3ab6ff71e880061bfb5ee581414fac"],
       "observed_at": "2026-08-01", "next_review": "2026-11-01", "rationale": "REJECT: do not copy or install content without a verified license."
+    },
+    {
+      "id": "affaan-m-ecc", "name": "Everything Claude Code", "canonical_url": "https://github.com/affaan-m/ECC", "type": "skill-plugin", "status": "adapted", "decision": "ADAPT",
+      "user_gap": "Deterministik görev grafiğini kullanıcı ve host için açık, typed ve yetki vermeyen bir ilk devam adımına bağlamak.", "reviewed_head": "0c1d7be9a750627fb2a6534c78a998cc46d03f9c",
+      "license": {"spdx": "MIT", "evidence_url": "https://github.com/affaan-m/ECC/blob/0c1d7be9a750627fb2a6534c78a998cc46d03f9c/LICENSE", "scope_note": "MIT verified at the reviewed commit; no ECC code, prompt, hook, or dependency is distributed by Divan."},
+      "execution_review": "metadata-only", "risk_notes": "The broad 281-skill surface is not installed. Main CI was green at review time, while a later Supply-Chain Watch run reported high-severity brace-expansion advisory GHSA-rgw5-rvv9-x895.",
+      "evidence": ["https://github.com/affaan-m/ECC/tree/0c1d7be9a750627fb2a6534c78a998cc46d03f9c", "https://github.com/affaan-m/ECC/blob/0c1d7be9a750627fb2a6534c78a998cc46d03f9c/LICENSE", "https://github.com/affaan-m/ECC/blob/0c1d7be9a750627fb2a6534c78a998cc46d03f9c/README.md", "https://github.com/affaan-m/ECC/actions/runs/30763033496", "https://github.com/affaan-m/ECC/actions/runs/30843433559", "https://github.com/advisories/GHSA-rgw5-rvv9-x895"],
+      "observed_at": "2026-08-04", "next_review": "2026-11-04", "rationale": "ADAPT: independently express ECC's visible plan-to-action continuity as a deterministic, shell-free and non-authorizing Divan continuation contract; preserve Divan's existing ownership, journal, doctor, repair and recovery boundaries."
     }
   ]
 }

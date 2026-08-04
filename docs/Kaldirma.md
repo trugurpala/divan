@@ -42,6 +42,20 @@ Kurucunun sahiplik denetimli yolu bunu otomatik uygular:
 python scripts/divan.py recover "C:\Users\you\.divan\transactions\install-20260721-120000.json"
 ```
 
+Token yolu yalnız native Codex makbuzu aynı source/ref ile tam hedef paket
+sözleşmesini kanıtlarken, işlem öncesinde Divan marketplace bulunmuyorsa ve
+kurulu `@divan` eklentisi yoksa açılır. Bu kanıtlardan biri eksikse recovery
+token üretmeden güvenli biçimde durur. Commit veya katalog özeti journal
+hedefiyle uyuşmuyorsa bu ilk komut silme yapmaz. Bildirilen kök, commit ve
+katalog özetini inceleyin. Yalnız gösterilen kesin checkout'u kaldırmayı
+onaylıyorsanız komutu çıktıdaki `--confirm-pending-marketplace <token>`
+seçeneğiyle yeniden çalıştırın. Token işlem ve tam parmak izine bağlıdır;
+checkout arada değiştirilirse işlem reddedilir. İkinci recovery çağrısı parmak
+izini kaydeder, fakat Codex CLI marketplace'i yalnız ada göre silebildiği için
+otomatik silme yapmaz. Kaydı yeniden kontrol edin, çıktıda verilen
+`codex plugin marketplace remove divan --json` komutunu elle çalıştırın ve
+aynı recovery komutunu son kez çalıştırın.
+
 `upgrade-*.json` schema-2 kayıtları farklıdır: `before_rows` kanıtlanmış eski
 marketplace source/ref ve paket sürümlerini; `target`, `removed`, `created`,
 `verified`, forward `pending` ve ayrı `recovery_pending` alanları ise yükseltme

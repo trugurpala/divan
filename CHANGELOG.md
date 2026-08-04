@@ -6,6 +6,70 @@ Versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Added a typed initial plan continuation that exposes ready task IDs and one
+  deterministic task with its owner, dependencies, required evidence,
+  shell-free command objects, and separate manual checks. Human output names
+  the same task as `Next` or `Sıradaki`; the record grants no execution
+  authority.
+
+### Fixed
+
+- Made `ui-ux-pro-max` commands resolve from the loaded skill directory instead
+  of a Claude-only nested path, so the same local, dependency-free search works
+  in native Claude, native Codex, and loose Agent Skills layouts.
+- Made explicit light/dark requests, negated dark requests, dark-primary
+  styles, palette choice, WCAG contrast, and anti-pattern advice agree. Missing
+  or conflicting palette intent is now visible instead of silently presented
+  as a match; neutral queries keep their previous top result.
+- Corrected the shipped UI data counts to 99 UX guidelines and 105 icon entries
+  and connected the vendored engine's regression suite to canonical tests. The
+  loose-skill bootstrap now carries the same upstream MIT text as native
+  `ui-pack`.
+- Kept valid v1 goal artifacts from before the continuation field restartable
+  as `legacy-unchanged`. Divan verifies the existing receipt and accepts only
+  the additive continuation difference; it does not rewrite the route or
+  evidence.
+- Made ambiguous pending Codex marketplace recovery fail closed across the
+  final host-state race. Confirmation now records the exact checkout
+  fingerprint, but Divan does not invoke Codex's name-only marketplace removal;
+  it asks the operator to recheck and remove that entry manually before
+  recovery resumes.
+- Bound reuse of an existing immutable GitHub Release to the exact,
+  duplicate-free seven-asset contract. Missing, extra, or duplicate assets now
+  stop publication instead of passing byte checks for only the expected names.
+- Added the remote-tag and release-policy guards to the release manifest and
+  documented the protected-tag, immutable-release, admin-read, and interrupted
+  publication preconditions.
+- Split release construction from publication. Code selected by a remote tag
+  now runs with read-only contents access, no persisted Git credential, no
+  environment secret, and no OIDC or attestation authority; the write-enabled
+  job accepts only the digest-verified, exact artifact bundle and never
+  executes downloaded code.
+
+### Verification
+
+- Reproduced the original dark-query defect (`#F8FAFC` background plus “Dark
+  mode by default”), then compared the current behavior and three distinct
+  fixes. After an excluded warmup, the upstream patch scored 14/36, the
+  intent-first filter 36/36, and the weighted scorer 36/36 in each of three
+  runs. The smaller intent-first filter had the lower median and maximum
+  fixture time; this is deterministic contract evidence, not a visual-quality
+  or agent win-rate claim.
+- Compared the current plan output and three distinct continuation candidates,
+  each with its own excluded warmup and three measured runs. Only the typed
+  continuation passed all 12 deterministic, safety, redaction, and bilingual
+  contract cases; the applied product repeated 12/12 three times. This is
+  mechanical contract evidence, not an agent-quality or speed claim.
+- Compared one immutable baseline and three isolated recovery/release
+  candidates with a warmup plus three measured runs per candidate. Only the
+  defense-in-depth candidate passed every deterministic correctness and
+  no-unauthorized-removal gate; elapsed time remains diagnostic only.
+- Added regression coverage for manual pending-marketplace recovery,
+  replacement refusal, exact GitHub Release asset sets, cross-job bundle
+  tampering, release-tag error redaction, and least-privilege publication.
+
 ## [1.3.4] - 2026-08-02
 
 ### Fixed

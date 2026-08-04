@@ -45,6 +45,11 @@ Host yeni oturumda Divan paketlerini keşfeder. Günlük çalışma arayüzü do
 dildir; `divan.pyz` kurulum, doctor, güncelleme ve recovery için saklanan bakım
 aracıdır. Divan PATH veya kabuk profilini otomatik değiştirmez.
 
+Kaynak checkout'unda `python scripts/divan.py plan --project . --intent
+"hedefin"` komutu hiçbir görev yürütmeden hazır görevleri ve deterministik ilk
+`Sıradaki` görevi gösterir. Typed kayıt owner, gerekli kanıt ve shell-free
+argv'yi taşır; manuel kontrolleri ayrı tutar ve yürütme yetkisi vermez.
+
 Kurulumu yazmadan denetlemek için sakladığın dosyayı çalıştır:
 
 ```powershell
@@ -249,6 +254,21 @@ Aynı recovery komutu idempotenttir; dış komut başarıdan hemen sonra kesilmi
 olsa bile mevcut durumu yeniden okuyup eksik adımdan güvenle devam eder.
 Eski marketplace geri eklendiğinde source/ref/root/commit/katalog özeti tam
 parmak izi, herhangi bir eski paket kurulmadan önce yeniden doğrulanır.
+Token yolu yalnız native Codex makbuzu bekleyen marketplace'in aynı source/ref
+ile tam hedef paket sözleşmesini kanıtlarken, işlem öncesinde Divan marketplace
+bulunmuyorsa ve kurulu `@divan` eklentisi yoksa açılır. Bu kanıtlardan biri
+eksikse recovery token üretmeden güvenli biçimde durur. Bu koşullar sağlanmış
+olsa da commit veya katalog özeti işlem hedefinden farklıysa recovery kaydı
+otomatik olarak işlemin malı saymaz. Hiçbir şeyi silmeden gözlenen kök, commit,
+katalog özeti ve bunlara bağlı kesin bir
+`--confirm-pending-marketplace <token>` komutu gösterir. Bu kesin checkout'un
+kaldırılmasını onaylıyorsanız aynı recovery komutunu bu seçenekle yeniden
+çalıştırın. Token işlem yolu ve tam marketplace parmak izine bağlıdır; arada
+checkout değişirse recovery yine durur. Doğrulanan parmak izi journala
+kaydedilir, ancak Codex CLI yalnız marketplace adına göre silebildiği için
+recovery otomatik silme yapmaz. Kaydı yeniden kontrol edin, çıktıda verilen
+`codex plugin marketplace remove divan --json` komutunu elle çalıştırın ve
+recovery komutunu son kez yeniden çalıştırın.
 
 Uzak Claude pazarı değişmez bir release etiketi ister. Bir commit SHA'sını CI
 veya geliştirme doğrulamasında kullanacaksanız, aynı temiz checkout'u yerel

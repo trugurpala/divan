@@ -6,7 +6,7 @@
 
 ## Durum
 
-Toplam **25** aday · ADAPT: 6 · ADOPT: 3 · PENDING: 0 · REFERENCE: 15 · REJECT: 1
+Toplam **26** aday · ADAPT: 7 · ADOPT: 3 · PENDING: 0 · REFERENCE: 15 · REJECT: 1
 
 | Aday | Tür | Lisans | Karar | Sonraki inceleme | Gerekçe |
 |---|---|---|---|---|---|
@@ -19,6 +19,7 @@ Toplam **25** aday · ADAPT: 6 · ADOPT: 3 · PENDING: 0 · REFERENCE: 15 · REJ
 | [Design System Skills](https://github.com/fabricioctelles/skills) | `skill-plugin` | Apache-2.0 | **REFERENCE** | 2026-11-01 | REFERENCE: evaluate later as a bounded design-system feature, not as audit scope. |
 | [Emil Kowalski Skills](https://github.com/emilkowalski/skills) | `skill-plugin` | MIT | **ADAPT** | 2026-11-01 | ADAPT: interaction critique is a real gap; implementation remains original and accessibility-first. |
 | [Engramory](https://github.com/tinqiao-oss/engramory) | `standard-research` | MIT | **ADAPT** | 2026-10-31 | ADAPT: kürasyonlu bellek disiplini Divan'ın tek gerçeklik ilkesine uygun şekilde uyarlanabilir; ayrı runtime veya ham prompt paketi alınmaz. |
+| [Everything Claude Code](https://github.com/affaan-m/ECC) | `skill-plugin` | MIT | **ADAPT** | 2026-11-04 | ADAPT: independently express ECC's visible plan-to-action continuity as a deterministic, shell-free and non-authorizing Divan continuation contract; preserve Divan's existing ownership, journal, doctor, repair and recovery boundaries. |
 | [GitHub Spec Kit](https://github.com/github/spec-kit) | `standard-research` | MIT | **ADAPT** | 2026-10-23 | ADAPT: specification-first kanıt zinciri Divan'ın dil, host ve fail-closed sözleşmesine özgün olarak uyarlanacaktır. |
 | [HIG Doctor](https://github.com/raintree-technology/hig-doctor) | `skill-plugin` | MIT | **REFERENCE** | 2026-11-01 | REFERENCE: use only when a real Apple-platform project justifies the added surface. |
 | [iOS Accessibility Audit Skill](https://github.com/ramzesenok/iOS-Accessibility-Audit-Skill) | `skill-plugin` | UNKNOWN | **REJECT** | 2026-11-01 | REJECT: do not copy or install content without a verified license. |

@@ -57,7 +57,7 @@ Toplam **42 skill**, **5 paket**.
 |---|---|
 | **frontend-design** | Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults. |
 | **product-design-audit** | Use when a vibe coder wants a premium, evidence-based audit of an existing product, page, or flow before or after implementation. Produces prioritized UI/UX findings and verifies authorized fixes without inventing visual evidence. |
-| **ui-ux-pro-max** | UI/UX design intelligence for web and mobile. Searchable local database with 84 styles, 192 color palettes, 74 font pairings, 192 product types, 98 UX guidelines, 104 icon entries, 16 GSAP motion presets, and 25 chart types across 22… |
+| **ui-ux-pro-max** | UI/UX design intelligence for web and mobile. Searchable local database with 84 styles, 192 color palettes, 74 font pairings, 192 product types, 99 UX guidelines, 105 icon entries, 16 GSAP motion presets, and 25 chart types across 22… |
 | **webapp-testing** | Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs. |
 
 ## zanaat-pack (7 skill)

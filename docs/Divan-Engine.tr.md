@@ -74,6 +74,15 @@ dengeli veya frontier model sınıfına; açık bağımsız inceleme kapıların
 deterministik görev grafiğine; sıralı bağlam/devir seferlerine; kanıta ve
 entegre doğrulamada birleşen en fazla üç paralel iş hattına dönüşür.
 
+`continuation` nesnesi başlangıçta hazır bütün görev kimliklerini açıklar ve
+kimliğe göre tek deterministik görevi seçer. Bu görev workflow, aşama, owner,
+bağımlılık, gerekli kanıt, shell-free komut nesneleri ve ayrı salt-gösterim
+manuel kontrolleriyle taşınır. Nesne komut çalıştırmaz veya yürütme yetkisi
+vermez; insan çıktısı aynı seçimi `Sıradaki` olarak gösterir.
+Bu alandan önce oluşturulmuş geçerli bir v1 hedef rotası değişmeden korunur ve
+`legacy-unchanged` olarak yeniden başlar; yalnız bu eklemeli şema farkı kabul
+edilir.
+
 Codex'te güncel resmî OpenAI rehberi ekonomi için `gpt-5.6-luna`, dengeli için
 `gpt-5.6-terra`, frontier için `gpt-5.6-sol` adayını verir. Bunlar hesapta
 bulunma iddiası değildir; host doğrulamalıdır. `--context-window` değeri de
