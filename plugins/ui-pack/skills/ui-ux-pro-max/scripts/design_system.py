@@ -24,6 +24,16 @@ import io
 from datetime import datetime
 from pathlib import Path
 from core import search, DATA_DIR
+from color_mode import (
+    _color_mode_metadata,
+    _contrast_ratio,
+    _filter_anti_patterns_for_mode,
+    _palette_mode,
+    _query_color_mode,
+    _relative_luminance,
+    _resolve_color_mode,
+    _select_palette_for_mode,
+)
 
 # Force UTF-8 for stdout/stderr to handle emojis/box-drawing chars on Windows (cp1252 default)
 if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
@@ -38,7 +48,9 @@ REASONING_FILE = "ui-reasoning.csv"
 SEARCH_CONFIG = {
     "product": {"max_results": 1},
     "style": {"max_results": 3},
-    "color": {"max_results": 2},
+    # Five candidates lets an explicit light/dark constraint survive product-
+    # relevance ranking; automatic mode still keeps the original top hit.
+    "color": {"max_results": 5},
     "landing": {"max_results": 2},
     "typography": {"max_results": 2}
 }
@@ -64,7 +76,6 @@ DIAL_TIERS = {
         (8, 10, {"label": "Dense / Dashboard", "spacing": {"xs": "2px", "sm": "4px", "md": "8px", "lg": "12px", "xl": "16px", "2xl": "24px", "3xl": "32px"}}),
     ],
 }
-
 
 def _resolve_dial(dial_name: str, value) -> dict:
     """Bucket a 1-10 dial value into its tier config. Returns None if value is None."""
@@ -244,7 +255,10 @@ class DesignSystemGenerator:
         landing_results = self._extract_results(search_results.get("landing", {}))
 
         best_style = self._select_best_match(style_results, effective_style_priority)
-        best_color = color_results[0] if color_results else {}
+        color_mode_decision = _resolve_color_mode(query, best_style)
+        best_color, color_mode_matched = _select_palette_for_mode(
+            color_results, color_mode_decision["requested"]
+        )
         best_typography = typography_results[0] if typography_results else {}
         best_landing = landing_results[0] if landing_results else {}
 
@@ -266,6 +280,15 @@ class DesignSystemGenerator:
         style_effects = best_style.get("Effects & Animation", "")
         reasoning_effects = reasoning.get("key_effects", "")
         combined_effects = style_effects if style_effects else reasoning_effects
+        color_mode = _color_mode_metadata(
+            color_mode_decision, best_color, color_mode_matched
+        )
+        color_notes = best_color.get("Notes", "")
+        if color_mode["warning"]:
+            color_notes = " | ".join(
+                part for part in (color_notes, "WARNING: " + color_mode["warning"])
+                if part
+            )
 
         return {
             "project_name": project_name or query.upper(),
@@ -299,11 +322,12 @@ class DesignSystemGenerator:
                 "border": best_color.get("Border", ""),
                 "destructive": best_color.get("Destructive", ""),
                 "ring": best_color.get("Ring", ""),
-                "notes": best_color.get("Notes", ""),
+                "notes": color_notes,
                 # Keep legacy keys for backward compat in MASTER.md
                 "cta": best_color.get("Accent", "#F97316"),
                 "text": best_color.get("Foreground", "#1E293B"),
             },
+            "color_mode": color_mode,
             "typography": {
                 "heading": best_typography.get("Heading Font", "Inter"),
                 "body": best_typography.get("Body Font", "Inter"),
@@ -313,7 +337,10 @@ class DesignSystemGenerator:
                 "css_import": best_typography.get("CSS Import", "")
             },
             "key_effects": combined_effects,
-            "anti_patterns": reasoning.get("anti_patterns", ""),
+            "anti_patterns": _filter_anti_patterns_for_mode(
+                reasoning.get("anti_patterns", ""),
+                color_mode_decision["requested"],
+            ),
             "decision_rules": reasoning.get("decision_rules", {}),
             "severity": reasoning.get("severity", "MEDIUM"),
             "dials": {

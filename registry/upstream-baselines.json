@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "reviewed_at": "2026-08-01",
+  "reviewed_at": "2026-08-04",
   "policy": "Reviewed drift is never copied automatically; a new upstream commit reopens review.",
   "sources": [
     {
@@ -24,7 +24,7 @@
     {
       "repository": "nextlevelbuilder/ui-ux-pro-max-skill",
       "license": "MIT",
-      "reviewed_head": "14ddef5c05e52d7c253b8f0129de7bcd1045ae5b",
+      "reviewed_head": "4d140cf8ff6842de13213c7214eff3810371beb2",
       "origin_commit": "f8ac5e1266dba8354ea96e19994d9f4345e7ec31"
     },
     {
@@ -244,14 +244,17 @@
     {
       "skill": "ui-ux-pro-max",
       "source": "nextlevelbuilder/ui-ux-pro-max-skill",
-      "reviewed_head": "14ddef5c05e52d7c253b8f0129de7bcd1045ae5b",
-      "decision": "KEEP",
-      "local_tree_sha256": "b9c0367466c05996542e7387ef1b13bf01c1f93461edece1879b3937e8b7036f",
+      "reviewed_head": "4d140cf8ff6842de13213c7214eff3810371beb2",
+      "decision": "ADAPT",
+      "local_tree_sha256": "35ee3d81af1b3d502396b13c2992f88b85bfd97b03421e4aabe97891987010e5",
       "changed_files": [
+        "LICENSE.txt",
+        "SKILL.md",
+        "scripts/color_mode.py",
         "scripts/design_system.py",
         "scripts/tests/test_design_system_mode.py"
       ],
-      "reason": "The upstream design-system tooling is executable code; keep the reviewed local skill until licensing, sandboxing and behavior tests cover the new scripts."
+      "reason": "Keep the MIT data and stdlib engine, ship its license in loose-skill fallback, and use loaded-skill-relative commands plus Divan's measured intent-first color-mode adaptation; the exact upstream patch failed negation, explicit-light, mismatch-signaling, and warning-preservation cases."
     },
     {
       "skill": "algorithmic-art",

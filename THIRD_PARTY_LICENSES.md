@@ -10,7 +10,7 @@ metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
 | core-pack / Kural Hazinesi | 1 (9 referans) | https://github.com/PatrickJS/awesome-cursorrules | CC0-1.0 — upstream `LICENSE` |
 | core-pack / Bağlam Muhafızı kaynak fikirleri | 1 | https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering | MIT — `plugins/core-pack/skills/baglam-muhafizi/LICENSE.txt` |
 | ui-pack / frontend-design, webapp-testing | 2 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
-| ui-pack / ui-ux-pro-max | 1 | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT — `plugins/ui-pack/LICENSE-uiuxpromax-MIT.txt` |
+| ui-pack / ui-ux-pro-max | 1 | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT — native paket için `plugins/ui-pack/LICENSE-uiuxpromax-MIT.txt`, loose-skill fallback için aynı metnin `plugins/ui-pack/skills/ui-ux-pro-max/LICENSE.txt` kopyası |
 | react-pack | 8 | https://github.com/vercel-labs/agent-skills | MIT — upstream README lisans beyanı (upstream ayrı LICENSE dosyası sunmuyor) |
 | zanaat-pack | 7 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
 
@@ -48,6 +48,8 @@ içinde izlenir.
 |---|---|---|---|
 | ossf/scorecard-action | https://github.com/ossf/scorecard-action | Apache-2.0 | `.github/workflows/scorecard.yml` |
 | actions/dependency-review-action | https://github.com/actions/dependency-review-action | MIT | `.github/workflows/dependency-review.yml` |
+| actions/upload-artifact | https://github.com/actions/upload-artifact | MIT | `.github/workflows/release.yml` |
+| actions/download-artifact | https://github.com/actions/download-artifact | MIT | `.github/workflows/release.yml` |
 | actions/attest-build-provenance | https://github.com/actions/attest-build-provenance | MIT | `.github/workflows/release.yml` |
 
 ## Project OS araştırma adayları (dağıtılmayan)

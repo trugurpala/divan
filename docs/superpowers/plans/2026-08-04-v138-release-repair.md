@@ -230,13 +230,14 @@ git commit -m "feat: preserve typed plan continuation"
 - Create:
   `plugins/ui-pack/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py`
 - Create: `tests/test_ui_ux_pro_max.py`
+- Modify: `tests/test_upstream.py`
 - Modify: `UPSTREAM.md`
 - Modify: `THIRD_PARTY_LICENSES.md`
 - Modify: `registry/upstream-baselines.json`
 
 - [ ] **Step 1: Transfer tests first and observe RED**
 
-Copy the two new test files and run:
+Copy the two new test files and `tests/test_upstream.py`, then run:
 
 ```powershell
 python -B -m unittest tests.test_ui_ux_pro_max -v
@@ -258,21 +259,22 @@ Run:
 ```powershell
 python -B -m unittest tests.test_ui_ux_pro_max -v
 python -B plugins/ui-pack/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py
-python -B -m coverage run --branch plugins/ui-pack/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py
-python -B -m coverage report --include="plugins/ui-pack/skills/ui-ux-pro-max/scripts/color_mode.py,plugins/ui-pack/skills/ui-ux-pro-max/scripts/design_system.py" --fail-under=90
+python -B -m coverage run --branch --source="plugins/ui-pack/skills/ui-ux-pro-max/scripts" plugins/ui-pack/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py
+python -B -m coverage report --include="*/ui-ux-pro-max/scripts/color_mode.py" --fail-under=100
 python -B -m unittest tests.test_upstream -v
-python -B -m ruff check plugins/ui-pack/skills/ui-ux-pro-max/scripts tests/test_ui_ux_pro_max.py tests/test_upstream.py
+python -B -m ruff check plugins/ui-pack/skills/ui-ux-pro-max/scripts/color_mode.py tests/test_ui_ux_pro_max.py tests/test_upstream.py
 ```
 
-Expected: all pass, affected Python coverage is at least 90%, and no paid or
-host-specific runtime becomes mandatory.
+Expected: all pass, the new bounded color-mode module has 100% coverage, the
+existing upstream design-system engine remains protected by its focused
+behavior suite, and no paid or host-specific runtime becomes mandatory.
 
 - [ ] **Step 4: Commit**
 
 Run:
 
 ```powershell
-git add plugins/ui-pack/skills/ui-ux-pro-max/LICENSE.txt plugins/ui-pack/skills/ui-ux-pro-max/SKILL.md plugins/ui-pack/skills/ui-ux-pro-max/scripts/color_mode.py plugins/ui-pack/skills/ui-ux-pro-max/scripts/design_system.py plugins/ui-pack/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py tests/test_ui_ux_pro_max.py UPSTREAM.md THIRD_PARTY_LICENSES.md registry/upstream-baselines.json
+git add plugins/ui-pack/skills/ui-ux-pro-max/LICENSE.txt plugins/ui-pack/skills/ui-ux-pro-max/SKILL.md plugins/ui-pack/skills/ui-ux-pro-max/scripts/color_mode.py plugins/ui-pack/skills/ui-ux-pro-max/scripts/design_system.py plugins/ui-pack/skills/ui-ux-pro-max/scripts/tests/test_design_system_mode.py tests/test_ui_ux_pro_max.py tests/test_upstream.py UPSTREAM.md THIRD_PARTY_LICENSES.md registry/upstream-baselines.json
 git diff --cached --check
 git commit -m "feat: adapt ui ux skill for portable use"
 ```

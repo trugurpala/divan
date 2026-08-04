@@ -94,7 +94,7 @@ alınabilir işlerde tasarım sonrası ilerleme izni sayılır. Yayın, sırlar,
 mesajlaşma, hesap güvenliği ve yıkıcı işlemler bu istisnanın dışındadır. Upstream
 commit pini değiştirilmedi; yerel ağaç imzası yeni davranışla yeniden kaydedildi.
 
-## GitHub Actions incelemesi (2026-07-21)
+## GitHub Actions incelemesi (2026-07-21; güncelleme 2026-08-04)
 
 Bu Actions kaynakları depoya kopyalanmaz; yalnız aşağıdaki incelenmiş tam commit
 SHA'larıyla GitHub üzerinde çalıştırılır. SHA, kaynak lisansı ve job izinleri
@@ -104,6 +104,8 @@ birlikte incelenmeden pin güncellenmez.
 |---|---|---|---|---|
 | ossf/scorecard-action | `2d1146689b8cda280b9bc96326124645441f03bc` | OpenSSF Scorecard SARIF ve doğrulanmış sonuç yayını | Apache-2.0 | KULLAN; yalnız `contents: read`, SARIF için `security-events: write`, sonuç imzası için `id-token: write` |
 | actions/dependency-review-action | `a1d282b36b6f3519aa1f3fc636f609c47dddb294` | Pull request bağımlılık ve lisans farkı kapısı | MIT | KULLAN; yalnız `contents: read`, PR yorumu yazma yok |
+| actions/upload-artifact | `043fb46d1a93c77aae656e7c1c64a875d1fc6a0a` | Salt okunur release build'inin tam varlık paketini iş kimliğiyle aktarma | MIT | KULLAN; v7.0.1 yalnız `release_build` işinde, bir günlük saklama ve eksik dosyada hata |
+| actions/download-artifact | `3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c` | Aynı workflow koşusunun kesin artifact ID'sini publish işine indirme | MIT | KULLAN; v8.0.1 transport digest uyuşmazlığında hata verir; indirilen kod çalıştırılmaz |
 | actions/attest-build-provenance | `0f67c3f4856b2e3261c31976d6725780e5e4c373` | Release ZIP ve SPDX SBOM build provenance | MIT | KULLAN; yalnız publish job'unda `id-token`, `attestations` ve v4 storage record sözleşmesi için `artifact-metadata: write` |
 
 `actions/attest-build-provenance` v4.1.1, aynı sürümdeki `actions/attest`
@@ -153,3 +155,54 @@ listesi, dosya türleri, symlink/hardlink yokluğu ve path containment koşullar
 doğrular. Yalnız iç içe sabit executable yolunu çalıştırır. Komut planındaki
 acquisition/execution argv ve outputs workflow'un tek yürütme kaynağıdır. Divan
 bu binary'leri kendi release'inde dağıtmaz.
+
+## ECC mimari karşılaştırması (2026-08-04)
+
+`affaan-m/ECC`, tam
+`0c1d7be9a750627fb2a6534c78a998cc46d03f9c` commit'inde incelendi. Commit'teki
+lisans MIT'tir. Planlama, `consult` ve kalıcı öğrenme yüzeyleri karşılaştırıldı;
+hiçbir ECC kodu, promptu, hook'u, binary'si veya bağımlılığı Divan'a
+kopyalanmadı ya da kurulmadı. Bu nedenle üçüncü taraf lisans envanterine
+dağıtılan yeni içerik eklenmedi.
+
+Divan'ın deterministic görev grafiği, sahip öncelikli yetki modeli, journal,
+doctor, repair ve recovery yolları korundu. Yalnız plan ile sonraki host adımı
+arasındaki görünürlük açığı bağımsız biçimde uyarlandı: plan artık hazır görev
+kimliklerini ve tek deterministic ilk görevin owner, bağımlılık, kanıt, güvenli
+argv ve manuel kontrol sözleşmesini typed olarak verir. Bu kayıt yürütme yetkisi
+vermez; shell komut dizesi üretmez ve komut çalıştırmaz.
+
+İncelenen ana CI koşusu `30763033496` 38 işi geçti. Daha sonraki
+`30843433559` Supply-Chain Watch koşusu, `brace-expansion 5.0.8` için yüksek
+önemli `GHSA-rgw5-rvv9-x895` uyarısıyla başarısız oldu. Bu güncel güvenlik
+sinyali ve ECC'nin geniş yüzeyi nedeniyle kaynak bağımlılık veya varsayılan
+kurulum haline getirilmedi.
+
+## UI/UX Pro Max yeniden incelemesi (2026-08-04)
+
+`nextlevelbuilder/ui-ux-pro-max-skill`, tam
+`4d140cf8ff6842de13213c7214eff3810371beb2` commit'inde yeniden incelendi.
+Commit'teki lisans MIT, telif beyanı “Copyright (c) 2024 Next Level Builder”dır.
+Aynı commit'in GitHub kontrollerinde 97 pytest, 34 alt test, bir Playwright
+testi, veri smoke testi ve kaynak/asset eşlik kontrolü geçti. Divan'ın dağıttığı
+stdlib-only Python skill ağacında incelenen upstream renk-modu yamasının
+karşılığı `scripts/design_system.py` ile yeni renk-modu regresyon testiydi.
+
+Upstream renk-modu düzeltmesi doğrudan alınmadı. Sabit karşı örneklerde `no dark
+mode` ifadesini koyu istek sayıyor, açık tema isteğini dark-primary stilin önüne
+alamıyor, eş palet bulunmadığında zıt modu sessizce döndürüyor ve “Low contrast
+in dark mode” gibi bir erişilebilirlik uyarısını bütünüyle kaldırabiliyordu.
+Divan bu nedenle kararı `ADAPT` olarak tuttu: açık/negatif/çelişkili niyet
+stil varsayımından önce çözülür, açık ve koyu paletler simetrik seçilir, 4.5:1
+foreground/background kontrastı ölçülür, eşleşme yoksa görünür uyarı üretilir
+ve yalnız tam çelişen anti-pattern ifadesi kaldırılır.
+
+Skill'in upstream'e özgü
+`${CLAUDE_PLUGIN_ROOT}/.claude/skills/...` örnekleri de Divan paket düzeninde
+geçerli değildi. Komutlar artık hostun yüklediği `SKILL.md` dizinine göre
+çözülür; ek wrapper, npm CLI, legacy ZIP indiricisi veya runtime bağımlılığı
+dağıtıma alınmadı. Native paketteki upstream MIT metninin aynı kopyası skill
+köküne de kondu; böylece yalnız skill ağaçlarını taşıyan offline fallback
+lisans bildirimini kaybetmez. Upstream CLI'ın checksum'sız opt-in legacy ZIP
+yolu, sabit olmayan release girdileri ve Linux-only CI kapsamı Divan'ın
+varsayılan yoluna taşınmadı.
