@@ -168,6 +168,7 @@ def require_release_bundle(root: pathlib.Path, tag: str) -> str:
             "source_commit": source_commit,
             "source_ref": tag,
             "source_repository": "https://github.com/trugurpala/divan.git",
+            "version": tag.removeprefix("v"),
         },
     )
     _require_runner_identity(
@@ -178,6 +179,7 @@ def require_release_bundle(root: pathlib.Path, tag: str) -> str:
             "source_commit": source_commit,
             "source_ref": tag,
             "source_repository": "https://github.com/trugurpala/divan",
+            "version": tag.removeprefix("v"),
         },
     )
     _require_sbom_identity(root / f"divan-{tag}.spdx.json", tag, source_commit)

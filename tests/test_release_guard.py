@@ -54,6 +54,7 @@ class ReleaseGuardTests(unittest.TestCase):
                         "source_commit": source_commit,
                         "source_ref": tag,
                         "source_repository": "https://github.com/trugurpala/divan",
+                        "version": version,
                     },
                     sort_keys=True,
                 ),
@@ -67,6 +68,7 @@ class ReleaseGuardTests(unittest.TestCase):
                         "source_commit": source_commit,
                         "source_ref": tag,
                         "source_repository": "https://github.com/trugurpala/divan.git",
+                        "version": version,
                     },
                     sort_keys=True,
                 ),
@@ -277,6 +279,7 @@ class ReleaseGuardTests(unittest.TestCase):
                                     if asset == "divan.pyz"
                                     else "https://github.com/trugurpala/divan"
                                 ),
+                                "version": "1.2.3",
                             }
                         ),
                     )
