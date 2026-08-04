@@ -131,4 +131,3 @@ The work is accepted only when:
 - the merged `main` commit, immutable `v1.3.8` tag, embedded source identities,
   release checksums, and downloaded asset bytes match;
 - the safe install dry-run succeeds without applying host changes.
-
