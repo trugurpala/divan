@@ -3,27 +3,21 @@
 from __future__ import annotations
 
 import pathlib
-from collections.abc import Callable
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
 import host_adapters
 import host_install_authority
+import host_install_marketplace
 import host_state
 import host_transactions
+from host_install_marketplace import (
+    InstallIO,
+    InstallJournalError,
+    capture_marketplace,
+)
 
-
-class InstallJournalError(host_transactions.TransactionError):
-    """Raised before an install journal can mutate an unproven host row."""
-
-
-@dataclass(frozen=True)
-class InstallIO:
-    marketplace_rows: Callable[[str], dict[str, dict[str, Any]]]
-    plugin_rows: Callable[[str], dict[str, dict[str, Any]]]
-    run: Callable[[list[str]], str]
-    normalize_source: Callable[[str], str]
+marketplace_confirmation = host_install_marketplace.marketplace_confirmation
 
 
 def new_record(
@@ -78,31 +72,6 @@ def target_evidence(
     return {**evidence, "versions": contract}
 
 
-def capture_marketplace(
-    record: dict[str, Any], host: str, io: InstallIO
-) -> dict[str, Any]:
-    row = io.marketplace_rows(host).get("divan")
-    if row is None:
-        raise InstallJournalError(f"{host}: created marketplace is missing")
-    target = record["target"]
-    try:
-        evidence = host_state.marketplace_evidence(
-            host,
-            row,
-            target["source"],
-            target["ref"],
-            io.run,
-            io.normalize_source,
-        )
-    except host_state.StateError as exc:
-        raise InstallJournalError(str(exc)) from exc
-    if evidence["contract"] != target["versions"] or any(
-        evidence[key] != target[key] for key in ("commit", "catalog_digest")
-    ):
-        raise InstallJournalError(f"{host}: created marketplace fingerprint is not target")
-    return host_state.marketplace_fingerprint(host, evidence)
-
-
 def capture_plugin(
     record: dict[str, Any], host: str, selector: str, io: InstallIO
 ) -> dict[str, Any]:
@@ -137,10 +106,13 @@ def validate(record: dict[str, Any], path: pathlib.Path | None = None) -> None:
 
 
 def recover_native(
-    path: pathlib.Path, record: dict[str, Any], io: InstallIO
+    path: pathlib.Path,
+    record: dict[str, Any],
+    io: InstallIO,
+    confirmation: str | None = None,
 ) -> dict[str, Any]:
     validate(record, path)
-    _promote_forward(path, record, io)
+    _promote_forward(path, record, io, confirmation)
     record["status"] = "recovering"
     host_transactions.persist_record(path, record)
     for entry in reversed(record["created"]["plugins"]):
@@ -170,7 +142,7 @@ def recover_native(
         current = io.marketplace_rows(entry["host"]).get("divan")
         if current is None:
             continue
-        if capture_marketplace(record, entry["host"], io) != entry:
+        if capture_marketplace(record, entry["host"], io, current) != entry:
             raise InstallJournalError(
                 f"{entry['host']}: recovery refuses replaced marketplace"
             )
@@ -189,23 +161,41 @@ def recover_native(
 
 
 def _promote_forward(
-    path: pathlib.Path, record: dict[str, Any], io: InstallIO
+    path: pathlib.Path,
+    record: dict[str, Any],
+    io: InstallIO,
+    confirmation: str | None,
 ) -> None:
     pending = record.get("pending")
-    if not isinstance(pending, dict) or pending.get("action") not in {
-        "add-marketplace", "install-plugin",
-    }:
+    if not isinstance(pending, dict):
         return
-    host = pending["host"]
-    if pending["action"] == "add-marketplace":
-        if "divan" in io.marketplace_rows(host):
-            _append_unique(record["created"]["marketplaces"], capture_marketplace(record, host, io))
-    elif pending["id"] in io.plugin_rows(host):
-        _append_unique(
-            record["created"]["plugins"], capture_plugin(record, host, pending["id"], io)
-        )
+    if (
+        pending.get("phase") == "recovery"
+        and pending.get("action") == "remove-marketplace"
+    ):
+        host_install_marketplace.resume_pending_removal(path, record, pending, io)
+        return
+    action = pending.get("action")
+    if action == "add-marketplace":
+        if not host_install_marketplace.promote_pending(
+            path, record, pending["host"], io, confirmation
+        ):
+            return
+    elif action == "install-plugin":
+        _promote_pending_plugin(record, pending["host"], pending["id"], io)
+    else:
+        return
     record["pending"] = None
     host_transactions.persist_record(path, record)
+
+
+def _promote_pending_plugin(
+    record: dict[str, Any], host: str, selector: str, io: InstallIO
+) -> None:
+    if selector in io.plugin_rows(host):
+        _append_unique(
+            record["created"]["plugins"], capture_plugin(record, host, selector, io)
+        )
 
 
 def _mutation(

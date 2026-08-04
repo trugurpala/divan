@@ -281,6 +281,44 @@ class InterruptOnceDuringRecoveryRunner(FakeRunner):
         return result
 
 
+class NativeReceiptRunner(FakeRunner):
+    def __init__(self, marketplace_root: pathlib.Path) -> None:
+        super().__init__()
+        self.marketplace_root = marketplace_root
+
+    def __call__(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        if command[0] == "git":
+            return subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+        if command[0] == "codex" and command[1:4] == [
+            "plugin",
+            "marketplace",
+            "list",
+        ]:
+            self.commands.append(tuple(command))
+            output = {
+                "marketplaces": [
+                    {
+                        "name": name,
+                        "root": (
+                            str(self.marketplace_root)
+                            if name == "divan"
+                            else name
+                        ),
+                    }
+                    for name in sorted(self.marketplaces["codex"])
+                ]
+            }
+            return subprocess.CompletedProcess(command, 0, json.dumps(output), "")
+        return super().__call__(command)
+
+
 class CodexCliStateRunner(FakeRunner):
     def __init__(self, cli_status: str) -> None:
         super().__init__()
@@ -392,6 +430,118 @@ class HostInstallTests(unittest.TestCase):
         }
         values.update(changes)
         return HOST_INSTALL.Options(**values)
+
+    def _pending_marketplace_record(
+        self,
+        transaction: pathlib.Path,
+        *,
+        phase: str = "forward",
+        before_marketplaces: tuple[str, ...] = ("personal",),
+        before_plugins: tuple[str, ...] = ("vibe-coder-standard@personal",),
+        created: bool = False,
+    ) -> dict[str, object]:
+        return _fingerprinted(
+            {
+                "schema": 1,
+                "status": "rollback-incomplete",
+                "transaction_path": str(transaction.resolve()),
+                "before": {
+                    "codex": {
+                        "marketplaces": list(before_marketplaces),
+                        "plugins": list(before_plugins),
+                    }
+                },
+                "created": {
+                    "marketplaces": ["codex"] if created else [],
+                    "plugins": [],
+                },
+                "pending": {
+                    "phase": phase,
+                    "action": (
+                        "add-marketplace"
+                        if phase == "forward"
+                        else "remove-marketplace"
+                    ),
+                    "host": "codex",
+                },
+            }
+        )
+
+    def _native_receipt_checkout(self, root: pathlib.Path) -> str:
+        catalog = {
+            "plugins": [
+                {
+                    "name": package,
+                    "version": version,
+                    "source": {
+                        "source": "local",
+                        "path": f"plugins/{package}",
+                    },
+                }
+                for package, version in PACKAGE_VERSIONS.items()
+            ]
+        }
+        catalog_path = root / ".agents" / "plugins" / "marketplace.json"
+        catalog_path.parent.mkdir(parents=True)
+        catalog_path.write_text(
+            json.dumps(catalog, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        commands = (
+            ["git", "init", "--quiet", str(root)],
+            ["git", "-C", str(root), "config", "user.name", "Divan Test"],
+            [
+                "git",
+                "-C",
+                str(root),
+                "config",
+                "user.email",
+                "divan-test@example.invalid",
+            ],
+            ["git", "-C", str(root), "add", ".agents/plugins/marketplace.json"],
+            ["git", "-C", str(root), "commit", "--quiet", "-m", "fixture"],
+            ["git", "-C", str(root), "remote", "add", "origin", SOURCE],
+            ["git", "-C", str(root), "tag", REF],
+            ["git", "-C", str(root), "tag", "v0.11.9"],
+        )
+        for command in commands:
+            subprocess.run(command, check=True, capture_output=True)
+        commit = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            text=True,
+            encoding="utf-8",
+        ).strip()
+        (root / ".codex-marketplace-install.json").write_text(
+            json.dumps(
+                {
+                    "source_type": "git",
+                    "source": SOURCE,
+                    "ref_name": REF,
+                    "sparse_paths": [],
+                    "revision": commit,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return commit
+
+    def _marketplace_confirmation(
+        self,
+        transaction: pathlib.Path,
+        evidence: dict[str, object],
+    ) -> str:
+        marketplace = {
+            "host": "codex",
+            **{
+                key: evidence[key]
+                for key in ("source", "ref", "root", "commit", "catalog_digest")
+            },
+        }
+        return HOST_INSTALL._host_install_journal.marketplace_confirmation(
+            transaction,
+            marketplace,
+        )
 
     def test_transaction_primitives_are_extracted_with_compatibility_exports(self) -> None:
         transactions = sys.modules["host_transactions"]
@@ -1042,6 +1192,432 @@ class HostInstallTests(unittest.TestCase):
             any(
                 command[1:3] == ("plugin", "remove")
                 and command[3] == "sadrazam@divan"
+                for command in runner.commands
+            )
+        )
+
+    def test_recovery_records_pending_codex_marketplace_for_manual_remove(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            transaction = state_dir / "install-wrong-tag.json"
+            record = self._pending_marketplace_record(transaction)
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            marketplace_root = state_dir / "codex-marketplace"
+            marketplace_root.mkdir()
+            installed_commit = self._native_receipt_checkout(marketplace_root)
+            runner = NativeReceiptRunner(marketplace_root)
+            runner.marketplaces["codex"].add("divan")
+            evidence = {
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(marketplace_root.resolve()),
+                "commit": installed_commit,
+                "catalog_digest": hashlib.sha256(
+                    (
+                        marketplace_root
+                        / ".agents"
+                        / "plugins"
+                        / "marketplace.json"
+                    ).read_bytes()
+                ).hexdigest(),
+            }
+            confirmation = self._marketplace_confirmation(transaction, evidence)
+
+            with self.assertRaisesRegex(
+                HOST_INSTALL.InstallError,
+                f"--confirm-pending-marketplace {confirmation}",
+            ):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+            self.assertIn("divan", runner.marketplaces["codex"])
+            with self.assertRaisesRegex(
+                HOST_INSTALL.InstallError,
+                "run `codex plugin marketplace remove divan --json` manually",
+            ):
+                HOST_INSTALL.rollback_transaction(
+                    transaction,
+                    runner=runner,
+                    confirm_pending_marketplace=confirmation,
+                )
+            recorded = json.loads(transaction.read_text(encoding="utf-8"))
+            runner.marketplaces["codex"].remove("divan")
+            recovered = HOST_INSTALL.rollback_transaction(
+                transaction, runner=runner
+            )
+
+        self.assertEqual(recorded["pending"]["marketplace"], {"host": "codex", **evidence})
+        self.assertEqual(recovered["status"], "recovered")
+        self.assertNotEqual(installed_commit, COMMIT)
+        self.assertNotIn("divan", runner.marketplaces["codex"])
+        self.assertEqual(
+            runner.marketplaces["codex"],
+            {"personal"},
+        )
+        self.assertEqual(
+            runner.plugins["codex"],
+            {"vibe-coder-standard@personal"},
+        )
+        self.assertEqual(
+            [
+                command
+                for command in runner.commands
+                if command[1:4] == ("plugin", "marketplace", "remove")
+            ],
+            [],
+        )
+
+    def test_pending_marketplace_recovery_refuses_installed_divan_plugin(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            transaction = state_dir / "install-plugin-present.json"
+            record = self._pending_marketplace_record(transaction)
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.plugins["codex"].add("sadrazam@divan")
+            marketplace_root = state_dir / "codex-marketplace"
+            marketplace_root.mkdir()
+            (marketplace_root / ".codex-marketplace-install.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            evidence = {
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(marketplace_root.resolve()),
+                "commit": "b" * 40,
+                "catalog_digest": "c" * 64,
+                "contract": dict(PACKAGE_VERSIONS),
+            }
+
+            with (
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_adapters,
+                    "marketplace_root",
+                    return_value=str(marketplace_root),
+                ),
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_state,
+                    "marketplace_evidence",
+                    return_value=evidence,
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError, "installed Divan plugins"
+                ):
+                    HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertFalse(
+            any(
+                command[1:4] == ("plugin", "marketplace", "remove")
+                for command in runner.commands
+            )
+        )
+
+    def test_pending_marketplace_recovery_refuses_preexisting_divan_state(self) -> None:
+        cases = {
+            "marketplace": {
+                "before_marketplaces": ("personal", "divan"),
+                "before_plugins": ("vibe-coder-standard@personal",),
+            },
+            "plugin": {
+                "before_marketplaces": ("personal",),
+                "before_plugins": (
+                    "vibe-coder-standard@personal",
+                    "sadrazam@divan",
+                ),
+            },
+        }
+        for name, before in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                prefix="divan-host-install-"
+            ) as temporary:
+                transaction = pathlib.Path(temporary) / "install-preexisting.json"
+                record = self._pending_marketplace_record(transaction, **before)
+                transaction.write_text(json.dumps(record), encoding="utf-8")
+                runner = FakeRunner()
+                runner.marketplaces["codex"].add("divan")
+                runner.commands.clear()
+
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError, "existed before"
+                ):
+                    HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+                self.assertIn("divan", runner.marketplaces["codex"])
+                self.assertFalse(
+                    any(
+                        command[1:4] == ("plugin", "marketplace", "remove")
+                        for command in runner.commands
+                    )
+                )
+
+    def test_pending_marketplace_recovery_retry_requires_native_receipt(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-receipt-missing.json"
+            record = self._pending_marketplace_record(
+                transaction,
+                phase="recovery",
+            )
+            pending = record["pending"]
+            assert isinstance(pending, dict)
+            pending["marketplace"] = {
+                "host": "codex",
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(ROOT.resolve()),
+                "commit": COMMIT,
+                "catalog_digest": CATALOG_DIGEST,
+            }
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.commands.clear()
+
+            with self.assertRaisesRegex(
+                HOST_INSTALL.InstallError, "receipt cannot be proven"
+            ):
+                HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+            persisted = json.loads(transaction.read_text(encoding="utf-8"))
+
+        self.assertNotEqual(persisted["status"], "recovered")
+        self.assertEqual(persisted["pending"], record["pending"])
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertFalse(
+            any(
+                command[1:4] == ("plugin", "marketplace", "remove")
+                for command in runner.commands
+            )
+        )
+
+    def test_pending_marketplace_recovery_resumes_after_manual_remove(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            transaction = state_dir / "install-remove-interrupted.json"
+            record = self._pending_marketplace_record(transaction)
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            marketplace_root = state_dir / "codex-marketplace"
+            marketplace_root.mkdir()
+            (marketplace_root / ".codex-marketplace-install.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            evidence = {
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(marketplace_root.resolve()),
+                "commit": "b" * 40,
+                "catalog_digest": "c" * 64,
+                "contract": dict(PACKAGE_VERSIONS),
+            }
+            confirmation = self._marketplace_confirmation(transaction, evidence)
+
+            with (
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_adapters,
+                    "marketplace_root",
+                    return_value=str(marketplace_root),
+                ),
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_state,
+                    "marketplace_evidence",
+                    return_value=evidence,
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError,
+                    "run `codex plugin marketplace remove divan --json` manually",
+                ):
+                    HOST_INSTALL.rollback_transaction(
+                        transaction,
+                        runner=runner,
+                        confirm_pending_marketplace=confirmation,
+                    )
+                interrupted = json.loads(transaction.read_text(encoding="utf-8"))
+                runner.marketplaces["codex"].remove("divan")
+                recovered = HOST_INSTALL.rollback_transaction(
+                    transaction, runner=runner
+                )
+
+        self.assertEqual(
+            interrupted["pending"],
+            {
+                "phase": "recovery",
+                "action": "remove-marketplace",
+                "host": "codex",
+                "marketplace": {
+                    "host": "codex",
+                    "source": SOURCE,
+                    "ref": REF,
+                    "root": str(marketplace_root.resolve()),
+                    "commit": "b" * 40,
+                    "catalog_digest": "c" * 64,
+                },
+            },
+        )
+        self.assertEqual(recovered["status"], "recovered")
+        self.assertNotIn("divan", runner.marketplaces["codex"])
+        self.assertEqual(
+            sum(
+                command[1:4] == ("plugin", "marketplace", "remove")
+                for command in runner.commands
+            ),
+            0,
+        )
+
+    def test_pending_marketplace_recovery_refuses_replacement_before_retry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            state_dir = pathlib.Path(temporary)
+            transaction = state_dir / "install-remove-replaced.json"
+            record = self._pending_marketplace_record(transaction)
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            marketplace_root = state_dir / "codex-marketplace"
+            marketplace_root.mkdir()
+            (marketplace_root / ".codex-marketplace-install.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            observed = {
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(marketplace_root.resolve()),
+                "commit": "b" * 40,
+                "catalog_digest": "c" * 64,
+                "contract": dict(PACKAGE_VERSIONS),
+            }
+            replacement = {
+                **observed,
+                "commit": "d" * 40,
+                "catalog_digest": "e" * 64,
+            }
+            confirmation = self._marketplace_confirmation(transaction, observed)
+
+            with (
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_adapters,
+                    "marketplace_root",
+                    return_value=str(marketplace_root),
+                ),
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_state,
+                    "marketplace_evidence",
+                    side_effect=[observed, observed, observed, replacement],
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError,
+                    "run `codex plugin marketplace remove divan --json` manually",
+                ):
+                    HOST_INSTALL.rollback_transaction(
+                        transaction,
+                        runner=runner,
+                        confirm_pending_marketplace=confirmation,
+                    )
+                interrupted = json.loads(transaction.read_text(encoding="utf-8"))
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError, "refuses replaced marketplace"
+                ):
+                    HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+                persisted = json.loads(transaction.read_text(encoding="utf-8"))
+
+        self.assertEqual(persisted["pending"], interrupted["pending"])
+        self.assertNotEqual(
+            persisted["pending"]["marketplace"]["commit"],
+            replacement["commit"],
+        )
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertFalse(
+            any(
+                command[1:4] == ("plugin", "marketplace", "remove")
+                for command in runner.commands
+            )
+        )
+
+    def test_recorded_marketplace_recovery_keeps_strict_replacement_guard(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-recorded-replaced.json"
+            record = self._pending_marketplace_record(
+                transaction,
+                phase="recovery",
+                created=True,
+            )
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            runner.commands.clear()
+            replacement = {
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(ROOT.resolve()),
+                "commit": "b" * 40,
+                "catalog_digest": "c" * 64,
+                "contract": dict(PACKAGE_VERSIONS),
+            }
+
+            with mock.patch.object(
+                HOST_INSTALL._host_install_journal.host_state,
+                "marketplace_evidence",
+                return_value=replacement,
+            ):
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError, "fingerprint is not target"
+                ):
+                    HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertFalse(
+            any(
+                command[1:4] == ("plugin", "marketplace", "remove")
+                for command in runner.commands
+            )
+        )
+
+    def test_pending_marketplace_recovery_requires_target_contract(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-host-install-") as temporary:
+            transaction = pathlib.Path(temporary) / "install-contract-mismatch.json"
+            record = self._pending_marketplace_record(transaction)
+            transaction.write_text(json.dumps(record), encoding="utf-8")
+            runner = FakeRunner()
+            runner.marketplaces["codex"].add("divan")
+            marketplace_root = pathlib.Path(temporary) / "codex-marketplace"
+            marketplace_root.mkdir()
+            (marketplace_root / ".codex-marketplace-install.json").write_text(
+                "{}\n", encoding="utf-8"
+            )
+            mismatched_versions = dict(PACKAGE_VERSIONS)
+            mismatched_versions["sadrazam"] = "9.9.9"
+            evidence = {
+                "source": SOURCE,
+                "ref": REF,
+                "root": str(marketplace_root.resolve()),
+                "commit": "b" * 40,
+                "catalog_digest": "c" * 64,
+                "contract": mismatched_versions,
+            }
+
+            with (
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_adapters,
+                    "marketplace_root",
+                    return_value=str(marketplace_root),
+                ),
+                mock.patch.object(
+                    HOST_INSTALL._host_install_journal.host_state,
+                    "marketplace_evidence",
+                    return_value=evidence,
+                ),
+            ):
+                with self.assertRaisesRegex(
+                    HOST_INSTALL.InstallError, "contract is not the install target"
+                ):
+                    HOST_INSTALL.rollback_transaction(transaction, runner=runner)
+
+        self.assertIn("divan", runner.marketplaces["codex"])
+        self.assertFalse(
+            any(
+                command[1:4] == ("plugin", "marketplace", "remove")
                 for command in runner.commands
             )
         )

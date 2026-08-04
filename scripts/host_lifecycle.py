@@ -16,6 +16,7 @@ import bootstrap_contract as _bootstrap_contract
 import host_adapters as _host_adapters
 import host_controller as _host_controller
 import host_install_journal as _host_install_journal
+import host_install_recovery as _host_install_recovery
 import host_install_result as _host_install_result
 import host_journal as _host_journal
 import host_options as _host_options
@@ -280,24 +281,6 @@ def _recover_recorded_legacy(
     _finish_mutation(transaction_path, record)
 
 
-def _rollback_install_transaction(
-    transaction_path: pathlib.Path,
-    record: dict[str, Any],
-    runner: Runner,
-) -> dict[str, Any]:
-    try:
-        _host_install_journal.validate(record, transaction_path)
-    except _host_install_journal.InstallJournalError as exc:
-        raise InstallError(str(exc)) from exc
-    _recover_recorded_legacy(transaction_path, record, runner)
-    try:
-        return _host_install_journal.recover_native(
-            transaction_path, record, _install_io(runner)
-        )
-    except _host_install_journal.InstallJournalError as exc:
-        raise InstallError(str(exc)) from exc
-
-
 def _install_io(runner: Runner) -> _host_install_journal.InstallIO:
     return _host_install_journal.InstallIO(
         marketplace_rows=lambda host: _marketplace_rows(host, runner),
@@ -311,26 +294,41 @@ def rollback_transaction(
     transaction_path: pathlib.Path,
     *,
     runner: Runner = _subprocess_runner,
-    _locked: bool = False,
+    confirm_pending_marketplace: str | None = None,
 ) -> dict[str, Any]:
     """Recover an interrupted schema-1 install or schema-2 upgrade."""
     transaction_path = transaction_path.expanduser().resolve()
-    if not _locked:
-        try:
-            with _host_journal.UpgradeLock(transaction_path.parent):
-                return rollback_transaction(transaction_path, runner=runner, _locked=True)
-        except _host_journal.JournalError as exc:
-            raise InstallError(str(exc)) from exc
+    try:
+        with _host_journal.UpgradeLock(transaction_path.parent):
+            return _rollback_transaction_locked(
+                transaction_path,
+                runner,
+                confirm_pending_marketplace,
+            )
+    except _host_journal.JournalError as exc:
+        raise InstallError(str(exc)) from exc
+
+
+def _rollback_transaction_locked(
+    transaction_path: pathlib.Path,
+    runner: Runner,
+    confirmation: str | None = None,
+) -> dict[str, Any]:
     record = _load_recoverable_transaction(transaction_path, _normalize_source)
-    if record["schema"] == 1:
-        return _rollback_install_transaction(transaction_path, record, runner)
-    io = _host_transactions.RecoveryIO(
+    upgrade_io = _host_transactions.RecoveryIO(
         marketplace_rows=lambda host: _marketplace_rows(host, runner),
         plugin_rows=lambda host: _plugin_rows(host, runner),
         normalize_source=_normalize_source,
         run=lambda command: _run(runner, command),
     )
-    return _host_transactions.recover_upgrade(transaction_path, record, io)
+    return _host_install_recovery.recover(
+        transaction_path,
+        record,
+        _install_io(runner),
+        upgrade_io,
+        lambda path, value: _recover_recorded_legacy(path, value, runner),
+        confirmation,
+    )
 
 
 def _validate_install_options(options: Options) -> None:
@@ -559,7 +557,7 @@ def install(
         return record
     except BaseException as exc:
         try:
-            recovered = rollback_transaction(transaction_path, runner=runner, _locked=True)
+            recovered = _rollback_transaction_locked(transaction_path, runner)
         except BaseException as rollback_exc:
             try:
                 current = json.loads(transaction_path.read_text(encoding="utf-8"))
@@ -594,7 +592,7 @@ def upgrade(
         marketplace_rows=lambda host: _marketplace_rows(host, runner),
         plugin_rows=lambda host: _plugin_rows(host, runner),
         run=lambda command: _run(runner, command),
-        rollback=lambda path: rollback_transaction(path, runner=runner, _locked=True),
+        rollback=lambda path: _rollback_transaction_locked(path, runner),
         normalize_source=_normalize_source,
     )
     return _host_upgrade.upgrade(options, PACKAGES, expected, io, repository)

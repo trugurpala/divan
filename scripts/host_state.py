@@ -95,16 +95,21 @@ def checkout_evidence_at_head(
         .splitlines()
         if tag.strip()
     ]
-    if len(tags) > 1:
-        raise StateError(f"checkout has ambiguous exact tags: {resolved}")
-    ref = tags[0] if tags else commit
     metadata = resolved / ".codex-marketplace-install.json"
     if dirty:
         if host != "codex" or dirty != "?? .codex-marketplace-install.json":
             raise StateError(f"dirty checkout cannot be used transactionally: {resolved}")
-        _validate_codex_metadata(metadata, resolved, source, ref, commit, normalize)
+        ref = _validate_codex_metadata(
+            metadata, resolved, source, commit, normalize
+        )
+        if ref != commit and ref not in tags:
+            raise StateError("Codex marketplace metadata ref is invalid")
     elif metadata.exists():
         raise StateError("Codex marketplace metadata is not an isolated untracked file")
+    else:
+        if len(tags) > 1:
+            raise StateError(f"checkout has ambiguous exact tags: {resolved}")
+        ref = tags[0] if tags else commit
     return _checkout_payload(resolved, source, ref, commit, run, normalize)
 
 
@@ -174,10 +179,9 @@ def _validate_codex_metadata(
     metadata: pathlib.Path,
     root: pathlib.Path,
     source: str,
-    ref: str,
     commit: str,
     normalize: Normalize,
-) -> None:
+) -> str:
     if metadata.parent != root or metadata.name != ".codex-marketplace-install.json":
         raise StateError("Codex marketplace metadata path is invalid")
     try:
@@ -199,10 +203,12 @@ def _validate_codex_metadata(
         raise StateError("Codex marketplace metadata schema is unsafe")
     if not isinstance(value["source"], str) or normalize(value["source"]) != normalize(source):
         raise StateError("Codex marketplace metadata source is invalid")
-    if value["ref_name"] != ref:
+    ref = value["ref_name"]
+    if not isinstance(ref, str) or not ref:
         raise StateError("Codex marketplace metadata ref is invalid")
     if value["revision"] != commit or not re.fullmatch(r"[0-9a-f]{40}", value["revision"]):
         raise StateError("Codex marketplace metadata revision is invalid")
+    return ref
 
 
 def source_matches(reported: str, expected: str, normalize: Normalize) -> bool:

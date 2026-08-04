@@ -30,7 +30,10 @@ def validate(record: dict[str, Any], expected_path: pathlib.Path | None = None) 
     assert isinstance(markets, list) and isinstance(plugins, list)
     _require(_created_marketplaces(markets, target, before), "marketplace fingerprints")
     _require(_created_plugins(plugins, markets, target, before), "plugin fingerprints")
-    _require(_pending(record.get("pending"), set(before), record["status"]), "pending mutation")
+    _require(
+        _pending(record.get("pending"), set(before), record["status"], target),
+        "pending mutation",
+    )
     _validate_legacy(record, transaction, set(hosts))
 
 
@@ -87,7 +90,12 @@ def _before(value: Any, hosts: list[str], require_full: bool) -> bool:
     return True
 
 
-def _pending(value: Any, captured: set[str], status: str) -> bool:
+def _pending(
+    value: Any,
+    captured: set[str],
+    status: str,
+    target: dict[str, Any],
+) -> bool:
     if value is None:
         return True
     if not isinstance(value, dict) or status in {"recovered", "rolled-back"}:
@@ -99,9 +107,44 @@ def _pending(value: Any, captured: set[str], status: str) -> bool:
         return set(value) == {"phase", "action", "host", "id"} and _selector(value.get("id"))
     if action in {"legacy-migration", "recover-legacy"}:
         return set(value) == {"phase", "action", "host", "journal"} and host == "codex"
-    return action in {"add-marketplace", "remove-marketplace"} and set(value) == {
-        "phase", "action", "host",
-    }
+    marketplace_keys = {"phase", "action", "host"}
+    if action == "add-marketplace":
+        return set(value) == marketplace_keys
+    if action != "remove-marketplace":
+        return False
+    if set(value) == marketplace_keys:
+        return True
+    return (
+        phase == "recovery"
+        and host == "codex"
+        and set(value) == marketplace_keys | {"marketplace"}
+        and _pending_marketplace(value.get("marketplace"), host, target)
+    )
+
+
+def _pending_marketplace(
+    value: Any,
+    host: str,
+    target: dict[str, Any],
+) -> bool:
+    expected = {"host", "source", "ref", "root", "commit", "catalog_digest"}
+    if not isinstance(value, dict) or set(value) != expected:
+        return False
+    root = value.get("root")
+    if not isinstance(root, str) or not root:
+        return False
+    raw_root = pathlib.Path(root).expanduser()
+    return bool(
+        value.get("host") == host
+        and value.get("source") == target["source"]
+        and value.get("ref") == target["ref"]
+        and raw_root.is_absolute()
+        and raw_root == raw_root.resolve()
+        and isinstance(value.get("commit"), str)
+        and re.fullmatch(r"[0-9a-f]{40}", value["commit"])
+        and isinstance(value.get("catalog_digest"), str)
+        and re.fullmatch(r"[0-9a-f]{64}", value["catalog_digest"])
+    )
 
 
 def _selector(value: Any) -> bool:

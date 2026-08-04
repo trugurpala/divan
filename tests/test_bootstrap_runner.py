@@ -123,9 +123,24 @@ class BootstrapRunnerTests(unittest.TestCase):
                     f"v{(repository / 'VERSION').read_text().strip()}",
                 )
                 self.assertIn("scripts/divan.py", names)
+                self.assertIn("scripts/host_install_marketplace.py", names)
+                self.assertIn("scripts/host_install_recovery.py", names)
                 self.assertIn(
                     "plugins/sadrazam/divan_runtime/studio/index.html",
                     names,
+                )
+                uiux_license = (
+                    "plugins/ui-pack/skills/ui-ux-pro-max/LICENSE.txt"
+                )
+                self.assertIn(uiux_license, names)
+                self.assertEqual(
+                    archive.read(uiux_license),
+                    (
+                        repository
+                        / "plugins"
+                        / "ui-pack"
+                        / "LICENSE-uiuxpromax-MIT.txt"
+                    ).read_bytes(),
                 )
                 skill_manifests = [
                     name
