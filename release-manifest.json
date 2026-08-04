@@ -246,7 +246,7 @@
     {"id": "host-compatibility-tests", "path": "tests/test_host_compatibility.py", "marker": "class HostCompatibilityTests", "replace_version": false},
     {"id": "host-auto-install-tests", "path": "tests/test_host_install.py", "marker": "class FallbackFixtureRunner", "replace_version": false},
     {"id": "adr-host-compatibility", "path": ".divan/decisions/0009-evidence-backed-host-compatibility.md", "marker": "# ADR 0009: Evidence-backed host compatibility", "replace_version": false},
-    {"id": "host-compatibility-guide", "path": "docs/Host-Uyumlulugu.md", "marker": "# Host Uyumluluğu", "replace_version": false},
+    {"id": "host-compatibility-guide", "path": "docs/Host-Uyumlulugu.md", "marker": "# Host Uyumluluğu", "replace_version": true, "version_patterns": ["--ref v{version}"]},
     {"id": "adr-nizam-i-sefer", "path": ".divan/decisions/0010-nizam-i-sefer.md", "marker": "# ADR 0010: Nizam-i Sefer is planning intelligence inside Divan", "replace_version": false},
     {"id": "v018-nizam-i-sefer-spec", "path": ".divan/spec/v0.18.0-nizam-i-sefer.md", "marker": "# v0.18.0 target — Nizam-i Sefer planning intelligence", "replace_version": false},
     {"id": "v018-release-candidate-evidence", "path": ".divan/evidence/teftis-20260729-v018-release-candidate.md", "marker": "# v0.18.0 local release-candidate evidence", "replace_version": false},
