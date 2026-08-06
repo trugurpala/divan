@@ -29,7 +29,8 @@ ENGINE_FIELDS = {
     "when_unavailable",
 }
 REQUIRED_ENGINE_FIELDS = ENGINE_FIELDS - {"fork_repository"}
-DECISIONS = {"ADOPT", "ADAPT", "REFERENCE", "FORK"}
+DECISIONS = {"ADOPT", "ADAPT", "REFERENCE", "REJECT"}
+LEGACY_DECISIONS = {"FORK"}
 STATUSES = {"candidate", "active", "accepted", "adapted", "deprecated", "blocked"}
 UNKNOWN_LICENSES = {"UNKNOWN", "NOASSERTION"}
 PIN_POLICIES = {"immutable", "lockfile", "manual"}
@@ -117,6 +118,7 @@ def _validate_engine(result: dict[str, Any], path: str, engine: Any, seen: set[s
         _add(result, "ENGINE_INVALID", path, "engine entry must be an object")
         return
     result["engine_count"] += 1
+    engine = _normalize_legacy_engine(result, path, engine)
     _unknown_fields(result, path, engine, ENGINE_FIELDS, "ENGINE_UNKNOWN_FIELD")
     _required_fields(result, path, engine)
     engine_id = engine.get("id")
@@ -191,15 +193,56 @@ def _validate_source(result: dict[str, Any], path: str, engine: dict[str, Any]) 
 
 
 def _validate_fork(result: dict[str, Any], path: str, engine: dict[str, Any], upstream: Any) -> None:
-    decision = engine.get("decision")
     fork = engine.get("fork_repository")
-    if decision == "FORK":
+    installation = engine.get("installation")
+    modes = installation.get("modes", []) if isinstance(installation, dict) else []
+    uses_fork = isinstance(modes, list) and "fork" in modes
+    if uses_fork:
         if not _string(fork) or not URL_RE.fullmatch(fork):
-            _add(result, "ENGINE_FORK_URL_REQUIRED", f"{path}.fork_repository", "FORK requires fork_repository URL")
+            _add(
+                result,
+                "ENGINE_FORK_URL_REQUIRED",
+                f"{path}.fork_repository",
+                "fork installation mode requires fork_repository URL",
+            )
         elif _string(upstream) and fork == upstream:
-            _add(result, "ENGINE_FORK_URL_INVALID", f"{path}.fork_repository", "fork URL cannot equal upstream URL")
+            _add(
+                result,
+                "ENGINE_FORK_URL_INVALID",
+                f"{path}.fork_repository",
+                "fork URL cannot equal upstream URL",
+            )
     elif fork is not None:
-        _add(result, "ENGINE_FORK_URL_INVALID", f"{path}.fork_repository", "fork_repository is allowed only for FORK")
+        _add(
+            result,
+            "ENGINE_FORK_URL_INVALID",
+            f"{path}.fork_repository",
+            "fork_repository is allowed only with installation mode fork",
+        )
+
+
+def _normalize_legacy_engine(
+    result: dict[str, Any], path: str, engine: dict[str, Any]
+) -> dict[str, Any]:
+    """Interpret schema-v1 FORK decisions without keeping FORK as a decision class."""
+    if engine.get("decision") not in LEGACY_DECISIONS:
+        return engine
+    normalized = dict(engine)
+    normalized["decision"] = "ADAPT"
+    installation = engine.get("installation")
+    if isinstance(installation, dict):
+        normalized_installation = dict(installation)
+        modes = installation.get("modes")
+        if isinstance(modes, list) and "fork" not in modes:
+            normalized_installation["modes"] = [*modes, "fork"]
+        normalized["installation"] = normalized_installation
+    _warn(
+        result,
+        "ENGINE_DECISION_LEGACY_FORK",
+        f"{path}.decision",
+        "legacy FORK is interpreted as ADAPT with installation mode fork",
+    )
+    return normalized
 
 
 def _validate_lists(result: dict[str, Any], path: str, engine: dict[str, Any]) -> None:
@@ -301,6 +344,10 @@ def _finish(result: dict[str, Any], exit_code: int) -> tuple[dict[str, Any], int
 
 def _add(result: dict[str, Any], code: str, path: str, message: str) -> None:
     result["errors"].append({"code": code, "path": path, "message": message})
+
+
+def _warn(result: dict[str, Any], code: str, path: str, message: str) -> None:
+    result["warnings"].append({"code": code, "path": path, "message": message})
 
 
 def _unknown_fields(
