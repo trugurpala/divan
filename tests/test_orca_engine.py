@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import copy
+import importlib
 import pathlib
 import sys
 import unittest
@@ -10,13 +10,12 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import engine_registry
-from divan_runtime.orca_engine import (
-    ExecutionAuthority,
-    OrcaEngine,
-    OrcaExecutionDenied,
-    RunnerResult,
-)
+engine_registry = importlib.import_module("divan_runtime.engine_registry")
+orca_engine = importlib.import_module("divan_runtime.orca_engine")
+ExecutionAuthority = orca_engine.ExecutionAuthority
+OrcaEngine = orca_engine.OrcaEngine
+OrcaExecutionDenied = orca_engine.OrcaExecutionDenied
+RunnerResult = orca_engine.RunnerResult
 
 
 class FakeRunner:
