@@ -1,6 +1,6 @@
 [package]
 name = "divan-desktop"
-version = "0.1.0"
+version = "1.3.8"
 description = "Divan AI Yazilim Kumanda Merkezi"
 authors = ["Divan contributors"]
 edition = "2021"
