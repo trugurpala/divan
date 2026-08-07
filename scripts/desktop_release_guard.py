@@ -53,8 +53,12 @@ def inspect_desktop(root: pathlib.Path = ROOT) -> dict[str, Any]:
         )
     )
 
-    package_version = _text(_mapping(package, "package.json").get("version"), "package version")
-    tauri_version = _text(_mapping(tauri, "tauri.conf.json").get("version"), "tauri version")
+    package_version = _text(
+        _mapping(package, "package.json").get("version"), "package version"
+    )
+    tauri_version = _text(
+        _mapping(tauri, "tauri.conf.json").get("version"), "tauri version"
+    )
     cargo_version = _text(
         _mapping(_mapping(cargo, "Cargo.toml").get("package"), "Cargo package").get(
             "version"
@@ -123,7 +127,7 @@ def require_stable_release(
     report: Mapping[str, Any],
     env: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
-    environment = env or os.environ
+    environment = os.environ if env is None else env
     blockers: list[str] = []
     if report.get("updater_configured") is not True:
         blockers.append("signed Tauri updater is not configured")
