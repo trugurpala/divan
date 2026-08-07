@@ -9,7 +9,12 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime.execution_contract import ExecutionAction, ExecutionPolicyError, ExecutionReceipt, ExecutionRequest
+from divan_runtime.execution_contract import (
+    ExecutionAction,
+    ExecutionPolicyError,
+    ExecutionReceipt,
+    ExecutionRequest,
+)
 from divan_runtime.execution_router import ExecutionRouter
 
 
@@ -20,7 +25,17 @@ class FakeEngine:
 
     def execute(self, request):
         self.requests.append(request)
-        return ExecutionReceipt(self.engine_id, request.action, True, 0, {}, "", "", (), request.mandate_id)
+        return ExecutionReceipt(
+            self.engine_id,
+            request.action,
+            True,
+            0,
+            {},
+            "",
+            "",
+            (),
+            request.mandate_id,
+        )
 
 
 class ExecutionRouterTests(unittest.TestCase):
