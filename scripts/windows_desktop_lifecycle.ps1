@@ -58,6 +58,22 @@ function Get-Tool {
     return @($Readiness.tools | Where-Object { $_.id -eq $Id }) | Select-Object -First 1
 }
 
+function Get-OptionalProperty {
+    param(
+        [object]$Object,
+        [string]$Name
+    )
+
+    if ($null -eq $Object) {
+        return $null
+    }
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return $null
+    }
+    return $property.Value
+}
+
 function Stop-ProcessTree {
     param([System.Diagnostics.Process]$Process)
 
@@ -202,7 +218,8 @@ exit /b 0
     }
 
     $duringExecution = Invoke-DivanCore @{ command = "task.get"; task_id = $crashTask.task_id }
-    if ($duringExecution.state -ne "running" -or $null -eq $duringExecution.metadata.execution_pending) {
+    $pendingDuringExecution = Get-OptionalProperty -Object $duringExecution.metadata -Name "execution_pending"
+    if ($duringExecution.state -ne "running" -or $null -eq $pendingDuringExecution) {
         throw "Core did not persist execution_pending before invoking the worker"
     }
     if (-not $duringExecution.mandate_id) {
@@ -214,7 +231,8 @@ exit /b 0
     $interruptedCore = $null
 
     $afterCrash = Invoke-DivanCore @{ command = "task.get"; task_id = $crashTask.task_id }
-    if ($afterCrash.state -ne "running" -or $null -eq $afterCrash.metadata.execution_pending) {
+    $pendingAfterCrash = Get-OptionalProperty -Object $afterCrash.metadata -Name "execution_pending"
+    if ($afterCrash.state -ne "running" -or $null -eq $pendingAfterCrash) {
         throw "Interrupted execution was not left in recoverable persisted RUNNING state"
     }
     if ($afterCrash.mandate_id -ne $crashMandate) {
@@ -225,7 +243,8 @@ exit /b 0
     if ($recovered.state -ne "retry") {
         throw "Interrupted execution did not recover fail-closed to RETRY"
     }
-    if ($null -ne $recovered.metadata.execution_pending) {
+    $pendingAfterRecovery = Get-OptionalProperty -Object $recovered.metadata -Name "execution_pending"
+    if ($null -ne $pendingAfterRecovery) {
         throw "Recovered execution retained a stale execution_pending record"
     }
     if (-not $recovered.metadata.execution.interrupted -or $recovered.metadata.execution.ok) {
