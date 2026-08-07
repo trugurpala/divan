@@ -2,6 +2,11 @@ name: Desktop Real-User Acceptance
 
 on:
   workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Exact main commit SHA approved for this acceptance run"
+        required: true
+        type: string
 
 permissions: read-all
 
@@ -17,11 +22,29 @@ jobs:
       id-token: write
       attestations: write
       artifact-metadata: write
+    env:
+      DIVAN_EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}
     steps:
       - name: Checkout exact source commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
+      - name: Verify requested acceptance source identity
+        shell: pwsh
+        run: |
+          $expected = "$env:DIVAN_EXPECTED_SOURCE_SHA".Trim().ToLowerInvariant()
+          $actual = (& git rev-parse HEAD).Trim().ToLowerInvariant()
+          $eventSha = "$env:GITHUB_SHA".Trim().ToLowerInvariant()
+          if ($expected -notmatch '^[0-9a-f]{40}$') {
+            throw "source_sha must be an exact 40-character Git commit SHA"
+          }
+          if ($actual -ne $eventSha) {
+            throw "Acceptance checkout does not match the workflow event source SHA"
+          }
+          if ($expected -ne $actual) {
+            throw "Requested acceptance source SHA does not match the exact checked-out main commit"
+          }
 
       - name: Resolve acceptance evidence path
         shell: pwsh
