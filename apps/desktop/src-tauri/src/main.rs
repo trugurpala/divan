@@ -1,5 +1,5 @@
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Output};
@@ -174,8 +174,29 @@ fn find_runtime_pyz(app: &tauri::AppHandle) -> Option<PathBuf> {
         .find(|candidate| candidate.is_file())
 }
 
+fn json_error(value: &Value) -> Option<String> {
+    let errors = value.get("errors")?.as_array()?;
+    let messages = errors
+        .iter()
+        .filter_map(Value::as_str)
+        .map(str::trim)
+        .filter(|message| !message.is_empty())
+        .collect::<Vec<_>>();
+    if messages.is_empty() {
+        None
+    } else {
+        Some(messages.join("; "))
+    }
+}
+
 fn runtime_output(output: Output) -> Result<Value, String> {
+    let parsed = serde_json::from_slice::<Value>(&output.stdout).ok();
     if !output.status.success() {
+        if let Some(value) = parsed.as_ref() {
+            if let Some(message) = json_error(value) {
+                return Err(message);
+            }
+        }
         let stderr = first_line(&output.stderr);
         return Err(if stderr.is_empty() {
             format!("Divan çıkış kodu {}", output.status.code().unwrap_or(-1))
@@ -183,8 +204,7 @@ fn runtime_output(output: Output) -> Result<Value, String> {
             stderr
         });
     }
-    serde_json::from_slice::<Value>(&output.stdout)
-        .map_err(|error| format!("Divan JSON okunamadı: {error}"))
+    parsed.ok_or_else(|| "Divan JSON okunamadı".to_string())
 }
 
 fn run_standalone_runtime(runtime: PathBuf, runtime_args: &[String]) -> Result<Value, String> {
@@ -215,6 +235,13 @@ fn run_pyz_runtime(runtime: PathBuf, runtime_args: &[String]) -> Result<Value, S
         match command.output() {
             Ok(output) if output.status.success() => return runtime_output(output),
             Ok(output) => {
+                let parsed = serde_json::from_slice::<Value>(&output.stdout).ok();
+                if let Some(value) = parsed.as_ref() {
+                    if let Some(message) = json_error(value) {
+                        last_error = message;
+                        continue;
+                    }
+                }
                 let stderr = first_line(&output.stderr);
                 last_error = if stderr.is_empty() {
                     format!("Divan çıkış kodu {}", output.status.code().unwrap_or(-1))
@@ -314,11 +341,42 @@ fn health_check(app: tauri::AppHandle) -> HealthSnapshot {
 }
 
 fn non_empty(value: String, label: &str) -> Result<String, String> {
-    if value.trim().is_empty() {
+    let normalized = value.trim().to_string();
+    if normalized.is_empty() {
         Err(format!("{label} boş olamaz"))
     } else {
-        Ok(value)
+        Ok(normalized)
     }
+}
+
+fn bounded_argument(value: String, label: &str, max_chars: usize) -> Result<String, String> {
+    let normalized = non_empty(value, label)?;
+    if normalized.chars().count() > max_chars {
+        return Err(format!("{label} çok uzun"));
+    }
+    if normalized.chars().any(|character| matches!(character, '\0' | '\r' | '\n')) {
+        return Err(format!("{label} kontrol karakteri içeremez"));
+    }
+    Ok(normalized)
+}
+
+fn validated_target(value: String) -> Result<String, String> {
+    let target = non_empty(value, "hedef kapısı")?;
+    let allowed = ["verified", "previewed", "released", "observed"];
+    if allowed.contains(&target.as_str()) {
+        Ok(target)
+    } else {
+        Err("geçersiz hedef kapısı".into())
+    }
+}
+
+fn required_goal_id(value: &Value) -> Result<String, String> {
+    value
+        .get("goal_id")
+        .and_then(Value::as_str)
+        .filter(|goal_id| goal_id.starts_with("goal-") && goal_id.len() == 17)
+        .map(str::to_string)
+        .ok_or_else(|| "Divan goal_id üretmedi".to_string())
 }
 
 #[tauri::command]
@@ -345,10 +403,7 @@ fn goal_start_preview(
 ) -> Result<Value, String> {
     let project = non_empty(project, "proje")?;
     let intent = non_empty(intent, "hedef")?;
-    let allowed = ["verified", "previewed", "released", "observed"];
-    if !allowed.contains(&target.as_str()) {
-        return Err("geçersiz hedef kapısı".into());
-    }
+    let target = validated_target(target)?;
     run_runtime(
         &app,
         &[
@@ -365,12 +420,101 @@ fn goal_start_preview(
     )
 }
 
+#[tauri::command]
+fn approve_and_start(
+    app: tauri::AppHandle,
+    project: String,
+    intent: String,
+    target: String,
+    name: String,
+    agent: String,
+    repo_selector: String,
+) -> Result<Value, String> {
+    let project = non_empty(project, "proje")?;
+    let intent = bounded_argument(intent, "hedef", 32_000)?;
+    let target = validated_target(target)?;
+    let name = bounded_argument(name, "worktree adı", 120)?;
+    let agent = bounded_argument(agent, "ajan", 120)?;
+    let repo_selector = bounded_argument(repo_selector, "Orca repo selector", 240)?;
+    if !repo_selector.starts_with("id:") || repo_selector.len() <= 3 {
+        return Err("Orca repo selector bu alpha'da id:<repoId> biçiminde olmalı".into());
+    }
+
+    let created = run_runtime(
+        &app,
+        &[
+            "goal".into(),
+            "start".into(),
+            "--project".into(),
+            project.clone(),
+            "--intent".into(),
+            intent.clone(),
+            "--target".into(),
+            target.clone(),
+            "--execute".into(),
+            "--json".into(),
+        ],
+    )?;
+    let goal_id = required_goal_id(&created)?;
+
+    let preparation = run_runtime(
+        &app,
+        &[
+            "goal".into(),
+            "prepare".into(),
+            "--project".into(),
+            project.clone(),
+            "--goal".into(),
+            goal_id.clone(),
+            "--execute".into(),
+            "--json".into(),
+        ],
+    )?;
+
+    let execution = run_runtime(
+        &app,
+        &[
+            "engines".into(),
+            "worktree-create".into(),
+            "--engine".into(),
+            "orca".into(),
+            "--project".into(),
+            project,
+            "--goal".into(),
+            goal_id.clone(),
+            "--name".into(),
+            name,
+            "--repo-selector".into(),
+            repo_selector,
+            "--agent".into(),
+            agent,
+            "--prompt".into(),
+            intent,
+            "--setup".into(),
+            "inherit".into(),
+            "--execute".into(),
+            "--json".into(),
+        ],
+    )?;
+
+    Ok(json!({
+        "schema_version": 1,
+        "kind": "desktop-approval-execution",
+        "status": "started",
+        "goal_id": goal_id,
+        "goal": created,
+        "preparation": preparation,
+        "execution": execution,
+    }))
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             health_check,
             project_status,
-            goal_start_preview
+            goal_start_preview,
+            approve_and_start
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Divan Desktop");
