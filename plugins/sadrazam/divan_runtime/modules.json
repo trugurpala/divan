@@ -151,7 +151,8 @@
         "knowledge_contract",
         "knowledge_capture",
         "knowledge_store",
-        "knowledge_projection"
+        "knowledge_projection",
+        "knowledge_relevance"
       ],
       "capabilities": [
         "goal_state",
@@ -168,7 +169,8 @@
         "local_knowledge_fabric",
         "deterministic_failure_lessons",
         "cross_project_reuse_analytics",
-        "generated_knowledge_projection"
+        "generated_knowledge_projection",
+        "project_context_memory_ranking"
       ],
       "depends_on": [
         "kernel",
@@ -241,6 +243,8 @@
         "local_server",
         "desktop_api",
         "desktop_protocol_support",
+        "knowledge_desktop",
+        "knowledge_protocol",
         "desktop_protocol"
       ],
       "capabilities": [
@@ -253,7 +257,8 @@
         "status_snapshot",
         "loopback_status_server",
         "desktop_api",
-        "desktop_json_protocol"
+        "desktop_json_protocol",
+        "agency_memory_read_model"
       ],
       "depends_on": [
         "kernel",
