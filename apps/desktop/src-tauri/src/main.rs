@@ -23,6 +23,7 @@ struct RuntimeProbe {
 #[serde(rename_all = "camelCase")]
 struct Capabilities {
     product: &'static str,
+    version: &'static str,
     api_version: u8,
     shell: &'static str,
     features: Vec<&'static str>,
@@ -78,6 +79,7 @@ fn divan_capabilities() -> Capabilities {
     }
     Capabilities {
         product: "Divan",
+        version: env!("CARGO_PKG_VERSION"),
         api_version: 1,
         shell: "tauri-2",
         features,
