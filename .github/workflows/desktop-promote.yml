@@ -1,0 +1,310 @@
+name: Desktop Stable Promotion
+
+on:
+  workflow_dispatch:
+    inputs:
+      acceptance_run_id:
+        description: "Successful Desktop Real-User Acceptance run for this exact main commit"
+        required: true
+        type: string
+      candidate_run_id:
+        description: "Successful Desktop Stable Candidate workflow_dispatch run for this exact main commit"
+        required: true
+        type: string
+
+permissions: read-all
+
+concurrency:
+  group: desktop-stable-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: verify-and-promote-desktop-stable
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-latest
+    timeout-minutes: 25
+    environment: production-release
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+      artifact-metadata: write
+    env:
+      DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
+      DIVAN_CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
+      DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
+      DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
+      DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
+      DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
+      DIVAN_RELEASE_ADMIN_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve exact source and Desktop release identity
+        shell: pwsh
+        run: |
+          $sourceCommit = (& git rev-parse HEAD).Trim()
+          $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          if ($sourceCommit -ne $env:GITHUB_SHA -or $sourceCommit -notmatch '^[0-9a-f]{40}$') {
+            throw "promotion checkout is not the exact workflow source commit"
+          }
+          if ($sourceTree -notmatch '^[0-9a-f]{40}$') {
+            throw "promotion source tree could not be resolved"
+          }
+          $liveMain = (gh api "repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha').Trim()
+          if ($LASTEXITCODE -ne 0 -or $liveMain -ne $sourceCommit) {
+            throw "main moved after acceptance/candidate selection; rerun acceptance and candidate on current main"
+          }
+          $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
+            throw "Desktop version is not SemVer-compatible"
+          }
+          $tag = "desktop-v$version"
+          $expectedArtifactBase = "https://github.com/$env:GITHUB_REPOSITORY/releases/download/$tag"
+          if ($env:DIVAN_UPDATER_ARTIFACT_BASE_URL.TrimEnd('/') -ne $expectedArtifactBase) {
+            throw "production artifact base URL must target the exact immutable Desktop GitHub Release tag: $expectedArtifactBase"
+          }
+          "DIVAN_SOURCE_COMMIT=$sourceCommit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_SOURCE_TREE=$sourceTree" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_DESKTOP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_DESKTOP_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify exact real-user acceptance run and attestation
+        shell: pwsh
+        run: |
+          $runId = $env:DIVAN_ACCEPTANCE_RUN_ID
+          if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
+            throw "acceptance_run_id must be numeric"
+          }
+          $metadataJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$runId"
+          if ($LASTEXITCODE -ne 0 -or -not $metadataJson) { throw "acceptance run metadata could not be loaded" }
+          $metadata = $metadataJson | ConvertFrom-Json
+          if ($metadata.name -ne "Desktop Real-User Acceptance" -or $metadata.path -ne ".github/workflows/desktop-acceptance.yml") {
+            throw "acceptance run came from an unexpected workflow"
+          }
+          if ($metadata.event -ne "workflow_dispatch" -or $metadata.conclusion -ne "success") {
+            throw "acceptance run is not a successful manual run"
+          }
+          if ($metadata.head_branch -ne "main" -or $metadata.head_sha -ne $env:DIVAN_SOURCE_COMMIT) {
+            throw "acceptance run is not bound to this exact main commit"
+          }
+          $acceptanceDir = Join-Path $env:RUNNER_TEMP "divan-acceptance"
+          New-Item -ItemType Directory -Path $acceptanceDir -Force | Out-Null
+          gh run download $runId --repo $env:GITHUB_REPOSITORY --name divan-windows-acceptance --dir $acceptanceDir
+          if ($LASTEXITCODE -ne 0) { throw "acceptance evidence download failed" }
+          $files = @(Get-ChildItem $acceptanceDir -Filter "*.json" -File -Recurse)
+          if ($files.Count -ne 1) { throw "acceptance artifact must contain exactly one JSON evidence file" }
+          $evidence = $files[0].FullName
+          gh attestation verify $evidence --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/desktop-acceptance.yml" --source-ref refs/heads/main --source-digest $env:DIVAN_SOURCE_COMMIT
+          if ($LASTEXITCODE -ne 0) { throw "acceptance evidence attestation verification failed" }
+          "DIVAN_ACCEPTANCE_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify exact signed candidate run and download artifacts
+        shell: pwsh
+        run: |
+          $runId = $env:DIVAN_CANDIDATE_RUN_ID
+          if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
+            throw "candidate_run_id must be numeric"
+          }
+          $metadataJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$runId"
+          if ($LASTEXITCODE -ne 0 -or -not $metadataJson) { throw "candidate run metadata could not be loaded" }
+          $metadata = $metadataJson | ConvertFrom-Json
+          if ($metadata.name -ne "Desktop Stable Candidate" -or $metadata.path -ne ".github/workflows/desktop-release.yml") {
+            throw "candidate run came from an unexpected workflow"
+          }
+          if ($metadata.event -ne "workflow_dispatch" -or $metadata.conclusion -ne "success") {
+            throw "candidate run is not a successful manual stable-candidate run"
+          }
+          if ($metadata.head_branch -ne "main" -or $metadata.head_sha -ne $env:DIVAN_SOURCE_COMMIT) {
+            throw "candidate run is not bound to this exact accepted main commit"
+          }
+
+          $candidateDir = Join-Path $env:RUNNER_TEMP "divan-signed-candidate"
+          $updaterE2eDir = Join-Path $env:RUNNER_TEMP "divan-updater-e2e"
+          New-Item -ItemType Directory -Path $candidateDir -Force | Out-Null
+          New-Item -ItemType Directory -Path $updaterE2eDir -Force | Out-Null
+          gh run download $runId --repo $env:GITHUB_REPOSITORY --name divan-desktop-signed-candidate --dir $candidateDir
+          if ($LASTEXITCODE -ne 0) { throw "signed candidate artifact download failed" }
+          gh run download $runId --repo $env:GITHUB_REPOSITORY --name divan-desktop-updater-e2e --dir $updaterE2eDir
+          if ($LASTEXITCODE -ne 0) { throw "updater e2e evidence download failed" }
+
+          $candidateFiles = @(Get-ChildItem $candidateDir -File -Recurse)
+          if ($candidateFiles.Count -lt 4) { throw "signed candidate artifact is incomplete" }
+          foreach ($file in $candidateFiles) {
+            gh attestation verify $file.FullName --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/desktop-release.yml" --source-ref refs/heads/main --source-digest $env:DIVAN_SOURCE_COMMIT
+            if ($LASTEXITCODE -ne 0) { throw "candidate provenance verification failed for $($file.Name)" }
+          }
+          $updaterEvidence = @(Get-ChildItem $updaterE2eDir -Filter "*.json" -File -Recurse)
+          if ($updaterEvidence.Count -ne 1) { throw "updater e2e artifact must contain exactly one JSON evidence file" }
+          "DIVAN_CANDIDATE_DIR=$candidateDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_UPDATER_E2E_EVIDENCE=$($updaterEvidence[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Re-establish stable release guard on promotion host
+        shell: pwsh
+        run: |
+          $config = Join-Path $env:RUNNER_TEMP "tauri.promotion.conf.json"
+          python scripts/prepare_desktop_release_config.py --output $config
+          if ($LASTEXITCODE -ne 0) { throw "release configuration validation failed" }
+          python scripts/desktop_release_guard.py --release-config $config --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
+          if ($LASTEXITCODE -ne 0) { throw "stable release guard rejected promotion" }
+
+      - name: Validate downloaded signed candidate and prepare promotion bundle
+        shell: pwsh
+        run: |
+          $promotionDir = Join-Path $env:RUNNER_TEMP "divan-promotion"
+          New-Item -ItemType Directory -Path $promotionDir -Force | Out-Null
+          $checksums = Join-Path $promotionDir "SHA256SUMS.txt"
+          python scripts/desktop_promotion_guard.py --candidate-dir $env:DIVAN_CANDIDATE_DIR --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --version $env:DIVAN_DESKTOP_VERSION --artifact-base-url $env:DIVAN_UPDATER_ARTIFACT_BASE_URL --updater-endpoint $env:DIVAN_UPDATER_ENDPOINT --checksums $checksums
+          if ($LASTEXITCODE -ne 0) { throw "signed candidate promotion guard failed" }
+
+          $installer = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "*-setup.exe" -File -Recurse)
+          $feed = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "latest.json" -File -Recurse)
+          $manifest = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "divan-update-manifest.json" -File -Recurse)
+          if ($installer.Count -ne 1 -or $feed.Count -ne 1 -or $manifest.Count -ne 1) { throw "candidate promotion file identity is ambiguous" }
+          $signature = "$($installer[0].FullName).sig"
+          if (-not (Test-Path $signature -PathType Leaf)) { throw "paired updater signature is missing" }
+          foreach ($path in @($installer[0].FullName, $signature, $feed[0].FullName, $manifest[0].FullName)) {
+            Copy-Item $path $promotionDir -Force
+          }
+          $authenticode = Get-AuthenticodeSignature (Join-Path $promotionDir $installer[0].Name)
+          if ($authenticode.Status -ne "Valid") {
+            throw "downloaded stable candidate installer Authenticode signature is not valid: $($authenticode.Status)"
+          }
+          "DIVAN_PROMOTION_DIR=$promotionDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_PROMOTION_INSTALLER=$($installer[0].Name)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify immutable-release repository policy
+        shell: pwsh
+        run: |
+          if (-not $env:DIVAN_RELEASE_ADMIN_TOKEN) { throw "production-release/DIVAN_RELEASE_ADMIN_TOKEN is required" }
+          $defaultToken = $env:GH_TOKEN
+          $env:GH_TOKEN = $env:DIVAN_RELEASE_ADMIN_TOKEN
+          $policy = Join-Path $env:RUNNER_TEMP "immutable-releases.json"
+          gh api "repos/$env:GITHUB_REPOSITORY/immutable-releases" > $policy
+          $status = $LASTEXITCODE
+          $env:GH_TOKEN = $defaultToken
+          if ($status -ne 0) { throw "immutable release policy could not be read" }
+          python scripts/release_guard.py immutable $policy
+          if ($LASTEXITCODE -ne 0) { throw "repository immutable release policy is not enabled" }
+
+      - name: Require production updater endpoint to be pre-staged with exact feed
+        shell: pwsh
+        run: |
+          $localFeed = Join-Path $env:DIVAN_PROMOTION_DIR "latest.json"
+          $remoteFeed = Join-Path $env:RUNNER_TEMP "latest.remote.json"
+          try {
+            Invoke-WebRequest -Uri $env:DIVAN_UPDATER_ENDPOINT -OutFile $remoteFeed -MaximumRedirection 3 -TimeoutSec 20
+          } catch {
+            throw "production updater endpoint is not readable before immutable promotion: $($_.Exception.Message)"
+          }
+          $localHash = (Get-FileHash $localFeed -Algorithm SHA256).Hash.ToLowerInvariant()
+          $remoteHash = (Get-FileHash $remoteFeed -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($localHash -ne $remoteHash) {
+            throw "production updater endpoint does not serve the exact source-bound latest.json candidate"
+          }
+
+      - name: Attest exact promotion bundle
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
+        with:
+          subject-path: ${{ runner.temp }}/divan-promotion/*
+
+      - name: Publish or verify immutable Desktop GitHub Release
+        shell: pwsh
+        run: |
+          $liveMain = (gh api "repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha').Trim()
+          if ($liveMain -ne $env:DIVAN_SOURCE_COMMIT) {
+            throw "main moved before immutable Desktop promotion; nothing will be published"
+          }
+          $tag = $env:DIVAN_DESKTOP_TAG
+          $tagSha = ""
+          $tagJson = gh api "repos/$env:GITHUB_REPOSITORY/git/ref/tags/$tag" 2>$null
+          if ($LASTEXITCODE -eq 0 -and $tagJson) {
+            $tagSha = ($tagJson | ConvertFrom-Json).object.sha
+            if ($tagSha -ne $env:DIVAN_SOURCE_COMMIT) {
+              throw "existing Desktop release tag points to a different source commit"
+            }
+          } else {
+            gh api --method POST "repos/$env:GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$tag" -f "sha=$env:DIVAN_SOURCE_COMMIT" | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw "Desktop release tag creation failed" }
+          }
+
+          $notes = Join-Path $env:RUNNER_TEMP "desktop-release-notes.md"
+          @"
+          # Divan Desktop v$env:DIVAN_DESKTOP_VERSION
+
+          Stable Windows candidate promoted only after exact-main real-user acceptance, signed updater E2E, Authenticode verification, provenance verification and immutable-release checks.
+
+          - Source commit: `$env:DIVAN_SOURCE_COMMIT`
+          - Source tree: `$env:DIVAN_SOURCE_TREE`
+          - Acceptance run: `$env:DIVAN_ACCEPTANCE_RUN_ID`
+          - Signed candidate run: `$env:DIVAN_CANDIDATE_RUN_ID`
+          "@ | Set-Content -Path $notes -Encoding utf8
+
+          gh release view $tag --repo $env:GITHUB_REPOSITORY --json tagName 1>$null 2>$null
+          $releaseExists = $LASTEXITCODE -eq 0
+          if (-not $releaseExists) {
+            $assets = @(Get-ChildItem $env:DIVAN_PROMOTION_DIR -File | ForEach-Object { $_.FullName })
+            if ($assets.Count -ne 5) { throw "promotion bundle must contain exactly five release assets" }
+            & gh release create $tag @assets --repo $env:GITHUB_REPOSITORY --verify-tag --title "Divan Desktop v$env:DIVAN_DESKTOP_VERSION" --notes-file $notes
+            if ($LASTEXITCODE -ne 0) { throw "immutable Desktop GitHub Release creation failed" }
+          }
+
+      - name: Independently re-download and verify promoted release
+        shell: pwsh
+        run: |
+          $tag = $env:DIVAN_DESKTOP_TAG
+          $readback = Join-Path $env:RUNNER_TEMP "divan-release-readback"
+          New-Item -ItemType Directory -Path $readback -Force | Out-Null
+          gh release download $tag --repo $env:GITHUB_REPOSITORY --dir $readback
+          if ($LASTEXITCODE -ne 0) { throw "Desktop release readback download failed" }
+
+          $local = @(Get-ChildItem $env:DIVAN_PROMOTION_DIR -File)
+          $remote = @(Get-ChildItem $readback -File)
+          if ($local.Count -ne 5 -or $remote.Count -ne 5) { throw "promoted Desktop release asset count is not exact" }
+          foreach ($file in $local) {
+            $other = Join-Path $readback $file.Name
+            if (-not (Test-Path $other -PathType Leaf)) { throw "promoted release is missing $($file.Name)" }
+            $expected = (Get-FileHash $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            $actual = (Get-FileHash $other -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($expected -ne $actual) { throw "promoted release readback digest mismatch for $($file.Name)" }
+            gh attestation verify $other --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/desktop-promote.yml" --source-ref refs/heads/main --source-digest $env:DIVAN_SOURCE_COMMIT
+            if ($LASTEXITCODE -ne 0) { throw "promotion attestation readback failed for $($file.Name)" }
+          }
+          $installer = Join-Path $readback $env:DIVAN_PROMOTION_INSTALLER
+          $signature = Get-AuthenticodeSignature $installer
+          if ($signature.Status -ne "Valid") { throw "promoted installer Authenticode readback failed" }
+
+          $feed = Get-Content (Join-Path $readback "latest.json") -Raw | ConvertFrom-Json
+          $url = $feed.platforms.'windows-x86_64'.url
+          if (-not $url -or $url -notmatch '^https://') { throw "promoted updater feed artifact URL is invalid" }
+          $remoteInstaller = Join-Path $env:RUNNER_TEMP "divan-updater-readback.exe"
+          Invoke-WebRequest -Uri $url -OutFile $remoteInstaller -MaximumRedirection 3 -TimeoutSec 60
+          $releaseHash = (Get-FileHash $installer -Algorithm SHA256).Hash.ToLowerInvariant()
+          $updaterHash = (Get-FileHash $remoteInstaller -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($releaseHash -ne $updaterHash) { throw "live updater artifact URL does not return the promoted installer" }
+          $liveSignature = Get-AuthenticodeSignature $remoteInstaller
+          if ($liveSignature.Status -ne "Valid") { throw "live updater installer Authenticode signature is invalid" }
+
+          $endpointReadback = Join-Path $env:RUNNER_TEMP "latest.final.json"
+          Invoke-WebRequest -Uri $env:DIVAN_UPDATER_ENDPOINT -OutFile $endpointReadback -MaximumRedirection 3 -TimeoutSec 20
+          $endpointHash = (Get-FileHash $endpointReadback -Algorithm SHA256).Hash.ToLowerInvariant()
+          $feedHash = (Get-FileHash (Join-Path $readback "latest.json") -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($endpointHash -ne $feedHash) { throw "production updater endpoint changed during promotion" }
+
+          $liveMain = (gh api "repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha').Trim()
+          if ($liveMain -ne $env:DIVAN_SOURCE_COMMIT) {
+            throw "main moved during promotion; accepted source is no longer current"
+          }
+          Write-Host "DIVAN_DESKTOP_STABLE_PROMOTION=PASS tag=$tag source=$env:DIVAN_SOURCE_COMMIT"
