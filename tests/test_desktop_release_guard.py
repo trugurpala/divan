@@ -18,16 +18,19 @@ inspect_desktop = MODULE.inspect_desktop
 require_stable_release = MODULE.require_stable_release
 SOURCE_COMMIT = "a" * 40
 SOURCE_TREE = "b" * 40
+CORE_COMMIT = "c" * 40
 
 
 def _acceptance(version: str, **overrides: object) -> dict[str, object]:
     value: dict[str, object] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "product": "Divan",
         "version": version,
         "platform": "windows",
         "source_commit": SOURCE_COMMIT,
         "source_tree": SOURCE_TREE,
+        "core_source_commit": CORE_COMMIT,
+        "core_source_tree": SOURCE_TREE,
         "result": "PASS",
         "authenticated_worker": True,
         "worker_agent": "codex",
@@ -100,6 +103,7 @@ class DesktopReleaseGuardTests(unittest.TestCase):
         self.assertTrue(ready["windows_signing_configured"])
         self.assertTrue(ready["acceptance_evidence"]["accepted"])
         self.assertTrue(ready["acceptance_evidence"]["source_bound"])
+        self.assertEqual(ready["acceptance_evidence"]["core_source_tree"], SOURCE_TREE)
         self.assertEqual(ready["stable_release"], "READY")
 
     def test_stable_release_rejects_unbound_acceptance_even_if_payload_is_pass(self) -> None:
@@ -129,8 +133,19 @@ class DesktopReleaseGuardTests(unittest.TestCase):
                 inspect_desktop(
                     ROOT,
                     acceptance_evidence=evidence,
-                    expected_source_tree="c" * 40,
+                    expected_source_tree="d" * 40,
                 )
+
+    def test_acceptance_evidence_rejects_core_from_different_source_tree(self) -> None:
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        with tempfile.TemporaryDirectory() as temp:
+            evidence = pathlib.Path(temp) / "acceptance.json"
+            evidence.write_text(
+                json.dumps(_acceptance(version, core_source_tree="e" * 40)),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(DesktopReleaseError, "installed Divan Core"):
+                inspect_desktop(ROOT, acceptance_evidence=evidence)
 
     def test_acceptance_evidence_rejects_same_worker_and_reviewer(self) -> None:
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
