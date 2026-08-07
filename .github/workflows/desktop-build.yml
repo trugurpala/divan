@@ -198,13 +198,47 @@ jobs:
           }
           "DIVAN_PERSISTENT_STATE_FILE=$stateFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-      - name: Verify Windows first-run matrix and Desktop restart persistence
+      - name: Verify Windows first-run matrix, crash recovery and Desktop restart persistence
         shell: pwsh
         run: |
           $evidence = Join-Path $env:RUNNER_TEMP "divan-desktop-lifecycle.json"
           & scripts/windows_desktop_lifecycle.ps1 -AppExe $env:DIVAN_INSTALLED_APP -CoreExe $env:DIVAN_INSTALLED_CORE -Output $evidence
           if ($LASTEXITCODE -ne 0) {
             throw "Installed Windows lifecycle matrix failed"
+          }
+          if (-not (Test-Path $evidence)) {
+            throw "Windows lifecycle evidence file was not produced"
+          }
+
+          $payload = Get-Content $evidence -Raw | ConvertFrom-Json
+          $expectedCommit = (& git rev-parse HEAD).Trim()
+          $expectedTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          if ($payload.schema_version -ne 2 -or $payload.status -ne "pass") {
+            throw "Windows lifecycle evidence schema/status is invalid"
+          }
+          if ($payload.source_commit -ne $expectedCommit -or $payload.source_tree -ne $expectedTree) {
+            throw "Windows lifecycle evidence is not bound to the exact PR source identity"
+          }
+          if (-not $payload.interrupted_execution_observed -or $payload.interrupted_execution_state -ne "running") {
+            throw "Windows lifecycle evidence did not observe an interrupted RUNNING execution"
+          }
+          if ($payload.recovered_state -ne "retry" -or $payload.recovery_resumed_mutation) {
+            throw "Windows crash recovery did not fail closed to non-resuming RETRY"
+          }
+          if (-not $payload.retry_without_approval_rejected -or -not $payload.mandate_preserved_across_recovery) {
+            throw "Windows recovery did not preserve authority and require fresh execution approval"
+          }
+          if ($payload.orca_absent_available -or $payload.orca_absent_engine_registered) {
+            throw "Orca-absent first-run evidence is invalid"
+          }
+          if (-not $payload.orca_present_available -or -not $payload.orca_present_engine_registered) {
+            throw "Orca-present first-run evidence is invalid"
+          }
+          if ($payload.authority_product -ne "Divan" -or -not $payload.mandate_gate -or -not $payload.approval_gate) {
+            throw "Windows first-run matrix changed Divan governance authority"
+          }
+          if ($payload.recovery_evidence_sha256 -notmatch '^[0-9a-f]{64}$') {
+            throw "Windows recovery evidence is missing its tamper-evident SHA-256 identity"
           }
           "DIVAN_LIFECYCLE_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
