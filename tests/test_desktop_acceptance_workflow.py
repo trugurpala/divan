@@ -16,7 +16,7 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", self.text)
         self.assertNotIn("pull_request:", self.text)
         self.assertIn("if: github.ref == 'refs/heads/main'", self.text)
-        self.assertIn("runs-on: [self-hosted, Windows, X64, divan-release-acceptance]", self.text)
+        self.assertIn("runs-on: [self-hosted, windows, x64]", self.text)
         self.assertIn("environment: desktop-acceptance", self.text)
 
     def test_acceptance_runner_must_have_both_real_agents(self) -> None:
@@ -24,6 +24,7 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("scripts/windows_desktop_acceptance.ps1", self.text)
         self.assertIn("--source-commit $sourceCommit", self.text)
         self.assertIn("--source-tree $sourceTree", self.text)
+        self.assertIn("$env:RUNNER_TEMP", self.text)
 
     def test_evidence_is_attested_and_uploaded(self) -> None:
         self.assertIn("id-token: write", self.text)
