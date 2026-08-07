@@ -30,11 +30,9 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 
 ### DSK-01 — Latest PR verification is fully green
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
-The previous full-green evidence was bound to PR #115 head `d66569f416cce13d28d38162bc42fc30d690615a`. The PR head has moved for DSK-03 lifecycle hardening, so that evidence is historical only and must not be used to authorize merge.
-
-Completion evidence required again on the final exact PR head:
+Completion evidence on PR #118 exact head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`:
 
 - `quality-gate` PASS
 - `compatibility` PASS
@@ -42,12 +40,12 @@ Completion evidence required again on the final exact PR head:
 - `wiki-sync` PASS
 - `dependency-review` PASS
 - `CodeQL` PASS
-- `Desktop Build` PASS on the exact PR head
+- `Desktop Build` PASS
 - `Desktop Stable Candidate` PR contract PASS
-- no unresolved correctness/security review thread on the exact PR head
-- PR is mergeable
+- no unresolved correctness/security review thread
+- PR was mergeable
 
-Do not merge while this gate is open. If the PR head moves after a full-green run, DSK-01 returns to `IN PROGRESS`.
+The exact-head CI evidence is authoritative only for PR #118 head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`; later Desktop PR heads must establish their own DSK-01 evidence.
 
 ### DSK-02 — Reproducible Node and Rust dependency resolution
 
@@ -66,9 +64,9 @@ Completion evidence:
 
 ### DSK-03 — Windows lifecycle recovery and first-run matrix
 
-**Status:** IN PROGRESS
+**Status:** DONE
 
-Implemented evidence contract:
+Completion evidence:
 
 - persisted interrupted execution records an `execution_pending` snapshot before engine invocation
 - restart recovery changes only Core task state to RETRY and records SHA-256 recovery evidence; it does not call an execution engine
@@ -81,36 +79,36 @@ Implemented evidence contract:
 - recovery is bound to the original Core-owned mandate and tamper-evident recovery evidence; a retry without fresh `approve_execution=true` is rejected
 - first-run matrix runs with Orca absent, then with a deterministic Orca executable present, and verifies Orca remains a replaceable engine while Divan retains mandate/approval authority
 - lifecycle JSON is bound to exact source commit/tree and revalidated by the Windows workflow before artifact upload
-- NSIS uninstall must remove the application while preserving identifier-scoped project/task Core state
-
-Remaining completion evidence:
-
-- the strengthened Windows lifecycle job must PASS on the final exact PR head
-- DSK-01 must then be re-established on that same exact head
+- NSIS uninstall removes the application while preserving identifier-scoped project/task Core state
+- `Desktop Build` run `31217121462` PASS on PR #118 exact head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
 
 ### DSK-04 — Signed updater upgrade and rollback verification
 
-**Status:** OPEN
+**Status:** DONE
 
 Completion evidence:
 
-- signed N -> N+1 upgrade test on Windows
+- `Desktop Stable Candidate` run `31217121375` job `signed-updater-e2e` PASS on PR #118 exact head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
+- signed N -> N+1 upgrade test runs on Windows
 - updater endpoint metadata is validated against the signed installer/signature pair
 - failed signature or mismatched update metadata fails closed
-- rollback/recovery procedure is documented and tested without bypassing signature checks
+- rollback/recovery procedure is exercised without bypassing signature checks
+- stable release guard consumes source-bound updater E2E evidence
 - release promotion produces or validates the updater metadata consumed by the stable client
 
-Tauri updater signatures are mandatory and cannot be disabled. The stable client must retain Tauri's default monotonic version behavior; recovery must not silently enable downgrade semantics.
+Tauri updater signatures are mandatory and cannot be disabled. The stable client retains Tauri's monotonic version behavior; recovery does not silently enable downgrade semantics.
 
 ### DSK-05 — Merge the verified Desktop PR to `main`
 
-**Status:** OPEN
+**Status:** DONE
 
 Completion evidence:
 
-- DSK-01 through DSK-04 are DONE
-- merge uses the reviewed PR and preserves exact source identity
-- resulting `main` commit is recorded for acceptance and release
+- DSK-01 through DSK-04 are DONE for the reviewed PR #118 source
+- PR #118 was squash-merged with expected-head protection on `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
+- resulting `main` commit is `1d3b30e5db952818c105293deeb0113b893e0c1f`
+- resulting source tree is `a434f63b59f6313f2e33197ba125eca294df422e`
+- DSK-06 acceptance and DSK-08 stable promotion must bind to this exact `main` source identity unless a later Desktop source change intentionally reopens the relevant gates
 
 ### DSK-06 — Exact-main real-user Windows acceptance
 
@@ -120,7 +118,7 @@ Completion evidence:
 
 - protected Windows x64 self-hosted runner has the dedicated `divan-desktop-acceptance` label
 - genuine Codex and Claude Code authenticated sessions are present
-- acceptance runs on the exact DSK-05 `main` source commit
+- acceptance runs on exact `main` source commit `1d3b30e5db952818c105293deeb0113b893e0c1f`
 - real worker -> diff -> independent cross-agent review -> approval -> `ff-only` merge passes
 - installed Core commit/tree matches accepted source commit/tree
 - privacy-minimal acceptance JSON is attested by the expected workflow
@@ -144,7 +142,7 @@ Completion evidence:
 
 Completion evidence:
 
-- stable workflow runs on the exact accepted `main` commit
+- stable workflow runs on exact accepted `main` commit `1d3b30e5db952818c105293deeb0113b893e0c1f`
 - acceptance run ID is source-bound and its attestation verifies
 - release guard reports stable-ready
 - NSIS installer Authenticode signature is valid
