@@ -106,9 +106,10 @@ Completion evidence:
 
 - DSK-01 through DSK-04 are DONE for the reviewed PR #118 source
 - PR #118 was squash-merged with expected-head protection on `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
-- resulting `main` commit is `1d3b30e5db952818c105293deeb0113b893e0c1f`
-- resulting source tree is `a434f63b59f6313f2e33197ba125eca294df422e`
-- DSK-06 acceptance and DSK-08 stable promotion must bind to this exact `main` source identity unless a later Desktop source change intentionally reopens the relevant gates
+- resulting historical Desktop merge commit is `1d3b30e5db952818c105293deeb0113b893e0c1f`
+- resulting historical source tree is `a434f63b59f6313f2e33197ba125eca294df422e`
+- DSK-06 does not self-reference this checklist commit: acceptance must explicitly pin the exact current `main` workflow event SHA at dispatch time
+- DSK-08 must consume acceptance evidence from that same exact accepted `main` SHA; if `main` moves after acceptance, promotion fails closed and acceptance must be rerun
 
 ### DSK-06 — Exact-main real-user Windows acceptance
 
@@ -118,7 +119,8 @@ Completion evidence:
 
 - protected Windows x64 self-hosted runner has the dedicated `divan-desktop-acceptance` label
 - genuine Codex and Claude Code authenticated sessions are present
-- acceptance runs on exact `main` source commit `1d3b30e5db952818c105293deeb0113b893e0c1f`
+- authenticated agent preflight passes before the expensive Desktop build begins
+- acceptance input `source_sha` equals the exact current `main` workflow event SHA
 - real worker -> diff -> independent cross-agent review -> approval -> `ff-only` merge passes
 - installed Core commit/tree matches accepted source commit/tree
 - privacy-minimal acceptance JSON is attested by the expected workflow
@@ -142,8 +144,8 @@ Completion evidence:
 
 Completion evidence:
 
-- stable workflow runs on exact accepted `main` commit `1d3b30e5db952818c105293deeb0113b893e0c1f`
-- acceptance run ID is source-bound and its attestation verifies
+- stable workflow runs before `main` moves away from the exact accepted source commit
+- acceptance run ID is source-bound to the same exact `main` commit and its attestation verifies
 - release guard reports stable-ready
 - NSIS installer Authenticode signature is valid
 - installed `Divan.exe` Authenticode signature is valid
