@@ -19,6 +19,7 @@ on:
       - "tests/test_reviewer_runner.py"
       - "tests/test_git_guard.py"
       - "tests/test_desktop_acceptance_workflow.py"
+      - "tests/test_desktop_dependency_locking.py"
       - "tests/test_desktop_release_guard.py"
       - "tests/test_prepare_desktop_release_config.py"
       - "tests/test_desktop_release_workflow.py"
@@ -81,6 +82,7 @@ jobs:
           tests.test_reviewer_runner
           tests.test_git_guard
           tests.test_desktop_acceptance_workflow
+          tests.test_desktop_dependency_locking
           tests.test_desktop_release_guard
           tests.test_prepare_desktop_release_config
           tests.test_desktop_release_workflow
