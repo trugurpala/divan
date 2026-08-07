@@ -7,12 +7,15 @@ on:
       - "plugins/sadrazam/divan_runtime/**"
       - "scripts/divan-desktop-bridge.py"
       - "scripts/build_desktop_core.py"
+      - "scripts/desktop_release_guard.py"
       - "tests/test_desktop_protocol.py"
       - "tests/test_project_readiness.py"
       - "tests/test_project_registry.py"
       - "tests/test_native_engine.py"
       - "tests/test_orchestrator.py"
       - "tests/test_reviewer_runner.py"
+      - "tests/test_git_guard.py"
+      - "tests/test_desktop_release_guard.py"
       - ".github/workflows/desktop-build.yml"
   workflow_dispatch:
 
@@ -67,6 +70,8 @@ jobs:
           tests.test_execution_router
           tests.test_review_gate
           tests.test_reviewer_runner
+          tests.test_git_guard
+          tests.test_desktop_release_guard
           tests.test_orca_engine
           tests.test_orca_adapter
 
