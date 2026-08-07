@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
+from .executable_locator import locate_executable
 from .review_gate import CheckResult
 
 Runner = Callable[[Sequence[str], Path, float, str], tuple[int, str, str]]
@@ -81,7 +82,7 @@ class AutomatedReviewer:
 def _discover(which: Callable[[str], str | None]) -> dict[str, str]:
     result: dict[str, str] = {}
     for name in ("claude", "codex"):
-        path = which(name)
+        path = locate_executable((name,), which=which)
         if path:
             result[name] = path
     return result
