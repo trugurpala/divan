@@ -85,6 +85,13 @@ class DivanOrchestrator:
             else f"{worktree_name}-attempt-{attempt}"
         )
         pending_metadata = dict(task.metadata)
+        # A new attempt must never expose the previous attempt as the active receipt.
+        # execution_history retains prior evidence; active execution/review state is reset
+        # before the engine is invoked so a crash can be recovered unambiguously.
+        pending_metadata.pop("execution", None)
+        pending_metadata.pop("review_snapshot", None)
+        pending_metadata.pop("automated_review", None)
+        pending_metadata.pop("review", None)
         pending_metadata["execution_pending"] = {
             "attempt": attempt,
             "worktree_name": execution_name,
