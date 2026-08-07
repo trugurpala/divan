@@ -35,12 +35,20 @@ class OrcaEngineTests(unittest.TestCase):
         self.assertEqual(result.payload, {"ok": True})
         self.assertEqual(runner.calls[0], ("orca", "status", "--json"))
 
-    def test_worktree_list_uses_current_ps_command(self) -> None:
+    def test_worktree_list_is_repo_scoped(self) -> None:
         runner = FakeRunner()
         OrcaEngine(runner=runner).worktree_list("id:repo-1")
         self.assertEqual(
             runner.calls[0],
-            ("orca", "worktree", "ps", "--repo", "id:repo-1", "--json"),
+            ("orca", "worktree", "list", "--repo", "id:repo-1", "--json"),
+        )
+
+    def test_worktree_ps_is_unscoped(self) -> None:
+        runner = FakeRunner()
+        OrcaEngine(runner=runner).worktree_ps()
+        self.assertEqual(
+            runner.calls[0],
+            ("orca", "worktree", "ps", "--json"),
         )
 
     def test_mutation_requires_mandate(self) -> None:
