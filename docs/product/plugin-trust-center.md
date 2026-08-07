@@ -159,17 +159,19 @@ The production component must:
 - provide a visible label for the manifest-selection control/action;
 - keep disabled future actions out of the primary task path rather than presenting an unexplained dead button.
 
+The Desktop shell keeps its native Tauri window floor, while CSS reflows at narrower CSS viewports so Windows display scaling and browser zoom do not force the three-column layout indefinitely.
+
 ## Tauri least-privilege rule
 
 Tauri 2 plugin commands remain blocked until granted through capabilities/permissions. Divan will add official Desktop plugins only with the minimum permission set needed by the feature.
 
 The preferred post-stable order remains:
 
-1. single-instance;
-2. privacy-minimal log;
-3. window-state;
-4. notification after explicit permission;
-5. narrowly scoped opener.
+1. `single-instance`;
+2. privacy-minimal `log`;
+3. `window-state`;
+4. `notification` after explicit permission;
+5. narrowly scoped `opener`.
 
 Broad `fs`, `http`, `sql`, `store`, `websocket` and clipboard-read permissions are not baseline Plugin Trust Center requirements.
 
@@ -194,18 +196,19 @@ A Plugin Trust Center change is not complete unless all applicable gates pass:
 Implemented on `feat/plugin-sdk-v1`:
 
 - fail-closed manifest contract;
-- bounded executable resolution;
+- bounded Windows-aware executable resolution;
 - manifest + executable SHA-256 binding;
 - privacy-bounded Desktop trust report;
 - read-only `plugin.inspect` Core command;
-- stable inspection tests;
+- first-class Desktop `Eklentiler` destination;
+- native JSON-only manifest selection;
+- plain-language identity, provenance, capability and mutation disclosure;
+- context-aware Plugin Trust inspector rail;
+- stable Core/protocol/UI permission-boundary tests;
+- zoom-safe responsive Desktop reflow;
 - no activation, installation, marketplace, auto-update or webview-permission expansion.
 
 ## Next reviewed slices
-
-### Slice 2 — Desktop Trust Center UI
-
-Wire the read-only inspection contract into the React/Tauri Desktop shell with native JSON manifest selection and the states defined above.
 
 ### Slice 3 — Persistent owner approval
 
@@ -219,10 +222,10 @@ Define request/response framing, timeout, cancellation, stdout/stderr redaction,
 
 Prefer evidence-first adapters:
 
-- Playwright evidence;
-- Semgrep read-only reviewer/evidence;
-- Syft SBOM evidence;
-- OSV vulnerability evidence;
-- cargo-deny Rust dependency policy.
+- Playwright evidence — https://github.com/microsoft/playwright
+- Semgrep read-only reviewer/evidence — https://github.com/semgrep/semgrep
+- Syft SBOM evidence — https://github.com/anchore/syft
+- OSV vulnerability evidence — https://github.com/google/osv-scanner
+- cargo-deny Rust dependency policy — https://github.com/EmbarkStudios/cargo-deny
 
 Only after those contracts are mature should Divan consider a remote catalog or marketplace experience.
