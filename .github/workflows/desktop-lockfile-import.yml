@@ -1,0 +1,79 @@
+name: Desktop Lockfile Import
+
+on:
+  push:
+    branches:
+      - "feat/orca-engine-v1.4"
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  import-generated-lockfiles:
+    name: import-generated-lockfiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_RUN_ID: "31193462869"
+      SOURCE_HEAD_SHA: "1c93a36935fa20f2973e74cb07311d436924bd7b"
+      PNPM_SHA256: "00fcb7c1c078bec0caa59efd5ee2c944deb1e44f4aa3c9541781adc9b926c3cc"
+      CARGO_SHA256: "42eb9533d1c3815c7b06b1b024ae88e9eef4fb6640a7ad77a66752913d7cbb77"
+    steps:
+      - name: Checkout lockfile target branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: feat/orca-engine-v1.4
+          fetch-depth: 1
+
+      - name: Import exact CI-generated lockfiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          pnpm_lock="apps/desktop/pnpm-lock.yaml"
+          cargo_lock="apps/desktop/src-tauri/Cargo.lock"
+          if [[ -f "$pnpm_lock" && -f "$cargo_lock" ]]; then
+            echo "Desktop lockfiles are already committed; nothing to import."
+            exit 0
+          fi
+
+          metadata="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID")"
+          if [[ "$(jq -r '.head_sha' <<<"$metadata")" != "$SOURCE_HEAD_SHA" ]]; then
+            echo "Source workflow run is not bound to the expected dependency source head." >&2
+            exit 1
+          fi
+          if [[ "$(jq -r '.head_branch' <<<"$metadata")" != "feat/orca-engine-v1.4" ]]; then
+            echo "Source workflow run came from an unexpected branch." >&2
+            exit 1
+          fi
+
+          download_dir="$RUNNER_TEMP/divan-desktop-lockfiles"
+          mkdir -p "$download_dir"
+          gh run download "$SOURCE_RUN_ID" --repo "$GITHUB_REPOSITORY" --name divan-desktop-lockfiles --dir "$download_dir"
+
+          test -f "$download_dir/pnpm-lock.yaml"
+          test -f "$download_dir/src-tauri/Cargo.lock"
+          echo "$PNPM_SHA256  $download_dir/pnpm-lock.yaml" | sha256sum -c -
+          echo "$CARGO_SHA256  $download_dir/src-tauri/Cargo.lock" | sha256sum -c -
+
+          mkdir -p "$(dirname "$pnpm_lock")" "$(dirname "$cargo_lock")"
+          cp "$download_dir/pnpm-lock.yaml" "$pnpm_lock"
+          cp "$download_dir/src-tauri/Cargo.lock" "$cargo_lock"
+
+          unexpected="$(git status --porcelain --untracked-files=all | awk '{print $2}' | grep -v -E '^(apps/desktop/pnpm-lock.yaml|apps/desktop/src-tauri/Cargo.lock)$' || true)"
+          if [[ -n "$unexpected" ]]; then
+            echo "Refusing to commit unexpected files:" >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+
+          git add -- "$pnpm_lock" "$cargo_lock"
+          if git diff --cached --quiet; then
+            echo "No lockfile changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build(desktop): commit CI-generated dependency lockfiles"
+          git push origin HEAD:feat/orca-engine-v1.4
