@@ -9,13 +9,15 @@
         "kernel",
         "contract_validation",
         "timeouts",
-        "desktop_state"
+        "desktop_state",
+        "executable_locator"
       ],
       "capabilities": [
         "architecture_validation",
         "module_resolution",
         "adaptive_timeout_policy",
-        "per_user_desktop_state"
+        "per_user_desktop_state",
+        "safe_local_executable_resolution"
       ],
       "depends_on": [],
       "required": true
@@ -173,7 +175,6 @@
       "tr": "Sağlayıcılar",
       "python_modules": [
         "providers",
-        "executable_locator",
         "project_readiness"
       ],
       "capabilities": [
@@ -182,7 +183,6 @@
         "context7",
         "vercel",
         "local_tool_discovery",
-        "safe_local_executable_resolution",
         "windows_installed_app_discovery",
         "subscription_auth_detection"
       ],
