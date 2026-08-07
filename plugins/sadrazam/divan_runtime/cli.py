@@ -276,9 +276,12 @@ def _result_exit_code(
         "FAIL",
         "BLOCKED",
         "blocked",
+        "failed",
         "failed-checks",
         "cancelled",
         "invalid",
+        "evidence-pending",
+        "unavailable",
     }:
         return 1
     return 0
@@ -288,10 +291,15 @@ def _parser() -> argparse.ArgumentParser:
     return cli_parser.build_parser()
 
 
-def _execute(options: argparse.Namespace) -> dict[str, Any]:
+def _execute(
+    options: argparse.Namespace,
+    authority: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     read_only = cli_dispatch.read_only_result(options)
     if read_only is not None:
         return read_only
+    if options.command == "engines":
+        return cli_dispatch.execute_engines(options, authority)
     if options.command == "init":
         plan = project_os.build_init_plan(
             options.project,
@@ -353,8 +361,8 @@ def main(argv: list[str] | None = None) -> int:
         return _serve_status(options)
     try:
         authority = cli_dispatch.mutation_authority(options)
-        result = _execute(options)
-        if authority is not None:
+        result = _execute(options, authority)
+        if authority is not None and "authority" not in result:
             result = {**result, "authority": authority}
         explicit_exit_code = result.pop("_exit_code", None)
     except ValueError as exc:
