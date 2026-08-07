@@ -180,10 +180,14 @@ jobs:
           if ($signature.Status -ne "Valid") {
             throw "NSIS Authenticode signature is not valid: $($signature.Status)"
           }
-          $updaterSignature = Get-ChildItem $bundle -Filter "*.sig" -File -Recurse | Select-Object -First 1
-          if (-not $updaterSignature) { throw "Tauri updater signature artifact was not produced" }
-          $updaterArchive = Get-ChildItem $bundle -File -Recurse | Where-Object { $_.Name -match "\.(zip|tar\.gz)$" } | Select-Object -First 1
-          if (-not $updaterArchive) { throw "Tauri updater archive was not produced" }
+          $updaterSignaturePath = "$($installer.FullName).sig"
+          if (-not (Test-Path $updaterSignaturePath)) {
+            throw "Tauri updater signature for the NSIS installer was not produced: $updaterSignaturePath"
+          }
+          $updaterSignature = (Get-Content $updaterSignaturePath -Raw).Trim()
+          if (-not $updaterSignature) {
+            throw "Tauri updater signature for the NSIS installer is empty"
+          }
 
       - name: Smoke-test signed installed bundle
         shell: pwsh
