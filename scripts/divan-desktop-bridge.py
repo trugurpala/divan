@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib
 import json
 import pathlib
 import sys
@@ -11,29 +12,27 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-try:
-    from divan_desktop_build_info import SOURCE_COMMIT, SOURCE_TREE
-except ImportError:
-    SOURCE_COMMIT = "development"
-    SOURCE_TREE = "development"
-
 from divan_runtime.desktop_protocol import handle_request
 from divan_runtime.runtime_composition import build_execution_router
 
 
-def _attach_build_provenance(payload: MappingLike, response: dict[str, Any]) -> None:
-    if payload.get("command") != "capabilities" or response.get("ok") is not True:
-        return
-    result = response.get("result")
-    if not isinstance(result, dict):
-        return
-    result["build_provenance"] = {
-        "source_commit": SOURCE_COMMIT,
-        "source_tree": SOURCE_TREE,
+def _build_provenance() -> dict[str, str]:
+    try:
+        module = importlib.import_module("divan_desktop_build_info")
+    except ModuleNotFoundError:
+        return {"source_commit": "development", "source_tree": "development"}
+    return {
+        "source_commit": str(getattr(module, "SOURCE_COMMIT", "development")),
+        "source_tree": str(getattr(module, "SOURCE_TREE", "development")),
     }
 
 
-MappingLike = dict[str, Any]
+def _attach_build_provenance(payload: dict[str, Any], response: dict[str, Any]) -> None:
+    if payload.get("command") != "capabilities" or response.get("ok") is not True:
+        return
+    result = response.get("result")
+    if isinstance(result, dict):
+        result["build_provenance"] = _build_provenance()
 
 
 def main() -> int:
