@@ -39,7 +39,7 @@ class NativeExecutionEngineTests(unittest.TestCase):
         engine = NativeExecutionEngine(
             agent_binaries={"codex": "C:/bin/codex.exe"},
             git_runner=lambda argv, cwd, timeout: (0, "", ""),
-            agent_runner=lambda argv, cwd, timeout: (0, "", ""),
+            agent_runner=lambda argv, cwd, timeout, stdin_text: (0, "", ""),
         )
         receipt = engine.execute(ExecutionRequest(ExecutionAction.STATUS))
         self.assertTrue(receipt.ok)
@@ -47,7 +47,7 @@ class NativeExecutionEngineTests(unittest.TestCase):
         self.assertTrue(by_id["codex"]["available"])
         self.assertFalse(by_id["claude"]["available"])
 
-    def test_worktree_execution_redacts_prompt_and_uses_selected_agent(self):
+    def test_worktree_execution_keeps_codex_prompt_out_of_argv(self):
         with tempfile.TemporaryDirectory() as directory:
             project = pathlib.Path(directory) / "repo"
             project.mkdir()
@@ -55,8 +55,8 @@ class NativeExecutionEngineTests(unittest.TestCase):
             git_runner = FakeGitRunner(project)
             agent_calls = []
 
-            def agent_runner(argv, cwd, timeout):
-                agent_calls.append((tuple(argv), cwd))
+            def agent_runner(argv, cwd, timeout, stdin_text):
+                agent_calls.append((tuple(argv), cwd, stdin_text))
                 return 0, '{"type":"turn.completed"}\n', ""
 
             with patch.dict(os.environ, {"DIVAN_DATA_DIR": str(data)}, clear=False):
@@ -81,9 +81,46 @@ class NativeExecutionEngineTests(unittest.TestCase):
             self.assertTrue(receipt.ok)
             self.assertEqual(receipt.payload["agent"], "codex")
             self.assertEqual(receipt.payload["branch"], "divan/fix-login")
-            self.assertIn("secret prompt", agent_calls[0][0])
+            self.assertNotIn("secret prompt", agent_calls[0][0])
+            self.assertEqual(agent_calls[0][2], "secret prompt")
             self.assertNotIn("secret prompt", receipt.argv)
-            self.assertIn("<redacted-prompt>", receipt.argv)
+            self.assertNotIn("secret prompt", str(receipt.payload))
+
+    def test_claude_prompt_also_uses_stdin(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = pathlib.Path(directory) / "repo"
+            project.mkdir()
+            data = pathlib.Path(directory) / "data"
+            git_runner = FakeGitRunner(project)
+            agent_calls = []
+
+            def agent_runner(argv, cwd, timeout, stdin_text):
+                agent_calls.append((tuple(argv), stdin_text))
+                return 0, '{"result":"done"}', ""
+
+            with patch.dict(os.environ, {"DIVAN_DATA_DIR": str(data)}, clear=False):
+                engine = NativeExecutionEngine(
+                    agent_binaries={"claude": "C:/bin/claude.exe"},
+                    git_runner=git_runner,
+                    agent_runner=agent_runner,
+                )
+                receipt = engine.execute(
+                    ExecutionRequest(
+                        ExecutionAction.WORKTREE_CREATE,
+                        project_root=str(project),
+                        mandate_id="m-2",
+                        args={
+                            "name": "Claude Task",
+                            "agent": "claude",
+                            "prompt": "private task text",
+                        },
+                    )
+                )
+
+            self.assertTrue(receipt.ok)
+            self.assertNotIn("private task text", agent_calls[0][0])
+            self.assertEqual(agent_calls[0][1], "private task text")
+            self.assertNotIn("private task text", receipt.argv)
 
     def test_file_diff_is_read_only(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -92,7 +129,7 @@ class NativeExecutionEngineTests(unittest.TestCase):
             engine = NativeExecutionEngine(
                 agent_binaries={"codex": "codex"},
                 git_runner=git_runner,
-                agent_runner=lambda argv, cwd, timeout: (0, "", ""),
+                agent_runner=lambda argv, cwd, timeout, stdin_text: (0, "", ""),
             )
             receipt = engine.execute(
                 ExecutionRequest(
