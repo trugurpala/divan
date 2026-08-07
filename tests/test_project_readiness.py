@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import os
 import pathlib
 import sys
 import unittest
+from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -60,6 +62,26 @@ class ProjectReadinessTests(unittest.TestCase):
         self.assertTrue(codex.api_key_configured)
         self.assertEqual(codex.auth_detail, "api-key-env")
         self.assertNotIn("secret-value", repr(codex))
+
+    def test_explicit_empty_env_does_not_read_process_api_keys(self):
+        paths = {"git": "C:/git.exe", "codex": "C:/codex.exe"}
+
+        def runner(argv, timeout):
+            if argv[0].endswith("codex.exe") and tuple(argv[1:]) == ("login", "status"):
+                return 1, "Not logged in", ""
+            return 0, "1.0", ""
+
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "must-not-be-read"}, clear=False):
+            result = discover_tools(
+                paths.get,
+                runner=runner,
+                env={},
+                installed_apps=(),
+            )
+        codex = {tool.id: tool for tool in result.tools}["codex"]
+        self.assertFalse(codex.api_key_configured)
+        self.assertEqual(codex.auth, "not-connected")
+        self.assertEqual(codex.auth_detail, "login-required")
 
 
 if __name__ == "__main__":
