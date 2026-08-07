@@ -78,6 +78,52 @@ jobs:
         working-directory: apps/desktop
         run: pnpm desktop:build
 
+      - name: Smoke-test installed Windows bundle
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem "apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
+          if (-not $installer) {
+            throw "NSIS installer was not produced"
+          }
+
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
+          if ($install.ExitCode -ne 0) {
+            throw "NSIS silent install failed with exit code $($install.ExitCode)"
+          }
+
+          $appExe = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
+          if (-not (Test-Path $appExe)) {
+            $candidate = Get-ChildItem $env:LOCALAPPDATA -Filter "Divan.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($candidate) {
+              $appExe = $candidate.FullName
+            }
+          }
+          if (-not (Test-Path $appExe)) {
+            throw "Installed Divan.exe was not found under LOCALAPPDATA"
+          }
+
+          $installRoot = Split-Path -Parent $appExe
+          $core = Get-ChildItem $installRoot -Filter "divan-core*.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $core) {
+            throw "Installed Divan Core sidecar was not found"
+          }
+
+          $coreOutput = '{"command":"capabilities"}' | & $core.FullName
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Divan Core sidecar failed with exit code $LASTEXITCODE"
+          }
+          $payload = $coreOutput | ConvertFrom-Json
+          if (-not $payload.ok -or $payload.result.product -ne "Divan") {
+            throw "Installed Divan Core sidecar returned an invalid capabilities response"
+          }
+
+          $app = Start-Process -FilePath $appExe -PassThru
+          Start-Sleep -Seconds 5
+          if ($app.HasExited) {
+            throw "Installed Divan.exe exited during launch smoke test with code $($app.ExitCode)"
+          }
+          Stop-Process -Id $app.Id -Force
+
       - name: Upload Windows bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
