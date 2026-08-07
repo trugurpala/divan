@@ -20,6 +20,7 @@ on:
       - "tests/test_git_guard.py"
       - "tests/test_desktop_release_guard.py"
       - "tests/test_prepare_desktop_release_config.py"
+      - "tests/test_desktop_release_workflow.py"
       - ".github/workflows/desktop-build.yml"
       - ".github/workflows/desktop-release.yml"
   workflow_dispatch:
@@ -79,6 +80,7 @@ jobs:
           tests.test_git_guard
           tests.test_desktop_release_guard
           tests.test_prepare_desktop_release_config
+          tests.test_desktop_release_workflow
           tests.test_orca_engine
           tests.test_orca_adapter
 
@@ -127,6 +129,14 @@ jobs:
           $payload = $coreOutput | ConvertFrom-Json
           if (-not $payload.ok -or $payload.result.product -ne "Divan") {
             throw "Installed Divan Core sidecar returned an invalid capabilities response"
+          }
+          $expectedTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          $provenance = $payload.result.build_provenance
+          if (-not $provenance -or $provenance.source_tree -ne $expectedTree) {
+            throw "Installed Divan Core provenance does not match the checked-out source tree"
+          }
+          if ($provenance.source_commit -notmatch '^[0-9a-f]{40}$') {
+            throw "Installed Divan Core source commit provenance is invalid"
           }
 
           $app = Start-Process -FilePath $appExe -PassThru
