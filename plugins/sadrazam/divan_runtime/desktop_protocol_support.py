@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+_API_VERSION = 1
+
 
 class ProtocolValidationError(ValueError):
     def __init__(self, code: str, message: str) -> None:
@@ -11,13 +13,13 @@ class ProtocolValidationError(ValueError):
         self.message = message
 
 
-def ok_response(api_version: int, result: Any) -> dict[str, Any]:
-    return {"api_version": api_version, "ok": True, "result": result}
+def ok_response(result: Any) -> dict[str, Any]:
+    return {"api_version": _API_VERSION, "ok": True, "result": result}
 
 
-def error_response(api_version: int, code: str, message: str) -> dict[str, Any]:
+def error_response(code: str, message: str) -> dict[str, Any]:
     return {
-        "api_version": api_version,
+        "api_version": _API_VERSION,
         "ok": False,
         "error": {"code": code, "message": message},
     }
