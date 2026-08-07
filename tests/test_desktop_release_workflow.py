@@ -28,7 +28,7 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         )
         self.assertIn("environment: production-release", signed)
         self.assertIn("actions: read", signed)
-        self.assertIn("attestations: read", signed)
+        self.assertIn("attestations: write", signed)
         self.assertIn("TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}", signed)
         self.assertIn("DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}", signed)
         self.assertIn("Get-AuthenticodeSignature", signed)
