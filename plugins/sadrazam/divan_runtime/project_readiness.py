@@ -112,7 +112,7 @@ def discover_tools(
     installed_apps: Sequence[InstalledApp] | None = None,
 ) -> ProjectReadiness:
     runner = runner or _probe
-    environment = env or os.environ
+    environment = os.environ if env is None else env
     apps = tuple(installed_apps) if installed_apps is not None else discover_installed_apps()
     tools = tuple(
         _discover_one(spec, which=which, runner=runner, env=environment, apps=apps)
