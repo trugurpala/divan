@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+WINDOWS_DATA_DIRECTORY = "com.ugurpala.divan"
+
 
 def desktop_data_root() -> Path:
     override = os.environ.get("DIVAN_DATA_DIR")
@@ -10,7 +12,11 @@ def desktop_data_root() -> Path:
         return Path(override).expanduser()
     local_app_data = os.environ.get("LOCALAPPDATA")
     if local_app_data:
-        return Path(local_app_data) / "Divan"
+        # Tauri current-user NSIS installs under LOCALAPPDATA. Keep persistent
+        # Core state in an identifier-scoped sibling directory so uninstalling
+        # the application cannot remove projects/tasks/evidence by deleting the
+        # product installation directory.
+        return Path(local_app_data) / WINDOWS_DATA_DIRECTORY
     return Path.home() / ".divan"
 
 
