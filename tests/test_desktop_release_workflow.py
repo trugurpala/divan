@@ -10,6 +10,7 @@ BUILD_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-build.yml"
 ACCEPTANCE_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-acceptance.yml"
 CARGO = ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml"
 MAIN = ROOT / "apps" / "desktop" / "src-tauri" / "src" / "main.rs"
+APP = ROOT / "apps" / "desktop" / "src" / "App.tsx"
 PYINSTALLER_PIN = "pyinstaller==6.21.0"
 
 
@@ -82,6 +83,18 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('signed-updater = ["dep:tauri-plugin-updater"]', cargo)
         self.assertIn('#[cfg(feature = "signed-updater")]', main)
         self.assertIn("--features signed-updater", signed)
+
+    def test_desktop_release_ui_requires_explicit_user_action(self) -> None:
+        app = APP.read_text(encoding="utf-8")
+        main = MAIN.read_text(encoding="utf-8")
+        self.assertIn('setActiveTab("releases")', app)
+        self.assertIn('invoke<UpdateStatus>("check_for_update")', app)
+        self.assertIn('invoke<void>("install_update", { approved: true })', app)
+        self.assertIn("window.confirm(", app)
+        self.assertIn('features.includes("signed-updater")', app)
+        self.assertIn('version: env!("CARGO_PKG_VERSION")', main)
+        self.assertIn("if !approved", main)
+        self.assertNotIn('invoke<UpdateStatus>("check_for_update")\n      .then', app)
 
     def test_windows_updater_signature_is_paired_with_the_nsis_installer(self) -> None:
         signed = self.text[self.text.index("  signed-windows-candidate:") :]
