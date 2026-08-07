@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 from datetime import datetime, timezone
 
-from .knowledge_contract import KnowledgeItem, KnowledgeKind
+from .knowledge_contract import KnowledgeItem, KnowledgeKind, normalized_terms
 
 
 def lesson_from_failure(
@@ -52,14 +52,17 @@ def pattern_from_project(
     description = _bounded(summary)
     if not title or not description:
         raise ValueError("pattern name and summary are required")
-    fingerprint = _digest(f"{title}\n{description}\n{'|'.join(sorted(stack))}")
+    normalized_stack = normalized_terms(stack)
+    fingerprint = _digest(
+        f"{title}\n{description}\n{'|'.join(normalized_stack)}"
+    )
     return KnowledgeItem(
         item_id=f"pattern-{fingerprint[:20]}",
         kind=KnowledgeKind.PATTERN,
         title=title,
         summary=description,
         tags=tags,
-        stack=stack,
+        stack=normalized_stack,
         source_project=source_project,
         evidence_sha256=evidence_sha256,
         confidence=0.5,
