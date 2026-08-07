@@ -22,10 +22,12 @@
       "id": "governance",
       "en": "Governance",
       "tr": "Divan Nizamı",
-      "python_modules": ["governance"],
+      "python_modules": ["governance", "review_gate"],
       "capabilities": [
         "authority_chain",
-        "scope_control"
+        "scope_control",
+        "review_gate",
+        "release_approval_gate"
       ],
       "depends_on": ["kernel"],
       "required": true
@@ -34,14 +36,27 @@
       "id": "council",
       "en": "Council",
       "tr": "Divan",
-      "python_modules": ["engine", "engine_registry", "planning", "planning_policy"],
+      "python_modules": [
+        "engine",
+        "engine_registry",
+        "planning",
+        "planning_policy",
+        "execution_contract",
+        "execution_router",
+        "orca_engine",
+        "orca_adapter",
+        "orchestrator"
+      ],
       "capabilities": [
         "project_discovery",
         "engine_registry_validation",
         "intent_routing",
         "impact_analysis",
         "capacity_planning",
-        "bounded_orchestration"
+        "bounded_orchestration",
+        "execution_engine_routing",
+        "orca_sidecar_execution",
+        "task_orchestration"
       ],
       "depends_on": ["kernel", "governance"],
       "required": true
@@ -50,11 +65,12 @@
       "id": "evidence",
       "en": "Evidence",
       "tr": "Kanıt",
-      "python_modules": ["receipts", "execution"],
+      "python_modules": ["receipts", "execution", "evidence"],
       "capabilities": [
         "evidence_ledger",
         "receipt_verification",
-        "bounded_command_execution"
+        "bounded_command_execution",
+        "tamper_evident_task_evidence"
       ],
       "depends_on": ["kernel", "governance"],
       "required": true
@@ -89,7 +105,9 @@
         "adoption_proof_execution",
         "adoption_proof",
         "seyir_state",
-        "ci_guard"
+        "ci_guard",
+        "task_model",
+        "task_store"
       ],
       "capabilities": [
         "goal_state",
@@ -98,7 +116,9 @@
         "archive",
         "adoption",
         "clean_room_adoption",
-        "ci_failure_circuit_breaker"
+        "ci_failure_circuit_breaker",
+        "desktop_task_state",
+        "atomic_task_persistence"
       ],
       "depends_on": ["kernel", "governance", "council", "evidence", "project"],
       "required": true
@@ -107,8 +127,8 @@
       "id": "providers",
       "en": "Providers",
       "tr": "Sağlayıcılar",
-      "python_modules": ["providers"],
-      "capabilities": ["local", "github", "context7", "vercel"],
+      "python_modules": ["providers", "project_readiness"],
+      "capabilities": ["local", "github", "context7", "vercel", "local_tool_discovery"],
       "depends_on": [
         "kernel",
         "governance",
@@ -145,7 +165,10 @@
         "cli",
         "locales",
         "status",
-        "local_server"
+        "local_server",
+        "desktop_api",
+        "desktop_protocol",
+        "desktop_state"
       ],
       "capabilities": [
         "cli",
@@ -155,7 +178,10 @@
         "legacy_cli_aliases",
         "bilingual_reader_messages",
         "status_snapshot",
-        "loopback_status_server"
+        "loopback_status_server",
+        "desktop_api",
+        "desktop_json_protocol",
+        "per_user_desktop_state"
       ],
       "depends_on": [
         "kernel",
