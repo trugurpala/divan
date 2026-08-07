@@ -91,6 +91,10 @@ jobs:
         working-directory: apps/desktop
         run: pnpm build
 
+      - name: Build exact Core sidecar for Tauri feature checks
+        working-directory: apps/desktop
+        run: pnpm core:build
+
       - name: Compile signed updater feature lane
         working-directory: apps/desktop
         run: cargo check --manifest-path src-tauri/Cargo.toml --features signed-updater
