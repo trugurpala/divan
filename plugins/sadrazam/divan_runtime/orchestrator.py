@@ -84,7 +84,16 @@ class DivanOrchestrator:
             if attempt == 1
             else f"{worktree_name}-attempt-{attempt}"
         )
-        running = task.transition(TaskState.RUNNING, f"execution attempt {attempt} started")
+        pending_metadata = dict(task.metadata)
+        pending_metadata["execution_pending"] = {
+            "attempt": attempt,
+            "worktree_name": execution_name,
+            "agent": agent,
+        }
+        running = replace(
+            task.transition(TaskState.RUNNING, f"execution attempt {attempt} started"),
+            metadata=pending_metadata,
+        )
         self.tasks.save(running)
         request = ExecutionRequest(
             action=ExecutionAction.WORKTREE_CREATE,
@@ -124,6 +133,7 @@ class DivanOrchestrator:
             "worktree_name": execution_name,
         }
         metadata = dict(running.metadata)
+        metadata.pop("execution_pending", None)
         metadata["execution"] = execution_record
         history_raw = metadata.get("execution_history")
         history = list(history_raw) if isinstance(history_raw, list) else []
@@ -136,6 +146,71 @@ class DivanOrchestrator:
         return self._save(
             running.transition(TaskState.RETRY, "execution engine returned failure")
         )
+
+    def recover_interrupted(self, task: DivanTask) -> DivanTask:
+        """Move a persisted interrupted RUNNING task to RETRY without resuming mutation."""
+        if task.state is not TaskState.RUNNING:
+            raise ValueError("only a running task can be recovered as interrupted")
+        if isinstance(task.metadata.get("execution"), Mapping):
+            raise ValueError(
+                "task already has an execution receipt; review it instead of recovering it"
+            )
+
+        metadata = dict(task.metadata)
+        pending = metadata.get("execution_pending")
+        pending_map = pending if isinstance(pending, Mapping) else {}
+        raw_attempt = pending_map.get("attempt")
+        attempt = (
+            raw_attempt
+            if isinstance(raw_attempt, int)
+            and not isinstance(raw_attempt, bool)
+            and raw_attempt >= 1
+            else 1
+        )
+        worktree_name = pending_map.get("worktree_name")
+        if not isinstance(worktree_name, str) or not worktree_name.strip():
+            worktree_name = task.task_id
+        agent = pending_map.get("agent")
+        if not isinstance(agent, str) or not agent.strip():
+            agent = None
+
+        interrupted_record = {
+            "engine": task.engine_id or "unknown",
+            "ok": False,
+            "exit_code": None,
+            "payload": {},
+            "attempt": attempt,
+            "worktree_name": worktree_name,
+            "agent": agent,
+            "interrupted": True,
+        }
+        metadata.pop("execution_pending", None)
+        metadata["execution"] = interrupted_record
+        history_raw = metadata.get("execution_history")
+        history = list(history_raw) if isinstance(history_raw, list) else []
+        history.append(interrupted_record)
+        metadata["execution_history"] = history
+        prepared = replace(task, metadata=metadata)
+        recovered = prepared.transition(
+            TaskState.RETRY,
+            f"execution attempt {attempt} interrupted; explicit retry required",
+        )
+        self.evidence.append(
+            build_evidence(
+                task.task_id,
+                "recovery",
+                "retry",
+                "interrupted execution recovered without resuming mutation",
+                {
+                    "engine": task.engine_id,
+                    "attempt": attempt,
+                    "worktree_name": worktree_name,
+                    "mandate_id": task.mandate_id,
+                    "resumed": False,
+                },
+            )
+        )
+        return self._save(recovered)
 
     def review(
         self,
