@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import shutil
 
+from .execution_contract import ExecutionEngine
 from .execution_router import ExecutionRouter
 from .native_engine import NativeExecutionEngine
 from .orca_adapter import OrcaExecutionAdapter
@@ -16,7 +17,7 @@ def build_execution_router() -> ExecutionRouter:
     registered so Divan can operate without Orca.
     """
 
-    engines = []
+    engines: list[ExecutionEngine] = []
     default_engine: str | None = None
 
     orca = shutil.which("orca")
