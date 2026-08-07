@@ -10,7 +10,7 @@ PLUGIN_API_VERSION = 1
 
 _ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _EXECUTABLE_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
-_HTTPS_RE = re.compile(r"^https://\\S+$")
+_HTTPS_RE = re.compile(r"^https://\S+$")
 _SPDX_RE = re.compile(r"^[A-Za-z0-9.+() -]+$")
 
 
@@ -151,19 +151,29 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
 
     plugin_id = payload.get("id")
     if not isinstance(plugin_id, str) or not _ID_RE.fullmatch(plugin_id):
-        errors.append(PluginIssue("PLUGIN_ID_INVALID", "$.id", "id must be lowercase kebab-case"))
+        errors.append(
+            PluginIssue("PLUGIN_ID_INVALID", "$.id", "id must be lowercase kebab-case")
+        )
 
     display_name = payload.get("display_name")
     if not isinstance(display_name, str) or not display_name.strip():
         errors.append(
-            PluginIssue("PLUGIN_DISPLAY_NAME_INVALID", "$.display_name", "display_name is required")
+            PluginIssue(
+                "PLUGIN_DISPLAY_NAME_INVALID",
+                "$.display_name",
+                "display_name is required",
+            )
         )
 
     version = payload.get("version")
     if not isinstance(version, str) or not version.strip():
-        errors.append(PluginIssue("PLUGIN_VERSION_INVALID", "$.version", "version is required"))
+        errors.append(
+            PluginIssue("PLUGIN_VERSION_INVALID", "$.version", "version is required")
+        )
 
-    kind = _parse_enum(payload.get("kind"), PluginKind, "PLUGIN_KIND_INVALID", "$.kind", errors)
+    kind = _parse_enum(
+        payload.get("kind"), PluginKind, "PLUGIN_KIND_INVALID", "$.kind", errors
+    )
     transport = _parse_enum(
         payload.get("transport"),
         PluginTransport,
@@ -245,19 +255,36 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
     )
 
 
-def _validate_capabilities(value: Any, errors: list[PluginIssue]) -> tuple[str, ...]:
+def _validate_capabilities(
+    value: Any, errors: list[PluginIssue]
+) -> tuple[str, ...]:
     if not isinstance(value, list):
-        errors.append(PluginIssue("PLUGIN_CAPABILITIES_INVALID", "$.capabilities", "capabilities must be an array"))
+        errors.append(
+            PluginIssue(
+                "PLUGIN_CAPABILITIES_INVALID",
+                "$.capabilities",
+                "capabilities must be an array",
+            )
+        )
         return ()
+
     parsed: list[str] = []
     seen: set[str] = set()
     for index, capability in enumerate(value):
         path = f"$.capabilities[{index}]"
         if not isinstance(capability, str):
-            errors.append(PluginIssue("PLUGIN_CAPABILITY_INVALID", path, "capability must be a string"))
+            errors.append(
+                PluginIssue("PLUGIN_CAPABILITY_INVALID", path, "capability must be a string")
+            )
             continue
         if capability in seen:
-            errors.append(PluginIssue("PLUGIN_CAPABILITY_DUPLICATE", path, f"duplicate capability: {capability}"))
+            errors.append(
+                PluginIssue(
+                    "PLUGIN_CAPABILITY_DUPLICATE",
+                    path,
+                    f"duplicate capability: {capability}",
+                )
+            )
             continue
         seen.add(capability)
         parsed.append(capability)
@@ -270,37 +297,84 @@ def _validate_capabilities(value: Any, errors: list[PluginIssue]) -> tuple[str, 
                 )
             )
         elif capability not in ALLOWED_CAPABILITIES:
-            errors.append(PluginIssue("PLUGIN_CAPABILITY_UNKNOWN", path, f"unsupported capability: {capability}"))
+            errors.append(
+                PluginIssue(
+                    "PLUGIN_CAPABILITY_UNKNOWN",
+                    path,
+                    f"unsupported capability: {capability}",
+                )
+            )
     return tuple(sorted(parsed))
 
 
-def _object_url(value: Any, name: str, errors: list[PluginIssue]) -> str | None:
+def _object_url(
+    value: Any, name: str, errors: list[PluginIssue]
+) -> str | None:
     if not isinstance(value, Mapping) or set(value) != {"url"}:
-        errors.append(PluginIssue(f"PLUGIN_{name.upper()}_INVALID", f"$.{name}", f"{name} must contain only url"))
+        errors.append(
+            PluginIssue(
+                f"PLUGIN_{name.upper()}_INVALID",
+                f"$.{name}",
+                f"{name} must contain only url",
+            )
+        )
         return None
     url = value.get("url")
     if not isinstance(url, str) or not _HTTPS_RE.fullmatch(url):
-        errors.append(PluginIssue(f"PLUGIN_{name.upper()}_URL_INVALID", f"$.{name}.url", "URL must be absolute HTTPS"))
+        errors.append(
+            PluginIssue(
+                f"PLUGIN_{name.upper()}_URL_INVALID",
+                f"$.{name}.url",
+                "URL must be absolute HTTPS",
+            )
+        )
         return None
     return url
 
 
-def _license(value: Any, errors: list[PluginIssue]) -> tuple[str | None, str | None]:
-    if not isinstance(value, Mapping) or set(value) != {"spdx_expression", "evidence"}:
-        errors.append(PluginIssue("PLUGIN_LICENSE_INVALID", "$.license", "license must contain SPDX expression and evidence"))
+def _license(
+    value: Any, errors: list[PluginIssue]
+) -> tuple[str | None, str | None]:
+    required = {"spdx_expression", "evidence"}
+    if not isinstance(value, Mapping) or set(value) != required:
+        errors.append(
+            PluginIssue(
+                "PLUGIN_LICENSE_INVALID",
+                "$.license",
+                "license must contain SPDX expression and evidence",
+            )
+        )
         return None, None
     expression = value.get("spdx_expression")
     evidence = value.get("evidence")
     if not isinstance(expression, str) or not _SPDX_RE.fullmatch(expression):
-        errors.append(PluginIssue("PLUGIN_LICENSE_EXPRESSION_INVALID", "$.license.spdx_expression", "invalid SPDX expression"))
+        errors.append(
+            PluginIssue(
+                "PLUGIN_LICENSE_EXPRESSION_INVALID",
+                "$.license.spdx_expression",
+                "invalid SPDX expression",
+            )
+        )
         expression = None
     if not isinstance(evidence, str) or not _HTTPS_RE.fullmatch(evidence):
-        errors.append(PluginIssue("PLUGIN_LICENSE_EVIDENCE_INVALID", "$.license.evidence", "license evidence must be HTTPS"))
+        errors.append(
+            PluginIssue(
+                "PLUGIN_LICENSE_EVIDENCE_INVALID",
+                "$.license.evidence",
+                "license evidence must be HTTPS",
+            )
+        )
         evidence = None
     return expression, evidence
 
 
-def _parse_enum(value: Any, enum_type: type[StrEnum], code: str, path: str, errors: list[PluginIssue]) -> StrEnum | None:
+def _parse_enum(
+    value: Any,
+    enum_type: type[StrEnum],
+    code: str,
+    path: str,
+    errors: list[PluginIssue],
+) -> StrEnum | None:
     try:
         return enum_type(value)
     except (TypeError, ValueError):
