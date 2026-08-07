@@ -18,6 +18,7 @@ from . import governance, receipts
 from .orca_engine import ExecutionAuthority, OrcaEngine, OrcaResult
 
 GOAL_ID_PATTERN = re.compile(r"^goal-[0-9a-f]{12}$")
+MANDATE_ID_PATTERN = re.compile(r"^mandate-[0-9a-f]{16}$")
 EXECUTABLE_STATES = frozenset({"PLANNED"})
 RUNTIME_DIRECTORY = pathlib.Path(__file__).resolve().parent
 
@@ -78,6 +79,105 @@ def _authority(
         scope,
         explicit_authority=execute,
         directory=RUNTIME_DIRECTORY,
+    )
+
+
+def _prompt_digest(prompt: str | None) -> str | None:
+    if prompt is None:
+        return None
+    return hashlib.sha256(prompt.encode("utf-8")).hexdigest()
+
+
+def _validated_cli_mandate(
+    mandate: dict[str, Any],
+    *,
+    root: pathlib.Path,
+    goal_id: str,
+    name: str,
+    agent: str | None,
+    repo_selector: str | None,
+    setup: str,
+    prompt: str | None,
+    actor_id: str,
+    execute: bool,
+) -> dict[str, Any]:
+    if not execute:
+        raise ValueError("mutation requires the explicit --execute authority flag")
+    if mandate.get("actor_id") != actor_id or actor_id != "owner":
+        raise ValueError("Orca execution mandate must be issued by owner/Hükümdar")
+    mandate_id = mandate.get("mandate_id")
+    if not isinstance(mandate_id, str) or MANDATE_ID_PATTERN.fullmatch(mandate_id) is None:
+        raise ValueError("Orca execution mandate id is invalid")
+    if mandate.get("operation") != "engines.worktree-create":
+        raise ValueError("Orca execution mandate operation is invalid")
+    scope = mandate.get("scope")
+    if not isinstance(scope, dict):
+        raise ValueError("Orca execution mandate scope is invalid")
+    expected = {
+        "command": "engines",
+        "engines_command": "worktree-create",
+        "engine": "orca",
+        "goal": goal_id,
+        "name": name,
+        "setup": setup,
+    }
+    for key, value in expected.items():
+        if scope.get(key) != value:
+            raise ValueError(f"Orca execution mandate scope mismatch: {key}")
+    scoped_project = scope.get("project")
+    try:
+        if pathlib.Path(str(scoped_project)).resolve() != root:
+            raise ValueError("Orca execution mandate scope mismatch: project")
+    except (OSError, RuntimeError) as error:
+        raise ValueError("Orca execution mandate project is invalid") from error
+    for key, value in (("agent", agent), ("repo_selector", repo_selector)):
+        if value is None:
+            if key in scope:
+                raise ValueError(f"Orca execution mandate scope mismatch: {key}")
+        elif scope.get(key) != value:
+            raise ValueError(f"Orca execution mandate scope mismatch: {key}")
+    digest = _prompt_digest(prompt)
+    if digest is None:
+        if "prompt_sha256" in scope:
+            raise ValueError("Orca execution mandate scope mismatch: prompt")
+    elif scope.get("prompt_sha256") != digest:
+        raise ValueError("Orca execution mandate scope mismatch: prompt")
+    return mandate
+
+
+def _execution_mandate(
+    provided: dict[str, Any] | None,
+    *,
+    root: pathlib.Path,
+    goal_id: str,
+    name: str,
+    agent: str | None,
+    repo_selector: str | None,
+    setup: str,
+    prompt: str | None,
+    actor_id: str,
+    execute: bool,
+) -> dict[str, Any]:
+    if provided is not None:
+        return _validated_cli_mandate(
+            provided,
+            root=root,
+            goal_id=goal_id,
+            name=name,
+            agent=agent,
+            repo_selector=repo_selector,
+            setup=setup,
+            prompt=prompt,
+            actor_id=actor_id,
+            execute=execute,
+        )
+    return _authority(
+        goal_id=goal_id,
+        worktree_name=name,
+        agent=agent,
+        repo_selector=repo_selector,
+        actor_id=actor_id,
+        execute=execute,
     )
 
 
@@ -208,6 +308,7 @@ def create_worktree(
     prompt: str | None = None,
     setup: str = "inherit",
     engine: OrcaEngine | None = None,
+    mandate: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create the first Orca worktree for a PLANNED goal under a Divan mandate.
 
@@ -225,15 +326,19 @@ def create_worktree(
             f"goal state {state or 'UNKNOWN'} cannot execute Orca; expected PLANNED"
         )
 
-    mandate = _authority(
+    authority_value = _execution_mandate(
+        mandate,
+        root=root,
         goal_id=identifier,
-        worktree_name=name,
+        name=name,
         agent=agent,
         repo_selector=repo_selector,
+        setup=setup,
+        prompt=prompt,
         actor_id=actor_id,
         execute=execute,
     )
-    mandate_id = str(mandate["mandate_id"])
+    mandate_id = str(authority_value["mandate_id"])
     authority = ExecutionAuthority(execute=True, mandate_id=mandate_id)
     runtime = engine or OrcaEngine()
     result = runtime.worktree_create(
@@ -252,7 +357,7 @@ def create_worktree(
             "status": "failed",
             "goal_id": identifier,
             "goal_state": state,
-            "authority": mandate,
+            "authority": authority_value,
             "engine_result": public_result,
             "receipt_updated": False,
             "retry_allowed": False,
@@ -275,7 +380,7 @@ def create_worktree(
             "status": "evidence-pending",
             "goal_id": identifier,
             "goal_state": state,
-            "authority": mandate,
+            "authority": authority_value,
             "engine_result": public_result,
             "evidence": evidence_path,
             "receipt_updated": False,
@@ -289,7 +394,7 @@ def create_worktree(
         "status": "started",
         "goal_id": identifier,
         "goal_state": str(updated["state"]),
-        "authority": mandate,
+        "authority": authority_value,
         "engine_result": public_result,
         "evidence": evidence_path,
         "receipt_updated": True,
