@@ -256,6 +256,23 @@ jobs:
           "DIVAN_SOURCE_COMMIT=$sourceCommit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "DIVAN_SOURCE_TREE=$sourceTree" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Download exact-run signed updater e2e evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: divan-desktop-updater-e2e
+          path: ${{ runner.temp }}/divan-updater-e2e
+          digest-mismatch: error
+
+      - name: Resolve signed updater e2e evidence
+        shell: pwsh
+        run: |
+          $evidenceFiles = @(Get-ChildItem (Join-Path $env:RUNNER_TEMP "divan-updater-e2e") -Filter "*.json" -File -Recurse)
+          if ($evidenceFiles.Count -ne 1) {
+            throw "Updater e2e artifact must contain exactly one JSON evidence file"
+          }
+          $evidence = $evidenceFiles[0].FullName
+          "DIVAN_UPDATER_E2E_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Generate ephemeral signed release configuration
         shell: pwsh
         run: |
@@ -267,7 +284,7 @@ jobs:
       - name: Enforce stable release gate before build
         shell: pwsh
         run: |
-          python scripts/desktop_release_guard.py --release-config $env:DIVAN_RELEASE_CONFIG --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
+          python scripts/desktop_release_guard.py --release-config $env:DIVAN_RELEASE_CONFIG --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
           if ($LASTEXITCODE -ne 0) { throw "stable release gate failed" }
 
       - name: Build self-contained Core sidecar
