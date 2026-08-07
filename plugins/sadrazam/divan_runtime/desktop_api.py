@@ -63,8 +63,18 @@ class DesktopApi:
         active_worktree = worktree or self.execution_worktree(task)
         if active_worktree is None:
             raise ValueError("task has no execution worktree yet")
-        has_review_snapshot = isinstance(task.metadata.get("review_snapshot"), Mapping)
-        use_staged = has_review_snapshot if staged is None else staged
+        review_snapshot = task.metadata.get("review_snapshot")
+        snapshot_worktree = (
+            review_snapshot.get("worktree")
+            if isinstance(review_snapshot, Mapping)
+            else None
+        )
+        has_current_review_snapshot = bool(
+            isinstance(snapshot_worktree, str)
+            and snapshot_worktree.strip()
+            and snapshot_worktree.strip() == active_worktree
+        )
+        use_staged = has_current_review_snapshot if staged is None else staged
         receipt = self.router.execute(
             ExecutionRequest(
                 action=ExecutionAction.FILE_DIFF,
@@ -89,8 +99,10 @@ class DesktopApi:
             "exit_code": receipt.exit_code,
             "path": path,
             "staged": use_staged,
-            "basis": "review-snapshot" if use_staged and has_review_snapshot else (
-                "staged" if use_staged else "working-tree"
+            "basis": (
+                "review-snapshot"
+                if use_staged and has_current_review_snapshot
+                else "staged" if use_staged else "working-tree"
             ),
             "diff": diff,
         }
