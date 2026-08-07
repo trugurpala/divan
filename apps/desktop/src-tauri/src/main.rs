@@ -66,6 +66,7 @@ fn divan_capabilities() -> Capabilities {
             "approval-gate",
             "evidence",
             "core-sidecar",
+            "native-folder-picker",
         ],
     }
 }
@@ -110,6 +111,7 @@ async fn core_request(app: tauri::AppHandle, request: String) -> Result<String, 
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             runtime_probe,
