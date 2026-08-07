@@ -24,7 +24,19 @@ jobs:
         run: python scripts/naming.py --check
 
       - name: Divan architecture validation
-        run: python scripts/divan.py validate
+        shell: bash
+        run: |
+          set +e
+          output="$(python scripts/divan.py validate 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              [ -z "$line" ] || printf '::error title=Divan architecture validation::%s\n' "$line"
+            done <<< "$output"
+            exit "$status"
+          fi
 
       - name: Prose contract
         run: python scripts/prose.py --check
