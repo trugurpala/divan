@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -141,6 +142,7 @@ class OrchestratorTests(unittest.TestCase):
             self.assertEqual(task.state, TaskState.RUNNING)
             self.assertEqual(task.metadata["execution"]["engine"], "native")
             self.assertEqual(task.metadata["execution"]["attempt"], 1)
+            self.assertNotIn("execution_pending", task.metadata)
 
             task, decision = orchestrator.review_automated(task)
             self.assertEqual(task.state, TaskState.PASSED)
@@ -208,6 +210,80 @@ class OrchestratorTests(unittest.TestCase):
                 [row["attempt"] for row in task.metadata["execution_history"]],
                 [1, 2],
             )
+
+    def test_restart_recovery_marks_interrupted_attempt_retry_without_resuming_engine(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            engine = FlakyEngine()
+            router = ExecutionRouter([engine], default_engine="native")
+            orchestrator = DivanOrchestrator(
+                router,
+                state_root=root / "tasks",
+                evidence_root=root / "evidence",
+            )
+            task = orchestrator.create_task(
+                task_id="DIV-RECOVER",
+                title="Recover interrupted worker",
+                engine_id="native",
+                mandate_id="m-recover",
+            )
+            task = orchestrator.plan(task)
+            interrupted = replace(
+                task.transition(TaskState.RUNNING, "execution attempt 1 started"),
+                metadata={
+                    "execution_pending": {
+                        "attempt": 1,
+                        "worktree_name": "DIV-RECOVER",
+                        "agent": "codex",
+                    }
+                },
+            )
+            orchestrator.tasks.save(interrupted)
+
+            restarted = DivanOrchestrator(
+                router,
+                state_root=root / "tasks",
+                evidence_root=root / "evidence",
+            )
+            recovered = restarted.recover_interrupted(
+                restarted.tasks.load("DIV-RECOVER")
+            )
+
+            self.assertEqual(engine.names, [])
+            self.assertEqual(recovered.state, TaskState.RETRY)
+            self.assertTrue(recovered.metadata["execution"]["interrupted"])
+            self.assertEqual(recovered.metadata["execution"]["attempt"], 1)
+            self.assertNotIn("execution_pending", recovered.metadata)
+            recovery_evidence = restarted.evidence.list("DIV-RECOVER")
+            self.assertEqual(recovery_evidence[-1]["kind"], "recovery")
+            self.assertFalse(recovery_evidence[-1]["data"]["resumed"])
+
+            retried = restarted.start(
+                recovered,
+                worktree_name="DIV-RECOVER",
+                agent="codex",
+            )
+            self.assertEqual(engine.names, ["DIV-RECOVER-attempt-2"])
+            self.assertEqual(retried.metadata["execution"]["attempt"], 2)
+
+    def test_recovery_rejects_completed_execution_receipt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            orchestrator = DivanOrchestrator(
+                ExecutionRouter([FakeEngine()], default_engine="native"),
+                state_root=root / "tasks",
+                evidence_root=root / "evidence",
+            )
+            task = orchestrator.create_task(
+                task_id="DIV-COMPLETE",
+                title="Completed worker",
+                engine_id="native",
+                mandate_id="m-complete",
+            )
+            task = orchestrator.plan(task)
+            task = orchestrator.start(task, worktree_name="DIV-COMPLETE", agent="codex")
+            with self.assertRaisesRegex(ValueError, "execution receipt"):
+                orchestrator.recover_interrupted(task)
 
     def test_approval_requires_persisted_pass_review(self):
         with tempfile.TemporaryDirectory() as directory:
