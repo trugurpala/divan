@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 
 type CoreEnvelope<T> = {
   api_version: number;
@@ -204,13 +205,15 @@ function App() {
 
   const addProject = () =>
     run("project", async () => {
-      const root = window.prompt(
-        "Git proje klasörünün tam yolunu yaz.\nÖrn: C:\\Users\\sen\\Desktop\\projem",
-      );
-      if (!root?.trim()) return;
+      const selectedFolder = await open({
+        directory: true,
+        multiple: false,
+        title: "Divan için Git proje klasörünü seç",
+      });
+      if (typeof selectedFolder !== "string" || !selectedFolder.trim()) return;
       const project = await coreRequest<ProjectRecord>({
         command: "project.register",
-        root: root.trim(),
+        root: selectedFolder.trim(),
       });
       await refreshProjects();
       setSelectedProjectId(project.project_id);
