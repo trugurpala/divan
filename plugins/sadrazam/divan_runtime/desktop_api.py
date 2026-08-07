@@ -37,6 +37,7 @@ class DesktopApi:
                 "engine-routing",
                 "mandate-gate",
                 "task-lifecycle",
+                "interrupted-recovery",
                 "evidence",
                 "approval-gate",
                 "task-diff",
