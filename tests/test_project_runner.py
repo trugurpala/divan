@@ -56,6 +56,7 @@ RUNTIME_FILES = (
     "knowledge_contract.py",
     "knowledge_desktop.py",
     "knowledge_projection.py",
+    "knowledge_protocol.py",
     "knowledge_relevance.py",
     "knowledge_store.py",
     "local_server.py",
