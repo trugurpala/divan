@@ -11,6 +11,7 @@ BASE_CONFIG = ROOT / "apps" / "desktop" / "src-tauri" / "tauri.conf.json"
 WINDOWS_CONFIG = ROOT / "apps" / "desktop" / "src-tauri" / "tauri.windows.conf.json"
 PREPARE_RELEASE = ROOT / "scripts" / "prepare_desktop_release_config.py"
 UPDATER_SCRIPT = ROOT / "scripts" / "windows_desktop_updater_e2e.ps1"
+PRODUCTION_VERIFY_SCRIPT = ROOT / "scripts" / "windows_desktop_production_updater_verify.ps1"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-release.yml"
 
 
@@ -27,12 +28,38 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("download_and_install", runtime)
         self.assertIn('"expect-install-error"', runtime)
         self.assertIn('"expect-no-update"', runtime)
+        self.assertIn('"verify-download"', runtime)
+        self.assertIn(".version_comparator(|_, _| true)", runtime)
+        self.assertIn("update.download(|_, _| {}, || {}).await", runtime)
         self.assertIn("app.package_info().version", runtime)
 
-    def test_insecure_local_transport_exists_only_in_ephemeral_e2e_config(self) -> None:
+    def test_baseline_version_probe_runs_synchronously_before_async_updater_work(self) -> None:
+        runtime = E2E_RUST.read_text(encoding="utf-8")
+        maybe_start = runtime[
+            runtime.index("pub fn maybe_start") : runtime.index("fn report_version")
+        ]
+        report_version = runtime[
+            runtime.index("fn report_version") : runtime.index("async fn run")
+        ]
+
+        self.assertIn('if mode == "report-version"', maybe_start)
+        self.assertIn("report_version(app, &mode);", maybe_start)
+        self.assertLess(
+            maybe_start.index("report_version(app, &mode);"),
+            maybe_start.index("tauri::async_runtime::spawn"),
+        )
+        self.assertIn("app.package_info().version.to_string()", report_version)
+        self.assertIn('"installed version matches expected version"', report_version)
+        self.assertIn("finish(", report_version)
+        self.assertNotIn("async_runtime", report_version)
+
+    def test_insecure_local_transport_exists_only_in_ephemeral_e2e_configs(self) -> None:
         script = UPDATER_SCRIPT.read_text(encoding="utf-8")
+        production_verify = PRODUCTION_VERIFY_SCRIPT.read_text(encoding="utf-8")
         self.assertIn("dangerousInsecureTransportProtocol = $true", script)
         self.assertIn('production_transport_policy = "https-only"', script)
+        self.assertIn("dangerousInsecureTransportProtocol = $true", production_verify)
+        self.assertIn('production_transport_policy = "https-only"', production_verify)
 
         for path in (BASE_CONFIG, WINDOWS_CONFIG, PREPARE_RELEASE):
             self.assertNotIn(
@@ -72,6 +99,23 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("forward_signed_recovery = $forwardRecovery", script)
         self.assertIn("downgrade_not_offered = $downgradeNotOffered", script)
 
+    def test_production_key_pair_verifier_uses_tauri_download_without_install(self) -> None:
+        script = PRODUCTION_VERIFY_SCRIPT.read_text(encoding="utf-8")
+        runtime = E2E_RUST.read_text(encoding="utf-8")
+        self.assertIn("pnpm tauri build --no-bundle --features updater-e2e", script)
+        self.assertIn('DIVAN_UPDATER_E2E_MODE = "verify-download"', script)
+        self.assertIn("production_public_key_runtime_verified = $true", script)
+        self.assertIn("install_performed = $false", script)
+        self.assertIn("installer_sha256", script)
+        self.assertIn("updater_signature_sha256", script)
+        verify_start = runtime.index('"verify-download" =>')
+        verify_end = runtime.index("        _ => finish(", verify_start)
+        verify_block = runtime[verify_start:verify_end]
+        self.assertIn(".version_comparator(|_, _| true)", verify_block)
+        self.assertIn("update.download(|_, _| {}, || {}).await", verify_block)
+        self.assertNotIn("download_and_install", verify_block)
+        self.assertNotIn("app.restart()", verify_block)
+
     def test_release_workflow_builds_frontend_before_updater_cargo_checks(self) -> None:
         workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         e2e_start = workflow.index("  updater-e2e-windows:")
@@ -99,6 +143,18 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertNotIn(
             "pnpm tauri build --bundles nsis --features updater-e2e --config $env:DIVAN_RELEASE_CONFIG",
             workflow,
+        )
+
+    def test_signed_candidate_verifies_production_key_pair_with_tauri_runtime(self) -> None:
+        workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        signed = workflow[workflow.index("  signed-windows-candidate:") :]
+        self.assertIn("Verify production updater key pair with Tauri runtime", signed)
+        self.assertIn("windows_desktop_production_updater_verify.ps1", signed)
+        self.assertIn("-PublicKey $env:DIVAN_UPDATER_PUBKEY", signed)
+        self.assertIn("DIVAN_PRODUCTION_UPDATER_VERIFY_EVIDENCE", signed)
+        self.assertLess(
+            signed.index("Verify production updater key pair with Tauri runtime"),
+            signed.index("Generate source-bound updater feed and promotion manifest"),
         )
 
 

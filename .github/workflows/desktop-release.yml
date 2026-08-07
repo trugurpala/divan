@@ -12,6 +12,7 @@ on:
       - "scripts/desktop_update_feed.py"
       - "scripts/prepare_desktop_release_config.py"
       - "scripts/windows_desktop_acceptance.ps1"
+      - "scripts/windows_desktop_production_updater_verify.ps1"
       - "scripts/windows_desktop_updater_e2e.ps1"
       - "tests/test_desktop_acceptance_workflow.py"
       - "tests/test_desktop_dependency_locking.py"
@@ -318,6 +319,33 @@ jobs:
           }
           "DIVAN_SIGNED_INSTALLER=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "DIVAN_UPDATER_SIGNATURE=$updaterSignaturePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify production updater key pair with Tauri runtime
+        shell: pwsh
+        run: |
+          $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
+          $evidence = Join-Path $env:RUNNER_TEMP "divan-production-updater-verify.json"
+          & scripts/windows_desktop_production_updater_verify.ps1 -Installer $env:DIVAN_SIGNED_INSTALLER -Signature $env:DIVAN_UPDATER_SIGNATURE -PublicKey $env:DIVAN_UPDATER_PUBKEY -Version $version -Output $evidence
+          if ($LASTEXITCODE -ne 0) { throw "production updater key-pair runtime verification failed" }
+          if (-not (Test-Path $evidence -PathType Leaf)) { throw "production updater verifier evidence was not produced" }
+
+          $payload = Get-Content $evidence -Raw | ConvertFrom-Json
+          if ($payload.status -ne "pass" -or $payload.production_public_key_runtime_verified -ne $true) {
+            throw "production updater public/private key pair was not verified by the Tauri runtime"
+          }
+          if ($payload.install_performed -ne $false) { throw "production updater verifier unexpectedly installed the candidate" }
+          if ($payload.source_commit -ne $env:DIVAN_SOURCE_COMMIT -or $payload.source_tree -ne $env:DIVAN_SOURCE_TREE) {
+            throw "production updater verifier evidence is not bound to exact release source"
+          }
+          if ($payload.production_transport_policy -ne "https-only") {
+            throw "production updater verifier weakened the production HTTPS transport policy"
+          }
+          $installerHash = (Get-FileHash $env:DIVAN_SIGNED_INSTALLER -Algorithm SHA256).Hash.ToLowerInvariant()
+          $signatureHash = (Get-FileHash $env:DIVAN_UPDATER_SIGNATURE -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($payload.installer_sha256 -ne $installerHash -or $payload.updater_signature_sha256 -ne $signatureHash) {
+            throw "production updater verifier evidence is not bound to the exact signed artifact pair"
+          }
+          "DIVAN_PRODUCTION_UPDATER_VERIFY_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Generate source-bound updater feed and promotion manifest
         shell: pwsh
