@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from .desktop_api import DesktopApi
 from .desktop_state import evidence_root, task_root
+from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
@@ -252,6 +253,62 @@ def _handle_task_start(
     return _ok(started.to_dict())
 
 
+def _execution_worktree(task: DivanTask) -> str | None:
+    execution = task.metadata.get("execution")
+    if not isinstance(execution, Mapping):
+        return None
+    receipt_payload = execution.get("payload")
+    if not isinstance(receipt_payload, Mapping):
+        return None
+    worktree = receipt_payload.get("worktree")
+    if not isinstance(worktree, str) or not worktree.strip():
+        return None
+    return worktree.strip()
+
+
+def _handle_task_diff(
+    payload: Mapping[str, Any],
+    router: ExecutionRouter | None,
+) -> dict[str, Any]:
+    active_router = _require_router(router)
+    task = _load_task(payload)
+    requested_worktree = _optional_string(
+        payload,
+        "worktree",
+        "DESKTOP_WORKTREE_INVALID",
+    )
+    worktree = requested_worktree or _execution_worktree(task)
+    if not worktree:
+        raise ProtocolValidationError(
+            "DESKTOP_TASK_WORKTREE_UNAVAILABLE",
+            "task has no execution worktree yet",
+        )
+    path = _optional_string(payload, "path", "DESKTOP_DIFF_PATH_INVALID") or "*"
+    receipt = active_router.execute(
+        ExecutionRequest(
+            action=ExecutionAction.FILE_DIFF,
+            project_root=task.project_root,
+            mandate_id=task.mandate_id,
+            args={"worktree": worktree, "path": path},
+        ),
+        task.engine_id,
+    )
+    diff = ""
+    if isinstance(receipt.payload, Mapping):
+        value = receipt.payload.get("diff")
+        if isinstance(value, str):
+            diff = value
+    return _ok(
+        {
+            "engine": receipt.engine,
+            "ok": receipt.ok,
+            "exit_code": receipt.exit_code,
+            "path": path,
+            "diff": diff,
+        }
+    )
+
+
 def _parse_review_checks(payload: Mapping[str, Any]) -> list[CheckResult]:
     checks_raw = payload.get("checks")
     if not isinstance(checks_raw, list) or not checks_raw:
@@ -363,6 +420,7 @@ _HANDLERS: dict[str, Handler] = {
     "task.create": _handle_task_create,
     "task.plan": _handle_task_plan,
     "task.start": _handle_task_start,
+    "task.diff": _handle_task_diff,
     "task.review": _handle_task_review,
     "task.approval.request": _handle_approval_request,
     "task.approve": _handle_task_approve,
