@@ -3,6 +3,9 @@ use tauri_plugin_shell::{process::CommandEvent, ShellExt};
 #[cfg(feature = "signed-updater")]
 use tauri_plugin_updater::UpdaterExt;
 
+#[cfg(feature = "updater-e2e")]
+mod updater_e2e;
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ToolStatus {
@@ -204,6 +207,11 @@ fn main() {
     let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
 
     builder
+        .setup(|app| {
+            #[cfg(feature = "updater-e2e")]
+            updater_e2e::maybe_start(app.handle());
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             runtime_probe,
             divan_capabilities,
