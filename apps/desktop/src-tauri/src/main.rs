@@ -1,5 +1,6 @@
 use serde::Serialize;
 use tauri_plugin_shell::{process::CommandEvent, ShellExt};
+#[cfg(feature = "signed-updater")]
 use tauri_plugin_updater::UpdaterExt;
 
 #[derive(Serialize)]
@@ -64,22 +65,26 @@ fn runtime_probe() -> RuntimeProbe {
 
 #[tauri::command]
 fn divan_capabilities() -> Capabilities {
+    let mut features = vec![
+        "runtime-probe",
+        "task-console",
+        "approval-gate",
+        "evidence",
+        "core-sidecar",
+        "native-folder-picker",
+    ];
+    if cfg!(feature = "signed-updater") {
+        features.push("signed-updater");
+    }
     Capabilities {
         product: "Divan",
         api_version: 1,
         shell: "tauri-2",
-        features: vec![
-            "runtime-probe",
-            "task-console",
-            "approval-gate",
-            "evidence",
-            "core-sidecar",
-            "native-folder-picker",
-            "signed-updater",
-        ],
+        features,
     }
 }
 
+#[cfg(feature = "signed-updater")]
 #[tauri::command]
 async fn check_for_update(app: tauri::AppHandle) -> Result<UpdateStatus, String> {
     let updater = app.updater().map_err(|error| error.to_string())?;
@@ -95,6 +100,13 @@ async fn check_for_update(app: tauri::AppHandle) -> Result<UpdateStatus, String>
     }
 }
 
+#[cfg(not(feature = "signed-updater"))]
+#[tauri::command]
+async fn check_for_update(_app: tauri::AppHandle) -> Result<UpdateStatus, String> {
+    Err("signed updater is not enabled in this build".to_string())
+}
+
+#[cfg(feature = "signed-updater")]
 #[tauri::command]
 async fn install_update(app: tauri::AppHandle, approved: bool) -> Result<(), String> {
     if !approved {
@@ -109,6 +121,15 @@ async fn install_update(app: tauri::AppHandle, approved: bool) -> Result<(), Str
         app.restart();
     }
     Ok(())
+}
+
+#[cfg(not(feature = "signed-updater"))]
+#[tauri::command]
+async fn install_update(_app: tauri::AppHandle, approved: bool) -> Result<(), String> {
+    if !approved {
+        return Err("installing an update requires explicit approved=true".to_string());
+    }
+    Err("signed updater is not enabled in this build".to_string())
 }
 
 #[tauri::command]
@@ -150,10 +171,13 @@ async fn core_request(app: tauri::AppHandle, request: String) -> Result<String, 
 }
 
 fn main() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_shell::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_shell::init());
+    #[cfg(feature = "signed-updater")]
+    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+
+    builder
         .invoke_handler(tauri::generate_handler![
             runtime_probe,
             divan_capabilities,
