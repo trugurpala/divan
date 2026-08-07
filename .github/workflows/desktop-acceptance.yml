@@ -51,9 +51,21 @@ jobs:
       - name: Install sidecar packager
         run: python -m pip install --disable-pip-version-check pyinstaller==6.21.0
 
-      - name: Install frontend dependencies
+      - name: Install frontend dependencies from lockfile
         working-directory: apps/desktop
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify Rust dependency lock before acceptance build
+        working-directory: apps/desktop
+        run: cargo check --manifest-path src-tauri/Cargo.toml --locked
+
+      - name: Verify dependency lockfiles did not drift
+        shell: pwsh
+        run: |
+          git diff --exit-code -- apps/desktop/pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) {
+            throw "Desktop dependency lockfiles drifted before real-user acceptance"
+          }
 
       - name: Verify authenticated release agents are locally available
         shell: pwsh
@@ -76,6 +88,26 @@ jobs:
           if (-not $installer) { throw "NSIS installer was not produced" }
           $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "NSIS silent install failed with $($install.ExitCode)" }
+
+      - name: Verify installed Desktop process restart
+        shell: pwsh
+        run: |
+          $appExe = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
+          if (-not (Test-Path $appExe)) {
+            $candidate = Get-ChildItem $env:LOCALAPPDATA -Filter "Divan.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($candidate) { $appExe = $candidate.FullName }
+          }
+          if (-not (Test-Path $appExe)) { throw "Installed Divan.exe was not found" }
+
+          foreach ($attempt in 1..2) {
+            $app = Start-Process -FilePath $appExe -PassThru
+            Start-Sleep -Seconds 5
+            if ($app.HasExited) {
+              throw "Installed Divan.exe exited during restart acceptance attempt $attempt with code $($app.ExitCode)"
+            }
+            Stop-Process -Id $app.Id -Force
+            Start-Sleep -Seconds 1
+          }
 
       - name: Run source-bound cross-agent acceptance
         shell: pwsh
