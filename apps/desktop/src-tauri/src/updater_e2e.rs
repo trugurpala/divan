@@ -303,6 +303,102 @@ async fn run(app: AppHandle, mode: String) {
                 ),
             }
         }
+        "verify-download" => {
+            let updater = match app
+                .updater_builder()
+                .version_comparator(|_, _| true)
+                .build()
+            {
+                Ok(value) => value,
+                Err(error) => {
+                    finish(
+                        &app,
+                        marker.as_ref(),
+                        "fail",
+                        &mode,
+                        &current,
+                        &expected,
+                        &format!("production updater verifier initialization failed: {error}"),
+                        108,
+                    );
+                    return;
+                }
+            };
+            let update = match updater.check().await {
+                Ok(Some(value)) => value,
+                Ok(None) => {
+                    finish(
+                        &app,
+                        marker.as_ref(),
+                        "fail",
+                        &mode,
+                        &current,
+                        &expected,
+                        "production updater verifier did not receive the candidate",
+                        109,
+                    );
+                    return;
+                }
+                Err(error) => {
+                    finish(
+                        &app,
+                        marker.as_ref(),
+                        "fail",
+                        &mode,
+                        &current,
+                        &expected,
+                        &format!("production updater verifier check failed: {error}"),
+                        110,
+                    );
+                    return;
+                }
+            };
+            if update.version.to_string() != expected {
+                finish(
+                    &app,
+                    marker.as_ref(),
+                    "fail",
+                    &mode,
+                    &current,
+                    &expected,
+                    "production updater verifier received the wrong version",
+                    111,
+                );
+                return;
+            }
+            match update.download(|_, _| {}, || {}).await {
+                Ok(bytes) if !bytes.is_empty() => finish(
+                    &app,
+                    marker.as_ref(),
+                    "pass",
+                    &mode,
+                    &current,
+                    &expected,
+                    "production updater artifact downloaded and signature verified without install",
+                    0,
+                ),
+                Ok(_) => finish(
+                    &app,
+                    marker.as_ref(),
+                    "fail",
+                    &mode,
+                    &current,
+                    &expected,
+                    "production updater verifier downloaded an empty artifact",
+                    112,
+                ),
+                Err(error) => finish(
+                    &app,
+                    marker.as_ref(),
+                    "fail",
+                    &mode,
+                    &current,
+                    &expected,
+                    &format!("production updater signature verification failed: {error}"),
+                    113,
+                ),
+            }
+        }
         _ => finish(
             &app,
             marker.as_ref(),
