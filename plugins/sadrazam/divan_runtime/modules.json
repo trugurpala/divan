@@ -50,11 +50,18 @@
       "id": "evidence",
       "en": "Evidence",
       "tr": "Kanıt",
-      "python_modules": ["receipts", "execution"],
+      "python_modules": [
+        "receipts",
+        "execution",
+        "orca_engine",
+        "orca_coordinator"
+      ],
       "capabilities": [
         "evidence_ledger",
         "receipt_verification",
-        "bounded_command_execution"
+        "bounded_command_execution",
+        "execution_engine_adapter",
+        "governed_worktree_execution"
       ],
       "depends_on": ["kernel", "governance"],
       "required": true
