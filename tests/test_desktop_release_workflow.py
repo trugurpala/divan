@@ -80,6 +80,13 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('#[cfg(feature = "signed-updater")]', main)
         self.assertIn("--features signed-updater", signed)
 
+    def test_windows_updater_signature_is_paired_with_the_nsis_installer(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        self.assertIn('$updaterSignaturePath = "$($installer.FullName).sig"', signed)
+        self.assertIn("Test-Path $updaterSignaturePath", signed)
+        self.assertNotIn("$updaterArchive", signed)
+        self.assertNotRegex(signed, r"zip\|tar\\\.gz")
+
     def test_all_actions_are_immutable_sha_pinned(self) -> None:
         mutable = []
         for number, line in enumerate(self.text.splitlines(), 1):
