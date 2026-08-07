@@ -157,7 +157,10 @@ class DesktopProtocolTests(unittest.TestCase):
             mandate_id="mandate-reviewed",
             metadata={
                 "execution": {"payload": {"worktree": "C:/tmp/worktree"}},
-                "review_snapshot": {"diff_sha256": "a" * 64},
+                "review_snapshot": {
+                    "worktree": "C:/tmp/worktree",
+                    "diff_sha256": "a" * 64,
+                },
             },
         )
 
@@ -166,6 +169,30 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertTrue(diff["staged"])
         self.assertEqual(diff["basis"], "review-snapshot")
         self.assertTrue(engine.requests[-1].args["staged"])
+
+    def test_task_diff_does_not_reuse_stale_snapshot_after_retry_worktree_changes(self):
+        engine = FakeEngine()
+        router = ExecutionRouter([engine], default_engine="native")
+        task = DivanTask(
+            task_id="DIV-RETRY",
+            title="Retried change",
+            engine_id="native",
+            mandate_id="mandate-retry",
+            metadata={
+                "execution": {"payload": {"worktree": "C:/tmp/new-worktree"}},
+                "review_snapshot": {
+                    "worktree": "C:/tmp/old-worktree",
+                    "diff_sha256": "a" * 64,
+                },
+            },
+        )
+
+        diff = DesktopApi(router).task_diff(task)
+
+        self.assertFalse(diff["staged"])
+        self.assertEqual(diff["basis"], "working-tree")
+        self.assertFalse(engine.requests[-1].args["staged"])
+        self.assertEqual(engine.requests[-1].args["worktree"], "C:/tmp/new-worktree")
 
     def test_task_diff_requires_an_execution_worktree(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
