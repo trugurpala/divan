@@ -3,10 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import pathlib
-import shutil
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
+from .executable_locator import locate_executable
 from .plugin_contract import ManifestValidation, PluginIssue
 from .plugin_manifest_validation import validate_manifest_payload
 
@@ -32,10 +32,14 @@ class PluginCandidate:
 ExecutableLocator = Callable[[str], str | None]
 
 
+def _default_executable_locator(name: str) -> str | None:
+    return locate_executable((name,))
+
+
 def load_plugin_candidate(
     manifest_path: pathlib.Path | str,
     *,
-    executable_locator: ExecutableLocator = shutil.which,
+    executable_locator: ExecutableLocator = _default_executable_locator,
 ) -> PluginCandidate:
     """Read a static manifest without importing or executing third-party plugin code."""
     path = pathlib.Path(manifest_path)
@@ -105,7 +109,7 @@ def load_plugin_candidate(
 def discover_plugins(
     roots: Iterable[pathlib.Path | str],
     *,
-    executable_locator: ExecutableLocator = shutil.which,
+    executable_locator: ExecutableLocator = _default_executable_locator,
 ) -> tuple[PluginCandidate, ...]:
     """Discover only direct JSON children of explicitly supplied roots."""
     candidates: list[PluginCandidate] = []
