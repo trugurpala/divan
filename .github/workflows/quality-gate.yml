@@ -73,9 +73,15 @@ jobs:
           set -e
           printf '%s\n' "$output"
           if [ "$status" -ne 0 ]; then
-            while IFS= read -r line; do
-              [ -z "$line" ] || printf '::error title=Ruff::%s\n' "$line"
-            done <<< "$output"
+            diff="$(ruff check . --fix --diff 2>&1 || true)"
+            combined="$output"
+            if [ -n "$diff" ]; then
+              combined="$combined"$'\n'"Suggested Ruff fix:"$'\n'"$diff"
+            fi
+            encoded="${combined//'%'/'%25'}"
+            encoded="${encoded//$'\r'/'%0D'}"
+            encoded="${encoded//$'\n'/'%0A'}"
+            printf '::error title=Ruff fix diff::%s\n' "$encoded"
             exit "$status"
           fi
 
