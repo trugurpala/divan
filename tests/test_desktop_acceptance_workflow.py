@@ -6,6 +6,7 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "desktop-acceptance.yml"
+ACCEPTANCE_SCRIPT = ROOT / "scripts" / "windows_desktop_acceptance.ps1"
 
 
 class DesktopAcceptanceWorkflowTests(unittest.TestCase):
@@ -32,6 +33,11 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("--source-commit $sourceCommit", self.text)
         self.assertIn("--source-tree $sourceTree", self.text)
         self.assertIn("$env:RUNNER_TEMP", self.text)
+
+    def test_acceptance_uses_protocol_review_verdict_casing(self) -> None:
+        script = ACCEPTANCE_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('$review.review.verdict -ne "pass"', script)
+        self.assertNotIn('$review.review.verdict -ne "PASS"', script)
 
     def test_evidence_is_attested_and_uploaded(self) -> None:
         self.assertIn("id-token: write", self.text)
