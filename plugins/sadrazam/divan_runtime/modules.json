@@ -232,6 +232,7 @@
         "status",
         "local_server",
         "desktop_api",
+        "desktop_protocol_support",
         "desktop_protocol"
       ],
       "capabilities": [
