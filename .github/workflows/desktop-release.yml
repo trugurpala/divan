@@ -12,6 +12,7 @@ on:
       - "scripts/prepare_desktop_release_config.py"
       - "scripts/windows_desktop_acceptance.ps1"
       - "tests/test_desktop_acceptance_workflow.py"
+      - "tests/test_desktop_dependency_locking.py"
       - "tests/test_desktop_release_guard.py"
       - "tests/test_prepare_desktop_release_config.py"
       - "tests/test_desktop_release_workflow.py"
@@ -44,6 +45,7 @@ jobs:
         run: >-
           python -m unittest
           tests.test_desktop_acceptance_workflow
+          tests.test_desktop_dependency_locking
           tests.test_desktop_release_guard
           tests.test_prepare_desktop_release_config
           tests.test_desktop_release_workflow
