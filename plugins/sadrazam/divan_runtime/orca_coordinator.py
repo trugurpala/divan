@@ -1,21 +1,24 @@
 """Governed Orca execution bound to Divan goal receipts.
 
 This module is the product boundary between Divan-owned planning/evidence and
-an optional Orca execution sidecar.  It deliberately does not own planning,
+an optional Orca execution sidecar. It deliberately does not own planning,
 review verdicts, or release decisions.
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import os
 import pathlib
 import re
+import tempfile
 from typing import Any
 
 from . import governance, receipts
 from .orca_engine import ExecutionAuthority, OrcaEngine, OrcaResult
 
 GOAL_ID_PATTERN = re.compile(r"^goal-[0-9a-f]{12}$")
-EXECUTABLE_STATES = frozenset({"PLANNED", "IMPLEMENTING"})
+EXECUTABLE_STATES = frozenset({"PLANNED"})
 RUNTIME_DIRECTORY = pathlib.Path(__file__).resolve().parent
 
 
@@ -63,9 +66,11 @@ def _authority(
     scope = {
         "engine": "orca",
         "goal_id": goal_id,
-        "worktree_name": worktree_name,
-        "agent": agent or "default",
-        "repo_selector": repo_selector or "active",
+        "worktree_name": receipts.redact_text(worktree_name),
+        "agent": receipts.redact_text(agent) if agent else "default",
+        "repo_selector": (
+            receipts.redact_text(repo_selector) if repo_selector else "active"
+        ),
     }
     return governance.authorize_mutation(
         actor_id,
@@ -76,17 +81,119 @@ def _authority(
     )
 
 
-def _evidence(result: OrcaResult, mandate_id: str, name: str, agent: str | None) -> list[str]:
-    rows = [
-        "engine:orca",
-        f"action:{result.action}",
-        f"worktree:{receipts.redact_text(name)}",
-        f"mandate:{mandate_id}",
-        f"exit-code:{result.exit_code}",
-    ]
-    if agent:
-        rows.append(f"agent:{receipts.redact_text(agent)}")
-    return rows
+def _redacted(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _redacted(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_redacted(item) for item in value]
+    if isinstance(value, tuple):
+        return [_redacted(item) for item in value]
+    if isinstance(value, str):
+        return receipts.redact_text(value)
+    return value
+
+
+def _public_result(result: OrcaResult) -> dict[str, Any]:
+    return _redacted(result.to_dict())
+
+
+def _evidence_relative(goal_id: str, mandate_id: str, action: str) -> str:
+    fingerprint = hashlib.sha256(
+        f"{goal_id}:{mandate_id}:{action}".encode("utf-8")
+    ).hexdigest()[:16]
+    return f".divan/evidence/{goal_id}/engine/orca-{fingerprint}.json"
+
+
+def _evidence_value(
+    result: OrcaResult,
+    *,
+    goal_id: str,
+    mandate_id: str,
+    name: str,
+    agent: str | None,
+    repo_selector: str | None,
+) -> dict[str, Any]:
+    return {
+        "schema_version": 1,
+        "engine": "orca",
+        "action": result.action,
+        "goal_id": goal_id,
+        "mandate_id": mandate_id,
+        "worktree_name": receipts.redact_text(name),
+        "agent": receipts.redact_text(agent) if agent else None,
+        "repo_selector": (
+            receipts.redact_text(repo_selector) if repo_selector else "active"
+        ),
+        "exit_code": result.exit_code,
+        "argv": [receipts.redact_text(item) for item in result.argv],
+    }
+
+
+def _atomic_evidence(path: pathlib.Path, value: dict[str, Any]) -> tuple[str, bool]:
+    content = (
+        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    digest = hashlib.sha256(content).hexdigest()
+    if path.exists():
+        if not path.is_file() or path.read_bytes() != content:
+            raise ValueError("Orca evidence path already exists with different content")
+        return digest, False
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent
+    )
+    temporary = pathlib.Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+    return digest, True
+
+
+def _record_execution(
+    root: pathlib.Path,
+    receipt_path: pathlib.Path,
+    result: OrcaResult,
+    *,
+    goal_id: str,
+    mandate_id: str,
+    name: str,
+    agent: str | None,
+    repo_selector: str | None,
+) -> tuple[dict[str, Any] | None, str, str | None]:
+    relative = _evidence_relative(goal_id, mandate_id, result.action)
+    path = root.joinpath(*pathlib.PurePosixPath(relative).parts)
+    try:
+        path.resolve(strict=False).relative_to(root)
+    except ValueError as error:
+        raise ValueError("Orca evidence path escapes project") from error
+    value = _evidence_value(
+        result,
+        goal_id=goal_id,
+        mandate_id=mandate_id,
+        name=name,
+        agent=agent,
+        repo_selector=repo_selector,
+    )
+    digest, _ = _atomic_evidence(path, value)
+    content_errors = receipts._artifact_content_errors(path, "Orca execution evidence")
+    if content_errors:
+        raise ValueError("; ".join(content_errors))
+    try:
+        updated = receipts.append_transition(
+            receipt_path,
+            "IMPLEMENTING",
+            reason="Orca worktree execution started under an explicit Divan mandate.",
+            evidence=[relative],
+            bind_artifacts={relative: digest},
+        )
+    except ValueError as error:
+        return None, relative, str(error)
+    return updated, relative, None
 
 
 def create_worktree(
@@ -102,19 +209,21 @@ def create_worktree(
     setup: str = "inherit",
     engine: OrcaEngine | None = None,
 ) -> dict[str, Any]:
-    """Create one Orca worktree under an explicit Divan mandate.
+    """Create the first Orca worktree for a PLANNED goal under a Divan mandate.
 
-    The goal must already be PLANNED or IMPLEMENTING.  A successful first
-    execution advances PLANNED -> IMPLEMENTING and records only redacted,
-    non-prompt execution evidence in the goal receipt.
+    A successful engine mutation is written as a redacted JSON artifact, bound
+    to the receipt by SHA-256, then advances PLANNED -> IMPLEMENTING. If the
+    evidence bind fails after Orca succeeds, automatic retry is forbidden so a
+    duplicate worktree is not created accidentally.
     """
     root = _project_root(project)
     identifier = _goal_id(goal_id)
     receipt_path, receipt = _receipt(root, identifier)
     state = str(receipt.get("state", ""))
     if state not in EXECUTABLE_STATES:
-        allowed = ", ".join(sorted(EXECUTABLE_STATES))
-        raise ValueError(f"goal state {state or 'UNKNOWN'} cannot execute Orca; expected {allowed}")
+        raise ValueError(
+            f"goal state {state or 'UNKNOWN'} cannot execute Orca; expected PLANNED"
+        )
 
     mandate = _authority(
         goal_id=identifier,
@@ -124,7 +233,8 @@ def create_worktree(
         actor_id=actor_id,
         execute=execute,
     )
-    authority = ExecutionAuthority(execute=True, mandate_id=str(mandate["mandate_id"]))
+    mandate_id = str(mandate["mandate_id"])
+    authority = ExecutionAuthority(execute=True, mandate_id=mandate_id)
     runtime = engine or OrcaEngine()
     result = runtime.worktree_create(
         name=name,
@@ -134,6 +244,7 @@ def create_worktree(
         prompt=prompt,
         setup=setup,
     )
+    public_result = _public_result(result)
     if not result.ok:
         return {
             "schema_version": 1,
@@ -142,31 +253,47 @@ def create_worktree(
             "goal_id": identifier,
             "goal_state": state,
             "authority": mandate,
-            "engine_result": result.to_dict(),
+            "engine_result": public_result,
             "receipt_updated": False,
+            "retry_allowed": False,
         }
 
-    receipt_updated = False
-    next_state = state
-    if state == "PLANNED":
-        updated = receipts.append_transition(
-            receipt_path,
-            "IMPLEMENTING",
-            reason="Orca worktree execution started under an explicit Divan mandate.",
-            evidence=_evidence(result, str(mandate["mandate_id"]), name, agent),
-        )
-        next_state = str(updated["state"])
-        receipt_updated = True
+    updated, evidence_path, bind_error = _record_execution(
+        root,
+        receipt_path,
+        result,
+        goal_id=identifier,
+        mandate_id=mandate_id,
+        name=name,
+        agent=agent,
+        repo_selector=repo_selector,
+    )
+    if updated is None:
+        return {
+            "schema_version": 1,
+            "kind": "engine-execution",
+            "status": "evidence-pending",
+            "goal_id": identifier,
+            "goal_state": state,
+            "authority": mandate,
+            "engine_result": public_result,
+            "evidence": evidence_path,
+            "receipt_updated": False,
+            "retry_allowed": False,
+            "errors": [f"Orca succeeded but receipt binding failed: {bind_error}"],
+        }
 
     return {
         "schema_version": 1,
         "kind": "engine-execution",
         "status": "started",
         "goal_id": identifier,
-        "goal_state": next_state,
+        "goal_state": str(updated["state"]),
         "authority": mandate,
-        "engine_result": result.to_dict(),
-        "receipt_updated": receipt_updated,
+        "engine_result": public_result,
+        "evidence": evidence_path,
+        "receipt_updated": True,
+        "retry_allowed": False,
     }
 
 
@@ -178,5 +305,5 @@ def status(engine: OrcaEngine | None = None) -> dict[str, Any]:
         "kind": "engine-status",
         "engine": "orca",
         "status": "ready" if result.ok else "unavailable",
-        "engine_result": result.to_dict(),
+        "engine_result": _public_result(result),
     }
