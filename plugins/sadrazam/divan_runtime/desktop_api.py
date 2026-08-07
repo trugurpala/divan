@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 from .execution_contract import ExecutionAction, ExecutionRequest
@@ -72,7 +73,7 @@ class DesktopApi:
         has_current_review_snapshot = bool(
             isinstance(snapshot_worktree, str)
             and snapshot_worktree.strip()
-            and snapshot_worktree.strip() == active_worktree
+            and _same_worktree(snapshot_worktree, active_worktree)
         )
         use_staged = has_current_review_snapshot if staged is None else staged
         receipt = self.router.execute(
@@ -123,3 +124,10 @@ class DesktopApi:
     @staticmethod
     def serialize_tasks(tasks: Iterable[DivanTask]) -> list[dict[str, Any]]:
         return [task.to_dict() for task in tasks]
+
+
+def _same_worktree(left: str, right: str) -> bool:
+    try:
+        return Path(left).expanduser().resolve() == Path(right).expanduser().resolve()
+    except OSError:
+        return False
