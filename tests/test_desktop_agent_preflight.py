@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import pathlib
 import unittest
 
@@ -31,6 +32,24 @@ class DesktopAgentPreflightTests(unittest.TestCase):
         with self.assertRaises(MODULE.AgentPreflightError):
             MODULE.parse_codex_auth("codex 1.0")
 
+    def test_codex_probe_requires_exact_final_marker(self) -> None:
+        good = "\n".join(
+            (
+                json.dumps({"type": "turn.started"}),
+                json.dumps({"item": {"text": "DIVAN_AUTH_OK"}}),
+            )
+        )
+        MODULE.parse_codex_probe(good)
+        for value in (
+            "not-json",
+            json.dumps({"item": {"text": "almost DIVAN_AUTH_OK"}}),
+            json.dumps({"message": "DIVAN_AUTH_OK extra"}),
+            json.dumps({"type": "turn.completed"}),
+        ):
+            with self.subTest(value=value):
+                with self.assertRaises(MODULE.AgentPreflightError):
+                    MODULE.parse_codex_probe(value)
+
     def test_claude_probe_requires_exact_json_marker(self) -> None:
         MODULE.parse_claude_probe('{"result":"DIVAN_AUTH_OK"}')
         for value in (
@@ -44,10 +63,12 @@ class DesktopAgentPreflightTests(unittest.TestCase):
                 with self.assertRaises(MODULE.AgentPreflightError):
                     MODULE.parse_claude_probe(value)
 
-    def test_preflight_invocations_are_non_shell_and_claude_is_plan_only(self) -> None:
+    def test_preflight_invocations_are_read_only_non_shell_probes(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
         self.assertIn("shell=False", text)
         self.assertIn('(codex, "login", "status")', text)
+        self.assertIn('"--sandbox",\n            "read-only"', text)
+        self.assertIn('"--ephemeral"', text)
         self.assertIn('"--permission-mode",\n            "plan"', text)
         self.assertIn('"--max-turns",\n            "1"', text)
         self.assertIn("Do not use tools, edit files, or run commands", text)
