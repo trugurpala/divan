@@ -8,6 +8,14 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$sourceCommit = (& git -C $RepoRoot rev-parse HEAD).Trim()
+if ($LASTEXITCODE -ne 0 -or $sourceCommit -notmatch '^[0-9a-f]{40}$') {
+    throw "Divan source commit could not be resolved"
+}
+$sourceTree = (& git -C $RepoRoot rev-parse 'HEAD^{tree}').Trim()
+if ($LASTEXITCODE -ne 0 -or $sourceTree -notmatch '^[0-9a-f]{40}$') {
+    throw "Divan source tree could not be resolved"
+}
 if (-not $Version) {
     $Version = (Get-Content (Join-Path $RepoRoot "VERSION") -Raw).Trim()
 }
@@ -74,17 +82,13 @@ try {
         throw "Git is required for Windows acceptance"
     }
 
-    $reviewers = @("claude", "codex") | Where-Object { $tools.ContainsKey($_) -and $tools[$_].available }
-    if (-not $reviewers) {
-        throw "Acceptance requires installed Claude Code or Codex for independent review"
+    $releaseAgents = @("codex", "claude") | Where-Object { $tools.ContainsKey($_) -and $tools[$_].available }
+    if ($releaseAgents.Count -lt 2) {
+        throw "Stable release acceptance requires both installed Codex and Claude Code so worker and reviewer are different agents"
     }
-    $workers = @("codex", "claude", "cursor-agent", "opencode") | Where-Object { $tools.ContainsKey($_) -and $tools[$_].available }
-    if (-not $workers) {
-        throw "Acceptance requires an installed local coding agent"
-    }
-    $worker = ($workers | Where-Object { $_ -ne $reviewers[0] } | Select-Object -First 1)
-    if (-not $worker) {
-        $worker = $workers[0]
+    $worker = "codex"
+    if (-not $tools[$worker].available) {
+        $worker = "claude"
     }
 
     $project = Invoke-Core @{ command = "project.register"; root = $projectRoot }
@@ -104,7 +108,7 @@ try {
         prompt = "Create a new file named divan-acceptance.txt containing exactly DIVAN_ACCEPTANCE_OK followed by a newline. Do not modify any other tracked file. Finish after creating that file."
     }
     if ($task.state -ne "running") {
-        throw "Worker did not reach running state: $($task.state)"
+        throw "Authenticated worker did not reach running state: $($task.state)"
     }
 
     $diff = Invoke-Core @{ command = "task.diff"; task_id = $task.task_id }
@@ -119,6 +123,9 @@ try {
     $reviewer = $review.task.metadata.automated_review.reviewer
     if ($reviewer -notin @("claude", "codex")) {
         throw "Independent reviewer was not Claude or Codex: $reviewer"
+    }
+    if ($reviewer -eq $worker) {
+        throw "Release acceptance requires worker and reviewer to be different agents"
     }
     if (-not $review.task.metadata.review_snapshot.diff_sha256) {
         throw "Review was not bound to a staged diff SHA-256"
@@ -163,13 +170,16 @@ try {
     }
 
     $result = [ordered]@{
-        schema_version = 1
+        schema_version = 2
         product = "Divan"
         version = $Version
         platform = "windows"
+        source_commit = $sourceCommit
+        source_tree = $sourceTree
         result = "PASS"
         authenticated_worker = $true
         worker_agent = $worker
+        authenticated_reviewer = $true
         independent_reviewer = $true
         reviewer = $reviewer
         review_bound_to_diff = $true
@@ -182,7 +192,7 @@ try {
     $outputDir = Split-Path -Parent $Output
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     $result | ConvertTo-Json -Depth 10 | Set-Content -Path $Output -Encoding utf8
-    Write-Host "PASS: real-user Windows Divan acceptance evidence written to $Output"
+    Write-Host "PASS: cross-agent Windows acceptance evidence written to $Output"
 }
 finally {
     Remove-Item Env:DIVAN_DATA_DIR -ErrorAction SilentlyContinue
