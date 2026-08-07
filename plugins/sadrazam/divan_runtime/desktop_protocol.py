@@ -6,6 +6,13 @@ from typing import Any
 from uuid import uuid4
 
 from .desktop_api import DesktopApi
+from .desktop_protocol_support import (
+    ProtocolValidationError,
+    error_response as _error,
+    ok_response as _ok,
+    optional_string as _optional_string,
+    required_string as _required_string,
+)
 from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
@@ -20,25 +27,6 @@ _AGENT_IDS = {"codex", "claude", "opencode", "cursor-agent"}
 Handler = Callable[[Mapping[str, Any], ExecutionRouter | None], dict[str, Any]]
 
 
-class ProtocolValidationError(ValueError):
-    def __init__(self, code: str, message: str) -> None:
-        super().__init__(message)
-        self.code = code
-        self.message = message
-
-
-def _ok(result: Any) -> dict[str, Any]:
-    return {"api_version": API_VERSION, "ok": True, "result": result}
-
-
-def _error(code: str, message: str) -> dict[str, Any]:
-    return {
-        "api_version": API_VERSION,
-        "ok": False,
-        "error": {"code": code, "message": message},
-    }
-
-
 def _tasks() -> TaskStore:
     return TaskStore(task_root())
 
@@ -49,23 +37,6 @@ def _orchestrator(router: ExecutionRouter) -> DivanOrchestrator:
         state_root=task_root(),
         evidence_root=evidence_root(),
     )
-
-
-def _required_string(payload: Mapping[str, Any], key: str, code: str) -> str:
-    value = payload.get(key)
-    if not isinstance(value, str) or not value.strip():
-        raise ProtocolValidationError(code, f"{key} is required")
-    return value.strip()
-
-
-def _optional_string(payload: Mapping[str, Any], key: str, code: str) -> str | None:
-    value = payload.get(key)
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        raise ProtocolValidationError(code, f"{key} must be a string")
-    value = value.strip()
-    return value or None
 
 
 def _task_id(payload: Mapping[str, Any]) -> str:
