@@ -2,47 +2,21 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import pathlib
-import re
 import tomllib
 from typing import Any, Mapping
 
+from desktop_release_evidence import (
+    DesktopReleaseError,
+    inspect_acceptance_evidence,
+    inspect_updater_e2e_evidence,
+)
+from desktop_release_evidence import mapping as _mapping
+from desktop_release_evidence import text as _text
+
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-_GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
-_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-
-
-class DesktopReleaseError(ValueError):
-    pass
-
-
-def _mapping(value: object, label: str) -> Mapping[str, Any]:
-    if not isinstance(value, Mapping):
-        raise DesktopReleaseError(f"{label} must be an object")
-    return value
-
-
-def _text(value: object, label: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise DesktopReleaseError(f"{label} must be a non-empty string")
-    return value.strip()
-
-
-def _git_sha(value: object, label: str) -> str:
-    text = _text(value, label).casefold()
-    if not _GIT_SHA_RE.fullmatch(text):
-        raise DesktopReleaseError(f"{label} must be a full 40-character Git SHA")
-    return text
-
-
-def _sha256(value: object, label: str) -> str:
-    text = _text(value, label).casefold()
-    if not _SHA256_RE.fullmatch(text):
-        raise DesktopReleaseError(f"{label} must be a full 64-character SHA-256")
-    return text
 
 
 def _deep_merge(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
@@ -60,13 +34,24 @@ def _read_json(path: pathlib.Path, label: str) -> Mapping[str, Any]:
     return _mapping(json.loads(path.read_text(encoding="utf-8-sig")), label)
 
 
-def _desktop_inputs(root: pathlib.Path) -> tuple[str, Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+def _desktop_inputs(
+    root: pathlib.Path,
+) -> tuple[
+    str,
+    Mapping[str, Any],
+    Mapping[str, Any],
+    Mapping[str, Any],
+    Mapping[str, Any],
+]:
     desktop = root / "apps" / "desktop"
     tauri_root = desktop / "src-tauri"
     version = _text((root / "VERSION").read_text(encoding="utf-8"), "VERSION")
     package = _read_json(desktop / "package.json", "package.json")
     tauri = _read_json(tauri_root / "tauri.conf.json", "tauri.conf.json")
-    windows = _read_json(tauri_root / "tauri.windows.conf.json", "tauri.windows.conf.json")
+    windows = _read_json(
+        tauri_root / "tauri.windows.conf.json",
+        "tauri.windows.conf.json",
+    )
     cargo = _mapping(
         tomllib.loads((tauri_root / "Cargo.toml").read_text(encoding="utf-8")),
         "Cargo.toml",
@@ -113,7 +98,9 @@ def _merged_config(
     return _deep_merge(merged, _read_json(release_config, "desktop release config"))
 
 
-def _bundle_contract(config: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
+def _bundle_contract(
+    config: Mapping[str, Any],
+) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
     bundle = _mapping(config.get("bundle"), "Tauri bundle")
     windows_bundle = _mapping(bundle.get("windows"), "Tauri Windows bundle")
     nsis = _mapping(windows_bundle.get("nsis"), "Tauri NSIS bundle")
@@ -140,7 +127,10 @@ def _updater_ready(config: Mapping[str, Any], bundle: Mapping[str, Any]) -> bool
         and pubkey.strip()
         and isinstance(endpoints, list)
         and endpoints
-        and all(isinstance(item, str) and item.startswith("https://") for item in endpoints)
+        and all(
+            isinstance(item, str) and item.startswith("https://")
+            for item in endpoints
+        )
     )
 
 
@@ -155,97 +145,12 @@ def _windows_signing_ready(windows_bundle: Mapping[str, Any]) -> bool:
     )
 
 
-def inspect_acceptance_evidence(
-    path: pathlib.Path,
-    expected_version: str,
-    *,
-    expected_source_commit: str | None = None,
-    expected_source_tree: str | None = None,
-) -> dict[str, Any]:
-    raw = path.read_bytes()
-    value = json.loads(raw.decode("utf-8-sig"))
-    evidence = _mapping(value, "Windows acceptance evidence")
-    required = {
-        "schema_version": 3,
-        "product": "Divan",
-        "version": expected_version,
-        "platform": "windows",
-        "result": "PASS",
-        "authenticated_worker": True,
-        "authenticated_reviewer": True,
-        "independent_reviewer": True,
-        "review_bound_to_diff": True,
-        "ff_only_merge": True,
-        "task_state": "merged",
-    }
-    for key, expected in required.items():
-        if evidence.get(key) != expected:
-            raise DesktopReleaseError(
-                f"Windows acceptance evidence requires {key}={expected!r}"
-            )
-    worker = evidence.get("worker_agent")
-    reviewer = evidence.get("reviewer")
-    if worker not in {"codex", "claude"}:
-        raise DesktopReleaseError("Windows release acceptance worker must be Codex or Claude")
-    if reviewer not in {"codex", "claude"}:
-        raise DesktopReleaseError("Windows acceptance evidence has an unsupported reviewer")
-    if reviewer == worker:
-        raise DesktopReleaseError("Windows release acceptance requires a cross-agent reviewer")
-    source_commit = _git_sha(evidence.get("source_commit"), "acceptance source_commit")
-    source_tree = _git_sha(evidence.get("source_tree"), "acceptance source_tree")
-    core_commit = _git_sha(evidence.get("core_source_commit"), "Core source_commit")
-    core_tree = _git_sha(evidence.get("core_source_tree"), "Core source_tree")
-    review_diff_sha256 = _sha256(
-        evidence.get("review_diff_sha256"),
-        "acceptance review_diff_sha256",
-    )
-    merged_commit_sha = _git_sha(
-        evidence.get("merged_commit_sha"),
-        "acceptance merged_commit_sha",
-    )
-    if core_commit != source_commit or core_tree != source_tree:
-        raise DesktopReleaseError("installed Divan Core does not match the accepted source identity")
-    expected_commit = (
-        _git_sha(expected_source_commit, "expected source commit")
-        if expected_source_commit is not None
-        else None
-    )
-    expected_tree = (
-        _git_sha(expected_source_tree, "expected source tree")
-        if expected_source_tree is not None
-        else None
-    )
-    if expected_commit is not None and source_commit != expected_commit:
-        raise DesktopReleaseError("Windows acceptance evidence does not match the release source commit")
-    if expected_tree is not None and source_tree != expected_tree:
-        raise DesktopReleaseError("Windows acceptance evidence does not match the release source tree")
-    kinds = evidence.get("evidence_kinds")
-    required_kinds = {"execution", "review", "approval"}
-    if not isinstance(kinds, list) or not required_kinds.issubset({str(item) for item in kinds}):
-        raise DesktopReleaseError(
-            "Windows acceptance evidence must include execution, review and approval"
-        )
-    source_bound = expected_commit is not None and expected_tree is not None
-    return {
-        "accepted": True,
-        "source_bound": source_bound,
-        "sha256": hashlib.sha256(raw).hexdigest(),
-        "source_commit": source_commit,
-        "source_tree": source_tree,
-        "core_source_commit": core_commit,
-        "core_source_tree": core_tree,
-        "review_diff_sha256": review_diff_sha256,
-        "merged_commit_sha": merged_commit_sha,
-        "worker_agent": worker,
-        "reviewer": reviewer,
-    }
-
-
 def inspect_desktop(
     root: pathlib.Path = ROOT,
     *,
     release_config: pathlib.Path | None = None,
     acceptance_evidence: pathlib.Path | None = None,
+    updater_e2e_evidence: pathlib.Path | None = None,
     expected_source_commit: str | None = None,
     expected_source_tree: str | None = None,
 ) -> dict[str, Any]:
@@ -265,6 +170,16 @@ def inspect_desktop(
         if acceptance_evidence is not None
         else None
     )
+    updater_e2e = (
+        inspect_updater_e2e_evidence(
+            updater_e2e_evidence,
+            version,
+            expected_source_commit=expected_source_commit,
+            expected_source_tree=expected_source_tree,
+        )
+        if updater_e2e_evidence is not None
+        else None
+    )
     return {
         "status": "PASS",
         "version": version,
@@ -275,6 +190,7 @@ def inspect_desktop(
         "updater_configured": _updater_ready(config, bundle),
         "windows_signing_configured": _windows_signing_ready(windows_bundle),
         "acceptance_evidence": acceptance,
+        "updater_e2e_evidence": updater_e2e,
     }
 
 
@@ -290,11 +206,20 @@ def require_stable_release(
         blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing")
     if report.get("windows_signing_configured") is not True:
         blockers.append("Windows Authenticode signCommand is not configured")
+    updater_e2e = report.get("updater_e2e_evidence")
+    if not isinstance(updater_e2e, Mapping) or updater_e2e.get("verified") is not True:
+        blockers.append("signed updater E2E evidence is missing")
+    elif updater_e2e.get("source_bound") is not True:
+        blockers.append(
+            "signed updater E2E evidence is not bound to the exact release source identity"
+        )
     acceptance = report.get("acceptance_evidence")
     if not isinstance(acceptance, Mapping) or acceptance.get("accepted") is not True:
         blockers.append("real-user Windows acceptance evidence is missing")
     elif acceptance.get("source_bound") is not True:
-        blockers.append("Windows acceptance evidence is not bound to the exact release source identity")
+        blockers.append(
+            "Windows acceptance evidence is not bound to the exact release source identity"
+        )
     if blockers:
         raise DesktopReleaseError("stable desktop release blocked: " + "; ".join(blockers))
     return {**dict(report), "stable_release": "READY"}
@@ -305,6 +230,7 @@ def main() -> int:
     parser.add_argument("--root", type=pathlib.Path, default=ROOT)
     parser.add_argument("--release-config", type=pathlib.Path)
     parser.add_argument("--acceptance-evidence", type=pathlib.Path)
+    parser.add_argument("--updater-e2e-evidence", type=pathlib.Path)
     parser.add_argument("--source-commit")
     parser.add_argument("--source-tree")
     parser.add_argument("--stable-release", action="store_true")
@@ -314,12 +240,18 @@ def main() -> int:
             args.root,
             release_config=args.release_config,
             acceptance_evidence=args.acceptance_evidence,
+            updater_e2e_evidence=args.updater_e2e_evidence,
             expected_source_commit=args.source_commit,
             expected_source_tree=args.source_tree,
         )
         if args.stable_release:
             report = require_stable_release(report)
-    except (OSError, json.JSONDecodeError, tomllib.TOMLDecodeError, DesktopReleaseError) as error:
+    except (
+        OSError,
+        json.JSONDecodeError,
+        tomllib.TOMLDecodeError,
+        DesktopReleaseError,
+    ) as error:
         parser.error(str(error))
     print(json.dumps(report, sort_keys=True))
     return 0

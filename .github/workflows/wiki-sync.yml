@@ -12,6 +12,10 @@ on:
       - 'scripts/v1.py'
       - 'tests/test_v1.py'
       - 'VERSION'
+      - 'apps/desktop/**'
+      - 'scripts/desktop_release_*.py'
+      - 'scripts/windows_desktop_*.ps1'
+      - '.github/workflows/desktop-*.yml'
       - '.github/workflows/wiki-sync.yml'
   push:
     branches: [main]
@@ -24,6 +28,10 @@ on:
       - 'scripts/v1.py'
       - 'tests/test_v1.py'
       - 'VERSION'
+      - 'apps/desktop/**'
+      - 'scripts/desktop_release_*.py'
+      - 'scripts/windows_desktop_*.ps1'
+      - '.github/workflows/desktop-*.yml'
       - '.github/workflows/wiki-sync.yml'
 
 permissions: read-all

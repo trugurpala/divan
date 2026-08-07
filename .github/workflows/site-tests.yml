@@ -7,6 +7,10 @@ on:
       - 'site/**'
       - 'tests/site_testi.py'
       - 'tests/test_site_markup.py'
+      - 'apps/desktop/**'
+      - 'scripts/desktop_release_*.py'
+      - 'scripts/windows_desktop_*.ps1'
+      - '.github/workflows/desktop-*.yml'
       - '.github/workflows/site-tests.yml'
   pull_request:
     paths:
@@ -14,6 +18,10 @@ on:
       - 'site/**'
       - 'tests/site_testi.py'
       - 'tests/test_site_markup.py'
+      - 'apps/desktop/**'
+      - 'scripts/desktop_release_*.py'
+      - 'scripts/windows_desktop_*.ps1'
+      - '.github/workflows/desktop-*.yml'
       - '.github/workflows/site-tests.yml'
   schedule:
     - cron: '0 6 * * 1'  # her pazartesi 06:00 UTC
