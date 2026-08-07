@@ -66,6 +66,15 @@ function Invoke-Git([string[]]$Arguments) {
 }
 
 try {
+    $capabilities = Invoke-Core @{ command = "capabilities" }
+    $build = $capabilities.build_provenance
+    if (-not $build -or $build.source_commit -notmatch '^[0-9a-f]{40}$' -or $build.source_tree -notmatch '^[0-9a-f]{40}$') {
+        throw "Installed Divan Core does not expose release build provenance"
+    }
+    if ($build.source_tree -ne $sourceTree) {
+        throw "Installed Divan Core source tree does not match the acceptance checkout"
+    }
+
     git init $projectRoot | Out-Null
     Invoke-Git @("config", "user.name", "Divan Acceptance")
     Invoke-Git @("config", "user.email", "acceptance@invalid.local")
@@ -82,7 +91,7 @@ try {
         throw "Git is required for Windows acceptance"
     }
 
-    $releaseAgents = @("codex", "claude") | Where-Object { $tools.ContainsKey($_) -and $tools[$_].available }
+    $releaseAgents = @(@("codex", "claude") | Where-Object { $tools.ContainsKey($_) -and $tools[$_].available })
     if ($releaseAgents.Count -lt 2) {
         throw "Stable release acceptance requires both installed Codex and Claude Code so worker and reviewer are different agents"
     }
@@ -170,12 +179,14 @@ try {
     }
 
     $result = [ordered]@{
-        schema_version = 2
+        schema_version = 3
         product = "Divan"
         version = $Version
         platform = "windows"
         source_commit = $sourceCommit
         source_tree = $sourceTree
+        core_source_commit = $build.source_commit
+        core_source_tree = $build.source_tree
         result = "PASS"
         authenticated_worker = $true
         worker_agent = $worker
@@ -192,7 +203,7 @@ try {
     $outputDir = Split-Path -Parent $Output
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     $result | ConvertTo-Json -Depth 10 | Set-Content -Path $Output -Encoding utf8
-    Write-Host "PASS: cross-agent Windows acceptance evidence written to $Output"
+    Write-Host "PASS: source-bound cross-agent Windows acceptance evidence written to $Output"
 }
 finally {
     Remove-Item Env:DIVAN_DATA_DIR -ErrorAction SilentlyContinue
