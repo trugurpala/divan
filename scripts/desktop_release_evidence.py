@@ -50,6 +50,22 @@ def semver_core(value: object, label: str) -> tuple[int, int, int]:
     return int(major), int(minor), int(patch)
 
 
+def _load_evidence(path: pathlib.Path, label: str) -> tuple[bytes, Mapping[str, Any]]:
+    raw = path.read_bytes()
+    value = json.loads(raw.decode("utf-8-sig"))
+    return raw, mapping(value, label)
+
+
+def _require_fields(
+    evidence: Mapping[str, Any],
+    required: Mapping[str, object],
+    label: str,
+) -> None:
+    for key, expected in required.items():
+        if evidence.get(key) != expected:
+            raise DesktopReleaseError(f"{label} requires {key}={expected!r}")
+
+
 def _expected_source(
     source_commit: str,
     source_tree: str,
@@ -75,37 +91,7 @@ def _expected_source(
     return expected_commit is not None and expected_tree is not None
 
 
-def inspect_acceptance_evidence(
-    path: pathlib.Path,
-    expected_version: str,
-    *,
-    expected_source_commit: str | None = None,
-    expected_source_tree: str | None = None,
-) -> dict[str, Any]:
-    raw = path.read_bytes()
-    evidence = mapping(
-        json.loads(raw.decode("utf-8-sig")),
-        "Windows acceptance evidence",
-    )
-    required = {
-        "schema_version": 3,
-        "product": "Divan",
-        "version": expected_version,
-        "platform": "windows",
-        "result": "PASS",
-        "authenticated_worker": True,
-        "authenticated_reviewer": True,
-        "independent_reviewer": True,
-        "review_bound_to_diff": True,
-        "ff_only_merge": True,
-        "task_state": "merged",
-    }
-    for key, expected in required.items():
-        if evidence.get(key) != expected:
-            raise DesktopReleaseError(
-                f"Windows acceptance evidence requires {key}={expected!r}"
-            )
-
+def _acceptance_agents(evidence: Mapping[str, Any]) -> tuple[object, object]:
     worker = evidence.get("worker_agent")
     reviewer = evidence.get("reviewer")
     if worker not in {"codex", "claude"}:
@@ -114,22 +100,63 @@ def inspect_acceptance_evidence(
         raise DesktopReleaseError("Windows acceptance evidence has an unsupported reviewer")
     if reviewer == worker:
         raise DesktopReleaseError("Windows release acceptance requires a cross-agent reviewer")
+    return worker, reviewer
 
+
+def _acceptance_identity(
+    evidence: Mapping[str, Any],
+) -> tuple[str, str, str, str, str, str]:
     source_commit = git_sha(evidence.get("source_commit"), "acceptance source_commit")
     source_tree = git_sha(evidence.get("source_tree"), "acceptance source_tree")
     core_commit = git_sha(evidence.get("core_source_commit"), "Core source_commit")
     core_tree = git_sha(evidence.get("core_source_tree"), "Core source_tree")
-    review_diff_sha256 = sha256(
-        evidence.get("review_diff_sha256"),
-        "acceptance review_diff_sha256",
-    )
-    merged_commit_sha = git_sha(
+    review_diff = sha256(evidence.get("review_diff_sha256"), "acceptance review_diff_sha256")
+    merged_commit = git_sha(
         evidence.get("merged_commit_sha"),
         "acceptance merged_commit_sha",
     )
     if core_commit != source_commit or core_tree != source_tree:
         raise DesktopReleaseError("installed Divan Core does not match the accepted source identity")
+    return source_commit, source_tree, core_commit, core_tree, review_diff, merged_commit
 
+
+def _require_acceptance_kinds(evidence: Mapping[str, Any]) -> None:
+    kinds = evidence.get("evidence_kinds")
+    required = {"execution", "review", "approval"}
+    if not isinstance(kinds, list) or not required.issubset({str(item) for item in kinds}):
+        raise DesktopReleaseError(
+            "Windows acceptance evidence must include execution, review and approval"
+        )
+
+
+def inspect_acceptance_evidence(
+    path: pathlib.Path,
+    expected_version: str,
+    *,
+    expected_source_commit: str | None = None,
+    expected_source_tree: str | None = None,
+) -> dict[str, Any]:
+    raw, evidence = _load_evidence(path, "Windows acceptance evidence")
+    _require_fields(
+        evidence,
+        {
+            "schema_version": 3,
+            "product": "Divan",
+            "version": expected_version,
+            "platform": "windows",
+            "result": "PASS",
+            "authenticated_worker": True,
+            "authenticated_reviewer": True,
+            "independent_reviewer": True,
+            "review_bound_to_diff": True,
+            "ff_only_merge": True,
+            "task_state": "merged",
+        },
+        "Windows acceptance evidence",
+    )
+    worker, reviewer = _acceptance_agents(evidence)
+    identity = _acceptance_identity(evidence)
+    source_commit, source_tree, core_commit, core_tree, review_diff, merged_commit = identity
     source_bound = _expected_source(
         source_commit,
         source_tree,
@@ -137,14 +164,7 @@ def inspect_acceptance_evidence(
         expected_source_tree,
         label="Windows acceptance evidence",
     )
-    kinds = evidence.get("evidence_kinds")
-    required_kinds = {"execution", "review", "approval"}
-    if not isinstance(kinds, list) or not required_kinds.issubset(
-        {str(item) for item in kinds}
-    ):
-        raise DesktopReleaseError(
-            "Windows acceptance evidence must include execution, review and approval"
-        )
+    _require_acceptance_kinds(evidence)
     return {
         "accepted": True,
         "source_bound": source_bound,
@@ -153,11 +173,45 @@ def inspect_acceptance_evidence(
         "source_tree": source_tree,
         "core_source_commit": core_commit,
         "core_source_tree": core_tree,
-        "review_diff_sha256": review_diff_sha256,
-        "merged_commit_sha": merged_commit_sha,
+        "review_diff_sha256": review_diff,
+        "merged_commit_sha": merged_commit,
         "worker_agent": worker,
         "reviewer": reviewer,
     }
+
+
+def _updater_versions(
+    evidence: Mapping[str, Any],
+    expected_version: str,
+) -> tuple[str, str, str]:
+    baseline = text(evidence.get("baseline_version"), "updater E2E baseline_version")
+    upgraded = text(evidence.get("upgraded_version"), "updater E2E upgraded_version")
+    recovered = text(evidence.get("recovered_version"), "updater E2E recovered_version")
+    if baseline != expected_version:
+        raise DesktopReleaseError(
+            "signed updater E2E baseline version does not match the release version"
+        )
+    if not (
+        semver_core(baseline, "updater E2E baseline_version")
+        < semver_core(upgraded, "updater E2E upgraded_version")
+        < semver_core(recovered, "updater E2E recovered_version")
+    ):
+        raise DesktopReleaseError(
+            "signed updater E2E versions must prove monotonic N -> N+1 -> N+2 recovery"
+        )
+    return baseline, upgraded, recovered
+
+
+def _updater_digests(evidence: Mapping[str, Any]) -> dict[str, str]:
+    fields = (
+        "baseline_installer_sha256",
+        "upgrade_installer_sha256",
+        "recovery_installer_sha256",
+        "baseline_signature_sha256",
+        "upgrade_signature_sha256",
+        "recovery_signature_sha256",
+    )
+    return {field: sha256(evidence.get(field), f"updater E2E {field}") for field in fields}
 
 
 def inspect_updater_e2e_evidence(
@@ -167,55 +221,25 @@ def inspect_updater_e2e_evidence(
     expected_source_commit: str | None = None,
     expected_source_tree: str | None = None,
 ) -> dict[str, Any]:
-    raw = path.read_bytes()
-    evidence = mapping(
-        json.loads(raw.decode("utf-8-sig")),
+    raw, evidence = _load_evidence(path, "signed updater E2E evidence")
+    _require_fields(
+        evidence,
+        {
+            "schema_version": 1,
+            "status": "pass",
+            "valid_signed_upgrade": True,
+            "tampered_signature_rejected": True,
+            "forward_signed_recovery": True,
+            "downgrade_not_offered": True,
+            "signatures_mandatory": True,
+            "test_only_insecure_transport": True,
+            "production_transport_policy": "https-only",
+        },
         "signed updater E2E evidence",
     )
-    required = {
-        "schema_version": 1,
-        "status": "pass",
-        "valid_signed_upgrade": True,
-        "tampered_signature_rejected": True,
-        "forward_signed_recovery": True,
-        "downgrade_not_offered": True,
-        "signatures_mandatory": True,
-        "test_only_insecure_transport": True,
-        "production_transport_policy": "https-only",
-    }
-    for key, expected in required.items():
-        if evidence.get(key) != expected:
-            raise DesktopReleaseError(
-                f"signed updater E2E evidence requires {key}={expected!r}"
-            )
-
     source_commit = git_sha(evidence.get("source_commit"), "updater E2E source_commit")
     source_tree = git_sha(evidence.get("source_tree"), "updater E2E source_tree")
-    baseline_version = text(
-        evidence.get("baseline_version"),
-        "updater E2E baseline_version",
-    )
-    upgraded_version = text(
-        evidence.get("upgraded_version"),
-        "updater E2E upgraded_version",
-    )
-    recovered_version = text(
-        evidence.get("recovered_version"),
-        "updater E2E recovered_version",
-    )
-    if baseline_version != expected_version:
-        raise DesktopReleaseError(
-            "signed updater E2E baseline version does not match the release version"
-        )
-    if not (
-        semver_core(baseline_version, "updater E2E baseline_version")
-        < semver_core(upgraded_version, "updater E2E upgraded_version")
-        < semver_core(recovered_version, "updater E2E recovered_version")
-    ):
-        raise DesktopReleaseError(
-            "signed updater E2E versions must prove monotonic N -> N+1 -> N+2 recovery"
-        )
-
+    baseline, upgraded, recovered = _updater_versions(evidence, expected_version)
     source_bound = _expected_source(
         source_commit,
         source_tree,
@@ -223,26 +247,14 @@ def inspect_updater_e2e_evidence(
         expected_source_tree,
         label="signed updater E2E evidence",
     )
-    digest_fields = (
-        "baseline_installer_sha256",
-        "upgrade_installer_sha256",
-        "recovery_installer_sha256",
-        "baseline_signature_sha256",
-        "upgrade_signature_sha256",
-        "recovery_signature_sha256",
-    )
-    digests = {
-        field: sha256(evidence.get(field), f"updater E2E {field}")
-        for field in digest_fields
-    }
     return {
         "verified": True,
         "source_bound": source_bound,
         "sha256": hashlib.sha256(raw).hexdigest(),
         "source_commit": source_commit,
         "source_tree": source_tree,
-        "baseline_version": baseline_version,
-        "upgraded_version": upgraded_version,
-        "recovered_version": recovered_version,
-        "digests": digests,
+        "baseline_version": baseline,
+        "upgraded_version": upgraded,
+        "recovered_version": recovered,
+        "digests": _updater_digests(evidence),
     }
