@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
 
@@ -53,7 +53,13 @@ class ProjectReadiness:
 
 TOOL_SPECS = (
     ToolSpec("git", "Git", ("git",), required=True),
-    ToolSpec("gh", "GitHub CLI", ("gh",), auth_args=("auth", "status"), windows_app_names=("GitHub CLI",)),
+    ToolSpec(
+        "gh",
+        "GitHub CLI",
+        ("gh",),
+        auth_args=("auth", "status"),
+        windows_app_names=("GitHub CLI",),
+    ),
     ToolSpec("orca", "Orca", ("orca",), windows_app_names=("Orca",)),
     ToolSpec(
         "codex",
