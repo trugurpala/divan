@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import subprocess
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -20,6 +23,22 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertTrue(response["ok"])
         self.assertEqual(response["api_version"], 1)
         self.assertEqual(response["result"]["product"], "Divan")
+
+    def test_task_create_then_list_uses_configured_data_dir(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            created = handle_request({"command": "task.create", "task_id": "DIV-1", "title": "Fix login"})
+            listed = handle_request({"command": "task.list"})
+            self.assertTrue(created["ok"])
+            self.assertEqual(created["result"]["state"], "draft")
+            self.assertEqual([task["task_id"] for task in listed["result"]], ["DIV-1"])
+            self.assertTrue((pathlib.Path(directory) / "tasks" / "DIV-1.json").exists())
+
+    def test_task_create_validates_title(self):
+        response = handle_request({"command": "task.create", "title": "  "})
+        self.assertFalse(response["ok"])
+        self.assertEqual(response["error"]["code"], "DESKTOP_TASK_TITLE_REQUIRED")
 
     def test_unknown_command_has_stable_error_code(self):
         response = handle_request({"command": "nope"})
