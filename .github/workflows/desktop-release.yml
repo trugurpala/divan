@@ -5,6 +5,8 @@ on:
     paths:
       - ".github/workflows/desktop-acceptance.yml"
       - ".github/workflows/desktop-release.yml"
+      - "apps/desktop/package.json"
+      - "apps/desktop/pnpm-lock.yaml"
       - "apps/desktop/src-tauri/**"
       - "scripts/desktop_release_guard.py"
       - "scripts/prepare_desktop_release_config.py"
@@ -98,9 +100,21 @@ jobs:
       - name: Install sidecar packager
         run: python -m pip install --disable-pip-version-check pyinstaller==6.21.0
 
-      - name: Install frontend dependencies
+      - name: Install frontend dependencies from lockfile
         working-directory: apps/desktop
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify signed updater Rust dependency lock
+        working-directory: apps/desktop
+        run: cargo check --manifest-path src-tauri/Cargo.toml --features signed-updater --locked
+
+      - name: Verify dependency lockfiles did not drift
+        shell: pwsh
+        run: |
+          git diff --exit-code -- apps/desktop/pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) {
+            throw "Desktop dependency lockfiles drifted before stable candidate build"
+          }
 
       - name: Resolve and verify attested real-user acceptance evidence
         shell: pwsh
