@@ -63,9 +63,21 @@ jobs:
         run: python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
 
       - name: Ruff
+        shell: bash
         env:
           RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
-        run: ruff check .
+        run: |
+          set +e
+          output="$(ruff check . 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              [ -z "$line" ] || printf '::error title=Ruff::%s\n' "$line"
+            done <<< "$output"
+            exit "$status"
+          fi
 
       - name: Clean-code gate
         run: python scripts/clean_code.py --check
