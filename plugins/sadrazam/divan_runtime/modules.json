@@ -182,6 +182,7 @@
         "plugin_manifest_validation",
         "plugin_discovery",
         "plugin_approval",
+        "plugin_desktop",
         "plugin_sdk"
       ],
       "capabilities": [
@@ -195,6 +196,7 @@
         "plugin_manifest_validation",
         "bounded_plugin_discovery",
         "hash_bound_plugin_approval",
+        "privacy_bounded_plugin_inspection",
         "sidecar_plugin_sdk"
       ],
       "depends_on": [
