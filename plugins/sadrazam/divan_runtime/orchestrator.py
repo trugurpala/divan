@@ -7,7 +7,13 @@ from typing import Any, Iterable, Mapping
 from .evidence import EvidenceStore, build_evidence
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
-from .review_gate import CheckResult, GateVerdict, ReviewDecision, decide_review, require_release_ready
+from .review_gate import (
+    CheckResult,
+    GateVerdict,
+    ReviewDecision,
+    decide_review,
+    require_release_ready,
+)
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
@@ -100,7 +106,9 @@ class DivanOrchestrator:
         self.tasks.save(running)
         if receipt.ok:
             return running
-        return self._save(running.transition(TaskState.RETRY, "execution engine returned failure"))
+        return self._save(
+            running.transition(TaskState.RETRY, "execution engine returned failure")
+        )
 
     def review(
         self,
@@ -134,16 +142,26 @@ class DivanOrchestrator:
             "reasons": list(decision.reasons),
         }
         reviewing = replace(reviewing, metadata=metadata)
-        target = TaskState.PASSED if decision.verdict is GateVerdict.PASS else TaskState.RETRY
+        target = (
+            TaskState.PASSED
+            if decision.verdict is GateVerdict.PASS
+            else TaskState.RETRY
+        )
         updated = reviewing.transition(target, "; ".join(decision.reasons) or None)
         return self._save(updated), decision
 
     def request_approval(self, task: DivanTask) -> DivanTask:
-        return self._save(task.transition(TaskState.APPROVAL, "operator approval requested"))
+        return self._save(
+            task.transition(TaskState.APPROVAL, "operator approval requested")
+        )
 
     def approve_merge(self, task: DivanTask, *, approved: bool) -> DivanTask:
         review = _review_from_task(task)
-        require_release_ready(review=review, approved=approved, mandate_id=task.mandate_id)
+        require_release_ready(
+            review=review,
+            approved=approved,
+            mandate_id=task.mandate_id,
+        )
         if task.state is not TaskState.APPROVAL:
             raise ValueError("task must be in approval state")
         self.evidence.append(
@@ -197,5 +215,9 @@ def _review_from_task(task: DivanTask) -> ReviewDecision:
                 summary=str(item.get("summary", "")),
             )
         )
-    reasons = tuple(str(item) for item in reasons_raw) if isinstance(reasons_raw, list) else ()
+    reasons = (
+        tuple(str(item) for item in reasons_raw)
+        if isinstance(reasons_raw, list)
+        else ()
+    )
     return ReviewDecision(GateVerdict(verdict_raw), tuple(checks), reasons)
