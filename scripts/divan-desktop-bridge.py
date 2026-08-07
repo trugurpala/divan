@@ -11,8 +11,29 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
+try:
+    from divan_desktop_build_info import SOURCE_COMMIT, SOURCE_TREE
+except ImportError:
+    SOURCE_COMMIT = "development"
+    SOURCE_TREE = "development"
+
 from divan_runtime.desktop_protocol import handle_request
 from divan_runtime.runtime_composition import build_execution_router
+
+
+def _attach_build_provenance(payload: MappingLike, response: dict[str, Any]) -> None:
+    if payload.get("command") != "capabilities" or response.get("ok") is not True:
+        return
+    result = response.get("result")
+    if not isinstance(result, dict):
+        return
+    result["build_provenance"] = {
+        "source_commit": SOURCE_COMMIT,
+        "source_tree": SOURCE_TREE,
+    }
+
+
+MappingLike = dict[str, Any]
 
 
 def main() -> int:
@@ -67,6 +88,7 @@ def main() -> int:
 
     router = build_execution_router()
     response = handle_request(payload, router=router)
+    _attach_build_provenance(payload, response)
     print(json.dumps(response, ensure_ascii=False, sort_keys=True))
     return 0 if response.get("ok") else 1
 
