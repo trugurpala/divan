@@ -100,6 +100,7 @@ TOOL_SPECS = (
 
 ProbeRunner = Callable[[Sequence[str], float], tuple[int, str, str]]
 Which = Callable[[str], str | None]
+AuthResult = tuple[str, str | None]
 
 
 def discover_tools(
@@ -220,7 +221,7 @@ def _auth(
     path: str | None,
     runner: ProbeRunner,
     env: Mapping[str, str],
-) -> tuple[str, str | None]:
+) -> AuthResult:
     if any(bool(env.get(name)) for name in spec.api_env):
         return "connected", "api-key-env"
     if not path:
@@ -229,33 +230,45 @@ def _auth(
         return "unknown", "installed"
     code, stdout, stderr = runner((path, *spec.auth_args), 8.0)
     text = f"{stdout}\n{stderr}".strip()
+    specialized = _specialized_auth(spec.id, code, text)
+    if specialized is not None:
+        return specialized
+    return ("connected", "authenticated") if code == 0 else ("unknown", "probe-failed")
+
+
+def _specialized_auth(tool_id: str, code: int, text: str) -> AuthResult | None:
+    if tool_id == "codex":
+        return _codex_auth(text)
+    if tool_id == "opencode":
+        return ("connected", "provider-auth") if code == 0 and text else (
+            "not-connected",
+            "login-required",
+        )
+    if tool_id == "cursor-agent":
+        return _status_auth(code, "cursor-account")
+    if tool_id == "gh":
+        return _status_auth(code, "github-account")
+    return None
+
+
+def _codex_auth(text: str) -> AuthResult | None:
     normalized = text.casefold()
+    states = (
+        ("not logged in", ("not-connected", "login-required")),
+        ("logged in using chatgpt", ("connected", "chatgpt")),
+        ("logged in using an api key", ("connected", "api-key")),
+        ("logged in using agent identity", ("connected", "agent-identity")),
+    )
+    for marker, result in states:
+        if marker in normalized:
+            return result
+    return None
 
-    if spec.id == "codex":
-        if "not logged in" in normalized:
-            return "not-connected", "login-required"
-        if "logged in using chatgpt" in normalized:
-            return "connected", "chatgpt"
-        if "logged in using an api key" in normalized:
-            return "connected", "api-key"
-        if "logged in using agent identity" in normalized:
-            return "connected", "agent-identity"
-    elif spec.id == "opencode":
-        if code == 0 and text.strip():
-            return "connected", "provider-auth"
-        return "not-connected", "login-required"
-    elif spec.id == "cursor-agent":
-        if code == 0:
-            return "connected", "cursor-account"
-        return "not-connected", "login-required"
-    elif spec.id == "gh":
-        if code == 0:
-            return "connected", "github-account"
-        return "not-connected", "login-required"
 
+def _status_auth(code: int, detail: str) -> AuthResult:
     if code == 0:
-        return "connected", "authenticated"
-    return "unknown", "probe-failed"
+        return "connected", detail
+    return "not-connected", "login-required"
 
 
 def _probe(argv: Sequence[str], timeout: float) -> tuple[int, str, str]:
