@@ -173,6 +173,7 @@
       "tr": "Sağlayıcılar",
       "python_modules": [
         "providers",
+        "executable_locator",
         "project_readiness"
       ],
       "capabilities": [
@@ -181,6 +182,7 @@
         "context7",
         "vercel",
         "local_tool_discovery",
+        "safe_local_executable_resolution",
         "windows_installed_app_discovery",
         "subscription_auth_detection"
       ],
