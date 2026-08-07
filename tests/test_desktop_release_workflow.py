@@ -34,7 +34,7 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}", signed)
         self.assertIn("DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}", signed)
         self.assertIn("Get-AuthenticodeSignature", signed)
-        self.assertIn("*.sig", signed)
+        self.assertIn('$updaterSignaturePath = "$($installer.FullName).sig"', signed)
         self.assertIn("actions/attest-build-provenance@", signed)
 
     def test_dispatch_acceptance_run_id_is_not_interpolated_inside_shell_script(self) -> None:
