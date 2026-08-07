@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pathlib
 import sys
 import tempfile
@@ -57,6 +58,23 @@ class KnowledgeFabricTests(unittest.TestCase):
         self.assertEqual(result[0].stack, ("react", "vite"))
         self.assertIn("failure-learning", result[0].tags)
 
+    def test_pattern_identity_normalizes_stack_case_and_order(self) -> None:
+        first = pattern_from_project(
+            name="Accessible Vite form",
+            summary="Use labeled native controls and keep submission state explicit.",
+            stack=("React", "Vite"),
+            observed_at="2026-08-07T20:00:00+00:00",
+        )
+        second = pattern_from_project(
+            name="Accessible Vite form",
+            summary="Use labeled native controls and keep submission state explicit.",
+            stack=("vite", "react"),
+            observed_at="2026-08-07T20:00:00+00:00",
+        )
+
+        self.assertEqual(first.item_id, second.item_id)
+        self.assertEqual(first.stack, ("react", "vite"))
+
     def test_observations_measure_reuse_without_auto_promoting_memory(self) -> None:
         pattern = pattern_from_project(
             name="Local-first task state",
@@ -86,6 +104,30 @@ class KnowledgeFabricTests(unittest.TestCase):
         self.assertAlmostEqual(analytics["success_rate"], 2 / 3)
         self.assertEqual(self.store.get(pattern.item_id).status, KnowledgeStatus.CANDIDATE)
 
+    def test_observation_rejects_empty_project_and_invalid_evidence_hash(self) -> None:
+        pattern = pattern_from_project(
+            name="Safe local state",
+            summary="Persist state outside the installer root.",
+            observed_at="2026-08-07T20:00:00+00:00",
+        )
+        self.store.upsert(pattern)
+
+        with self.assertRaises(ValueError):
+            self.store.observe(
+                pattern.item_id,
+                project_id=" ",
+                outcome=ObservationOutcome.SUCCESS,
+                observed_at="2026-08-07T20:10:00+00:00",
+            )
+        with self.assertRaises(ValueError):
+            self.store.observe(
+                pattern.item_id,
+                project_id="project-a",
+                outcome=ObservationOutcome.SUCCESS,
+                observed_at="2026-08-07T20:10:00+00:00",
+                evidence_sha256="not-a-sha",
+            )
+
     def test_external_knowledge_requires_provenance(self) -> None:
         with self.assertRaises(ValueError):
             KnowledgeItem(
@@ -96,6 +138,23 @@ class KnowledgeFabricTests(unittest.TestCase):
                 origin=KnowledgeOrigin.EXTERNAL,
                 source_url="https://example.test/source",
             )
+
+    def test_source_registry_has_unique_attributed_policies(self) -> None:
+        payload = json.loads(
+            (ROOT / "registry" / "knowledge-sources.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(payload["schema_version"], 1)
+        sources = payload["sources"]
+        ids = [source["id"] for source in sources]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertGreaterEqual(len(sources), 8)
+        for source in sources:
+            self.assertTrue(source["url"].startswith("https://"))
+            self.assertIn(source["decision"], {"ADOPT", "ADAPT", "REFERENCE", "REJECT"})
+            self.assertTrue(source["purpose"])
+            self.assertTrue(source["code_license"])
+            self.assertTrue(source["cache_policy"])
+            self.assertTrue(source["ingest_policy"])
 
     def test_book_is_generated_projection_not_authoritative_storage(self) -> None:
         lesson = lesson_from_failure(
