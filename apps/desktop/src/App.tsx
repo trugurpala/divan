@@ -145,6 +145,7 @@ function App() {
   const [evidence, setEvidence] = useState<EvidenceRecord[]>([]);
   const [taskDiff, setTaskDiff] = useState<TaskDiff | null>(null);
   const [agent, setAgent] = useState<string>("");
+  const [engine, setEngine] = useState<string>("");
   const [activeTab, setActiveTab] = useState<ActiveTab>("summary");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +153,8 @@ function App() {
   const refreshReadiness = async () => {
     const value = await coreRequest<Readiness>({ command: "readiness" });
     setReadiness(value);
-    if (!agent && value.recommended_agent) setAgent(value.recommended_agent);
+    setAgent((current) => current || value.recommended_agent || "");
+    setEngine((current) => current || value.recommended_engine || "");
   };
 
   const refreshProjects = async () => {
@@ -198,6 +200,7 @@ function App() {
   const canReadDiff = Boolean(
     selected && !["draft", "planned"].includes(selected.state),
   );
+  const selectedEngine = selected?.engine_id || engine || readiness?.recommended_engine || "";
 
   useEffect(() => {
     if (!selected) {
@@ -255,7 +258,7 @@ function App() {
         command: "task.create",
         title: title.trim(),
         project_id: selectedProject?.project_id ?? undefined,
-        engine_id: readiness?.recommended_engine ?? undefined,
+        engine_id: engine || readiness?.recommended_engine || undefined,
       });
       await refreshTasks();
       setSelectedId(created.task_id);
@@ -275,8 +278,9 @@ function App() {
   const startTask = () =>
     selected &&
     run("start", async () => {
+      const executionEngine = selected.engine_id || engine || readiness?.recommended_engine || "";
       const confirmed = window.confirm(
-        `Divan bu görevi izole bir Git worktree içinde çalıştıracak.\n\nGörev: ${selected.title}\nAjan: ${agent || "otomatik"}\nMotor: ${readiness?.recommended_engine ?? "otomatik"}\n\nBir kez çalıştırmayı onaylıyor musun?`,
+        `Divan bu görevi izole bir Git worktree içinde çalıştıracak.\n\nGörev: ${selected.title}\nAjan: ${agent || "otomatik"}\nMotor: ${executionEngine || "otomatik"}\n\nBir kez çalıştırmayı onaylıyor musun?`,
       );
       if (!confirmed) return;
       await coreRequest<CoreTask>({
@@ -284,7 +288,7 @@ function App() {
         task_id: selected.task_id,
         approve_execution: true,
         agent: agent || undefined,
-        engine_id: readiness?.recommended_engine ?? undefined,
+        engine_id: executionEngine || undefined,
         prompt: selected.title,
       });
       await refreshTasks();
@@ -375,9 +379,7 @@ function App() {
         <div className="project-pill">{selectedProject?.root ?? "Proje seçilmedi"}</div>
         <div className="engine-pill">
           <span className="dot" />
-          {readiness?.recommended_engine
-            ? `${readiness.recommended_engine} hazır`
-            : "motor aranıyor"}
+          {selectedEngine ? `${selectedEngine} hazır` : "motor aranıyor"}
         </div>
       </header>
 
@@ -443,7 +445,13 @@ function App() {
 
       <section className="workspace">
         {activeTab === "settings" ? (
-          <Settings readiness={readiness} agent={agent} setAgent={setAgent} />
+          <Settings
+            readiness={readiness}
+            agent={agent}
+            setAgent={setAgent}
+            engine={engine}
+            setEngine={setEngine}
+          />
         ) : activeTab === "releases" ? (
           <ReleaseView
             shellCaps={shellCaps}
@@ -546,7 +554,7 @@ function App() {
                   <div className="summary-grid">
                     <div>
                       <span className="eyebrow">EXECUTION ENGINE</span>
-                      <strong>{selected.engine_id ?? readiness?.recommended_engine ?? "bekliyor"}</strong>
+                      <strong>{selected.engine_id || selectedEngine || "bekliyor"}</strong>
                     </div>
                     <div>
                       <span className="eyebrow">AJAN</span>
@@ -611,7 +619,7 @@ function App() {
         </p>
         <dl>
           <div><dt>Durum</dt><dd>{selected?.state ?? "—"}</dd></div>
-          <div><dt>Engine</dt><dd>{selected?.engine_id ?? readiness?.recommended_engine ?? "—"}</dd></div>
+          <div><dt>Engine</dt><dd>{selected?.engine_id || selectedEngine || "—"}</dd></div>
           <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
           <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
           <div><dt>Mandate</dt><dd>{selected?.mandate_id ? "Var" : "Gerekli"}</dd></div>
@@ -712,12 +720,17 @@ function Settings({
   readiness,
   agent,
   setAgent,
+  engine,
+  setEngine,
 }: {
   readiness: Readiness | null;
   agent: string;
   setAgent: (value: string) => void;
+  engine: string;
+  setEngine: (value: string) => void;
 }) {
   const agents = readiness?.tools.filter((tool) => agentIds.has(tool.id) && tool.available) ?? [];
+  const engines = readiness?.engines ?? [];
   return (
     <section>
       <div className="section-heading">
@@ -755,6 +768,20 @@ function Settings({
           </article>
         ))}
       </div>
+
+      <section className="terminal-panel settings-agent">
+        <span className="eyebrow">VARSAYILAN EXECUTION ENGINE</span>
+        <select value={engine} onChange={(event) => setEngine(event.target.value)}>
+          <option value="">Otomatik seç</option>
+          {engines.map((engineId) => (
+            <option value={engineId} key={engineId}>{engineId}</option>
+          ))}
+        </select>
+        <p>
+          Native ve Orca aynı Divan execution contract arkasındadır. Yeni görevlerde seçimin
+          kullanılır; seçim yoksa Divan kullanılabilir motoru önerir.
+        </p>
+      </section>
 
       <section className="terminal-panel settings-agent">
         <span className="eyebrow">VARSAYILAN İŞÇİ</span>
