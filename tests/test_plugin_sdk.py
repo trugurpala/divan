@@ -13,6 +13,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 plugin_sdk = importlib.import_module("divan_runtime.plugin_sdk")
+plugin_desktop = importlib.import_module("divan_runtime.plugin_desktop")
 PluginDecision = plugin_sdk.PluginDecision
 
 
@@ -173,6 +174,67 @@ class PluginApprovalTests(unittest.TestCase):
         assert result.activation is not None
         self.assertEqual(
             result.activation.capabilities, ("evidence.emit", "project.read")
+        )
+
+
+class PluginDesktopInspectionTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.root = pathlib.Path(self.temp.name)
+        self.executable = self.root / "plugin.exe"
+        self.executable.write_bytes(b"plugin-v1")
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def manifest_path(self, payload=None) -> pathlib.Path:
+        path = self.root / "plugin.json"
+        path.write_text(
+            json.dumps(payload or valid_manifest(), sort_keys=True),
+            encoding="utf-8",
+        )
+        return path
+
+    def test_trust_report_is_privacy_bounded_and_never_claims_activation(self) -> None:
+        report = plugin_desktop.inspect_plugin_manifest(
+            self.manifest_path(),
+            executable_locator=lambda _name: str(self.executable),
+        )
+        serialized = json.dumps(report, sort_keys=True)
+
+        self.assertEqual(report["stage"], "approval-required")
+        self.assertTrue(report["validation"]["ok"])
+        self.assertFalse(report["activation"]["supported"])
+        self.assertEqual(report["artifact"]["manifest_name"], "plugin.json")
+        self.assertEqual(report["artifact"]["executable_name"], "plugin.exe")
+        self.assertEqual(len(report["artifact"]["manifest_sha256"]), 64)
+        self.assertEqual(len(report["artifact"]["executable_sha256"]), 64)
+        self.assertNotIn(str(self.root), serialized)
+
+    def test_valid_manifest_without_binary_is_not_ready_for_approval(self) -> None:
+        report = plugin_desktop.inspect_plugin_manifest(
+            self.manifest_path(),
+            executable_locator=lambda _name: None,
+        )
+
+        self.assertEqual(report["stage"], "executable-missing")
+        self.assertTrue(report["validation"]["ok"])
+        self.assertFalse(report["artifact"]["executable_available"])
+        self.assertIsNone(report["artifact"]["executable_sha256"])
+
+    def test_invalid_manifest_surfaces_stable_issue_codes(self) -> None:
+        path = self.manifest_path(valid_manifest(capabilities=["merge.commit"]))
+        report = plugin_desktop.inspect_plugin_manifest(
+            path,
+            executable_locator=lambda _name: str(self.executable),
+        )
+
+        self.assertEqual(report["stage"], "invalid")
+        self.assertFalse(report["validation"]["ok"])
+        self.assertIsNone(report["manifest"])
+        self.assertIn(
+            "PLUGIN_CAPABILITY_RESERVED",
+            {issue["code"] for issue in report["validation"]["errors"]},
         )
 
 
