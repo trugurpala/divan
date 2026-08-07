@@ -5,7 +5,7 @@ import json
 import shutil
 import subprocess
 import sys
-from typing import Sequence
+from typing import Mapping, Sequence
 
 AUTH_MARKER = "DIVAN_AUTH_OK"
 
@@ -59,6 +59,34 @@ def parse_codex_auth(text: str) -> str:
     raise AgentPreflightError("Codex authentication status is unknown")
 
 
+def _codex_message_text(event: Mapping[str, object]) -> str | None:
+    item = event.get("item")
+    if isinstance(item, Mapping):
+        text = item.get("text")
+        if isinstance(text, str):
+            return text
+    message = event.get("message")
+    return message if isinstance(message, str) else None
+
+
+def parse_codex_probe(stdout: str) -> None:
+    for line in reversed(stdout.splitlines()):
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, Mapping):
+            continue
+        message = _codex_message_text(event)
+        if message is not None:
+            if message.strip() == AUTH_MARKER:
+                return
+            raise AgentPreflightError(
+                "Codex session probe did not return the expected marker"
+            )
+    raise AgentPreflightError("Codex session probe returned no final message")
+
+
 def parse_claude_probe(stdout: str) -> None:
     try:
         payload = json.loads(stdout.strip())
@@ -95,6 +123,24 @@ def preflight() -> dict[str, object]:
         f"Return exactly {AUTH_MARKER}. "
         "Do not use tools, edit files, or run commands."
     )
+    code, stdout, _ = _run(
+        (
+            codex,
+            "exec",
+            "--json",
+            "--ephemeral",
+            "--sandbox",
+            "read-only",
+            "--skip-git-repo-check",
+            "-",
+        ),
+        timeout=45.0,
+        stdin_text=prompt,
+    )
+    if code != 0:
+        raise AgentPreflightError("Codex authenticated session probe failed")
+    parse_codex_probe(stdout)
+
     code, stdout, _ = _run(
         (
             claude,
