@@ -75,6 +75,19 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("--source-tree $env:DIVAN_SOURCE_TREE", signed)
         self.assertIn("--acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE", signed)
 
+    def test_signed_candidate_consumes_exact_run_updater_e2e_evidence(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        self.assertIn("Download exact-run signed updater e2e evidence", signed)
+        self.assertIn(
+            "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1",
+            signed,
+        )
+        self.assertIn("name: divan-desktop-updater-e2e", signed)
+        self.assertIn("digest-mismatch: error", signed)
+        self.assertIn("Updater e2e artifact must contain exactly one JSON evidence file", signed)
+        self.assertIn("DIVAN_UPDATER_E2E_EVIDENCE=$evidence", signed)
+        self.assertIn("--updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE", signed)
+
     def test_updater_is_optional_for_beta_and_explicitly_enabled_for_signed_release(self) -> None:
         cargo = CARGO.read_text(encoding="utf-8")
         main = MAIN.read_text(encoding="utf-8")
