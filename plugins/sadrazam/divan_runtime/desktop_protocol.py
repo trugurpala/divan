@@ -6,11 +6,11 @@ from typing import Any
 from uuid import uuid4
 
 from .desktop_api import DesktopApi
+from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import (
     error_response as _error,
     ok_response as _ok,
     optional_string as _optional_string,
-    ProtocolValidationError,
     required_string as _required_string,
 )
 from .desktop_state import evidence_root, task_root
