@@ -14,18 +14,31 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
+from divan_runtime.desktop_api import DesktopApi
 from divan_runtime.desktop_protocol import handle_request
 from divan_runtime.execution_contract import ExecutionAction, ExecutionReceipt
 from divan_runtime.execution_router import ExecutionRouter
+from divan_runtime.task_model import DivanTask
 
 
 class FakeEngine:
     engine_id = "native"
 
+    def __init__(self):
+        self.requests = []
+
     def execute(self, request):
+        self.requests.append(request)
         if request.action is ExecutionAction.FILE_DIFF:
-            payload = {"diff": "diff --git a/app.py b/app.py\n+print('ok')\n"}
-            argv = ("git", "diff", "--")
+            payload = {
+                "diff": "diff --git a/app.py b/app.py\n+print('ok')\n",
+                "staged": request.args.get("staged") is True,
+            }
+            argv = ("git", "diff", "--cached", "--") if payload["staged"] else (
+                "git",
+                "diff",
+                "--",
+            )
         else:
             payload = {
                 "worktree": "C:/tmp/worktree",
@@ -131,6 +144,28 @@ class DesktopProtocolTests(unittest.TestCase):
             self.assertEqual(diff["result"]["engine"], "native")
             self.assertIn("diff --git", diff["result"]["diff"])
             self.assertEqual(diff["result"]["path"], "*")
+            self.assertFalse(diff["result"]["staged"])
+            self.assertEqual(diff["result"]["basis"], "working-tree")
+
+    def test_task_diff_defaults_to_reviewed_staged_snapshot_after_review(self):
+        engine = FakeEngine()
+        router = ExecutionRouter([engine], default_engine="native")
+        task = DivanTask(
+            task_id="DIV-REVIEWED",
+            title="Reviewed change",
+            engine_id="native",
+            mandate_id="mandate-reviewed",
+            metadata={
+                "execution": {"payload": {"worktree": "C:/tmp/worktree"}},
+                "review_snapshot": {"diff_sha256": "a" * 64},
+            },
+        )
+
+        diff = DesktopApi(router).task_diff(task)
+
+        self.assertTrue(diff["staged"])
+        self.assertEqual(diff["basis"], "review-snapshot")
+        self.assertTrue(engine.requests[-1].args["staged"])
 
     def test_task_diff_requires_an_execution_worktree(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
