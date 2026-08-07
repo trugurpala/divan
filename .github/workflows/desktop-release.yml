@@ -57,6 +57,7 @@ jobs:
       attestations: write
       artifact-metadata: write
     env:
+      DIVAN_ACCEPTANCE_INPUT: ${{ inputs.acceptance_evidence }}
       DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
       DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
       DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
@@ -97,7 +98,7 @@ jobs:
       - name: Validate committed real-user acceptance evidence
         shell: pwsh
         run: |
-          $evidence = "${{ inputs.acceptance_evidence }}"
+          $evidence = $env:DIVAN_ACCEPTANCE_INPUT
           if (-not $evidence -or -not (Test-Path $evidence)) {
             throw "Committed Windows acceptance evidence was not found: $evidence"
           }
