@@ -62,6 +62,17 @@ class FlakyEngine:
         )
 
 
+class RaisingEngine:
+    engine_id = "native"
+
+    def __init__(self) -> None:
+        self.names: list[str] = []
+
+    def execute(self, request):
+        self.names.append(str(request.args.get("name")))
+        raise RuntimeError("simulated process loss")
+
+
 class FakeReviewer:
     def review(self, *, task_title: str, diff: str, worker_agent: str | None = None):
         self.last_task_title = task_title
@@ -265,6 +276,73 @@ class OrchestratorTests(unittest.TestCase):
             )
             self.assertEqual(engine.names, ["DIV-RECOVER-attempt-2"])
             self.assertEqual(retried.metadata["execution"]["attempt"], 2)
+
+    def test_crash_during_later_retry_clears_stale_active_receipt_and_recovers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            raising = RaisingEngine()
+            router = ExecutionRouter([raising], default_engine="native")
+            orchestrator = DivanOrchestrator(
+                router,
+                state_root=root / "tasks",
+                evidence_root=root / "evidence",
+            )
+            task = orchestrator.create_task(
+                task_id="DIV-LATE-RECOVER",
+                title="Recover later retry",
+                engine_id="native",
+                mandate_id="m-late",
+                metadata={
+                    "execution": {
+                        "engine": "native",
+                        "ok": False,
+                        "exit_code": 1,
+                        "payload": {"worktree": "C:/old-worktree", "agent": "codex"},
+                        "attempt": 1,
+                        "worktree_name": "DIV-LATE-RECOVER",
+                    },
+                    "execution_history": [
+                        {
+                            "engine": "native",
+                            "ok": False,
+                            "exit_code": 1,
+                            "payload": {"worktree": "C:/old-worktree", "agent": "codex"},
+                            "attempt": 1,
+                            "worktree_name": "DIV-LATE-RECOVER",
+                        }
+                    ],
+                    "review_snapshot": {"worktree": "C:/old-worktree", "diff_sha256": "a" * 64},
+                    "review": {"verdict": "retry", "checks": [], "reasons": []},
+                    "automated_review": {"reviewer": "claude", "verdict": "RETRY"},
+                },
+            )
+            task = replace(task, state=TaskState.RETRY)
+            orchestrator.tasks.save(task)
+
+            with self.assertRaisesRegex(RuntimeError, "simulated process loss"):
+                orchestrator.start(task, worktree_name="DIV-LATE-RECOVER", agent="codex")
+
+            persisted = orchestrator.tasks.load("DIV-LATE-RECOVER")
+            self.assertEqual(persisted.state, TaskState.RUNNING)
+            self.assertNotIn("execution", persisted.metadata)
+            self.assertNotIn("review_snapshot", persisted.metadata)
+            self.assertNotIn("review", persisted.metadata)
+            self.assertNotIn("automated_review", persisted.metadata)
+            self.assertEqual(persisted.metadata["execution_pending"]["attempt"], 2)
+            self.assertEqual(
+                [row["attempt"] for row in persisted.metadata["execution_history"]],
+                [1],
+            )
+            self.assertEqual(raising.names, ["DIV-LATE-RECOVER-attempt-2"])
+
+            recovered = orchestrator.recover_interrupted(persisted)
+            self.assertEqual(recovered.state, TaskState.RETRY)
+            self.assertTrue(recovered.metadata["execution"]["interrupted"])
+            self.assertEqual(recovered.metadata["execution"]["attempt"], 2)
+            self.assertEqual(
+                [row["attempt"] for row in recovered.metadata["execution_history"]],
+                [1, 2],
+            )
 
     def test_recovery_rejects_completed_execution_receipt(self):
         with tempfile.TemporaryDirectory() as directory:
