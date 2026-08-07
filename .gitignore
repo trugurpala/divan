@@ -9,3 +9,12 @@ node_modules/
 .coverage
 htmlcov/
 .superpowers/
+
+# Divan Desktop generated output
+apps/desktop/dist/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/resources/*.exe
+apps/desktop/src-tauri/resources/*.pyz
+build/
+dist/
+*.spec
