@@ -56,6 +56,7 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertEqual(response["result"]["product"], "Divan")
         self.assertIn("task.start", response["result"]["commands"])
         self.assertIn("task.diff", response["result"]["commands"])
+        self.assertIn("task.review.auto", response["result"]["commands"])
 
     def test_task_create_plan_start_uses_explicit_approval(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
@@ -151,6 +152,29 @@ class DesktopProtocolTests(unittest.TestCase):
                 diff["error"]["code"],
                 "DESKTOP_TASK_WORKTREE_UNAVAILABLE",
             )
+
+    def test_automated_review_fails_closed_before_execution(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            router = ExecutionRouter([FakeEngine()], default_engine="native")
+            handle_request(
+                {
+                    "command": "task.create",
+                    "task_id": "DIV-4",
+                    "title": "Review me",
+                },
+                router,
+            )
+
+            review = handle_request(
+                {"command": "task.review.auto", "task_id": "DIV-4"},
+                router,
+            )
+
+            self.assertFalse(review["ok"])
+            self.assertEqual(review["error"]["code"], "DESKTOP_VALIDATION_FAILED")
+            self.assertIn("running", review["error"]["message"])
 
     def test_task_create_validates_title(self):
         response = handle_request({"command": "task.create", "title": "  "})
