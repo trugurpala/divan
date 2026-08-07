@@ -21,6 +21,7 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 - Installed-app Windows smoke test with exact source commit/tree provenance.
 - Optional signed-updater feature; unsigned beta builds cannot claim stable updater capability.
 - Explicit update check and separate user-confirmed install flow.
+- Interrupted execution is persisted before engine invocation and recovered fail-closed to explicit RETRY; restart never silently resumes mutation.
 - Manual, main-only real-user acceptance and signed-candidate workflows.
 - Dedicated `divan-desktop-acceptance` runner label and attested acceptance evidence contract.
 - Authenticode/updater/signature/source-provenance stable-release gates are fail-closed.
@@ -59,15 +60,21 @@ Completion evidence:
 
 ### DSK-03 — Windows lifecycle recovery and first-run matrix
 
-**Status:** OPEN
+**Status:** IN PROGRESS
 
-Completion evidence:
+Implemented evidence:
 
-- clean Windows install/uninstall remains proven
+- persisted interrupted execution records an `execution_pending` snapshot before engine invocation
+- restart recovery changes only Core task state to RETRY and records recovery evidence; it does not call an execution engine
+- retry uses a fresh attempt/worktree name and still requires a new explicit execution approval
+- Desktop surfaces interrupted RUNNING state and disables review/diff until recovery is acknowledged
+
+Remaining completion evidence:
+
+- clean Windows install/uninstall remains proven on the final exact head
 - first run with Orca absent degrades cleanly
 - first run with Orca present discovers it without making Orca authoritative
-- persisted project/task state survives Desktop process restart
-- interrupted non-terminal task is surfaced safely after restart; no mutation is resumed silently
+- persisted project/task state survives a real Desktop process restart acceptance test
 - authority/approval state is never reconstructed from UI-only state
 
 ### DSK-04 — Signed updater upgrade and rollback verification
