@@ -8,6 +8,8 @@ on:
       - "scripts/divan-desktop-bridge.py"
       - "scripts/build_desktop_core.py"
       - "scripts/desktop_release_guard.py"
+      - "scripts/prepare_desktop_release_config.py"
+      - "scripts/windows_desktop_acceptance.ps1"
       - "tests/test_desktop_protocol.py"
       - "tests/test_project_readiness.py"
       - "tests/test_project_registry.py"
@@ -17,7 +19,9 @@ on:
       - "tests/test_reviewer_runner.py"
       - "tests/test_git_guard.py"
       - "tests/test_desktop_release_guard.py"
+      - "tests/test_prepare_desktop_release_config.py"
       - ".github/workflows/desktop-build.yml"
+      - ".github/workflows/desktop-release.yml"
   workflow_dispatch:
 
 permissions:
@@ -74,6 +78,7 @@ jobs:
           tests.test_reviewer_runner
           tests.test_git_guard
           tests.test_desktop_release_guard
+          tests.test_prepare_desktop_release_config
           tests.test_orca_engine
           tests.test_orca_adapter
 
