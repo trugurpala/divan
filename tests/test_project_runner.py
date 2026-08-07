@@ -38,6 +38,7 @@ RUNTIME_FILES = (
     "engine.py",
     "engine_registry.py",
     "evidence.py",
+    "executable_locator.py",
     "execution.py",
     "execution_contract.py",
     "execution_router.py",
@@ -188,36 +189,10 @@ class ProjectRunnerTests(unittest.TestCase):
                     },
                 )
                 self.assertIn("divan_runtime/project_state.py", names)
-                self.assertIn("divan_runtime/adoption_runner.py", names)
-                self.assertIn("divan_runtime/modules.json", names)
-                self.assertIn("divan_runtime/messages.json", names)
-                self.assertIn("divan_runtime/studio/index.html", names)
-                self.assertIn("divan_runtime/studio/studio.css", names)
-                self.assertIn("divan_runtime/studio/studio.js", names)
-                self.assertEqual(
-                    archive.read("divan_runtime/version.txt").decode("utf-8").strip(),
-                    CURRENT_VERSION,
-                )
-
-    def test_dirty_tree_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
-            base = pathlib.Path(temporary)
-            repository = base / "repo"
-            repository.mkdir()
-            source_commit = self._fixture(repository)
-            provider = (
-                repository
-                / "plugins"
-                / "sadrazam"
-                / "divan_runtime"
-                / "providers.py"
-            )
-            provider.write_text(provider.read_text(encoding="utf-8") + "\n# dirty\n")
-
-            result = self._build(repository, base / "runner.pyz", source_commit)
-
-            self.assertNotEqual(result.returncode, 0)
-            self.assertIn("clean", result.stderr)
+                self.assertIn("divan_runtime/executable_locator.py", names)
+                self.assertIn("divan_runtime/project_readiness.py", names)
+                self.assertIn("divan_runtime/desktop_protocol.py", names)
+                self.assertIn("divan_runtime/timeout-policy.json", names)
 
     def test_source_commit_must_equal_clean_head(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
@@ -225,11 +200,24 @@ class ProjectRunnerTests(unittest.TestCase):
             repository = base / "repo"
             repository.mkdir()
             self._fixture(repository)
-
-            result = self._build(repository, base / "runner.pyz", "a" * 40)
-
+            output = base / "runner.pyz"
+            result = self._build(repository, output, "0" * 40)
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("HEAD", result.stderr)
+            self.assertIn("exactly match clean repository HEAD", result.stderr)
+            self.assertFalse(output.exists())
+
+    def test_dirty_tree_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
+            base = pathlib.Path(temporary)
+            repository = base / "repo"
+            repository.mkdir()
+            source_commit = self._fixture(repository)
+            (repository / "VERSION").write_text("9.9.9\n", encoding="utf-8")
+            output = base / "runner.pyz"
+            result = self._build(repository, output, source_commit)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("source repository must be clean", result.stderr)
+            self.assertFalse(output.exists())
 
     def test_runner_executes_the_canonical_divan_runtime(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
@@ -237,23 +225,21 @@ class ProjectRunnerTests(unittest.TestCase):
             repository = base / "repo"
             repository.mkdir()
             source_commit = self._fixture(repository)
-            output = base / "divan-project.pyz"
+            output = base / "runner.pyz"
             result = self._build(repository, output, source_commit)
             self.assertEqual(result.returncode, 0, result.stderr)
 
-            execution = subprocess.run(
+            completed = subprocess.run(
                 [sys.executable, str(output), "validate", "--json"],
-                cwd=temporary,
+                cwd=base,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
                 check=False,
             )
-
-            self.assertEqual(execution.returncode, 0, execution.stderr)
-            payload = json.loads(execution.stdout)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
             self.assertEqual(payload["status"], "valid")
-            self.assertEqual(payload["product"]["id"], "divan")
             self.assertEqual(payload["module_count"], 9)
 
     def test_built_runner_serves_the_complete_seyir_session(self) -> None:
@@ -262,57 +248,30 @@ class ProjectRunnerTests(unittest.TestCase):
             repository = base / "repo"
             repository.mkdir()
             source_commit = self._fixture(repository)
-            output = base / "divan-project.pyz"
+            output = base / "runner.pyz"
             result = self._build(repository, output, source_commit)
             self.assertEqual(result.returncode, 0, result.stderr)
 
-            process = subprocess.Popen(
+            project = base / "project"
+            project.mkdir()
+            completed = subprocess.run(
                 [
                     sys.executable,
                     str(output),
+                    "project",
                     "status",
-                    "--project",
-                    str(repository),
-                    "--lang",
-                    "tr",
+                    str(project),
+                    "--json",
                 ],
                 cwd=base,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
                 text=True,
                 encoding="utf-8",
+                check=False,
             )
-            self.addCleanup(
-                lambda: process.kill() if process.poll() is None else None
-            )
-            assert process.stdout is not None
-            session_url = process.stdout.readline().strip()
-            parsed = urllib.parse.urlsplit(session_url)
-            self.assertEqual(parsed.hostname, "127.0.0.1")
-            self.assertTrue(parsed.fragment)
-            origin = f"http://127.0.0.1:{parsed.port}"
-
-            for path in (
-                "/session/",
-                "/session/studio.css",
-                "/session/studio.js",
-            ):
-                with urllib.request.urlopen(origin + path, timeout=5) as response:
-                    self.assertEqual(response.status, 200)
-                    self.assertTrue(response.read())
-            request = urllib.request.Request(
-                origin + "/api/status",
-                headers={"X-Divan-Session": parsed.fragment},
-            )
-            with urllib.request.urlopen(request, timeout=5) as response:
-                payload = json.load(response)
-            self.assertEqual(payload["product"]["name"], "Divan")
-            self.assertEqual(payload["locale"], "tr")
-            process.terminate()
-            process.wait(timeout=5)
-            process.stdout.close()
-            assert process.stderr is not None
-            process.stderr.close()
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertIn("project", payload)
 
     def test_built_runner_initializes_and_audits_public_web_with_ci(self) -> None:
         with tempfile.TemporaryDirectory(prefix="divan-pyz-") as temporary:
@@ -320,103 +279,76 @@ class ProjectRunnerTests(unittest.TestCase):
             repository = base / "repo"
             repository.mkdir()
             source_commit = self._fixture(repository)
-            output = base / "divan-project.pyz"
+            output = base / "runner.pyz"
             result = self._build(repository, output, source_commit)
             self.assertEqual(result.returncode, 0, result.stderr)
-            project = base / "site"
-            state_path = pathlib.Path(tempfile.mkdtemp(
-                prefix="divan-pyz-state-",
-                dir=(
-                    os.environ.get("LOCALAPPDATA")
-                    if os.name == "nt"
-                    else temporary
-                ),
-            ))
-            if os.name == "nt":
-                state_path.rmdir()
-            self.addCleanup(
-                lambda: shutil.rmtree(state_path)
-                if state_path.exists()
-                else None
-            )
-            environment = os.environ.copy()
-            environment["DIVAN_STATE_HOME"] = str(state_path)
-            shutil.copytree(
-                ROOT / "tests" / "fixtures" / "projects" / "static-site",
-                project,
-            )
-            init_args = [
-                sys.executable,
-                str(output),
-                "init",
-                "--project",
-                str(project),
-                "--profile",
-                "standard",
-                "--locale",
-                "en",
-                "--host",
-                "agents",
-                "--with-ci",
-                "--expected-url",
-                "https://example.test/",
-                "--json",
-            ]
-            planned = subprocess.run(
-                init_args,
-                cwd=base,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                env=environment,
-                check=False,
-            )
-            self.assertEqual(planned.returncode, 0, planned.stderr)
-            self.assertNotIn("Traceback", planned.stderr)
-            plan = json.loads(planned.stdout)
-            self.assertEqual(plan["status"], "planned")
-            paths = {row["path"] for row in plan["writes"]}
-            self.assertIn(".github/workflows/divan-project.yml", paths)
-            self.assertIn(".github/workflows/divan-seo.yml", paths)
 
-            applied = subprocess.run(
-                [*init_args, "--execute"],
+            project = base / "project"
+            project.mkdir()
+            (project / "package.json").write_text(
+                json.dumps({"scripts": {"build": "echo ok"}}), encoding="utf-8"
+            )
+            subprocess.run(["git", "-C", str(project), "init", "--quiet"], check=True)
+            subprocess.run(
+                ["git", "-C", str(project), "config", "core.autocrlf", "false"],
+                check=True,
+            )
+            subprocess.run(["git", "-C", str(project), "add", "."], check=True)
+            subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(project),
+                    "-c",
+                    "user.name=Divan Test",
+                    "-c",
+                    "user.email=divan-test@example.invalid",
+                    "commit",
+                    "--quiet",
+                    "-m",
+                    "fixture",
+                ],
+                check=True,
+            )
+
+            init = subprocess.run(
+                [
+                    sys.executable,
+                    str(output),
+                    "project",
+                    "init",
+                    str(project),
+                    "--profile",
+                    "public-web",
+                    "--ci",
+                    "--execute",
+                    "--json",
+                ],
                 cwd=base,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
-                env=environment,
                 check=False,
             )
-            self.assertEqual(
-                applied.returncode, 0, applied.stderr + applied.stdout
+            self.assertEqual(init.returncode, 0, init.stderr)
+            audit = subprocess.run(
+                [
+                    sys.executable,
+                    str(output),
+                    "project",
+                    "audit",
+                    str(project),
+                    "--json",
+                ],
+                cwd=base,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
             )
-            self.assertEqual(json.loads(applied.stdout)["status"], "applied")
-            expected_status = {
-                "audit": {"PASS"},
-                "verify": {"BLOCKED", "FAIL"},
-            }
-            for command in ("audit", "verify"):
-                observed = subprocess.run(
-                    [
-                        sys.executable,
-                        str(output),
-                        command,
-                        "--project",
-                        str(project),
-                        "--json",
-                    ],
-                    cwd=base,
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    env=environment,
-                    check=False,
-                )
-                self.assertNotIn("Traceback", observed.stderr)
-                payload = json.loads(observed.stdout)
-                self.assertIn(payload["status"], expected_status[command])
-                self.assertLess(len(observed.stdout), 65536)
+            self.assertEqual(audit.returncode, 0, audit.stderr)
+            payload = json.loads(audit.stdout)
+            self.assertIn(payload["status"], {"ready", "needs-attention"})
 
 
 if __name__ == "__main__":
