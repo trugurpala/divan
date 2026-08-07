@@ -23,9 +23,9 @@ from .plugin_contract import (
     PluginKind,
     PluginManifest,
     PluginTransport,
-    validate_manifest_payload,
 )
 from .plugin_discovery import PluginCandidate, discover_plugins, load_plugin_candidate
+from .plugin_manifest_validation import validate_manifest_payload
 
 __all__ = [
     "ALLOWED_CAPABILITIES",
