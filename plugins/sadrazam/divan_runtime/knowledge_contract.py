@@ -76,14 +76,18 @@ class KnowledgeItem:
             self.solution_signature,
             self.evidence_sha256,
         ):
-            if value is not None and not _SHA256_RE.fullmatch(value):
-                raise ValueError("knowledge digests must be lowercase SHA-256")
+            validate_optional_sha256(value)
         object.__setattr__(self, "title", self.title.strip())
         object.__setattr__(self, "summary", self.summary.strip())
-        object.__setattr__(self, "tags", _normalized(self.tags))
-        object.__setattr__(self, "stack", _normalized(self.stack))
+        object.__setattr__(self, "tags", normalized_terms(self.tags))
+        object.__setattr__(self, "stack", normalized_terms(self.stack))
 
 
-def _normalized(values: tuple[str, ...]) -> tuple[str, ...]:
+def validate_optional_sha256(value: str | None, *, field: str = "digest") -> None:
+    if value is not None and not _SHA256_RE.fullmatch(value):
+        raise ValueError(f"{field} must be lowercase SHA-256")
+
+
+def normalized_terms(values: tuple[str, ...]) -> tuple[str, ...]:
     cleaned = {value.strip().casefold() for value in values if value.strip()}
     return tuple(sorted(cleaned))
