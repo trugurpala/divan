@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -16,9 +17,11 @@ if str(PLUGIN_ROOT) not in sys.path:
 
 from divan_runtime.desktop_api import DesktopApi
 from divan_runtime.desktop_protocol import handle_request
+from divan_runtime.desktop_state import task_root
 from divan_runtime.execution_contract import ExecutionAction, ExecutionReceipt
 from divan_runtime.execution_router import ExecutionRouter
-from divan_runtime.task_model import DivanTask
+from divan_runtime.task_model import DivanTask, TaskState
+from divan_runtime.task_store import TaskStore
 
 
 class FakeEngine:
@@ -68,8 +71,10 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertEqual(response["api_version"], 1)
         self.assertEqual(response["result"]["product"], "Divan")
         self.assertIn("task.start", response["result"]["commands"])
+        self.assertIn("task.recover.interrupted", response["result"]["commands"])
         self.assertIn("task.diff", response["result"]["commands"])
         self.assertIn("task.review.auto", response["result"]["commands"])
+        self.assertIn("interrupted-recovery", response["result"]["features"])
 
     def test_task_create_plan_start_uses_explicit_approval(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
@@ -111,8 +116,77 @@ class DesktopProtocolTests(unittest.TestCase):
             self.assertTrue(started["ok"], started)
             self.assertEqual(started["result"]["state"], "running")
             self.assertTrue(started["result"]["mandate_id"].startswith("mandate-"))
+            self.assertNotIn("execution_pending", started["result"]["metadata"])
             self.assertEqual(evidence["result"][0]["kind"], "execution")
             self.assertNotIn("Fix login", str(evidence["result"][0]["data"]["argv"]))
+
+    def test_interrupted_task_requires_explicit_recovery_then_fresh_execution_approval(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            engine = FakeEngine()
+            router = ExecutionRouter([engine], default_engine="native")
+            handle_request(
+                {"command": "task.create", "task_id": "DIV-REC", "title": "Recover me"},
+                router,
+            )
+            handle_request({"command": "task.plan", "task_id": "DIV-REC"}, router)
+            store = TaskStore(task_root())
+            planned = store.load("DIV-REC")
+            interrupted = replace(
+                planned.transition(TaskState.RUNNING, "execution attempt 1 started"),
+                engine_id="native",
+                mandate_id="mandate-recovery",
+                metadata={
+                    "execution_pending": {
+                        "attempt": 1,
+                        "worktree_name": "DIV-REC",
+                        "agent": "codex",
+                    }
+                },
+            )
+            store.save(interrupted)
+
+            recovered = handle_request(
+                {"command": "task.recover.interrupted", "task_id": "DIV-REC"},
+                router,
+            )
+            self.assertTrue(recovered["ok"], recovered)
+            self.assertEqual(recovered["result"]["state"], "retry")
+            self.assertTrue(recovered["result"]["metadata"]["execution"]["interrupted"])
+            self.assertEqual(engine.requests, [])
+
+            denied = handle_request(
+                {"command": "task.start", "task_id": "DIV-REC", "agent": "codex"},
+                router,
+            )
+            self.assertFalse(denied["ok"])
+            self.assertEqual(
+                denied["error"]["code"],
+                "DESKTOP_EXECUTION_APPROVAL_REQUIRED",
+            )
+            self.assertEqual(engine.requests, [])
+
+            restarted = handle_request(
+                {
+                    "command": "task.start",
+                    "task_id": "DIV-REC",
+                    "agent": "codex",
+                    "approve_execution": True,
+                },
+                router,
+            )
+            self.assertTrue(restarted["ok"], restarted)
+            self.assertEqual(
+                engine.requests[-1].args["name"],
+                "DIV-REC-attempt-2",
+            )
+            recovery_evidence = handle_request(
+                {"command": "evidence.list", "task_id": "DIV-REC"},
+                router,
+            )
+            self.assertEqual(recovery_evidence["result"][0]["kind"], "recovery")
+            self.assertFalse(recovery_evidence["result"][0]["data"]["resumed"])
 
     def test_task_diff_uses_execution_worktree_without_mutation(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
