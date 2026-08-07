@@ -17,22 +17,6 @@ from .task_store import TaskStore
 
 API_VERSION = 1
 _AGENT_IDS = {"codex", "claude", "opencode", "cursor-agent"}
-_COMMAND_NAMES = (
-    "readiness",
-    "project.list",
-    "project.register",
-    "task.list",
-    "task.get",
-    "task.create",
-    "task.plan",
-    "task.start",
-    "task.review",
-    "task.approval.request",
-    "task.approve",
-    "task.release",
-    "evidence.list",
-    "engine.status",
-)
 Handler = Callable[[Mapping[str, Any], ExecutionRouter | None], dict[str, Any]]
 
 
@@ -116,7 +100,7 @@ def _handle_capabilities(
     del payload
     api = DesktopApi(router or ExecutionRouter([]))
     value = api.capabilities()
-    value["commands"] = _COMMAND_NAMES
+    value["commands"] = tuple(_HANDLERS)
     return _ok(value)
 
 
