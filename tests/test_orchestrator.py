@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pathlib
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -13,12 +14,15 @@ if str(PLUGIN_ROOT) not in sys.path:
 from divan_runtime.execution_contract import ExecutionReceipt
 from divan_runtime.execution_router import ExecutionRouter
 from divan_runtime.orchestrator import DivanOrchestrator
-from divan_runtime.review_gate import CheckResult
+from divan_runtime.reviewer_runner import AutomatedReview
 from divan_runtime.task_model import TaskState
 
 
 class FakeEngine:
     engine_id = "native"
+
+    def __init__(self, worktree: str = "C:/worktree") -> None:
+        self.worktree = worktree
 
     def execute(self, request):
         return ExecutionReceipt(
@@ -26,7 +30,7 @@ class FakeEngine:
             action=request.action,
             ok=True,
             exit_code=0,
-            payload={"worktree": "C:/worktree", "agent": "codex"},
+            payload={"worktree": self.worktree, "agent": "codex"},
             stdout="",
             stderr="",
             argv=("codex", "exec", "<redacted-prompt>"),
@@ -34,19 +38,73 @@ class FakeEngine:
         )
 
 
+class FakeReviewer:
+    def review(self, *, task_title: str, diff: str, worker_agent: str | None = None):
+        self.last_task_title = task_title
+        self.last_diff = diff
+        self.last_worker_agent = worker_agent
+        return AutomatedReview(
+            reviewer="claude",
+            verdict="PASS",
+            summary="Patch is safe.",
+            findings=(),
+        )
+
+
+def _git(directory: pathlib.Path, *args: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(directory), *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise AssertionError(completed.stderr or completed.stdout)
+    return completed.stdout.strip()
+
+
 class OrchestratorTests(unittest.TestCase):
     def test_happy_path_survives_persisted_review_and_reaches_release(self):
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            router = ExecutionRouter([FakeEngine()], default_engine="native")
+            project = root / "project"
+            project.mkdir()
+            _git(project, "init")
+            _git(project, "config", "user.name", "Divan Test")
+            _git(project, "config", "user.email", "divan-test@example.invalid")
+            (project / "app.txt").write_text("before\n", encoding="utf-8")
+            _git(project, "add", "app.txt")
+            _git(project, "commit", "-m", "initial")
+
+            worktree = root / "worker"
+            _git(
+                project,
+                "worktree",
+                "add",
+                "-b",
+                "divan-test-worker",
+                str(worktree),
+                "HEAD",
+            )
+            (worktree / "app.txt").write_text("after\n", encoding="utf-8")
+
+            reviewer = FakeReviewer()
+            router = ExecutionRouter(
+                [FakeEngine(str(worktree))],
+                default_engine="native",
+            )
             orchestrator = DivanOrchestrator(
                 router,
                 state_root=root / "tasks",
                 evidence_root=root / "evidence",
+                reviewer=reviewer,
             )
             task = orchestrator.create_task(
                 task_id="DIV-1",
                 title="Fix login",
+                project_root=str(project),
                 engine_id="native",
                 mandate_id="m-1",
             )
@@ -60,18 +118,21 @@ class OrchestratorTests(unittest.TestCase):
             self.assertEqual(task.state, TaskState.RUNNING)
             self.assertEqual(task.metadata["execution"]["engine"], "native")
 
-            task, decision = orchestrator.review(
-                task,
-                [CheckResult("tests", True), CheckResult("reviewer", True)],
-            )
+            task, decision = orchestrator.review_automated(task)
             self.assertEqual(task.state, TaskState.PASSED)
             self.assertEqual(task.metadata["review"]["verdict"], "pass")
+            self.assertEqual(task.metadata["automated_review"]["reviewer"], "claude")
             self.assertEqual(decision.verdict.value, "pass")
+            self.assertEqual(reviewer.last_worker_agent, "codex")
+            self.assertIn("app.txt", reviewer.last_diff)
 
             task = orchestrator.tasks.load("DIV-1")
             task = orchestrator.request_approval(task)
             task = orchestrator.approve_merge(task, approved=True)
             self.assertEqual(task.state, TaskState.MERGED)
+            self.assertEqual((project / "app.txt").read_text(encoding="utf-8"), "after\n")
+            self.assertEqual(_git(project, "rev-parse", "HEAD"), task.metadata["merge"]["commit_sha"])
+
             task = orchestrator.release(task)
             self.assertEqual(task.state, TaskState.RELEASED)
 
