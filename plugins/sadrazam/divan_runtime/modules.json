@@ -53,8 +53,7 @@
         "orca_engine",
         "orca_adapter",
         "native_engine",
-        "runtime_composition",
-        "orchestrator"
+        "runtime_composition"
       ],
       "capabilities": [
         "project_discovery",
@@ -66,8 +65,7 @@
         "execution_engine_routing",
         "orca_sidecar_execution",
         "native_worktree_execution",
-        "local_agent_dispatch",
-        "task_orchestration"
+        "local_agent_dispatch"
       ],
       "depends_on": [
         "kernel",
@@ -140,7 +138,8 @@
         "seyir_state",
         "ci_guard",
         "task_model",
-        "task_store"
+        "task_store",
+        "orchestrator"
       ],
       "capabilities": [
         "goal_state",
@@ -151,7 +150,8 @@
         "clean_room_adoption",
         "ci_failure_circuit_breaker",
         "desktop_task_state",
-        "atomic_task_persistence"
+        "atomic_task_persistence",
+        "task_orchestration"
       ],
       "depends_on": [
         "kernel",
