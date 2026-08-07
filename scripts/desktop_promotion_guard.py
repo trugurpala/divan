@@ -73,9 +73,7 @@ def _record(payload: Mapping[str, Any], name: str) -> Mapping[str, Any]:
 
 
 def _expect_digest(record: Mapping[str, Any], path: pathlib.Path, label: str) -> None:
-    expected = record.get("sha256")
-    actual = _sha256(path)
-    if expected != actual:
+    if record.get("sha256") != _sha256(path):
         raise PromotionError(f"{label} SHA-256 does not match promotion manifest")
     try:
         size = path.stat().st_size
@@ -83,6 +81,126 @@ def _expect_digest(record: Mapping[str, Any], path: pathlib.Path, label: str) ->
         raise PromotionError(f"could not stat {label}: {error}") from error
     if record.get("bytes") != size:
         raise PromotionError(f"{label} byte length does not match promotion manifest")
+
+
+def _candidate_files(
+    root: pathlib.Path,
+) -> tuple[pathlib.Path, pathlib.Path, pathlib.Path, pathlib.Path]:
+    installer = _single(root, "*-setup.exe", "NSIS installer")
+    signature = pathlib.Path(f"{installer}.sig")
+    if not signature.is_file():
+        raise PromotionError("candidate updater signature paired with the NSIS installer is missing")
+    feed = _single(root, "latest.json", "latest.json updater feed")
+    manifest = _single(root, "divan-update-manifest.json", "promotion manifest")
+    return installer, signature, feed, manifest
+
+
+def _signature_text(path: pathlib.Path) -> str:
+    try:
+        value = path.read_text(encoding="utf-8").strip()
+    except OSError as error:
+        raise PromotionError(f"could not read updater signature: {error}") from error
+    if not value:
+        raise PromotionError("updater signature must not be empty")
+    return value
+
+
+def _validate_feed_contract(
+    feed: Mapping[str, Any],
+    *,
+    version: str,
+    installer: pathlib.Path,
+    artifact_base_url: str,
+    signature: str,
+) -> None:
+    try:
+        validate_feed(
+            feed,
+            version=version,
+            installer_name=installer.name,
+            artifact_base_url=artifact_base_url,
+            signature=signature,
+        )
+    except UpdateFeedError as error:
+        raise PromotionError(str(error)) from error
+
+
+def _validate_manifest_identity(
+    manifest: Mapping[str, Any],
+    feed: Mapping[str, Any],
+    *,
+    version: str,
+    source_commit: str,
+    source_tree: str,
+) -> None:
+    if manifest.get("schema_version") != 1 or manifest.get("product") != "Divan":
+        raise PromotionError("promotion manifest schema/product is invalid")
+    if manifest.get("version") != version or manifest.get("target") != TARGET:
+        raise PromotionError("promotion manifest version/target does not match the candidate")
+    if manifest.get("source_commit") != source_commit or manifest.get("source_tree") != source_tree:
+        raise PromotionError("promotion manifest is not bound to the exact release source")
+    if manifest.get("pub_date") != feed.get("pub_date"):
+        raise PromotionError("promotion manifest pub_date does not match updater feed")
+
+
+def _validate_manifest_files(
+    manifest: Mapping[str, Any],
+    *,
+    installer: pathlib.Path,
+    signature: pathlib.Path,
+    feed: pathlib.Path,
+) -> Mapping[str, Any]:
+    installer_record = _record(manifest, "installer")
+    signature_record = _record(manifest, "updater_signature")
+    feed_record = _record(manifest, "feed")
+    expected_names = (
+        (installer_record, installer.name, "installer"),
+        (signature_record, signature.name, "signature"),
+        (feed_record, feed.name, "feed"),
+    )
+    for record, expected, label in expected_names:
+        if record.get("name") != expected:
+            raise PromotionError(f"promotion manifest {label} name does not match the candidate")
+    _expect_digest(installer_record, installer, "installer")
+    _expect_digest(signature_record, signature, "updater signature")
+    if feed_record.get("sha256") != _sha256(feed):
+        raise PromotionError("updater feed SHA-256 does not match promotion manifest")
+    return installer_record
+
+
+def _validate_manifest_url(
+    installer_record: Mapping[str, Any], feed: Mapping[str, Any]
+) -> None:
+    platforms = feed.get("platforms")
+    windows = platforms.get(TARGET) if isinstance(platforms, Mapping) else None
+    if not isinstance(windows, Mapping) or installer_record.get("url") != windows.get("url"):
+        raise PromotionError("promotion manifest installer URL does not match updater feed")
+
+
+def _report(
+    *,
+    version: str,
+    source_commit: str,
+    source_tree: str,
+    updater_endpoint: str,
+    installer: pathlib.Path,
+    signature: pathlib.Path,
+    feed: pathlib.Path,
+    manifest: pathlib.Path,
+) -> dict[str, Any]:
+    return {
+        "status": "pass",
+        "product": "Divan",
+        "version": version,
+        "target": TARGET,
+        "source_commit": source_commit,
+        "source_tree": source_tree,
+        "updater_endpoint": updater_endpoint,
+        "installer": {"name": installer.name, "sha256": _sha256(installer)},
+        "updater_signature": {"name": signature.name, "sha256": _sha256(signature)},
+        "feed": {"name": feed.name, "sha256": _sha256(feed)},
+        "manifest": {"name": manifest.name, "sha256": _sha256(manifest)},
+    }
 
 
 def validate_candidate(
@@ -97,81 +215,38 @@ def validate_candidate(
     root = candidate_dir.resolve()
     if not root.is_dir():
         raise PromotionError("candidate directory does not exist")
-
     commit = _git_identity(source_commit, "source_commit")
     tree = _git_identity(source_tree, "source_tree")
     artifact_base = _https_url(artifact_base_url, "artifact base URL")
     endpoint = _https_url(updater_endpoint, "updater endpoint")
-
-    installer = _single(root, "*-setup.exe", "NSIS installer")
-    signature = pathlib.Path(f"{installer}.sig")
-    if not signature.is_file():
-        raise PromotionError("candidate updater signature paired with the NSIS installer is missing")
-    feed_path = _single(root, "latest.json", "latest.json updater feed")
-    manifest_path = _single(root, "divan-update-manifest.json", "promotion manifest")
-
-    try:
-        signature_text = signature.read_text(encoding="utf-8").strip()
-    except OSError as error:
-        raise PromotionError(f"could not read updater signature: {error}") from error
-    if not signature_text:
-        raise PromotionError("updater signature must not be empty")
-
+    installer, signature, feed_path, manifest_path = _candidate_files(root)
     feed = _load_json(feed_path, "updater feed")
     manifest = _load_json(manifest_path, "promotion manifest")
-    try:
-        validate_feed(
-            feed,
-            version=version,
-            installer_name=installer.name,
-            artifact_base_url=artifact_base,
-            signature=signature_text,
-        )
-    except UpdateFeedError as error:
-        raise PromotionError(str(error)) from error
-
-    if manifest.get("schema_version") != 1 or manifest.get("product") != "Divan":
-        raise PromotionError("promotion manifest schema/product is invalid")
-    if manifest.get("version") != version or manifest.get("target") != TARGET:
-        raise PromotionError("promotion manifest version/target does not match the candidate")
-    if manifest.get("source_commit") != commit or manifest.get("source_tree") != tree:
-        raise PromotionError("promotion manifest is not bound to the exact release source")
-    if manifest.get("pub_date") != feed.get("pub_date"):
-        raise PromotionError("promotion manifest pub_date does not match updater feed")
-
-    installer_record = _record(manifest, "installer")
-    signature_record = _record(manifest, "updater_signature")
-    feed_record = _record(manifest, "feed")
-    if installer_record.get("name") != installer.name:
-        raise PromotionError("promotion manifest installer name does not match the candidate")
-    if signature_record.get("name") != signature.name:
-        raise PromotionError("promotion manifest signature name does not match the candidate")
-    if feed_record.get("name") != feed_path.name:
-        raise PromotionError("promotion manifest feed name does not match the candidate")
-
-    _expect_digest(installer_record, installer, "installer")
-    _expect_digest(signature_record, signature, "updater signature")
-    if feed_record.get("sha256") != _sha256(feed_path):
-        raise PromotionError("updater feed SHA-256 does not match promotion manifest")
-
-    platforms = feed.get("platforms")
-    windows = platforms.get(TARGET) if isinstance(platforms, Mapping) else None
-    if not isinstance(windows, Mapping) or installer_record.get("url") != windows.get("url"):
-        raise PromotionError("promotion manifest installer URL does not match updater feed")
-
-    return {
-        "status": "pass",
-        "product": "Divan",
-        "version": version,
-        "target": TARGET,
-        "source_commit": commit,
-        "source_tree": tree,
-        "updater_endpoint": endpoint,
-        "installer": {"name": installer.name, "sha256": _sha256(installer)},
-        "updater_signature": {"name": signature.name, "sha256": _sha256(signature)},
-        "feed": {"name": feed_path.name, "sha256": _sha256(feed_path)},
-        "manifest": {"name": manifest_path.name, "sha256": _sha256(manifest_path)},
-    }
+    signature_text = _signature_text(signature)
+    _validate_feed_contract(
+        feed,
+        version=version,
+        installer=installer,
+        artifact_base_url=artifact_base,
+        signature=signature_text,
+    )
+    _validate_manifest_identity(
+        manifest, feed, version=version, source_commit=commit, source_tree=tree
+    )
+    installer_record = _validate_manifest_files(
+        manifest, installer=installer, signature=signature, feed=feed_path
+    )
+    _validate_manifest_url(installer_record, feed)
+    return _report(
+        version=version,
+        source_commit=commit,
+        source_tree=tree,
+        updater_endpoint=endpoint,
+        installer=installer,
+        signature=signature,
+        feed=feed_path,
+        manifest=manifest_path,
+    )
 
 
 def write_checksums(report: Mapping[str, Any], output: pathlib.Path) -> None:
@@ -182,7 +257,9 @@ def write_checksums(report: Mapping[str, Any], output: pathlib.Path) -> None:
             raise PromotionError(f"promotion report {key} record is invalid")
         name = record.get("name")
         digest = record.get("sha256")
-        if not isinstance(name, str) or not name or not isinstance(digest, str) or not _SHA256_RE.fullmatch(digest):
+        valid_name = isinstance(name, str) and bool(name)
+        valid_digest = isinstance(digest, str) and bool(_SHA256_RE.fullmatch(digest))
+        if not valid_name or not valid_digest:
             raise PromotionError(f"promotion report {key} identity is invalid")
         lines.append(f"{digest}  {name}")
     output.parent.mkdir(parents=True, exist_ok=True)
