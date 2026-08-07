@@ -3,10 +3,10 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Any
 
@@ -54,7 +54,9 @@ class ProjectRegistry:
                     last_opened_at=str(row["last_opened_at"]),
                 )
             )
-        return tuple(sorted(records, key=lambda item: item.last_opened_at, reverse=True))
+        return tuple(
+            sorted(records, key=lambda item: item.last_opened_at, reverse=True)
+        )
 
     def register(self, root: str) -> ProjectRecord:
         canonical = _git_root(root)
@@ -72,7 +74,12 @@ class ProjectRegistry:
             last_opened_at=now,
         )
         existing[project_id] = record
-        self._write({"schema_version": 1, "projects": [asdict(item) for item in existing.values()]})
+        self._write(
+            {
+                "schema_version": 1,
+                "projects": [asdict(item) for item in existing.values()],
+            }
+        )
         return record
 
     def get(self, project_id: str) -> ProjectRecord:
