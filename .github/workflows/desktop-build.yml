@@ -12,6 +12,7 @@ on:
       - "tests/test_project_registry.py"
       - "tests/test_native_engine.py"
       - "tests/test_orchestrator.py"
+      - "tests/test_reviewer_runner.py"
       - ".github/workflows/desktop-build.yml"
   workflow_dispatch:
 
@@ -65,6 +66,7 @@ jobs:
           tests.test_orchestrator
           tests.test_execution_router
           tests.test_review_gate
+          tests.test_reviewer_runner
           tests.test_orca_engine
           tests.test_orca_adapter
 
