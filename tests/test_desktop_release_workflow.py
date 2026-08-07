@@ -6,8 +6,11 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "desktop-release.yml"
+BUILD_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-build.yml"
+ACCEPTANCE_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-acceptance.yml"
 CARGO = ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml"
 MAIN = ROOT / "apps" / "desktop" / "src-tauri" / "src" / "main.rs"
+PYINSTALLER_PIN = "pyinstaller==6.21.0"
 
 
 class DesktopReleaseWorkflowTests(unittest.TestCase):
@@ -86,6 +89,12 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("Test-Path $updaterSignaturePath", signed)
         self.assertNotIn("$updaterArchive", signed)
         self.assertNotRegex(signed, r"zip\|tar\\\.gz")
+
+    def test_desktop_packager_is_pinned_in_every_windows_release_lane(self) -> None:
+        for path in (WORKFLOW, BUILD_WORKFLOW, ACCEPTANCE_WORKFLOW):
+            text = path.read_text(encoding="utf-8")
+            self.assertIn(PYINSTALLER_PIN, text, path.name)
+            self.assertNotRegex(text, r"pip install --disable-pip-version-check pyinstaller(?:\s|$)")
 
     def test_all_actions_are_immutable_sha_pinned(self) -> None:
         mutable = []
