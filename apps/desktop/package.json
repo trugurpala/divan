@@ -7,9 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "core:build": "python ../../scripts/build_desktop_core.py",
+    "desktop:check": "python ../../scripts/desktop_release_guard.py",
     "tauri": "tauri",
     "desktop:dev": "pnpm core:build && tauri dev --config src-tauri/tauri.windows.conf.json",
-    "desktop:build": "pnpm core:build && tauri build --bundles nsis --config src-tauri/tauri.windows.conf.json"
+    "desktop:build": "pnpm desktop:check && pnpm core:build && tauri build --bundles nsis --config src-tauri/tauri.windows.conf.json"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
