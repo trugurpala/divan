@@ -45,6 +45,28 @@ Discovery never imports third-party Python code. A plugin is represented by a st
 
 The executable is a bare command name, never a shell string or arbitrary manifest-supplied path.
 
+## Desktop trust inspection
+
+The first Desktop integration is deliberately read-only.
+
+`plugin.inspect` accepts only an explicitly selected manifest path and returns a privacy-bounded trust report. It:
+
+- reads and validates static UTF-8 JSON;
+- resolves the declared bare executable through Divan's bounded executable locator;
+- hashes the manifest and resolved executable with SHA-256;
+- returns only local basenames, never absolute manifest or executable paths;
+- never imports or executes third-party plugin code;
+- never persists approval;
+- never claims that a valid plugin is enabled or trusted.
+
+The Desktop Trust Center has three current terminal display states:
+
+- `invalid` — the manifest contract failed;
+- `executable-missing` — the manifest is valid, but exact executable identity is unavailable;
+- `approval-required` — manifest and executable identity are known, but no activation claim exists.
+
+The product-level information architecture, accessibility rules and practical capability language are defined in `docs/product/plugin-trust-center.md`.
+
 ## Open-source adoption map
 
 | Upstream | Decision | Intended Divan use | Integration rule |
@@ -68,18 +90,35 @@ The current stable-release source identity must not be disturbed for convenience
 4. `notification` — task/review completion notification after explicit permission.
 5. `opener` — narrowly open evidence folders or approved URLs.
 
+Tauri 2 plugin commands remain denied unless explicitly granted through capabilities/permissions. `single-instance`, when introduced, must be registered first in the desktop builder. The Trust Center inspection path itself adds no new Tauri permission and reuses the existing native dialog capability.
+
 `fs`, `http`, `store`, `sql`, `websocket` and clipboard-read are not default SDK requirements. They should remain absent until a concrete feature has a reviewed minimum-permission contract.
+
+## Implemented in this slice
+
+- static manifest contract and fail-closed validation;
+- bounded plugin discovery;
+- bounded Windows-aware executable resolution shared with Divan's existing local-tool resolver;
+- SHA-256 manifest and executable identity;
+- hash-bound approval model and drift invalidation primitives;
+- privacy-bounded Desktop trust report;
+- read-only `plugin.inspect` Core protocol command;
+- first-class Desktop `Eklentiler` / Plugin Trust Center destination;
+- explicit native JSON manifest picker;
+- plain-language capability, mutation, provenance and activation-boundary UI;
+- context-aware Plugin Trust inspector rail;
+- focused Core/protocol/UI contract tests.
 
 ## Not yet implemented
 
-SDK v1 in this slice defines manifest validation, bounded discovery and hash-bound approval/activation only. It intentionally does **not** yet:
+SDK v1 intentionally does **not** yet:
 
-- spawn third-party plugins,
-- persist approvals,
-- add a Marketplace,
-- grant webview permissions,
-- auto-install plugin binaries,
-- auto-update third-party plugins,
+- spawn third-party plugins;
+- persist approvals;
+- add a Marketplace;
+- grant additional webview permissions;
+- auto-install plugin binaries;
+- auto-update third-party plugins;
 - route a plugin into execution/review/evidence without a separate adapter.
 
 Those are later slices and must reuse Divan mandate/evidence/release gates rather than bypass them.
