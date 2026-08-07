@@ -58,16 +58,23 @@ class DesktopApi:
         *,
         worktree: str | None = None,
         path: str = "*",
+        staged: bool | None = None,
     ) -> dict[str, Any]:
         active_worktree = worktree or self.execution_worktree(task)
         if active_worktree is None:
             raise ValueError("task has no execution worktree yet")
+        has_review_snapshot = isinstance(task.metadata.get("review_snapshot"), Mapping)
+        use_staged = has_review_snapshot if staged is None else staged
         receipt = self.router.execute(
             ExecutionRequest(
                 action=ExecutionAction.FILE_DIFF,
                 project_root=task.project_root,
                 mandate_id=task.mandate_id,
-                args={"worktree": active_worktree, "path": path},
+                args={
+                    "worktree": active_worktree,
+                    "path": path,
+                    "staged": use_staged,
+                },
             ),
             task.engine_id,
         )
@@ -81,6 +88,10 @@ class DesktopApi:
             "ok": receipt.ok,
             "exit_code": receipt.exit_code,
             "path": path,
+            "staged": use_staged,
+            "basis": "review-snapshot" if use_staged and has_review_snapshot else (
+                "staged" if use_staged else "working-tree"
+            ),
             "diff": diff,
         }
 
