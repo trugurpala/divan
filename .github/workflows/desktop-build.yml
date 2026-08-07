@@ -10,7 +10,9 @@ on:
       - "scripts/desktop_release_guard.py"
       - "scripts/prepare_desktop_release_config.py"
       - "scripts/windows_desktop_acceptance.ps1"
+      - "scripts/windows_desktop_lifecycle.ps1"
       - "tests/test_desktop_protocol.py"
+      - "tests/test_desktop_state.py"
       - "tests/test_project_readiness.py"
       - "tests/test_project_registry.py"
       - "tests/test_executable_locator.py"
@@ -71,6 +73,7 @@ jobs:
         run: >-
           python -m unittest
           tests.test_desktop_protocol
+          tests.test_desktop_state
           tests.test_project_readiness
           tests.test_project_registry
           tests.test_executable_locator
@@ -168,12 +171,73 @@ jobs:
             throw "Installed Divan Core provenance does not match the exact checked-out source identity"
           }
 
+          "DIVAN_INSTALLED_APP=$appExe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_INSTALLED_CORE=$($core.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
           $app = Start-Process -FilePath $appExe -PassThru
           Start-Sleep -Seconds 5
           if ($app.HasExited) {
             throw "Installed Divan.exe exited during launch smoke test with code $($app.ExitCode)"
           }
           Stop-Process -Id $app.Id -Force
+
+      - name: Seed persistent Core state outside installer root
+        shell: pwsh
+        run: |
+          $created = '{"command":"task.create","task_id":"DIV-UNINSTALL-PRESERVE","title":"Preserve Core state across uninstall"}' | & $env:DIVAN_INSTALLED_CORE
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Core could not seed uninstall persistence state"
+          }
+          $payload = $created | ConvertFrom-Json
+          if (-not $payload.ok -or $payload.result.task_id -ne "DIV-UNINSTALL-PRESERVE") {
+            throw "Installed Core returned invalid seeded task state"
+          }
+          $stateFile = Join-Path $env:LOCALAPPDATA "com.ugurpala.divan/tasks/DIV-UNINSTALL-PRESERVE.json"
+          if (-not (Test-Path $stateFile)) {
+            throw "Persistent Core state was not written to the identifier-scoped data root"
+          }
+          "DIVAN_PERSISTENT_STATE_FILE=$stateFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify Windows first-run matrix and Desktop restart persistence
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP "divan-desktop-lifecycle.json"
+          & scripts/windows_desktop_lifecycle.ps1 -AppExe $env:DIVAN_INSTALLED_APP -CoreExe $env:DIVAN_INSTALLED_CORE -Output $evidence
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Windows lifecycle matrix failed"
+          }
+          "DIVAN_LIFECYCLE_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Uninstall and verify application removal with Core state preservation
+        shell: pwsh
+        run: |
+          $installRoot = Split-Path -Parent $env:DIVAN_INSTALLED_APP
+          $uninstaller = Get-ChildItem $installRoot -Filter "uninstall*.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $uninstaller) {
+            throw "Installed NSIS uninstaller was not found"
+          }
+          $uninstall = Start-Process -FilePath $uninstaller.FullName -ArgumentList "/S" -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) {
+            throw "NSIS silent uninstall failed with exit code $($uninstall.ExitCode)"
+          }
+          foreach ($attempt in 1..10) {
+            if (-not (Test-Path $env:DIVAN_INSTALLED_APP)) { break }
+            Start-Sleep -Seconds 1
+          }
+          if (Test-Path $env:DIVAN_INSTALLED_APP) {
+            throw "Divan.exe remained after NSIS uninstall"
+          }
+          if (-not (Test-Path $env:DIVAN_PERSISTENT_STATE_FILE)) {
+            throw "NSIS uninstall removed persistent Divan Core user state"
+          }
+
+      - name: Upload Windows lifecycle evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-windows-lifecycle
+          path: ${{ env.DIVAN_LIFECYCLE_EVIDENCE }}
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Upload Windows bundle
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
