@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass
-from typing import Any, Iterable
+from typing import Any
 
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
@@ -18,11 +19,7 @@ class DesktopCapabilities:
 
 
 class DesktopApi:
-    """Small stable facade intended for the future desktop shell.
-
-    The desktop UI should talk to this facade instead of importing individual
-    runtime modules, keeping UI churn separate from Divan Core.
-    """
+    """Stable facade between the desktop shell and Divan Core."""
 
     API_VERSION = 1
 
@@ -41,6 +38,7 @@ class DesktopApi:
                 "task-lifecycle",
                 "evidence",
                 "approval-gate",
+                "task-diff",
             ),
         )
         return asdict(value)
@@ -53,6 +51,51 @@ class DesktopApi:
             "exit_code": receipt.exit_code,
             "payload": receipt.payload,
         }
+
+    def task_diff(
+        self,
+        task: DivanTask,
+        *,
+        worktree: str | None = None,
+        path: str = "*",
+    ) -> dict[str, Any]:
+        active_worktree = worktree or self.execution_worktree(task)
+        if active_worktree is None:
+            raise ValueError("task has no execution worktree yet")
+        receipt = self.router.execute(
+            ExecutionRequest(
+                action=ExecutionAction.FILE_DIFF,
+                project_root=task.project_root,
+                mandate_id=task.mandate_id,
+                args={"worktree": active_worktree, "path": path},
+            ),
+            task.engine_id,
+        )
+        diff = ""
+        if isinstance(receipt.payload, Mapping):
+            value = receipt.payload.get("diff")
+            if isinstance(value, str):
+                diff = value
+        return {
+            "engine": receipt.engine,
+            "ok": receipt.ok,
+            "exit_code": receipt.exit_code,
+            "path": path,
+            "diff": diff,
+        }
+
+    @staticmethod
+    def execution_worktree(task: DivanTask) -> str | None:
+        execution = task.metadata.get("execution")
+        if not isinstance(execution, Mapping):
+            return None
+        receipt_payload = execution.get("payload")
+        if not isinstance(receipt_payload, Mapping):
+            return None
+        worktree = receipt_payload.get("worktree")
+        if not isinstance(worktree, str) or not worktree.strip():
+            return None
+        return worktree.strip()
 
     @staticmethod
     def serialize_tasks(tasks: Iterable[DivanTask]) -> list[dict[str, Any]]:
