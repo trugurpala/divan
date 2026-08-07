@@ -20,12 +20,20 @@ def locate_executable(
     PATH remains authoritative. On Windows, Divan also checks a short list of
     standard per-user shim directories used by npm, winget and native CLI
     installers. Values are paths only; no account credentials are inspected.
+
+    Tests may emulate Windows on a non-Windows host. In that case Python's
+    ``shutil.which`` cannot safely enter its Windows-only ``_winapi`` branch, so
+    the default PATH lookup is skipped and the bounded Windows shim search is
+    exercised directly. Real hosts and injected resolvers retain normal PATH
+    precedence.
     """
 
-    for alias in aliases:
-        value = which(alias)
-        if value:
-            return str(Path(value))
+    simulated_windows = sys.platform == "win32" and os.name != "nt"
+    if not simulated_windows or which is not shutil.which:
+        for alias in aliases:
+            value = which(alias)
+            if value:
+                return str(Path(value))
     if sys.platform != "win32" or which is not shutil.which:
         return None
 
