@@ -79,6 +79,15 @@ type TaskDiff = {
   diff: string;
 };
 
+type ReviewResult = {
+  task: CoreTask;
+  review: {
+    verdict: string;
+    checks: Array<Record<string, unknown>>;
+    reasons: string[];
+  };
+};
+
 type UiState = "PLAN" | "WORKING" | "REVIEW" | "PASS" | "APPROVAL";
 type ActiveTab = "summary" | "evidence" | "diff" | "settings";
 
@@ -270,6 +279,18 @@ function App() {
         task_id: selected.task_id,
       });
       setTaskDiff(value);
+    });
+
+  const reviewTask = () =>
+    selected &&
+    run("review", async () => {
+      const value = await coreRequest<ReviewResult>({
+        command: "task.review.auto",
+        task_id: selected.task_id,
+      });
+      await refreshTasks();
+      setSelectedId(value.task.task_id);
+      setActiveTab(value.review.verdict === "pass" ? "summary" : "evidence");
     });
 
   const requestApproval = () =>
@@ -508,6 +529,11 @@ function App() {
                         {busy === "start" ? "Ajan çalışıyor…" : "Çalıştır"}
                       </button>
                     )}
+                    {(selected.state === "running" || selected.state === "review") && (
+                      <button className="primary" onClick={reviewTask} disabled={busy !== null}>
+                        {busy === "review" ? "Bağımsız reviewer çalışıyor…" : "Bağımsız review"}
+                      </button>
+                    )}
                     {selected.state === "passed" && (
                       <button className="primary" onClick={requestApproval} disabled={busy !== null}>
                         Onay kapısını aç
@@ -522,11 +548,6 @@ function App() {
                       <button className="primary" onClick={releaseTask} disabled={busy !== null}>
                         Release kaydını tamamla
                       </button>
-                    )}
-                    {selected.state === "running" && (
-                      <span className="muted-copy">
-                        Execution tamamlandı. Diff artık okunabilir; bağımsız reviewer sonraki gate.
-                      </span>
                     )}
                   </div>
                 </section>
