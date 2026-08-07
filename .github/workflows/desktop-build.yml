@@ -13,6 +13,7 @@ on:
       - "scripts/windows_desktop_lifecycle.ps1"
       - "tests/test_desktop_protocol.py"
       - "tests/test_desktop_state.py"
+      - "tests/test_desktop_lifecycle_contract.py"
       - "tests/test_project_readiness.py"
       - "tests/test_project_registry.py"
       - "tests/test_executable_locator.py"
@@ -74,6 +75,7 @@ jobs:
           python -m unittest
           tests.test_desktop_protocol
           tests.test_desktop_state
+          tests.test_desktop_lifecycle_contract
           tests.test_project_readiness
           tests.test_project_registry
           tests.test_executable_locator
