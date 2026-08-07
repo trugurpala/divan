@@ -16,8 +16,15 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("workflow_dispatch:", self.text)
         self.assertNotIn("pull_request:", self.text)
         self.assertIn("if: github.ref == 'refs/heads/main'", self.text)
-        self.assertIn("runs-on: [self-hosted, windows, x64]", self.text)
+        self.assertIn(
+            "runs-on: [self-hosted, windows, x64, divan-desktop-acceptance]",
+            self.text,
+        )
         self.assertIn("environment: desktop-acceptance", self.text)
+
+    def test_acceptance_runner_uses_dedicated_release_label(self) -> None:
+        self.assertIn("divan-desktop-acceptance", self.text)
+        self.assertNotIn("runs-on: [self-hosted, windows, x64]\n", self.text)
 
     def test_acceptance_runner_must_have_both_real_agents(self) -> None:
         self.assertIn('foreach ($agent in @("codex", "claude"))', self.text)
