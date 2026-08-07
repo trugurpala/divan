@@ -139,6 +139,28 @@ class NativeExecutionEngineTests(unittest.TestCase):
             )
             self.assertTrue(receipt.ok)
             self.assertIn("diff --git", receipt.payload["diff"])
+            self.assertFalse(receipt.payload["staged"])
+            self.assertNotIn("--cached", receipt.argv)
+
+    def test_file_diff_can_show_exact_staged_review_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = pathlib.Path(directory)
+            git_runner = FakeGitRunner(project)
+            engine = NativeExecutionEngine(
+                agent_binaries={"codex": "codex"},
+                git_runner=git_runner,
+                agent_runner=lambda argv, cwd, timeout, stdin_text: (0, "", ""),
+            )
+            receipt = engine.execute(
+                ExecutionRequest(
+                    ExecutionAction.FILE_DIFF,
+                    args={"worktree": str(project), "path": "*", "staged": True},
+                )
+            )
+            self.assertTrue(receipt.ok)
+            self.assertTrue(receipt.payload["staged"])
+            self.assertIn("--cached", receipt.argv)
+            self.assertEqual(receipt.argv[-1], "--")
 
 
 if __name__ == "__main__":
