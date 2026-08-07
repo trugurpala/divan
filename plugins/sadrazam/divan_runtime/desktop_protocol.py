@@ -11,7 +11,7 @@ from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
-from .review_gate import CheckResult
+from .review_gate import CheckResult, ReviewDecision
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
@@ -283,6 +283,17 @@ def _parse_review_checks(payload: Mapping[str, Any]) -> list[CheckResult]:
     return checks
 
 
+def _review_result(task: DivanTask, decision: ReviewDecision) -> dict[str, Any]:
+    return {
+        "task": task.to_dict(),
+        "review": {
+            "verdict": decision.verdict.value,
+            "checks": [asdict(item) for item in decision.checks],
+            "reasons": list(decision.reasons),
+        },
+    }
+
+
 def _handle_task_review(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -291,16 +302,15 @@ def _handle_task_review(
         _load_task(payload),
         _parse_review_checks(payload),
     )
-    return _ok(
-        {
-            "task": updated.to_dict(),
-            "review": {
-                "verdict": decision.verdict.value,
-                "checks": [asdict(item) for item in decision.checks],
-                "reasons": list(decision.reasons),
-            },
-        }
-    )
+    return _ok(_review_result(updated, decision))
+
+
+def _handle_task_review_auto(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    active_router = _require_router(router)
+    updated, decision = _orchestrator(active_router).review_automated(_load_task(payload))
+    return _ok(_review_result(updated, decision))
 
 
 def _handle_approval_request(
@@ -358,6 +368,7 @@ _HANDLERS: dict[str, Handler] = {
     "task.start": _handle_task_start,
     "task.diff": _handle_task_diff,
     "task.review": _handle_task_review,
+    "task.review.auto": _handle_task_review_auto,
     "task.approval.request": _handle_approval_request,
     "task.approve": _handle_task_approve,
     "task.release": _handle_task_release,
