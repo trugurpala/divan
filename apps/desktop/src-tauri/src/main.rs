@@ -36,6 +36,13 @@ struct UpdateStatus {
     version: Option<String>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateInstallStatus {
+    installed: bool,
+    version: Option<String>,
+}
+
 fn tool(id: &'static str, required: bool) -> ToolStatus {
     let path = which::which(id)
         .ok()
@@ -110,24 +117,41 @@ async fn check_for_update(_app: tauri::AppHandle) -> Result<UpdateStatus, String
 
 #[cfg(feature = "signed-updater")]
 #[tauri::command]
-async fn install_update(app: tauri::AppHandle, approved: bool) -> Result<(), String> {
+async fn install_update(
+    app: tauri::AppHandle,
+    approved: bool,
+) -> Result<UpdateInstallStatus, String> {
     if !approved {
         return Err("installing an update requires explicit approved=true".to_string());
     }
     let updater = app.updater().map_err(|error| error.to_string())?;
-    if let Some(update) = updater.check().await.map_err(|error| error.to_string())? {
-        update
-            .download_and_install(|_, _| {}, || {})
-            .await
-            .map_err(|error| error.to_string())?;
-        app.restart();
+    match updater.check().await.map_err(|error| error.to_string())? {
+        Some(update) => {
+            let version = update.version.to_string();
+            update
+                .download_and_install(|_, _| {}, || {})
+                .await
+                .map_err(|error| error.to_string())?;
+            let result = UpdateInstallStatus {
+                installed: true,
+                version: Some(version),
+            };
+            app.restart();
+            Ok(result)
+        }
+        None => Ok(UpdateInstallStatus {
+            installed: false,
+            version: None,
+        }),
     }
-    Ok(())
 }
 
 #[cfg(not(feature = "signed-updater"))]
 #[tauri::command]
-async fn install_update(_app: tauri::AppHandle, approved: bool) -> Result<(), String> {
+async fn install_update(
+    _app: tauri::AppHandle,
+    approved: bool,
+) -> Result<UpdateInstallStatus, String> {
     if !approved {
         return Err("installing an update requires explicit approved=true".to_string());
     }
