@@ -96,6 +96,15 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("if !approved", main)
         self.assertNotIn('invoke<UpdateStatus>("check_for_update")\n      .then', app)
 
+    def test_desktop_operator_can_choose_replaceable_execution_engine(self) -> None:
+        app = APP.read_text(encoding="utf-8")
+        self.assertIn("const [engine, setEngine]", app)
+        self.assertIn("const engines = readiness?.engines ?? []", app)
+        self.assertIn("setEngine(event.target.value)", app)
+        self.assertIn("engine_id: engine || readiness?.recommended_engine || undefined", app)
+        self.assertIn("selected.engine_id || engine || readiness?.recommended_engine", app)
+        self.assertIn("Native ve Orca aynı Divan execution contract", app)
+
     def test_windows_updater_signature_is_paired_with_the_nsis_installer(self) -> None:
         signed = self.text[self.text.index("  signed-windows-candidate:") :]
         self.assertIn('$updaterSignaturePath = "$($installer.FullName).sig"', signed)
