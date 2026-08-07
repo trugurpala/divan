@@ -6,6 +6,7 @@ on:
       - "apps/desktop/**"
       - "plugins/sadrazam/divan_runtime/**"
       - "scripts/build_project_runner.py"
+      - "scripts/divan_desktop_runtime.py"
       - ".github/workflows/desktop-windows.yml"
   workflow_dispatch:
 
@@ -55,7 +56,6 @@ jobs:
           pnpm --version
           python --version
           git --version
-          Get-Command llvm-rc -ErrorAction SilentlyContinue | Format-Table -AutoSize
 
       - name: Run focused Python execution tests
         shell: pwsh
@@ -67,13 +67,29 @@ jobs:
         run: |
           python scripts/divan.py validate --json
 
-      - name: Build exact-commit Divan runtime resource
+      - name: Build exact-commit portable runtime fallback
         shell: pwsh
         run: |
           python scripts/build_project_runner.py `
             --output apps/desktop/src-tauri/resources/divan-project.pyz `
             --source-commit "$(git rev-parse HEAD)"
           python apps/desktop/src-tauri/resources/divan-project.pyz validate --json
+
+      - name: Build standalone Windows runtime
+        shell: pwsh
+        run: |
+          python -m pip install --disable-pip-version-check pyinstaller==6.21.0
+          python -m PyInstaller `
+            --noconfirm `
+            --clean `
+            --onefile `
+            --noupx `
+            --name divan-runtime `
+            --paths plugins/sadrazam `
+            --add-data "plugins/sadrazam/divan_runtime:divan_runtime" `
+            scripts/divan_desktop_runtime.py
+          Copy-Item "dist/divan-runtime.exe" "apps/desktop/src-tauri/resources/divan-runtime.exe"
+          apps/desktop/src-tauri/resources/divan-runtime.exe validate --json
 
       - name: Install Desktop dependencies
         working-directory: apps/desktop
