@@ -22,6 +22,49 @@ $keyPassword = "divan-ci-updater-e2e"
 $server = $null
 $installedApp = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
 
+function Set-ExactWorkflowSource {
+    $eventPath = $env:GITHUB_EVENT_PATH
+    if (-not $eventPath -or -not (Test-Path $eventPath -PathType Leaf)) {
+        return
+    }
+
+    $eventPayload = Get-Content $eventPath -Raw | ConvertFrom-Json
+    $pullRequestProperty = $eventPayload.PSObject.Properties["pull_request"]
+    if ($null -eq $pullRequestProperty) {
+        return
+    }
+    $headProperty = $pullRequestProperty.Value.PSObject.Properties["head"]
+    if ($null -eq $headProperty) {
+        throw "pull_request event is missing head metadata"
+    }
+    $shaProperty = $headProperty.Value.PSObject.Properties["sha"]
+    if ($null -eq $shaProperty) {
+        throw "pull_request event is missing head SHA"
+    }
+    $headSha = [string]$shaProperty.Value
+    if ($headSha -notmatch '^[0-9a-f]{40}$') {
+        throw "pull_request head SHA is invalid"
+    }
+
+    $current = (& git -C $repoRoot rev-parse HEAD).Trim()
+    if ($current -eq $headSha) {
+        return
+    }
+
+    & git -C $repoRoot fetch --no-tags --depth=1 origin $headSha
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not fetch exact pull request head SHA $headSha"
+    }
+    & git -C $repoRoot checkout --force $headSha
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not checkout exact pull request head SHA $headSha"
+    }
+    $resolved = (& git -C $repoRoot rev-parse HEAD).Trim()
+    if ($resolved -ne $headSha) {
+        throw "Updater e2e checkout did not resolve to exact pull request head"
+    }
+}
+
 function Get-FreePort {
     $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
     $listener.Start()
@@ -263,6 +306,13 @@ $previousMarker = $env:DIVAN_UPDATER_E2E_MARKER
 $previousDataDir = $env:DIVAN_DATA_DIR
 
 try {
+    Set-ExactWorkflowSource
+    $sourceCommit = (& git -C $repoRoot rev-parse HEAD).Trim()
+    $sourceTree = (& git -C $repoRoot rev-parse 'HEAD^{tree}').Trim()
+    if ($sourceCommit -notmatch '^[0-9a-f]{40}$' -or $sourceTree -notmatch '^[0-9a-f]{40}$') {
+        throw "Updater e2e source identity could not be resolved"
+    }
+
     $baseConfig = Get-Content $baseConfigPath -Raw | ConvertFrom-Json
     $baseVersion = [version]$baseConfig.version
     $versionN = "{0}.{1}.{2}" -f $baseVersion.Major, $baseVersion.Minor, $baseVersion.Build
@@ -272,6 +322,10 @@ try {
 
     Push-Location $desktopRoot
     try {
+        & pnpm install --frozen-lockfile
+        if ($LASTEXITCODE -ne 0) { throw "Could not install exact-head frontend dependencies for updater e2e" }
+        & pnpm build
+        if ($LASTEXITCODE -ne 0) { throw "Could not build exact-head frontend for updater e2e" }
         & pnpm tauri signer generate -w $privateKeyPath -p $keyPassword --ci
         if ($LASTEXITCODE -ne 0) { throw "Could not generate ephemeral Tauri updater signing key" }
         & pnpm core:build
@@ -283,7 +337,10 @@ try {
 
     $publicKeyPath = "$privateKeyPath.pub"
     if (-not (Test-Path $publicKeyPath -PathType Leaf)) {
-        $publicKeyPath = (Get-ChildItem $keyRoot -Filter "*.pub" -File | Select-Object -First 1).FullName
+        $candidatePublicKey = Get-ChildItem $keyRoot -Filter "*.pub" -File | Select-Object -First 1
+        if ($candidatePublicKey) {
+            $publicKeyPath = $candidatePublicKey.FullName
+        }
     }
     if (-not $publicKeyPath -or -not (Test-Path $publicKeyPath -PathType Leaf)) {
         throw "Ephemeral Tauri updater public key was not generated"
@@ -337,12 +394,6 @@ try {
     Invoke-Probe -Mode "expect-no-update" -Expected $versionN2 -TimeoutSeconds 60 | Out-Null
     $downgradeNotOffered = $true
 
-    $sourceCommit = (& git -C $repoRoot rev-parse HEAD).Trim()
-    $sourceTree = (& git -C $repoRoot rev-parse 'HEAD^{tree}').Trim()
-    if ($sourceCommit -notmatch '^[0-9a-f]{40}$' -or $sourceTree -notmatch '^[0-9a-f]{40}$') {
-        throw "Updater e2e source identity could not be resolved"
-    }
-
     $evidence = [ordered]@{
         schema_version = 1
         status = "pass"
@@ -384,10 +435,10 @@ finally {
             Start-Process -FilePath $uninstaller.FullName -ArgumentList "/S" -Wait | Out-Null
         }
     }
-    $env:TAURI_SIGNING_PRIVATE_KEY = $previousPrivateKey
-    $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = $previousPassword
-    $env:DIVAN_UPDATER_E2E_MODE = $previousMode
-    $env:DIVAN_UPDATER_E2E_EXPECTED_VERSION = $previousExpected
-    $env:DIVAN_UPDATER_E2E_MARKER = $previousMarker
-    $env:DIVAN_DATA_DIR = $previousDataDir
+    if ($null -eq $previousPrivateKey) { Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY -ErrorAction SilentlyContinue } else { $env:TAURI_SIGNING_PRIVATE_KEY = $previousPrivateKey }
+    if ($null -eq $previousPassword) { Remove-Item Env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD -ErrorAction SilentlyContinue } else { $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = $previousPassword }
+    if ($null -eq $previousMode) { Remove-Item Env:DIVAN_UPDATER_E2E_MODE -ErrorAction SilentlyContinue } else { $env:DIVAN_UPDATER_E2E_MODE = $previousMode }
+    if ($null -eq $previousExpected) { Remove-Item Env:DIVAN_UPDATER_E2E_EXPECTED_VERSION -ErrorAction SilentlyContinue } else { $env:DIVAN_UPDATER_E2E_EXPECTED_VERSION = $previousExpected }
+    if ($null -eq $previousMarker) { Remove-Item Env:DIVAN_UPDATER_E2E_MARKER -ErrorAction SilentlyContinue } else { $env:DIVAN_UPDATER_E2E_MARKER = $previousMarker }
+    if ($null -eq $previousDataDir) { Remove-Item Env:DIVAN_DATA_DIR -ErrorAction SilentlyContinue } else { $env:DIVAN_DATA_DIR = $previousDataDir }
 }
