@@ -5,8 +5,9 @@ import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Callable, Mapping, Sequence
+
+from .executable_locator import locate_executable
 
 
 @dataclass(frozen=True)
@@ -169,7 +170,7 @@ def _discover_one(
     env: Mapping[str, str],
     apps: Sequence[InstalledApp],
 ) -> ToolStatus:
-    path = _find_alias(spec.aliases, which)
+    path = locate_executable(spec.aliases, which=which, env=env)
     app = _matching_app(spec, apps)
     version = _version(path, spec.version_args, runner) if path else None
     auth, auth_detail = _auth(spec, path, runner, env)
@@ -187,14 +188,6 @@ def _discover_one(
         app_installed=app is not None,
         app_version=app.version if app else None,
     )
-
-
-def _find_alias(aliases: Sequence[str], which: Which) -> str | None:
-    for alias in aliases:
-        value = which(alias)
-        if value:
-            return str(Path(value))
-    return None
 
 
 def _matching_app(spec: ToolSpec, apps: Sequence[InstalledApp]) -> InstalledApp | None:
