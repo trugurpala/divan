@@ -11,6 +11,7 @@ on:
       - "tests/test_desktop_protocol.py"
       - "tests/test_project_readiness.py"
       - "tests/test_project_registry.py"
+      - "tests/test_executable_locator.py"
       - "tests/test_native_engine.py"
       - "tests/test_orchestrator.py"
       - "tests/test_reviewer_runner.py"
@@ -64,6 +65,7 @@ jobs:
           tests.test_desktop_protocol
           tests.test_project_readiness
           tests.test_project_registry
+          tests.test_executable_locator
           tests.test_native_engine
           tests.test_task_store
           tests.test_orchestrator
