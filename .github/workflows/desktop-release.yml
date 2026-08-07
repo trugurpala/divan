@@ -9,11 +9,13 @@ on:
       - "apps/desktop/pnpm-lock.yaml"
       - "apps/desktop/src-tauri/**"
       - "scripts/desktop_release_guard.py"
+      - "scripts/desktop_update_feed.py"
       - "scripts/prepare_desktop_release_config.py"
       - "scripts/windows_desktop_acceptance.ps1"
       - "tests/test_desktop_acceptance_workflow.py"
       - "tests/test_desktop_dependency_locking.py"
       - "tests/test_desktop_release_guard.py"
+      - "tests/test_desktop_update_feed.py"
       - "tests/test_prepare_desktop_release_config.py"
       - "tests/test_desktop_release_workflow.py"
   workflow_dispatch:
@@ -47,6 +49,7 @@ jobs:
           tests.test_desktop_acceptance_workflow
           tests.test_desktop_dependency_locking
           tests.test_desktop_release_guard
+          tests.test_desktop_update_feed
           tests.test_prepare_desktop_release_config
           tests.test_desktop_release_workflow
 
@@ -70,6 +73,7 @@ jobs:
       DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
       DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
       DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
+      DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
       DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
       TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
       TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
@@ -204,6 +208,36 @@ jobs:
           if (-not $updaterSignature) {
             throw "Tauri updater signature for the NSIS installer is empty"
           }
+          "DIVAN_SIGNED_INSTALLER=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_UPDATER_SIGNATURE=$updaterSignaturePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Generate source-bound updater feed and promotion manifest
+        shell: pwsh
+        run: |
+          $bundle = "apps/desktop/src-tauri/target/release/bundle/nsis"
+          $feed = Join-Path $bundle "latest.json"
+          $manifest = Join-Path $bundle "divan-update-manifest.json"
+          $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
+          python scripts/desktop_update_feed.py --installer $env:DIVAN_SIGNED_INSTALLER --signature $env:DIVAN_UPDATER_SIGNATURE --version $version --artifact-base-url $env:DIVAN_UPDATER_ARTIFACT_BASE_URL --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --output $feed --manifest $manifest --notes "Divan Desktop $version stable candidate"
+          if ($LASTEXITCODE -ne 0) { throw "signed updater feed generation failed" }
+
+          $feedPayload = Get-Content $feed -Raw | ConvertFrom-Json
+          $manifestPayload = Get-Content $manifest -Raw | ConvertFrom-Json
+          $signatureText = (Get-Content $env:DIVAN_UPDATER_SIGNATURE -Raw).Trim()
+          if ($feedPayload.version -ne $version) { throw "updater feed version does not match signed candidate" }
+          $windows = $feedPayload.platforms.'windows-x86_64'
+          if (-not $windows -or $windows.signature -ne $signatureText) {
+            throw "updater feed is not bound to the exact Tauri signature"
+          }
+          if ($windows.url -notmatch '^https://') { throw "updater feed artifact URL is not HTTPS" }
+          if ($manifestPayload.source_commit -ne $env:DIVAN_SOURCE_COMMIT -or $manifestPayload.source_tree -ne $env:DIVAN_SOURCE_TREE) {
+            throw "updater promotion manifest is not bound to exact release source"
+          }
+          foreach ($digest in @($manifestPayload.installer.sha256, $manifestPayload.updater_signature.sha256, $manifestPayload.feed.sha256)) {
+            if ($digest -notmatch '^[0-9a-f]{64}$') { throw "updater promotion manifest contains an invalid SHA-256 digest" }
+          }
+          "DIVAN_UPDATE_FEED=$feed" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_UPDATE_MANIFEST=$manifest" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Smoke-test signed installed bundle
         shell: pwsh
