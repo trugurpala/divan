@@ -126,7 +126,7 @@ try {
     }
 
     $review = Invoke-Core @{ command = "task.review.auto"; task_id = $task.task_id }
-    if ($review.review.verdict -ne "PASS") {
+    if ($review.review.verdict -ne "pass") {
         throw "Independent review did not pass: $($review.review.verdict)"
     }
     $reviewer = $review.task.metadata.automated_review.reviewer
