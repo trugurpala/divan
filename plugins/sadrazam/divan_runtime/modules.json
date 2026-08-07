@@ -8,12 +8,14 @@
       "python_modules": [
         "kernel",
         "contract_validation",
-        "timeouts"
+        "timeouts",
+        "desktop_state"
       ],
       "capabilities": [
         "architecture_validation",
         "module_resolution",
-        "adaptive_timeout_policy"
+        "adaptive_timeout_policy",
+        "per_user_desktop_state"
       ],
       "depends_on": [],
       "required": true
@@ -221,8 +223,7 @@
         "status",
         "local_server",
         "desktop_api",
-        "desktop_protocol",
-        "desktop_state"
+        "desktop_protocol"
       ],
       "capabilities": [
         "cli",
@@ -234,8 +235,7 @@
         "status_snapshot",
         "loopback_status_server",
         "desktop_api",
-        "desktop_json_protocol",
-        "per_user_desktop_state"
+        "desktop_json_protocol"
       ],
       "depends_on": [
         "kernel",
