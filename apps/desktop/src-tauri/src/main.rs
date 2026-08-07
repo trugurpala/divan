@@ -1,5 +1,6 @@
 use serde::Serialize;
 use tauri_plugin_shell::{process::CommandEvent, ShellExt};
+use tauri_plugin_updater::UpdaterExt;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,6 +25,13 @@ struct Capabilities {
     api_version: u8,
     shell: &'static str,
     features: Vec<&'static str>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateStatus {
+    available: bool,
+    version: Option<String>,
 }
 
 fn tool(id: &'static str, required: bool) -> ToolStatus {
@@ -67,8 +75,40 @@ fn divan_capabilities() -> Capabilities {
             "evidence",
             "core-sidecar",
             "native-folder-picker",
+            "signed-updater",
         ],
     }
+}
+
+#[tauri::command]
+async fn check_for_update(app: tauri::AppHandle) -> Result<UpdateStatus, String> {
+    let updater = app.updater().map_err(|error| error.to_string())?;
+    match updater.check().await.map_err(|error| error.to_string())? {
+        Some(update) => Ok(UpdateStatus {
+            available: true,
+            version: Some(update.version.to_string()),
+        }),
+        None => Ok(UpdateStatus {
+            available: false,
+            version: None,
+        }),
+    }
+}
+
+#[tauri::command]
+async fn install_update(app: tauri::AppHandle, approved: bool) -> Result<(), String> {
+    if !approved {
+        return Err("installing an update requires explicit approved=true".to_string());
+    }
+    let updater = app.updater().map_err(|error| error.to_string())?;
+    if let Some(update) = updater.check().await.map_err(|error| error.to_string())? {
+        update
+            .download_and_install(|_, _| {}, || {})
+            .await
+            .map_err(|error| error.to_string())?;
+        app.restart();
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -113,9 +153,12 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             runtime_probe,
             divan_capabilities,
+            check_for_update,
+            install_update,
             core_request
         ])
         .run(tauri::generate_context!())
