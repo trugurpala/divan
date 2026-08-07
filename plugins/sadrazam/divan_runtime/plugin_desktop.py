@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ntpath
 import pathlib
 from dataclasses import asdict
 from typing import Any
@@ -77,4 +78,4 @@ def _manifest_payload(manifest: PluginManifest) -> dict[str, Any]:
 def _basename(value: str | None) -> str | None:
     if value is None:
         return None
-    return pathlib.Path(value).name
+    return ntpath.basename(value)
