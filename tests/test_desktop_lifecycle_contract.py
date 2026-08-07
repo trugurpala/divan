@@ -44,6 +44,12 @@ class DesktopLifecycleContractTests(unittest.TestCase):
         self.assertIn('command = "task.start"', script)
         self.assertIn("approve_execution = $true", script)
         self.assertIn("execution_pending", script)
+        self.assertIn("function Get-OptionalProperty", script)
+        self.assertIn(
+            'Get-OptionalProperty -Object $recovered.metadata -Name "execution_pending"',
+            script,
+        )
+        self.assertNotIn("$recovered.metadata.execution_pending", script)
         self.assertIn("taskkill.exe /PID", script)
         self.assertIn('command = "task.recover.interrupted"', script)
         self.assertIn('command = "evidence.list"', script)
