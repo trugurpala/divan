@@ -64,6 +64,7 @@ RUNTIME_FILES = (
     "planning_policy.py",
     "plugin_approval.py",
     "plugin_contract.py",
+    "plugin_desktop.py",
     "plugin_discovery.py",
     "plugin_manifest_validation.py",
     "plugin_sdk.py",
