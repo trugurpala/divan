@@ -22,14 +22,19 @@
       "id": "governance",
       "en": "Governance",
       "tr": "Divan Nizamı",
-      "python_modules": ["governance", "review_gate"],
+      "python_modules": [
+        "governance",
+        "review_gate"
+      ],
       "capabilities": [
         "authority_chain",
         "scope_control",
         "review_gate",
         "release_approval_gate"
       ],
-      "depends_on": ["kernel"],
+      "depends_on": [
+        "kernel"
+      ],
       "required": true
     },
     {
@@ -45,6 +50,8 @@
         "execution_router",
         "orca_engine",
         "orca_adapter",
+        "native_engine",
+        "runtime_composition",
         "orchestrator"
       ],
       "capabilities": [
@@ -56,23 +63,35 @@
         "bounded_orchestration",
         "execution_engine_routing",
         "orca_sidecar_execution",
+        "native_worktree_execution",
+        "local_agent_dispatch",
         "task_orchestration"
       ],
-      "depends_on": ["kernel", "governance"],
+      "depends_on": [
+        "kernel",
+        "governance"
+      ],
       "required": true
     },
     {
       "id": "evidence",
       "en": "Evidence",
       "tr": "Kanıt",
-      "python_modules": ["receipts", "execution", "evidence"],
+      "python_modules": [
+        "receipts",
+        "execution",
+        "evidence"
+      ],
       "capabilities": [
         "evidence_ledger",
         "receipt_verification",
         "bounded_command_execution",
         "tamper_evident_task_evidence"
       ],
-      "depends_on": ["kernel", "governance"],
+      "depends_on": [
+        "kernel",
+        "governance"
+      ],
       "required": true
     },
     {
@@ -83,10 +102,22 @@
         "project_os",
         "project_state",
         "project_transactions",
-        "project_lifecycle"
+        "project_lifecycle",
+        "project_registry"
       ],
-      "capabilities": ["initialization", "ownership", "drift_control", "verification"],
-      "depends_on": ["kernel", "governance", "council", "evidence"],
+      "capabilities": [
+        "initialization",
+        "ownership",
+        "drift_control",
+        "verification",
+        "desktop_project_registry"
+      ],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "council",
+        "evidence"
+      ],
       "required": true
     },
     {
@@ -120,15 +151,32 @@
         "desktop_task_state",
         "atomic_task_persistence"
       ],
-      "depends_on": ["kernel", "governance", "council", "evidence", "project"],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "council",
+        "evidence",
+        "project"
+      ],
       "required": true
     },
     {
       "id": "providers",
       "en": "Providers",
       "tr": "Sağlayıcılar",
-      "python_modules": ["providers", "project_readiness"],
-      "capabilities": ["local", "github", "context7", "vercel", "local_tool_discovery"],
+      "python_modules": [
+        "providers",
+        "project_readiness"
+      ],
+      "capabilities": [
+        "local",
+        "github",
+        "context7",
+        "vercel",
+        "local_tool_discovery",
+        "windows_installed_app_discovery",
+        "subscription_auth_detection"
+      ],
       "depends_on": [
         "kernel",
         "governance",
@@ -142,8 +190,14 @@
       "id": "release",
       "en": "Release",
       "tr": "Yayın",
-      "python_modules": ["release"],
-      "capabilities": ["release_plan", "provider_evidence", "live_readback"],
+      "python_modules": [
+        "release"
+      ],
+      "capabilities": [
+        "release_plan",
+        "provider_evidence",
+        "live_readback"
+      ],
       "depends_on": [
         "kernel",
         "governance",

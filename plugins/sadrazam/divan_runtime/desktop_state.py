@@ -20,3 +20,11 @@ def task_root() -> Path:
 
 def evidence_root() -> Path:
     return desktop_data_root() / "evidence"
+
+
+def worktree_root() -> Path:
+    return desktop_data_root() / "worktrees"
+
+
+def projects_file() -> Path:
+    return desktop_data_root() / "projects.json"

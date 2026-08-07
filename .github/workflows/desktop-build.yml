@@ -7,6 +7,11 @@ on:
       - "plugins/sadrazam/divan_runtime/**"
       - "scripts/divan-desktop-bridge.py"
       - "scripts/build_desktop_core.py"
+      - "tests/test_desktop_protocol.py"
+      - "tests/test_project_readiness.py"
+      - "tests/test_project_registry.py"
+      - "tests/test_native_engine.py"
+      - "tests/test_orchestrator.py"
       - ".github/workflows/desktop-build.yml"
   workflow_dispatch:
 
@@ -17,7 +22,7 @@ jobs:
   desktop-windows:
     name: desktop-windows
     runs-on: windows-latest
-    timeout-minutes: 35
+    timeout-minutes: 40
 
     steps:
       - name: Checkout
@@ -50,7 +55,18 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Run desktop core tests
-        run: python -m unittest tests.test_desktop_protocol tests.test_task_store tests.test_orchestrator tests.test_execution_router tests.test_review_gate
+        run: >-
+          python -m unittest
+          tests.test_desktop_protocol
+          tests.test_project_readiness
+          tests.test_project_registry
+          tests.test_native_engine
+          tests.test_task_store
+          tests.test_orchestrator
+          tests.test_execution_router
+          tests.test_review_gate
+          tests.test_orca_engine
+          tests.test_orca_adapter
 
       - name: Typecheck and build frontend
         working-directory: apps/desktop
