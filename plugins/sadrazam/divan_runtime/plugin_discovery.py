@@ -7,7 +7,8 @@ import shutil
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
-from .plugin_contract import ManifestValidation, PluginIssue, validate_manifest_payload
+from .plugin_contract import ManifestValidation, PluginIssue
+from .plugin_manifest_validation import validate_manifest_payload
 
 
 @dataclass(frozen=True)
