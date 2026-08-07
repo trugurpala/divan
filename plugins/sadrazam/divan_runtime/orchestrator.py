@@ -7,6 +7,12 @@ from typing import Any, Iterable, Mapping
 from .evidence import EvidenceStore, build_evidence
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
+from .git_guard import (
+    GitRunner,
+    commit_and_fast_forward,
+    snapshot_from_metadata,
+    stage_review_snapshot,
+)
 from .review_gate import (
     CheckResult,
     GateVerdict,
@@ -14,6 +20,7 @@ from .review_gate import (
     decide_review,
     require_release_ready,
 )
+from .reviewer_runner import AutomatedReview, AutomatedReviewer, ReviewerUnavailable
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
@@ -29,10 +36,15 @@ class DivanOrchestrator:
         router: ExecutionRouter,
         state_root: Path | str = ".divan/tasks",
         evidence_root: Path | str = ".divan/evidence",
+        *,
+        reviewer: AutomatedReviewer | None = None,
+        git_runner: GitRunner | None = None,
     ) -> None:
         self.router = router
         self.tasks = TaskStore(state_root)
         self.evidence = EvidenceStore(evidence_root)
+        self.reviewer = reviewer or AutomatedReviewer()
+        self.git_runner = git_runner
 
     def create_task(
         self,
@@ -150,6 +162,59 @@ class DivanOrchestrator:
         updated = reviewing.transition(target, "; ".join(decision.reasons) or None)
         return self._save(updated), decision
 
+    def review_automated(self, task: DivanTask) -> tuple[DivanTask, ReviewDecision]:
+        if task.state not in {TaskState.RUNNING, TaskState.REVIEW}:
+            raise ValueError("task must be running before automated review")
+        if not task.project_root:
+            raise ValueError("task requires project_root for automated review")
+        worktree = _execution_worktree(task)
+        snapshot = stage_review_snapshot(
+            task.project_root,
+            worktree,
+            runner=self.git_runner,
+        )
+        worker_agent = _worker_agent(task)
+        try:
+            automated = self.reviewer.review(
+                task_title=task.title,
+                diff=snapshot.diff,
+                worker_agent=worker_agent,
+            )
+        except ReviewerUnavailable as error:
+            automated = AutomatedReview(
+                reviewer="unavailable",
+                verdict="RETRY",
+                summary=str(error),
+                findings=("independent reviewer unavailable",),
+            )
+        metadata = dict(task.metadata)
+        metadata["review_snapshot"] = snapshot.metadata()
+        metadata["automated_review"] = {
+            "reviewer": automated.reviewer,
+            "verdict": automated.verdict,
+            "summary": automated.summary,
+            "findings": list(automated.findings),
+        }
+        prepared = replace(task, metadata=metadata)
+        self.tasks.save(prepared)
+        execution_ok = _execution_ok(prepared)
+        checks = (
+            CheckResult(
+                "execution",
+                execution_ok,
+                True,
+                "worker execution failed" if not execution_ok else "worker execution passed",
+            ),
+            CheckResult(
+                "review-snapshot",
+                True,
+                True,
+                f"sha256:{snapshot.diff_sha256}",
+            ),
+            automated.check(),
+        )
+        return self.review(prepared, checks)
+
     def request_approval(self, task: DivanTask) -> DivanTask:
         return self._save(
             task.transition(TaskState.APPROVAL, "operator approval requested")
@@ -164,16 +229,41 @@ class DivanOrchestrator:
         )
         if task.state is not TaskState.APPROVAL:
             raise ValueError("task must be in approval state")
+        _require_automated_pass(task)
+        if not task.project_root:
+            raise ValueError("task requires project_root for guarded merge")
+        snapshot = snapshot_from_metadata(task.metadata.get("review_snapshot"))
+        merged = commit_and_fast_forward(
+            task.project_root,
+            snapshot,
+            message=f"divan: {task.title}",
+            runner=self.git_runner,
+        )
+        metadata = dict(task.metadata)
+        metadata["merge"] = {
+            "commit_sha": merged.commit_sha,
+            "base_head": merged.base_head,
+            "diff_sha256": merged.diff_sha256,
+        }
+        approved_task = replace(task, metadata=metadata)
         self.evidence.append(
             build_evidence(
                 task.task_id,
                 "approval",
                 "pass",
-                "operator approved merge",
-                {"mandate_id": task.mandate_id, "approved": True},
+                "operator approved reviewed fast-forward merge",
+                {
+                    "mandate_id": task.mandate_id,
+                    "approved": True,
+                    "commit_sha": merged.commit_sha,
+                    "base_head": merged.base_head,
+                    "diff_sha256": merged.diff_sha256,
+                },
             )
         )
-        return self._save(task.transition(TaskState.MERGED, "operator approved merge"))
+        return self._save(
+            approved_task.transition(TaskState.MERGED, "reviewed snapshot fast-forwarded")
+        )
 
     def release(self, task: DivanTask) -> DivanTask:
         if task.state is not TaskState.MERGED:
@@ -192,6 +282,45 @@ class DivanOrchestrator:
     def _save(self, task: DivanTask) -> DivanTask:
         self.tasks.save(task)
         return task
+
+
+def _execution_worktree(task: DivanTask) -> str:
+    execution = task.metadata.get("execution")
+    if not isinstance(execution, Mapping):
+        raise ValueError("task has no execution receipt")
+    payload = execution.get("payload")
+    if not isinstance(payload, Mapping):
+        raise ValueError("task execution receipt has no payload")
+    value = payload.get("worktree")
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("task has no execution worktree")
+    return value.strip()
+
+
+def _worker_agent(task: DivanTask) -> str | None:
+    execution = task.metadata.get("execution")
+    if not isinstance(execution, Mapping):
+        return None
+    payload = execution.get("payload")
+    if not isinstance(payload, Mapping):
+        return None
+    value = payload.get("agent")
+    return value.strip() if isinstance(value, str) and value.strip() else None
+
+
+def _execution_ok(task: DivanTask) -> bool:
+    execution = task.metadata.get("execution")
+    return isinstance(execution, Mapping) and execution.get("ok") is True
+
+
+def _require_automated_pass(task: DivanTask) -> None:
+    value = task.metadata.get("automated_review")
+    if not isinstance(value, Mapping):
+        raise ValueError("approval requires an independent automated review")
+    reviewer = value.get("reviewer")
+    verdict = value.get("verdict")
+    if reviewer not in {"claude", "codex"} or verdict != "PASS":
+        raise ValueError("approval requires PASS from Claude or Codex independent review")
 
 
 def _review_from_task(task: DivanTask) -> ReviewDecision:
