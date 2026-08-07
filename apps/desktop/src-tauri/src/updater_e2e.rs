@@ -241,6 +241,19 @@ async fn run(app: AppHandle, mode: String) {
             }
         }
         "expect-no-update" => {
+            if current != expected {
+                finish(
+                    &app,
+                    marker.as_ref(),
+                    "fail",
+                    &mode,
+                    &current,
+                    &expected,
+                    "downgrade check is not running from the expected installed version",
+                    103,
+                );
+                return;
+            }
             let updater = match app.updater() {
                 Ok(value) => value,
                 Err(error) => {
@@ -252,7 +265,7 @@ async fn run(app: AppHandle, mode: String) {
                         &current,
                         &expected,
                         &format!("updater initialization failed: {error}"),
-                        103,
+                        104,
                     );
                     return;
                 }
@@ -276,7 +289,7 @@ async fn run(app: AppHandle, mode: String) {
                     &current,
                     &expected,
                     &format!("unexpected downgrade/update was offered: {}", update.version),
-                    104,
+                    105,
                 ),
                 Err(error) => finish(
                     &app,
@@ -286,7 +299,7 @@ async fn run(app: AppHandle, mode: String) {
                     &current,
                     &expected,
                     &format!("downgrade check failed: {error}"),
-                    105,
+                    106,
                 ),
             }
         }
@@ -298,7 +311,7 @@ async fn run(app: AppHandle, mode: String) {
             &current,
             &expected,
             "unknown updater e2e mode",
-            106,
+            107,
         ),
     }
 }
