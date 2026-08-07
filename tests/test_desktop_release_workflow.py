@@ -89,7 +89,7 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         main = MAIN.read_text(encoding="utf-8")
         self.assertIn('setActiveTab("releases")', app)
         self.assertIn('invoke<UpdateStatus>("check_for_update")', app)
-        self.assertIn('invoke<void>("install_update", { approved: true })', app)
+        self.assertIn('invoke<UpdateInstallStatus>("install_update", { approved: true })', app)
         self.assertIn("window.confirm(", app)
         self.assertIn('features.includes("signed-updater")', app)
         self.assertIn('version: env!("CARGO_PKG_VERSION")', main)
@@ -98,16 +98,30 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
 
     def test_desktop_release_ui_fails_closed_on_unknown_or_stale_update_state(self) -> None:
         app = APP.read_text(encoding="utf-8")
-        check_start = app.index('run("update-check"')
+        check_start = app.index("const checkForUpdate = async")
         check_end = app.index("const installUpdate", check_start)
         check_block = app[check_start:check_end]
         self.assertLess(
             check_block.index("setUpdateStatus(null)"),
             check_block.index('invoke<UpdateStatus>("check_for_update")'),
         )
+        self.assertIn("setUpdateCheckError(", check_block)
+        self.assertIn("Önceki sonuç güvenlik nedeniyle geçersiz sayıldı", check_block)
         self.assertIn("if (shellCaps === null)", app)
         self.assertIn("Build kimliği doğrulanmadan beta veya stable kanal varsayımı yapılmaz", app)
-        self.assertIn("setUpdateStatus({ available: false, version: null })", app)
+        self.assertIn('checkError\n                ? "Kontrol tamamlanamadı"', app)
+        self.assertIn("status?.available && !checkError", app)
+
+    def test_install_update_distinguishes_no_longer_available_from_installed(self) -> None:
+        app = APP.read_text(encoding="utf-8")
+        main = MAIN.read_text(encoding="utf-8")
+        self.assertIn("struct UpdateInstallStatus", main)
+        self.assertIn("installed: true", main)
+        self.assertIn("installed: false", main)
+        self.assertIn('const result = await invoke<UpdateInstallStatus>("install_update"', app)
+        self.assertIn("if (!result.installed)", app)
+        self.assertIn("Hiçbir paket kurulmadı; tekrar kontrol et", app)
+        self.assertNotIn("setUpdateStatus({ available: false, version: null })", app)
 
     def test_desktop_interrupted_execution_requires_explicit_recovery_and_retry(self) -> None:
         app = APP.read_text(encoding="utf-8")
@@ -121,10 +135,12 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
     def test_desktop_operator_can_choose_replaceable_execution_engine(self) -> None:
         app = APP.read_text(encoding="utf-8")
         self.assertIn("const [engine, setEngine]", app)
-        self.assertIn("const engines = readiness?.engines ?? []", app)
+        self.assertIn("const availableEngines = readiness?.engines ?? []", app)
         self.assertIn("setEngine(event.target.value)", app)
-        self.assertIn("engine_id: engine || readiness?.recommended_engine || undefined", app)
-        self.assertIn("selected.engine_id || engine || readiness?.recommended_engine", app)
+        self.assertIn("engine_id: operatorEngine || undefined", app)
+        self.assertIn("operatorEngine || persistedTaskEngine || readiness?.recommended_engine", app)
+        self.assertIn("availableEngines.includes(selected.engine_id)", app)
+        self.assertNotIn("setEngine((current) => current || value.recommended_engine", app)
         self.assertIn("Native ve Orca aynı Divan execution contract", app)
 
     def test_windows_updater_signature_is_paired_with_the_nsis_installer(self) -> None:
