@@ -57,10 +57,14 @@ jobs:
           python --version
           git --version
 
-      - name: Run focused Python execution tests
+      - name: Run Desktop execution contract tests
         shell: pwsh
         run: |
-          python -m unittest tests.test_orca_engine tests.test_orca_coordinator
+          python -m unittest `
+            tests.test_orca_engine `
+            tests.test_orca_coordinator `
+            tests.test_goal_execution `
+            tests.test_orca_cli
 
       - name: Validate Divan runtime contracts
         shell: pwsh
