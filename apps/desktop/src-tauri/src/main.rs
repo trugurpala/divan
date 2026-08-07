@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tauri_plugin_shell::{process::CommandEvent, ShellExt};
 #[cfg(feature = "signed-updater")]
-use tauri_plugin_updater::UpdaterExt;
+use tauri_plugin_updater::{Update, UpdaterExt};
 
 #[cfg(feature = "updater-e2e")]
 mod updater_e2e;
@@ -45,6 +45,10 @@ struct UpdateInstallStatus {
     installed: bool,
     version: Option<String>,
 }
+
+#[cfg(feature = "signed-updater")]
+#[derive(Default)]
+struct PendingUpdate(std::sync::Mutex<Option<Update>>);
 
 fn tool(id: &'static str, required: bool) -> ToolStatus {
     let path = which::which(id)
@@ -98,13 +102,33 @@ fn divan_capabilities() -> Capabilities {
 
 #[cfg(feature = "signed-updater")]
 #[tauri::command]
-async fn check_for_update(app: tauri::AppHandle) -> Result<UpdateStatus, String> {
+async fn check_for_update(
+    app: tauri::AppHandle,
+    pending_update: tauri::State<'_, PendingUpdate>,
+) -> Result<UpdateStatus, String> {
+    {
+        let mut pending = pending_update
+            .0
+            .lock()
+            .map_err(|_| "pending updater state is unavailable".to_string())?;
+        *pending = None;
+    }
+
     let updater = app.updater().map_err(|error| error.to_string())?;
-    match updater.check().await.map_err(|error| error.to_string())? {
-        Some(update) => Ok(UpdateStatus {
-            available: true,
-            version: Some(update.version.to_string()),
-        }),
+    let update = updater.check().await.map_err(|error| error.to_string())?;
+    match update {
+        Some(update) => {
+            let version = update.version.to_string();
+            let mut pending = pending_update
+                .0
+                .lock()
+                .map_err(|_| "pending updater state is unavailable".to_string())?;
+            *pending = Some(update);
+            Ok(UpdateStatus {
+                available: true,
+                version: Some(version),
+            })
+        }
         None => Ok(UpdateStatus {
             available: false,
             version: None,
@@ -122,31 +146,33 @@ async fn check_for_update(_app: tauri::AppHandle) -> Result<UpdateStatus, String
 #[tauri::command]
 async fn install_update(
     app: tauri::AppHandle,
+    pending_update: tauri::State<'_, PendingUpdate>,
     approved: bool,
 ) -> Result<UpdateInstallStatus, String> {
     if !approved {
         return Err("installing an update requires explicit approved=true".to_string());
     }
-    let updater = app.updater().map_err(|error| error.to_string())?;
-    match updater.check().await.map_err(|error| error.to_string())? {
-        Some(update) => {
-            let version = update.version.to_string();
-            update
-                .download_and_install(|_, _| {}, || {})
-                .await
-                .map_err(|error| error.to_string())?;
-            let result = UpdateInstallStatus {
-                installed: true,
-                version: Some(version),
-            };
-            app.restart();
-            Ok(result)
-        }
-        None => Ok(UpdateInstallStatus {
-            installed: false,
-            version: None,
-        }),
-    }
+
+    let update = {
+        let mut pending = pending_update
+            .0
+            .lock()
+            .map_err(|_| "pending updater state is unavailable".to_string())?;
+        pending.take().ok_or_else(|| {
+            "no checked update is pending; run an explicit update check first".to_string()
+        })?
+    };
+    let version = update.version.to_string();
+    update
+        .download_and_install(|_, _| {}, || {})
+        .await
+        .map_err(|error| error.to_string())?;
+    let result = UpdateInstallStatus {
+        installed: true,
+        version: Some(version),
+    };
+    app.restart();
+    Ok(result)
 }
 
 #[cfg(not(feature = "signed-updater"))]
@@ -204,7 +230,9 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init());
     #[cfg(feature = "signed-updater")]
-    let builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    let builder = builder
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(PendingUpdate::default());
 
     builder
         .setup(|app| {
