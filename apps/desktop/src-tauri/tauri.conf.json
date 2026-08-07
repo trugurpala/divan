@@ -29,6 +29,7 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
+    "icon": ["icons/divan-generated.ico"],
     "resources": ["resources/*"]
   }
 }
