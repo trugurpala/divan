@@ -136,6 +136,7 @@ class CleanCodeTests(unittest.TestCase):
                 "--config",
                 "lint.mccabe.max-complexity=10",
                 "--output-format=json",
+                "--no-cache",
             ],
         )
 

@@ -1,0 +1,361 @@
+name: Desktop Stable Candidate
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/desktop-acceptance.yml"
+      - ".github/workflows/desktop-release.yml"
+      - "apps/desktop/package.json"
+      - "apps/desktop/pnpm-lock.yaml"
+      - "apps/desktop/src-tauri/**"
+      - "scripts/desktop_release_guard.py"
+      - "scripts/desktop_update_feed.py"
+      - "scripts/prepare_desktop_release_config.py"
+      - "scripts/windows_desktop_acceptance.ps1"
+      - "scripts/windows_desktop_updater_e2e.ps1"
+      - "tests/test_desktop_acceptance_workflow.py"
+      - "tests/test_desktop_dependency_locking.py"
+      - "tests/test_desktop_release_guard.py"
+      - "tests/test_desktop_update_feed.py"
+      - "tests/test_desktop_updater_e2e_contract.py"
+      - "tests/test_prepare_desktop_release_config.py"
+      - "tests/test_desktop_release_workflow.py"
+  workflow_dispatch:
+    inputs:
+      acceptance_run_id:
+        description: "Successful Desktop Real-User Acceptance workflow run ID for this exact main commit"
+        required: true
+        type: string
+
+permissions: read-all
+
+jobs:
+  contract:
+    name: desktop-release-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify fail-closed desktop release contract
+        run: >-
+          python -m unittest
+          tests.test_desktop_acceptance_workflow
+          tests.test_desktop_dependency_locking
+          tests.test_desktop_release_guard
+          tests.test_desktop_update_feed
+          tests.test_desktop_updater_e2e_contract
+          tests.test_prepare_desktop_release_config
+          tests.test_desktop_release_workflow
+
+      - name: Verify unsigned builds remain explicitly non-stable
+        run: python scripts/desktop_release_guard.py
+
+  updater-e2e-windows:
+    name: signed-updater-e2e
+    needs: contract
+    runs-on: windows-latest
+    timeout-minutes: 55
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # v1
+
+      - name: Install sidecar packager
+        run: python -m pip install --disable-pip-version-check pyinstaller==6.21.0
+
+      - name: Install frontend dependencies from lockfile
+        working-directory: apps/desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Build updater e2e frontend context
+        working-directory: apps/desktop
+        run: pnpm build
+
+      - name: Compile isolated updater e2e feature from Cargo.lock
+        working-directory: apps/desktop
+        run: cargo check --manifest-path src-tauri/Cargo.toml --features updater-e2e --locked
+
+      - name: Run real signed updater upgrade and recovery matrix
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP "divan-desktop-updater-e2e.json"
+          & scripts/windows_desktop_updater_e2e.ps1 -Output $evidence
+          if ($LASTEXITCODE -ne 0) { throw "signed updater runtime e2e failed" }
+          if (-not (Test-Path $evidence -PathType Leaf)) { throw "updater e2e evidence was not produced" }
+
+          $payload = Get-Content $evidence -Raw | ConvertFrom-Json
+          $sourceCommit = (& git rev-parse HEAD).Trim()
+          $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          if ($payload.status -ne "pass") { throw "updater e2e evidence did not pass" }
+          if ($payload.source_commit -ne $sourceCommit -or $payload.source_tree -ne $sourceTree) {
+            throw "updater e2e evidence is not bound to exact source identity"
+          }
+          foreach ($field in @("valid_signed_upgrade", "tampered_signature_rejected", "forward_signed_recovery", "downgrade_not_offered", "signatures_mandatory", "test_only_insecure_transport")) {
+            if ($payload.$field -ne $true) { throw "updater e2e evidence missing required PASS: $field" }
+          }
+          if ($payload.production_transport_policy -ne "https-only") {
+            throw "updater e2e weakened the production HTTPS transport policy"
+          }
+          "DIVAN_UPDATER_E2E_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify updater e2e did not drift dependency locks
+        shell: pwsh
+        run: |
+          git diff --exit-code -- apps/desktop/pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) { throw "updater e2e drifted Desktop dependency lockfiles" }
+
+      - name: Upload signed updater e2e evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-updater-e2e
+          path: ${{ env.DIVAN_UPDATER_E2E_EVIDENCE }}
+          if-no-files-found: error
+          retention-days: 7
+
+  signed-windows-candidate:
+    name: signed-windows-candidate
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: [contract, updater-e2e-windows]
+    runs-on: windows-latest
+    timeout-minutes: 50
+    environment: production-release
+    permissions:
+      actions: read
+      attestations: write
+      contents: read
+      id-token: write
+      artifact-metadata: write
+    env:
+      DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
+      DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
+      DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
+      DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
+      DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # v1
+
+      - name: Install sidecar packager
+        run: python -m pip install --disable-pip-version-check pyinstaller==6.21.0
+
+      - name: Install frontend dependencies from lockfile
+        working-directory: apps/desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Build signed updater frontend context
+        working-directory: apps/desktop
+        run: pnpm build
+
+      - name: Verify signed updater Rust dependency lock
+        working-directory: apps/desktop
+        run: cargo check --manifest-path src-tauri/Cargo.toml --features signed-updater --locked
+
+      - name: Verify dependency lockfiles did not drift
+        shell: pwsh
+        run: |
+          git diff --exit-code -- apps/desktop/pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) {
+            throw "Desktop dependency lockfiles drifted before stable candidate build"
+          }
+
+      - name: Resolve and verify attested real-user acceptance evidence
+        shell: pwsh
+        run: |
+          $runId = $env:DIVAN_ACCEPTANCE_RUN_ID
+          if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
+            throw "acceptance_run_id must be a numeric Desktop Real-User Acceptance workflow run ID"
+          }
+          $metadataJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$runId"
+          if ($LASTEXITCODE -ne 0 -or -not $metadataJson) {
+            throw "Acceptance workflow run metadata could not be loaded"
+          }
+          $metadata = $metadataJson | ConvertFrom-Json
+          if ($metadata.name -ne "Desktop Real-User Acceptance") {
+            throw "Acceptance run came from an unexpected workflow: $($metadata.name)"
+          }
+          if ($metadata.conclusion -ne "success") {
+            throw "Acceptance run is not successful: $($metadata.conclusion)"
+          }
+          if ($metadata.head_branch -ne "main" -or $metadata.head_sha -ne $env:GITHUB_SHA) {
+            throw "Acceptance run is not bound to this exact main source commit"
+          }
+
+          $downloadDir = Join-Path $env:RUNNER_TEMP "divan-acceptance"
+          New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
+          gh run download $runId --repo $env:GITHUB_REPOSITORY --name divan-windows-acceptance --dir $downloadDir
+          if ($LASTEXITCODE -ne 0) { throw "Acceptance evidence artifact download failed" }
+          $evidenceFiles = @(Get-ChildItem $downloadDir -Filter "*.json" -File -Recurse)
+          if ($evidenceFiles.Count -ne 1) {
+            throw "Acceptance artifact must contain exactly one JSON evidence file"
+          }
+          $evidence = $evidenceFiles[0].FullName
+          gh attestation verify $evidence --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/desktop-acceptance.yml" --source-ref refs/heads/main --source-digest $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw "Acceptance evidence provenance attestation verification failed" }
+
+          $sourceCommit = (& git rev-parse HEAD).Trim()
+          $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          if ($sourceCommit -ne $env:GITHUB_SHA -or $sourceTree -notmatch '^[0-9a-f]{40}$') {
+            throw "Release source identity could not be resolved"
+          }
+          "DIVAN_ACCEPTANCE_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_SOURCE_COMMIT=$sourceCommit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_SOURCE_TREE=$sourceTree" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Generate ephemeral signed release configuration
+        shell: pwsh
+        run: |
+          $config = Join-Path $env:RUNNER_TEMP "tauri.release.conf.json"
+          python scripts/prepare_desktop_release_config.py --output $config
+          if ($LASTEXITCODE -ne 0) { throw "release config generation failed" }
+          "DIVAN_RELEASE_CONFIG=$config" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Enforce stable release gate before build
+        shell: pwsh
+        run: |
+          python scripts/desktop_release_guard.py --release-config $env:DIVAN_RELEASE_CONFIG --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
+          if ($LASTEXITCODE -ne 0) { throw "stable release gate failed" }
+
+      - name: Build self-contained Core sidecar
+        working-directory: apps/desktop
+        run: pnpm core:build
+
+      - name: Build signed NSIS and updater artifacts
+        working-directory: apps/desktop
+        shell: pwsh
+        run: |
+          pnpm tauri build --bundles nsis --features signed-updater --config $env:DIVAN_RELEASE_CONFIG
+          if ($LASTEXITCODE -ne 0) { throw "signed Tauri build failed" }
+
+      - name: Verify Authenticode and updater signatures
+        shell: pwsh
+        run: |
+          $bundle = "apps/desktop/src-tauri/target/release/bundle/nsis"
+          $installer = Get-ChildItem $bundle -Filter "*-setup.exe" -File | Select-Object -First 1
+          if (-not $installer) { throw "signed NSIS installer was not produced" }
+          $signature = Get-AuthenticodeSignature $installer.FullName
+          if ($signature.Status -ne "Valid") {
+            throw "NSIS Authenticode signature is not valid: $($signature.Status)"
+          }
+          $updaterSignaturePath = "$($installer.FullName).sig"
+          if (-not (Test-Path $updaterSignaturePath)) {
+            throw "Tauri updater signature for the NSIS installer was not produced: $updaterSignaturePath"
+          }
+          $updaterSignature = (Get-Content $updaterSignaturePath -Raw).Trim()
+          if (-not $updaterSignature) {
+            throw "Tauri updater signature for the NSIS installer is empty"
+          }
+          "DIVAN_SIGNED_INSTALLER=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_UPDATER_SIGNATURE=$updaterSignaturePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Generate source-bound updater feed and promotion manifest
+        shell: pwsh
+        run: |
+          $bundle = "apps/desktop/src-tauri/target/release/bundle/nsis"
+          $feed = Join-Path $bundle "latest.json"
+          $manifest = Join-Path $bundle "divan-update-manifest.json"
+          $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
+          python scripts/desktop_update_feed.py --installer $env:DIVAN_SIGNED_INSTALLER --signature $env:DIVAN_UPDATER_SIGNATURE --version $version --artifact-base-url $env:DIVAN_UPDATER_ARTIFACT_BASE_URL --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --output $feed --manifest $manifest --notes "Divan Desktop $version stable candidate"
+          if ($LASTEXITCODE -ne 0) { throw "signed updater feed generation failed" }
+
+          $feedPayload = Get-Content $feed -Raw | ConvertFrom-Json
+          $manifestPayload = Get-Content $manifest -Raw | ConvertFrom-Json
+          $signatureText = (Get-Content $env:DIVAN_UPDATER_SIGNATURE -Raw).Trim()
+          if ($feedPayload.version -ne $version) { throw "updater feed version does not match signed candidate" }
+          $windows = $feedPayload.platforms.'windows-x86_64'
+          if (-not $windows -or $windows.signature -ne $signatureText) {
+            throw "updater feed is not bound to the exact Tauri signature"
+          }
+          if ($windows.url -notmatch '^https://') { throw "updater feed artifact URL is not HTTPS" }
+          if ($manifestPayload.source_commit -ne $env:DIVAN_SOURCE_COMMIT -or $manifestPayload.source_tree -ne $env:DIVAN_SOURCE_TREE) {
+            throw "updater promotion manifest is not bound to exact release source"
+          }
+          foreach ($digest in @($manifestPayload.installer.sha256, $manifestPayload.updater_signature.sha256, $manifestPayload.feed.sha256)) {
+            if ($digest -notmatch '^[0-9a-f]{64}$') { throw "updater promotion manifest contains an invalid SHA-256 digest" }
+          }
+          "DIVAN_UPDATE_FEED=$feed" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_UPDATE_MANIFEST=$manifest" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Smoke-test signed installed bundle
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem "apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw "signed NSIS install failed with $($install.ExitCode)" }
+          $appExe = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
+          if (-not (Test-Path $appExe)) { throw "installed signed Divan.exe was not found" }
+          $installedSignature = Get-AuthenticodeSignature $appExe
+          if ($installedSignature.Status -ne "Valid") {
+            throw "installed Divan.exe Authenticode signature is not valid: $($installedSignature.Status)"
+          }
+          $app = Start-Process -FilePath $appExe -PassThru
+          Start-Sleep -Seconds 5
+          if ($app.HasExited) { throw "installed signed Divan.exe exited during launch smoke test" }
+          Stop-Process -Id $app.Id -Force
+
+      - name: Attest signed desktop candidate
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
+        with:
+          subject-path: "apps/desktop/src-tauri/target/release/bundle/nsis/*"
+
+      - name: Upload signed desktop candidate
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-signed-candidate
+          path: apps/desktop/src-tauri/target/release/bundle/nsis/*
+          if-no-files-found: error
+          retention-days: 14

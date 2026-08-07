@@ -16,34 +16,102 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
-      - name: Local quality gates
+
+      - name: Install quality dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Naming contract
+        run: python scripts/naming.py --check
+
+      - name: Divan architecture validation
+        shell: bash
+        run: |
+          set +e
+          output="$(python scripts/divan.py validate 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r line; do
+              [ -z "$line" ] || printf '::error title=Divan architecture validation::%s\n' "$line"
+            done <<< "$output"
+            exit "$status"
+          fi
+
+      - name: Prose contract
+        run: python scripts/prose.py --check
+
+      - name: Community standards
+        run: python scripts/standards.py --check
+
+      - name: Wiki sync contract
+        run: python scripts/wiki.py --check
+
+      - name: Candidate review contract
+        run: python scripts/candidate_review.py --check
+
+      - name: Build deterministic project runners
+        shell: bash
+        env:
+          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache
+        run: |
+          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-a.pyz" --source-commit "${{ github.sha }}"
+          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-b.pyz" --source-commit "${{ github.sha }}"
+          cmp "$RUNNER_TEMP/divan-project-a.pyz" "$RUNNER_TEMP/divan-project-b.pyz"
+
+      - name: Validate project runner bundle
+        run: python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
+
+      - name: Ruff
+        shell: bash
+        env:
+          RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
+        run: |
+          set +e
+          output="$(ruff check . 2>&1)"
+          status=$?
+          set -e
+          printf '%s\n' "$output"
+          if [ "$status" -ne 0 ]; then
+            diff="$(ruff check . --fix --diff 2>&1 || true)"
+            combined="$output"
+            if [ -n "$diff" ]; then
+              combined="$combined"$'\n'"Suggested Ruff fix:"$'\n'"$diff"
+            fi
+            encoded="${combined//'%'/'%25'}"
+            encoded="${encoded//$'\r'/'%0D'}"
+            encoded="${encoded//$'\n'/'%0A'}"
+            printf '::error title=Ruff fix diff::%s\n' "$encoded"
+            exit "$status"
+          fi
+
+      - name: Clean-code gate
+        run: python scripts/clean_code.py --check
+
+      - name: Mypy
+        env:
+          MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache
+        run: mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company
+
+      - name: Actionlint
+        shell: bash
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
+          "$(go env GOPATH)/bin/actionlint"
+
+      - name: Local quality gates (canonical verification with coverage)
         env:
           PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache
           RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
           MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache
           COVERAGE_FILE: ${{ runner.temp }}/coverage
-        run: |
-          pip install -r requirements-dev.txt
-          python scripts/naming.py --check
-          python scripts/divan.py validate
-          python scripts/prose.py --check
-          python scripts/standards.py --check
-          python scripts/wiki.py --check
-          python scripts/candidate_review.py --check
-          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-a.pyz" --source-commit "${{ github.sha }}"
-          python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-b.pyz" --source-commit "${{ github.sha }}"
-          cmp "$RUNNER_TEMP/divan-project-a.pyz" "$RUNNER_TEMP/divan-project-b.pyz"
-          python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
-          ruff check .
-          python scripts/clean_code.py --check
-          mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company
-          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
-          "$(go env GOPATH)/bin/actionlint"
-          python scripts/verify.py --coverage
+        run: python scripts/verify.py --coverage
+
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1
           for skill in plugins/*/skills/*; do agentskills validate "$skill"; done
+
       - name: Claude Code resmi dogrulayici
         run: |
           npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate . --strict

@@ -9,6 +9,10 @@ select = ["E4", "E7", "E9", "F", "I", "C90"]
 [tool.ruff.lint.mccabe]
 max-complexity = 25
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["E402"]
+"scripts/divan-desktop-bridge.py" = ["E402"]
+
 [tool.mypy]
 python_version = "3.11"
 files = [

@@ -8,12 +8,16 @@
       "python_modules": [
         "kernel",
         "contract_validation",
-        "timeouts"
+        "timeouts",
+        "desktop_state",
+        "executable_locator"
       ],
       "capabilities": [
         "architecture_validation",
         "module_resolution",
-        "adaptive_timeout_policy"
+        "adaptive_timeout_policy",
+        "per_user_desktop_state",
+        "safe_local_executable_resolution"
       ],
       "depends_on": [],
       "required": true
@@ -22,41 +26,79 @@
       "id": "governance",
       "en": "Governance",
       "tr": "Divan Nizamı",
-      "python_modules": ["governance"],
+      "python_modules": [
+        "governance",
+        "review_gate",
+        "reviewer_runner",
+        "git_guard"
+      ],
       "capabilities": [
         "authority_chain",
-        "scope_control"
+        "scope_control",
+        "review_gate",
+        "release_approval_gate",
+        "independent_agent_review",
+        "review_snapshot_binding",
+        "guarded_fast_forward_merge"
       ],
-      "depends_on": ["kernel"],
+      "depends_on": [
+        "kernel"
+      ],
       "required": true
     },
     {
       "id": "council",
       "en": "Council",
       "tr": "Divan",
-      "python_modules": ["engine", "engine_registry", "planning", "planning_policy"],
+      "python_modules": [
+        "engine",
+        "engine_registry",
+        "planning",
+        "planning_policy",
+        "execution_contract",
+        "execution_router",
+        "orca_engine",
+        "orca_adapter",
+        "native_engine",
+        "runtime_composition"
+      ],
       "capabilities": [
         "project_discovery",
         "engine_registry_validation",
         "intent_routing",
         "impact_analysis",
         "capacity_planning",
-        "bounded_orchestration"
+        "bounded_orchestration",
+        "execution_engine_routing",
+        "orca_sidecar_execution",
+        "native_worktree_execution",
+        "local_agent_dispatch"
       ],
-      "depends_on": ["kernel", "governance"],
+      "depends_on": [
+        "kernel",
+        "governance"
+      ],
       "required": true
     },
     {
       "id": "evidence",
       "en": "Evidence",
       "tr": "Kanıt",
-      "python_modules": ["receipts", "execution"],
+      "python_modules": [
+        "receipts",
+        "execution",
+        "evidence"
+      ],
       "capabilities": [
         "evidence_ledger",
         "receipt_verification",
-        "bounded_command_execution"
+        "bounded_command_execution",
+        "tamper_evident_task_evidence"
       ],
-      "depends_on": ["kernel", "governance"],
+      "depends_on": [
+        "kernel",
+        "governance"
+      ],
       "required": true
     },
     {
@@ -67,10 +109,22 @@
         "project_os",
         "project_state",
         "project_transactions",
-        "project_lifecycle"
+        "project_lifecycle",
+        "project_registry"
       ],
-      "capabilities": ["initialization", "ownership", "drift_control", "verification"],
-      "depends_on": ["kernel", "governance", "council", "evidence"],
+      "capabilities": [
+        "initialization",
+        "ownership",
+        "drift_control",
+        "verification",
+        "desktop_project_registry"
+      ],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "council",
+        "evidence"
+      ],
       "required": true
     },
     {
@@ -89,7 +143,11 @@
         "adoption_proof_execution",
         "adoption_proof",
         "seyir_state",
-        "ci_guard"
+        "ci_guard",
+        "task_model",
+        "task_store",
+        "execution_recovery",
+        "orchestrator"
       ],
       "capabilities": [
         "goal_state",
@@ -98,17 +156,38 @@
         "archive",
         "adoption",
         "clean_room_adoption",
-        "ci_failure_circuit_breaker"
+        "ci_failure_circuit_breaker",
+        "desktop_task_state",
+        "atomic_task_persistence",
+        "fail_closed_execution_recovery",
+        "task_orchestration"
       ],
-      "depends_on": ["kernel", "governance", "council", "evidence", "project"],
+      "depends_on": [
+        "kernel",
+        "governance",
+        "council",
+        "evidence",
+        "project"
+      ],
       "required": true
     },
     {
       "id": "providers",
       "en": "Providers",
       "tr": "Sağlayıcılar",
-      "python_modules": ["providers"],
-      "capabilities": ["local", "github", "context7", "vercel"],
+      "python_modules": [
+        "providers",
+        "project_readiness"
+      ],
+      "capabilities": [
+        "local",
+        "github",
+        "context7",
+        "vercel",
+        "local_tool_discovery",
+        "windows_installed_app_discovery",
+        "subscription_auth_detection"
+      ],
       "depends_on": [
         "kernel",
         "governance",
@@ -122,8 +201,14 @@
       "id": "release",
       "en": "Release",
       "tr": "Yayın",
-      "python_modules": ["release"],
-      "capabilities": ["release_plan", "provider_evidence", "live_readback"],
+      "python_modules": [
+        "release"
+      ],
+      "capabilities": [
+        "release_plan",
+        "provider_evidence",
+        "live_readback"
+      ],
       "depends_on": [
         "kernel",
         "governance",
@@ -145,7 +230,10 @@
         "cli",
         "locales",
         "status",
-        "local_server"
+        "local_server",
+        "desktop_api",
+        "desktop_protocol_support",
+        "desktop_protocol"
       ],
       "capabilities": [
         "cli",
@@ -155,7 +243,9 @@
         "legacy_cli_aliases",
         "bilingual_reader_messages",
         "status_snapshot",
-        "loopback_status_server"
+        "loopback_status_server",
+        "desktop_api",
+        "desktop_json_protocol"
       ],
       "depends_on": [
         "kernel",

@@ -1,0 +1,283 @@
+name: Desktop Build
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "plugins/sadrazam/divan_runtime/**"
+      - "scripts/divan-desktop-bridge.py"
+      - "scripts/build_desktop_core.py"
+      - "scripts/desktop_release_guard.py"
+      - "scripts/prepare_desktop_release_config.py"
+      - "scripts/windows_desktop_acceptance.ps1"
+      - "scripts/windows_desktop_lifecycle.ps1"
+      - "tests/test_desktop_protocol.py"
+      - "tests/test_desktop_state.py"
+      - "tests/test_desktop_lifecycle_contract.py"
+      - "tests/test_project_readiness.py"
+      - "tests/test_project_registry.py"
+      - "tests/test_executable_locator.py"
+      - "tests/test_native_engine.py"
+      - "tests/test_orchestrator.py"
+      - "tests/test_reviewer_runner.py"
+      - "tests/test_git_guard.py"
+      - "tests/test_desktop_acceptance_workflow.py"
+      - "tests/test_desktop_dependency_locking.py"
+      - "tests/test_desktop_release_guard.py"
+      - "tests/test_prepare_desktop_release_config.py"
+      - "tests/test_desktop_release_workflow.py"
+      - ".github/workflows/desktop-acceptance.yml"
+      - ".github/workflows/desktop-build.yml"
+      - ".github/workflows/desktop-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop-windows:
+    name: desktop-windows
+    runs-on: windows-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # v1
+
+      - name: Install sidecar packager
+        run: python -m pip install --disable-pip-version-check pyinstaller==6.21.0
+
+      - name: Install frontend dependencies from lockfile
+        working-directory: apps/desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Run desktop core tests
+        run: >-
+          python -m unittest
+          tests.test_desktop_protocol
+          tests.test_desktop_state
+          tests.test_desktop_lifecycle_contract
+          tests.test_project_readiness
+          tests.test_project_registry
+          tests.test_executable_locator
+          tests.test_native_engine
+          tests.test_task_store
+          tests.test_orchestrator
+          tests.test_execution_router
+          tests.test_review_gate
+          tests.test_reviewer_runner
+          tests.test_git_guard
+          tests.test_desktop_acceptance_workflow
+          tests.test_desktop_dependency_locking
+          tests.test_desktop_release_guard
+          tests.test_prepare_desktop_release_config
+          tests.test_desktop_release_workflow
+          tests.test_orca_engine
+          tests.test_orca_adapter
+
+      - name: Typecheck and build frontend
+        working-directory: apps/desktop
+        run: pnpm build
+
+      - name: Build exact Core sidecar for Tauri feature checks
+        working-directory: apps/desktop
+        run: pnpm core:build
+
+      - name: Compile signed updater feature lane from Cargo.lock
+        working-directory: apps/desktop
+        run: cargo check --manifest-path src-tauri/Cargo.toml --features signed-updater --locked
+
+      - name: Verify dependency lockfiles did not drift
+        shell: pwsh
+        run: |
+          git diff --exit-code -- apps/desktop/pnpm-lock.yaml apps/desktop/src-tauri/Cargo.lock
+          if ($LASTEXITCODE -ne 0) {
+            throw "Desktop dependency lockfiles drifted during frozen/locked verification"
+          }
+
+      - name: Upload verified dependency lockfiles
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-lockfiles
+          path: |
+            apps/desktop/pnpm-lock.yaml
+            apps/desktop/src-tauri/Cargo.lock
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Build sidecar and unsigned NSIS beta installer
+        working-directory: apps/desktop
+        run: pnpm desktop:build
+
+      - name: Smoke-test installed Windows bundle
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem "apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
+          if (-not $installer) {
+            throw "NSIS installer was not produced"
+          }
+
+          $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
+          if ($install.ExitCode -ne 0) {
+            throw "NSIS silent install failed with exit code $($install.ExitCode)"
+          }
+
+          $appExe = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
+          if (-not (Test-Path $appExe)) {
+            $candidate = Get-ChildItem $env:LOCALAPPDATA -Filter "Divan.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($candidate) {
+              $appExe = $candidate.FullName
+            }
+          }
+          if (-not (Test-Path $appExe)) {
+            throw "Installed Divan.exe was not found under LOCALAPPDATA"
+          }
+
+          $installRoot = Split-Path -Parent $appExe
+          $core = Get-ChildItem $installRoot -Filter "divan-core*.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $core) {
+            throw "Installed Divan Core sidecar was not found"
+          }
+
+          $coreOutput = '{"command":"capabilities"}' | & $core.FullName
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Divan Core sidecar failed with exit code $LASTEXITCODE"
+          }
+          $payload = $coreOutput | ConvertFrom-Json
+          if (-not $payload.ok -or $payload.result.product -ne "Divan") {
+            throw "Installed Divan Core sidecar returned an invalid capabilities response"
+          }
+          $expectedCommit = (& git rev-parse HEAD).Trim()
+          $expectedTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          $provenance = $payload.result.build_provenance
+          if (-not $provenance -or $provenance.source_commit -ne $expectedCommit -or $provenance.source_tree -ne $expectedTree) {
+            throw "Installed Divan Core provenance does not match the exact checked-out source identity"
+          }
+
+          "DIVAN_INSTALLED_APP=$appExe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "DIVAN_INSTALLED_CORE=$($core.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+          $app = Start-Process -FilePath $appExe -PassThru
+          Start-Sleep -Seconds 5
+          if ($app.HasExited) {
+            throw "Installed Divan.exe exited during launch smoke test with code $($app.ExitCode)"
+          }
+          Stop-Process -Id $app.Id -Force
+
+      - name: Seed persistent Core state outside installer root
+        shell: pwsh
+        run: |
+          $created = '{"command":"task.create","task_id":"DIV-UNINSTALL-PRESERVE","title":"Preserve Core state across uninstall"}' | & $env:DIVAN_INSTALLED_CORE
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Core could not seed uninstall persistence state"
+          }
+          $payload = $created | ConvertFrom-Json
+          if (-not $payload.ok -or $payload.result.task_id -ne "DIV-UNINSTALL-PRESERVE") {
+            throw "Installed Core returned invalid seeded task state"
+          }
+          $stateFile = Join-Path $env:LOCALAPPDATA "com.ugurpala.divan/tasks/DIV-UNINSTALL-PRESERVE.json"
+          if (-not (Test-Path $stateFile)) {
+            throw "Persistent Core state was not written to the identifier-scoped data root"
+          }
+          "DIVAN_PERSISTENT_STATE_FILE=$stateFile" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify Windows first-run matrix, crash recovery and Desktop restart persistence
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP "divan-desktop-lifecycle.json"
+          & scripts/windows_desktop_lifecycle.ps1 -AppExe $env:DIVAN_INSTALLED_APP -CoreExe $env:DIVAN_INSTALLED_CORE -Output $evidence
+          if ($LASTEXITCODE -ne 0) {
+            throw "Installed Windows lifecycle matrix failed"
+          }
+          if (-not (Test-Path $evidence)) {
+            throw "Windows lifecycle evidence file was not produced"
+          }
+
+          $payload = Get-Content $evidence -Raw | ConvertFrom-Json
+          $expectedCommit = (& git rev-parse HEAD).Trim()
+          $expectedTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          if ($payload.schema_version -ne 2 -or $payload.status -ne "pass") {
+            throw "Windows lifecycle evidence schema/status is invalid"
+          }
+          if ($payload.source_commit -ne $expectedCommit -or $payload.source_tree -ne $expectedTree) {
+            throw "Windows lifecycle evidence is not bound to the exact PR source identity"
+          }
+          if (-not $payload.interrupted_execution_observed -or $payload.interrupted_execution_state -ne "running") {
+            throw "Windows lifecycle evidence did not observe an interrupted RUNNING execution"
+          }
+          if ($payload.recovered_state -ne "retry" -or $payload.recovery_resumed_mutation) {
+            throw "Windows crash recovery did not fail closed to non-resuming RETRY"
+          }
+          if (-not $payload.retry_without_approval_rejected -or -not $payload.mandate_preserved_across_recovery) {
+            throw "Windows recovery did not preserve authority and require fresh execution approval"
+          }
+          if ($payload.orca_absent_available -or $payload.orca_absent_engine_registered) {
+            throw "Orca-absent first-run evidence is invalid"
+          }
+          if (-not $payload.orca_present_available -or -not $payload.orca_present_engine_registered) {
+            throw "Orca-present first-run evidence is invalid"
+          }
+          if ($payload.authority_product -ne "Divan" -or -not $payload.mandate_gate -or -not $payload.approval_gate) {
+            throw "Windows first-run matrix changed Divan governance authority"
+          }
+          if ($payload.recovery_evidence_sha256 -notmatch '^[0-9a-f]{64}$') {
+            throw "Windows recovery evidence is missing its tamper-evident SHA-256 identity"
+          }
+          "DIVAN_LIFECYCLE_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Uninstall and verify application removal with Core state preservation
+        shell: pwsh
+        run: |
+          $installRoot = Split-Path -Parent $env:DIVAN_INSTALLED_APP
+          $uninstaller = Get-ChildItem $installRoot -Filter "uninstall*.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $uninstaller) {
+            throw "Installed NSIS uninstaller was not found"
+          }
+          $uninstall = Start-Process -FilePath $uninstaller.FullName -ArgumentList "/S" -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) {
+            throw "NSIS silent uninstall failed with exit code $($uninstall.ExitCode)"
+          }
+          foreach ($attempt in 1..10) {
+            if (-not (Test-Path $env:DIVAN_INSTALLED_APP)) { break }
+            Start-Sleep -Seconds 1
+          }
+          if (Test-Path $env:DIVAN_INSTALLED_APP) {
+            throw "Divan.exe remained after NSIS uninstall"
+          }
+          if (-not (Test-Path $env:DIVAN_PERSISTENT_STATE_FILE)) {
+            throw "NSIS uninstall removed persistent Divan Core user state"
+          }
+
+      - name: Upload Windows lifecycle evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-windows-lifecycle
+          path: ${{ env.DIVAN_LIFECYCLE_EVIDENCE }}
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Windows bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-windows
+          path: apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error

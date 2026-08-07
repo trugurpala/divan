@@ -132,6 +132,7 @@ def _ruff_complexity(root: pathlib.Path) -> dict[str, int]:
         "--config",
         "lint.mccabe.max-complexity=10",
         "--output-format=json",
+        "--no-cache",
     ]
     try:
         completed = subprocess.run(
