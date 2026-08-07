@@ -137,6 +137,28 @@ class KnowledgeStore:
                 ),
             )
 
+    def observation_stats(self, item_id: str) -> dict[str, Any]:
+        self.get(item_id)
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT project_id, outcome
+                FROM knowledge_observations
+                WHERE item_id = ?
+                """,
+                (item_id,),
+            ).fetchall()
+        outcomes = Counter(str(row["outcome"]) for row in rows)
+        attempts = outcomes["success"] + outcomes["failure"]
+        return {
+            "observations": len(rows),
+            "projects": len({str(row["project_id"]) for row in rows}),
+            "attempts": attempts,
+            "successes": outcomes["success"],
+            "failures": outcomes["failure"],
+            "success_rate": None if attempts == 0 else outcomes["success"] / attempts,
+        }
+
     def analytics(self) -> dict[str, Any]:
         with self._connect() as connection:
             item_rows = connection.execute("SELECT * FROM knowledge_items").fetchall()
