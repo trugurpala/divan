@@ -6,6 +6,8 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "desktop-release.yml"
+CARGO = ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml"
+MAIN = ROOT / "apps" / "desktop" / "src-tauri" / "src" / "main.rs"
 
 
 class DesktopReleaseWorkflowTests(unittest.TestCase):
@@ -68,6 +70,15 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("--source-commit $env:DIVAN_SOURCE_COMMIT", signed)
         self.assertIn("--source-tree $env:DIVAN_SOURCE_TREE", signed)
         self.assertIn("--acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE", signed)
+
+    def test_updater_is_optional_for_beta_and_explicitly_enabled_for_signed_release(self) -> None:
+        cargo = CARGO.read_text(encoding="utf-8")
+        main = MAIN.read_text(encoding="utf-8")
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        self.assertIn('tauri-plugin-updater = { version = "2", optional = true }', cargo)
+        self.assertIn('signed-updater = ["dep:tauri-plugin-updater"]', cargo)
+        self.assertIn('#[cfg(feature = "signed-updater")]', main)
+        self.assertIn("--features signed-updater", signed)
 
     def test_all_actions_are_immutable_sha_pinned(self) -> None:
         mutable = []
