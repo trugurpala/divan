@@ -99,7 +99,7 @@ jobs:
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
           "$(go env GOPATH)/bin/actionlint"
 
-      - name: Canonical verification with coverage
+      - name: Local quality gates (canonical verification with coverage)
         env:
           PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache
           RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
