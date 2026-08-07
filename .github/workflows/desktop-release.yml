@@ -58,10 +58,9 @@ jobs:
     environment: production-release
     permissions:
       actions: read
-      attestations: read
+      attestations: write
       contents: read
       id-token: write
-      attestations: write
       artifact-metadata: write
     env:
       DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
