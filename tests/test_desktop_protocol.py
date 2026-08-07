@@ -15,7 +15,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from divan_runtime.desktop_protocol import handle_request
-from divan_runtime.execution_contract import ExecutionReceipt
+from divan_runtime.execution_contract import ExecutionAction, ExecutionReceipt
 from divan_runtime.execution_router import ExecutionRouter
 
 
@@ -23,26 +23,39 @@ class FakeEngine:
     engine_id = "native"
 
     def execute(self, request):
+        if request.action is ExecutionAction.FILE_DIFF:
+            payload = {"diff": "diff --git a/app.py b/app.py\n+print('ok')\n"}
+            argv = ("git", "diff", "--")
+        else:
+            payload = {
+                "worktree": "C:/tmp/worktree",
+                "agent": request.args.get("agent") or "codex",
+            }
+            argv = ("codex", "exec", "<redacted-prompt>")
         return ExecutionReceipt(
             engine="native",
             action=request.action,
             ok=True,
             exit_code=0,
-            payload={"worktree": "C:/tmp/worktree", "agent": request.args.get("agent") or "codex"},
+            payload=payload,
             stdout="",
             stderr="",
-            argv=("codex", "exec", "<redacted-prompt>"),
+            argv=argv,
             mandate_id=request.mandate_id,
         )
 
 
 class DesktopProtocolTests(unittest.TestCase):
     def test_capabilities_response_has_envelope(self):
-        response = handle_request({"command": "capabilities"}, ExecutionRouter([FakeEngine()]))
+        response = handle_request(
+            {"command": "capabilities"},
+            ExecutionRouter([FakeEngine()]),
+        )
         self.assertTrue(response["ok"])
         self.assertEqual(response["api_version"], 1)
         self.assertEqual(response["result"]["product"], "Divan")
         self.assertIn("task.start", response["result"]["commands"])
+        self.assertIn("task.diff", response["result"]["commands"])
 
     def test_task_create_plan_start_uses_explicit_approval(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
@@ -86,6 +99,58 @@ class DesktopProtocolTests(unittest.TestCase):
             self.assertTrue(started["result"]["mandate_id"].startswith("mandate-"))
             self.assertEqual(evidence["result"][0]["kind"], "execution")
             self.assertNotIn("Fix login", str(evidence["result"][0]["data"]["argv"]))
+
+    def test_task_diff_uses_execution_worktree_without_mutation(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            router = ExecutionRouter([FakeEngine()], default_engine="native")
+            handle_request(
+                {"command": "task.create", "task_id": "DIV-2", "title": "Edit app"},
+                router,
+            )
+            handle_request({"command": "task.plan", "task_id": "DIV-2"}, router)
+            handle_request(
+                {
+                    "command": "task.start",
+                    "task_id": "DIV-2",
+                    "agent": "codex",
+                    "approve_execution": True,
+                },
+                router,
+            )
+
+            diff = handle_request(
+                {"command": "task.diff", "task_id": "DIV-2"},
+                router,
+            )
+
+            self.assertTrue(diff["ok"], diff)
+            self.assertTrue(diff["result"]["ok"])
+            self.assertEqual(diff["result"]["engine"], "native")
+            self.assertIn("diff --git", diff["result"]["diff"])
+            self.assertEqual(diff["result"]["path"], "*")
+
+    def test_task_diff_requires_an_execution_worktree(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            router = ExecutionRouter([FakeEngine()], default_engine="native")
+            handle_request(
+                {"command": "task.create", "task_id": "DIV-3", "title": "Edit app"},
+                router,
+            )
+
+            diff = handle_request(
+                {"command": "task.diff", "task_id": "DIV-3"},
+                router,
+            )
+
+            self.assertFalse(diff["ok"])
+            self.assertEqual(
+                diff["error"]["code"],
+                "DESKTOP_TASK_WORKTREE_UNAVAILABLE",
+            )
 
     def test_task_create_validates_title(self):
         response = handle_request({"command": "task.create", "title": "  "})
