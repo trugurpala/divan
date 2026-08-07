@@ -41,6 +41,23 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
                 path.name,
             )
 
+    def test_e2e_is_bound_to_exact_pull_request_head_before_build(self) -> None:
+        script = UPDATER_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("GITHUB_EVENT_PATH", script)
+        self.assertIn('PSObject.Properties["pull_request"]', script)
+        self.assertIn('PSObject.Properties["sha"]', script)
+        self.assertIn("git -C $repoRoot fetch --no-tags --depth=1 origin $headSha", script)
+        self.assertIn("git -C $repoRoot checkout --force $headSha", script)
+        self.assertIn("Set-ExactWorkflowSource", script)
+        self.assertLess(
+            script.index("Set-ExactWorkflowSource"),
+            script.index("$baseConfig = Get-Content $baseConfigPath"),
+        )
+        self.assertIn("pnpm install --frozen-lockfile", script)
+        self.assertIn("pnpm build", script)
+        self.assertIn("source_commit = $sourceCommit", script)
+        self.assertIn("source_tree = $sourceTree", script)
+
     def test_e2e_proves_upgrade_bad_signature_recovery_and_no_downgrade(self) -> None:
         script = UPDATER_SCRIPT.read_text(encoding="utf-8")
         self.assertIn("Build-TestVersion -Version $versionN", script)
