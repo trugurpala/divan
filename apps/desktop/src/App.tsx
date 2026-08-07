@@ -70,7 +70,16 @@ type EvidenceRecord = {
   sha256: string;
 };
 
+type TaskDiff = {
+  engine: string;
+  ok: boolean;
+  exit_code: number;
+  path: string;
+  diff: string;
+};
+
 type UiState = "PLAN" | "WORKING" | "REVIEW" | "PASS" | "APPROVAL";
+type ActiveTab = "summary" | "evidence" | "diff" | "settings";
 
 const stateMap: Record<string, UiState> = {
   draft: "PLAN",
@@ -109,8 +118,9 @@ function App() {
   const [tasks, setTasks] = useState<CoreTask[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [evidence, setEvidence] = useState<EvidenceRecord[]>([]);
+  const [taskDiff, setTaskDiff] = useState<TaskDiff | null>(null);
   const [agent, setAgent] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"summary" | "evidence" | "settings">("summary");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("summary");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -156,6 +166,9 @@ function App() {
     [readiness],
   );
   const selectedState = selected ? stateMap[selected.state] ?? "PLAN" : "PLAN";
+  const canReadDiff = Boolean(
+    selected && !["draft", "planned"].includes(selected.state),
+  );
 
   useEffect(() => {
     if (!selected) {
@@ -166,6 +179,16 @@ function App() {
       .then(setEvidence)
       .catch(() => setEvidence([]));
   }, [selectedId, selected?.state]);
+
+  useEffect(() => {
+    if (!selected || !canReadDiff) {
+      setTaskDiff(null);
+      return;
+    }
+    coreRequest<TaskDiff>({ command: "task.diff", task_id: selected.task_id })
+      .then(setTaskDiff)
+      .catch(() => setTaskDiff(null));
+  }, [selectedId, selected?.state, canReadDiff]);
 
   const run = async (label: string, action: () => Promise<void>) => {
     setBusy(label);
@@ -236,6 +259,16 @@ function App() {
       await refreshTasks();
     });
 
+  const refreshDiff = () =>
+    selected &&
+    run("diff", async () => {
+      const value = await coreRequest<TaskDiff>({
+        command: "task.diff",
+        task_id: selected.task_id,
+      });
+      setTaskDiff(value);
+    });
+
   const requestApproval = () =>
     selected &&
     run("approval", async () => {
@@ -296,6 +329,13 @@ function App() {
             <button className="nav-item active" onClick={() => setActiveTab("summary")}>Görevler</button>
             <button className="nav-item" onClick={() => setActiveTab("settings")}>Ajanlar</button>
             <button className="nav-item" onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
+            <button
+              className="nav-item"
+              disabled={!canReadDiff}
+              onClick={() => setActiveTab("diff")}
+            >
+              Değişiklikler
+            </button>
             <button className="nav-item" disabled>Sürümler</button>
             <button className="nav-item" onClick={() => setActiveTab("settings")}>Ayarlar</button>
           </nav>
@@ -347,6 +387,13 @@ function App() {
           <Settings readiness={readiness} agent={agent} setAgent={setAgent} />
         ) : activeTab === "evidence" ? (
           <EvidenceView task={selected} evidence={evidence} />
+        ) : activeTab === "diff" ? (
+          <DiffView
+            task={selected}
+            value={taskDiff}
+            busy={busy === "diff"}
+            onRefresh={refreshDiff}
+          />
         ) : (
           <>
             <div className="section-heading">
@@ -421,7 +468,12 @@ function App() {
                   <div className="tabs">
                     <button className="active-tab">Özet</button>
                     <button onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
-                    <button disabled>Diff</button>
+                    <button
+                      disabled={!canReadDiff}
+                      onClick={() => setActiveTab("diff")}
+                    >
+                      Diff
+                    </button>
                     <button disabled>Terminal</button>
                   </div>
                   <div className="summary-grid">
@@ -470,7 +522,7 @@ function App() {
                     )}
                     {selected.state === "running" && (
                       <span className="muted-copy">
-                        Execution tamamlandı. Bağımsız reviewer otomasyonu sonraki gate olarak bağlanacak.
+                        Execution tamamlandı. Diff artık okunabilir; bağımsız reviewer sonraki gate.
                       </span>
                     )}
                   </div>
@@ -497,6 +549,13 @@ function App() {
           <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
           <div><dt>Mandate</dt><dd>{selected?.mandate_id ? "Var" : "Gerekli"}</dd></div>
         </dl>
+        <button
+          className="secondary"
+          disabled={!canReadDiff}
+          onClick={() => setActiveTab("diff")}
+        >
+          Değişiklikleri incele
+        </button>
         <button className="secondary" disabled={!selected} onClick={() => setActiveTab("evidence")}>
           Kanıtları incele
         </button>
@@ -617,6 +676,52 @@ function EvidenceView({
             </article>
           ))}
         </div>
+      )}
+    </section>
+  );
+}
+
+function DiffView({
+  task,
+  value,
+  busy,
+  onRefresh,
+}: {
+  task: CoreTask | null;
+  value: TaskDiff | null;
+  busy: boolean;
+  onRefresh: () => void;
+}) {
+  return (
+    <section>
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">DEĞİŞİKLİKLER</span>
+          <h1>{task?.task_id ?? "Görev seçilmedi"}</h1>
+        </div>
+        <button
+          className="primary"
+          disabled={!task || busy}
+          onClick={onRefresh}
+        >
+          {busy ? "Okunuyor…" : "Diff'i yenile"}
+        </button>
+      </div>
+      {!value ? (
+        <section className="notice-card">
+          <strong>Henüz okunabilir diff yok</strong>
+          <p>Görev çalıştıktan sonra worker worktree değişiklikleri burada salt-okunur görünür.</p>
+        </section>
+      ) : (
+        <section className="terminal-panel diff-panel">
+          <div className="diff-meta">
+            <span>{value.engine}</span>
+            <span>{value.ok ? "Diff okundu" : `Exit ${value.exit_code}`}</span>
+          </div>
+          <pre className="diff-code">
+            <code>{value.diff || "Değişiklik yok."}</code>
+          </pre>
+        </section>
       )}
     </section>
   );
