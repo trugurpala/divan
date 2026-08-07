@@ -4,6 +4,7 @@ import pathlib
 import sys
 import tempfile
 import unittest
+from dataclasses import replace
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -47,19 +48,22 @@ class KnowledgeRelevanceTests(unittest.TestCase):
         self.assertIn("pnpm", context.stack)
         self.assertIn("application", context.tags)
         self.assertTrue(
-            any(row["command"] == "pnpm run build" for row in context.inspection["commands"])
+            any(
+                row["command"] == "pnpm run build"
+                for row in context.inspection["commands"]
+            )
         )
 
     def test_relevance_prefers_validated_reused_stack_match(self) -> None:
-        react_pattern = pattern_from_project(
-            name="Accessible wellness form",
-            summary="Use native labeled inputs and keep form state explicit.",
-            stack=("react", "vite", "pnpm"),
-            tags=("application", "wellness"),
-            observed_at="2026-08-07T20:00:00+00:00",
-        )
-        react_pattern = react_pattern.__class__(
-            **{**react_pattern.__dict__, "status": KnowledgeStatus.VALIDATED}
+        react_pattern = replace(
+            pattern_from_project(
+                name="Accessible wellness form",
+                summary="Use native labeled inputs and keep form state explicit.",
+                stack=("react", "vite", "pnpm"),
+                tags=("application", "wellness"),
+                observed_at="2026-08-07T20:00:00+00:00",
+            ),
+            status=KnowledgeStatus.VALIDATED,
         )
         rust_pattern = pattern_from_project(
             name="Rust worker queue",
@@ -85,21 +89,24 @@ class KnowledgeRelevanceTests(unittest.TestCase):
         )
 
         self.assertEqual(matches[0].item.item_id, react_pattern.item_id)
-        self.assertNotIn(rust_pattern.item_id, [match.item.item_id for match in matches])
+        self.assertNotIn(
+            rust_pattern.item_id,
+            [match.item.item_id for match in matches],
+        )
         self.assertIn("validated knowledge", matches[0].reasons)
         self.assertIn("reused in 2 projects", matches[0].reasons)
         self.assertEqual(matches[0].observations["success_rate"], 1.0)
 
     def test_deprecated_memory_is_never_recommended(self) -> None:
-        pattern = pattern_from_project(
-            name="Old React workaround",
-            summary="A workaround that no longer applies to the current stack.",
-            stack=("react",),
-            tags=("application",),
-            observed_at="2026-08-07T20:00:00+00:00",
-        )
-        pattern = pattern.__class__(
-            **{**pattern.__dict__, "status": KnowledgeStatus.DEPRECATED}
+        pattern = replace(
+            pattern_from_project(
+                name="Old React workaround",
+                summary="A workaround that no longer applies to the current stack.",
+                stack=("react",),
+                tags=("application",),
+                observed_at="2026-08-07T20:00:00+00:00",
+            ),
+            status=KnowledgeStatus.DEPRECATED,
         )
         self.store.upsert(pattern)
 
