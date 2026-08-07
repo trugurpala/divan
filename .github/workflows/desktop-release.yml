@@ -98,6 +98,10 @@ jobs:
         working-directory: apps/desktop
         run: pnpm install --frozen-lockfile
 
+      - name: Build updater e2e frontend context
+        working-directory: apps/desktop
+        run: pnpm build
+
       - name: Compile isolated updater e2e feature from Cargo.lock
         working-directory: apps/desktop
         run: cargo check --manifest-path src-tauri/Cargo.toml --features updater-e2e --locked
@@ -192,6 +196,10 @@ jobs:
       - name: Install frontend dependencies from lockfile
         working-directory: apps/desktop
         run: pnpm install --frozen-lockfile
+
+      - name: Build signed updater frontend context
+        working-directory: apps/desktop
+        run: pnpm build
 
       - name: Verify signed updater Rust dependency lock
         working-directory: apps/desktop
