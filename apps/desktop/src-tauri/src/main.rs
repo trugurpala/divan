@@ -148,14 +148,9 @@ async fn install_update(
     app: tauri::AppHandle,
     pending_update: tauri::State<'_, PendingUpdate>,
     approved: bool,
-    expected_version: String,
 ) -> Result<UpdateInstallStatus, String> {
     if !approved {
         return Err("installing an update requires explicit approved=true".to_string());
-    }
-    let expected_version = expected_version.trim();
-    if expected_version.is_empty() {
-        return Err("installing an update requires the explicitly checked version".to_string());
     }
 
     let update = {
@@ -168,12 +163,6 @@ async fn install_update(
         })?
     };
     let version = update.version.to_string();
-    if version != expected_version {
-        return Err(
-            "checked update no longer matches the operator-approved version; run the update check again"
-                .to_string(),
-        );
-    }
     update
         .download_and_install(|_, _| {}, || {})
         .await
@@ -191,7 +180,6 @@ async fn install_update(
 async fn install_update(
     _app: tauri::AppHandle,
     approved: bool,
-    _expected_version: String,
 ) -> Result<UpdateInstallStatus, String> {
     if !approved {
         return Err("installing an update requires explicit approved=true".to_string());
