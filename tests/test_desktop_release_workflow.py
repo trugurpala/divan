@@ -109,6 +109,15 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("Build kimliği doğrulanmadan beta veya stable kanal varsayımı yapılmaz", app)
         self.assertIn("setUpdateStatus({ available: false, version: null })", app)
 
+    def test_desktop_interrupted_execution_requires_explicit_recovery_and_retry(self) -> None:
+        app = APP.read_text(encoding="utf-8")
+        self.assertIn('command: "task.recover.interrupted"', app)
+        self.assertIn("const interruptedExecution", app)
+        self.assertIn("Divan bu görevi otomatik devam ettirmedi", app)
+        self.assertIn("Kesintiyi retry'a hazırla", app)
+        self.assertIn('selected.state === "running" && !interruptedExecution', app)
+        self.assertIn("approve_execution: true", app)
+
     def test_desktop_operator_can_choose_replaceable_execution_engine(self) -> None:
         app = APP.read_text(encoding="utf-8")
         self.assertIn("const [engine, setEngine]", app)
