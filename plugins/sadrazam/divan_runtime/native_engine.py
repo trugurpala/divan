@@ -327,6 +327,12 @@ def _receipt(
     )
 
 
+def _timeout_text(value: str | bytes | None) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value or ""
+
+
 def _run(
     argv: Sequence[str],
     cwd: Path | None,
@@ -345,7 +351,9 @@ def _run(
             shell=False,
         )
     except subprocess.TimeoutExpired as error:
-        return 124, error.stdout or "", error.stderr or "command timed out"
+        stdout = _timeout_text(error.stdout)
+        stderr = _timeout_text(error.stderr) or "command timed out"
+        return 124, stdout, stderr
     except OSError as error:
         return 127, "", str(error)
     return completed.returncode, completed.stdout, completed.stderr
