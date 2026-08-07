@@ -30,9 +30,11 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 
 ### DSK-01 — Latest PR verification is fully green
 
-**Status:** DONE
+**Status:** IN PROGRESS
 
-Completion evidence on PR #115 exact head `d66569f416cce13d28d38162bc42fc30d690615a`:
+The previous full-green evidence was bound to PR #115 head `d66569f416cce13d28d38162bc42fc30d690615a`. The PR head has moved for DSK-03 lifecycle hardening, so that evidence is historical only and must not be used to authorize merge.
+
+Completion evidence required again on the final exact PR head:
 
 - `quality-gate` PASS
 - `compatibility` PASS
@@ -45,7 +47,7 @@ Completion evidence on PR #115 exact head `d66569f416cce13d28d38162bc42fc30d6906
 - no unresolved correctness/security review thread on the exact PR head
 - PR is mergeable
 
-If the PR head moves after this evidence, DSK-01 returns to `IN PROGRESS` until the new exact head is fully green again.
+Do not merge while this gate is open. If the PR head moves after a full-green run, DSK-01 returns to `IN PROGRESS`.
 
 ### DSK-02 — Reproducible Node and Rust dependency resolution
 
@@ -59,27 +61,32 @@ Completion evidence:
 - real-user acceptance uses frozen pnpm and locked Cargo resolution
 - signed stable candidate uses frozen pnpm and locked signed-updater Cargo resolution
 - CI explicitly fails if either dependency lockfile drifts
-- exact-head Desktop Build and dependency-review pass with the locked graph
+- dependency-review and Desktop Build exercise the locked graph
 - no hand-written or synthetic lockfile is accepted as evidence
 
 ### DSK-03 — Windows lifecycle recovery and first-run matrix
 
 **Status:** IN PROGRESS
 
-Implemented evidence:
+Implemented evidence contract:
 
 - persisted interrupted execution records an `execution_pending` snapshot before engine invocation
-- restart recovery changes only Core task state to RETRY and records recovery evidence; it does not call an execution engine
+- restart recovery changes only Core task state to RETRY and records SHA-256 recovery evidence; it does not call an execution engine
 - retry uses a fresh attempt/worktree name and still requires a new explicit execution approval
 - Desktop surfaces interrupted RUNNING state and disables review/diff until recovery is acknowledged
+- persistent Windows Core state uses `%LOCALAPPDATA%\\com.ugurpala.divan`, separate from the Tauri current-user installer directory
+- Desktop Build installs the produced NSIS bundle and verifies installed Core source commit/tree provenance
+- installed-app lifecycle harness starts and kills real `Divan.exe` processes twice and re-reads project/task state from installed Core after each restart
+- lifecycle harness injects a deterministic hanging Codex worker, kills the installed Core process tree during a real mutating execution, verifies persisted RUNNING + `execution_pending`, then recovers through a fresh Core process to non-resuming RETRY
+- recovery is bound to the original Core-owned mandate and tamper-evident recovery evidence; a retry without fresh `approve_execution=true` is rejected
+- first-run matrix runs with Orca absent, then with a deterministic Orca executable present, and verifies Orca remains a replaceable engine while Divan retains mandate/approval authority
+- lifecycle JSON is bound to exact source commit/tree and revalidated by the Windows workflow before artifact upload
+- NSIS uninstall must remove the application while preserving identifier-scoped project/task Core state
 
 Remaining completion evidence:
 
-- clean Windows install/uninstall remains proven on the final exact head
-- first run with Orca absent degrades cleanly
-- first run with Orca present discovers it without making Orca authoritative
-- persisted project/task state survives a real Desktop process restart acceptance test
-- authority/approval state is never reconstructed from UI-only state
+- the strengthened Windows lifecycle job must PASS on the final exact PR head
+- DSK-01 must then be re-established on that same exact head
 
 ### DSK-04 — Signed updater upgrade and rollback verification
 
@@ -92,6 +99,8 @@ Completion evidence:
 - failed signature or mismatched update metadata fails closed
 - rollback/recovery procedure is documented and tested without bypassing signature checks
 - release promotion produces or validates the updater metadata consumed by the stable client
+
+Tauri updater signatures are mandatory and cannot be disabled. The stable client must retain Tauri's default monotonic version behavior; recovery must not silently enable downgrade semantics.
 
 ### DSK-05 — Merge the verified Desktop PR to `main`
 
@@ -150,4 +159,4 @@ Completion evidence:
 
 Divan Desktop is **stable Windows release complete only when DSK-01 through DSK-08 are all DONE**.
 
-A passing PR contract, unsigned beta installer, synthetic acceptance record, stale acceptance run, missing lockfile, unverified update feed, or unsigned artifact must never be described as a stable release.
+A passing PR contract, unsigned beta installer, synthetic acceptance record, stale acceptance run, missing lockfile, unverified update feed, source-mismatched lifecycle evidence or unsigned artifact must never be described as a stable release.
