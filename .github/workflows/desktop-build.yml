@@ -99,6 +99,16 @@ jobs:
         working-directory: apps/desktop
         run: cargo check --manifest-path src-tauri/Cargo.toml --features signed-updater
 
+      - name: Capture generated dependency lockfiles
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: divan-desktop-lockfiles
+          path: |
+            apps/desktop/pnpm-lock.yaml
+            apps/desktop/src-tauri/Cargo.lock
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Build sidecar and unsigned NSIS beta installer
         working-directory: apps/desktop
         run: pnpm desktop:build
