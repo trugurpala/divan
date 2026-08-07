@@ -9,7 +9,7 @@ jobs:
   real-user-windows-acceptance:
     name: real-user-windows-acceptance
     if: github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, windows, x64]
+    runs-on: [self-hosted, windows, x64, divan-desktop-acceptance]
     timeout-minutes: 60
     environment: desktop-acceptance
     permissions:
