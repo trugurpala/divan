@@ -23,6 +23,18 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         )
         self.assertIn("environment: desktop-acceptance", self.text)
 
+    def test_acceptance_requires_exact_source_sha_pin(self) -> None:
+        self.assertIn("source_sha:", self.text)
+        self.assertIn("required: true", self.text)
+        self.assertIn("DIVAN_EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}", self.text)
+        self.assertIn("Verify requested acceptance source identity", self.text)
+        self.assertIn("source_sha must be an exact 40-character Git commit SHA", self.text)
+        self.assertIn("Acceptance checkout does not match the workflow event source SHA", self.text)
+        self.assertIn(
+            "Requested acceptance source SHA does not match the exact checked-out main commit",
+            self.text,
+        )
+
     def test_acceptance_runner_uses_dedicated_release_label(self) -> None:
         self.assertIn("divan-desktop-acceptance", self.text)
         self.assertNotIn("runs-on: [self-hosted, windows, x64]\n", self.text)
