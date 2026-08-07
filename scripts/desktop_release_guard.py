@@ -12,6 +12,7 @@ from typing import Any, Mapping
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 _GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 class DesktopReleaseError(ValueError):
@@ -34,6 +35,13 @@ def _git_sha(value: object, label: str) -> str:
     text = _text(value, label).casefold()
     if not _GIT_SHA_RE.fullmatch(text):
         raise DesktopReleaseError(f"{label} must be a full 40-character Git SHA")
+    return text
+
+
+def _sha256(value: object, label: str) -> str:
+    text = _text(value, label).casefold()
+    if not _SHA256_RE.fullmatch(text):
+        raise DesktopReleaseError(f"{label} must be a full 64-character SHA-256")
     return text
 
 
@@ -151,6 +159,7 @@ def inspect_acceptance_evidence(
     path: pathlib.Path,
     expected_version: str,
     *,
+    expected_source_commit: str | None = None,
     expected_source_tree: str | None = None,
 ) -> dict[str, Any]:
     raw = path.read_bytes()
@@ -186,13 +195,28 @@ def inspect_acceptance_evidence(
     source_tree = _git_sha(evidence.get("source_tree"), "acceptance source_tree")
     core_commit = _git_sha(evidence.get("core_source_commit"), "Core source_commit")
     core_tree = _git_sha(evidence.get("core_source_tree"), "Core source_tree")
-    if core_tree != source_tree:
-        raise DesktopReleaseError("installed Divan Core does not match the accepted source tree")
+    review_diff_sha256 = _sha256(
+        evidence.get("review_diff_sha256"),
+        "acceptance review_diff_sha256",
+    )
+    merged_commit_sha = _git_sha(
+        evidence.get("merged_commit_sha"),
+        "acceptance merged_commit_sha",
+    )
+    if core_commit != source_commit or core_tree != source_tree:
+        raise DesktopReleaseError("installed Divan Core does not match the accepted source identity")
+    expected_commit = (
+        _git_sha(expected_source_commit, "expected source commit")
+        if expected_source_commit is not None
+        else None
+    )
     expected_tree = (
         _git_sha(expected_source_tree, "expected source tree")
         if expected_source_tree is not None
         else None
     )
+    if expected_commit is not None and source_commit != expected_commit:
+        raise DesktopReleaseError("Windows acceptance evidence does not match the release source commit")
     if expected_tree is not None and source_tree != expected_tree:
         raise DesktopReleaseError("Windows acceptance evidence does not match the release source tree")
     kinds = evidence.get("evidence_kinds")
@@ -201,14 +225,17 @@ def inspect_acceptance_evidence(
         raise DesktopReleaseError(
             "Windows acceptance evidence must include execution, review and approval"
         )
+    source_bound = expected_commit is not None and expected_tree is not None
     return {
         "accepted": True,
-        "source_bound": expected_tree is not None,
+        "source_bound": source_bound,
         "sha256": hashlib.sha256(raw).hexdigest(),
         "source_commit": source_commit,
         "source_tree": source_tree,
         "core_source_commit": core_commit,
         "core_source_tree": core_tree,
+        "review_diff_sha256": review_diff_sha256,
+        "merged_commit_sha": merged_commit_sha,
         "worker_agent": worker,
         "reviewer": reviewer,
     }
@@ -219,6 +246,7 @@ def inspect_desktop(
     *,
     release_config: pathlib.Path | None = None,
     acceptance_evidence: pathlib.Path | None = None,
+    expected_source_commit: str | None = None,
     expected_source_tree: str | None = None,
 ) -> dict[str, Any]:
     root = root.resolve()
@@ -231,6 +259,7 @@ def inspect_desktop(
         inspect_acceptance_evidence(
             acceptance_evidence,
             version,
+            expected_source_commit=expected_source_commit,
             expected_source_tree=expected_source_tree,
         )
         if acceptance_evidence is not None
@@ -265,7 +294,7 @@ def require_stable_release(
     if not isinstance(acceptance, Mapping) or acceptance.get("accepted") is not True:
         blockers.append("real-user Windows acceptance evidence is missing")
     elif acceptance.get("source_bound") is not True:
-        blockers.append("Windows acceptance evidence is not bound to the release source tree")
+        blockers.append("Windows acceptance evidence is not bound to the exact release source identity")
     if blockers:
         raise DesktopReleaseError("stable desktop release blocked: " + "; ".join(blockers))
     return {**dict(report), "stable_release": "READY"}
@@ -276,6 +305,7 @@ def main() -> int:
     parser.add_argument("--root", type=pathlib.Path, default=ROOT)
     parser.add_argument("--release-config", type=pathlib.Path)
     parser.add_argument("--acceptance-evidence", type=pathlib.Path)
+    parser.add_argument("--source-commit")
     parser.add_argument("--source-tree")
     parser.add_argument("--stable-release", action="store_true")
     args = parser.parse_args()
@@ -284,6 +314,7 @@ def main() -> int:
             args.root,
             release_config=args.release_config,
             acceptance_evidence=args.acceptance_evidence,
+            expected_source_commit=args.source_commit,
             expected_source_tree=args.source_tree,
         )
         if args.stable_release:
