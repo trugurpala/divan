@@ -8,6 +8,10 @@ jobs:
     timeout-minutes: 15
     env:
       PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache
+      RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
+      MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache
+      COVERAGE_FILE: ${{ runner.temp }}/coverage
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
@@ -16,34 +20,61 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24'
-      - name: Local quality gates
-        env:
-          PYTHONPYCACHEPREFIX: ${{ runner.temp }}/python-cache
-          RUFF_CACHE_DIR: ${{ runner.temp }}/ruff-cache
-          MYPY_CACHE_DIR: ${{ runner.temp }}/mypy-cache
-          COVERAGE_FILE: ${{ runner.temp }}/coverage
+
+      - name: Install quality dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Naming contract
+        run: python scripts/naming.py --check
+
+      - name: Divan architecture validation
+        run: python scripts/divan.py validate
+
+      - name: Prose contract
+        run: python scripts/prose.py --check
+
+      - name: Community standards
+        run: python scripts/standards.py --check
+
+      - name: Wiki sync contract
+        run: python scripts/wiki.py --check
+
+      - name: Candidate review contract
+        run: python scripts/candidate_review.py --check
+
+      - name: Build deterministic project runners
+        shell: bash
         run: |
-          pip install -r requirements-dev.txt
-          python scripts/naming.py --check
-          python scripts/divan.py validate
-          python scripts/prose.py --check
-          python scripts/standards.py --check
-          python scripts/wiki.py --check
-          python scripts/candidate_review.py --check
           python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-a.pyz" --source-commit "${{ github.sha }}"
           python scripts/build_project_runner.py --output "$RUNNER_TEMP/divan-project-b.pyz" --source-commit "${{ github.sha }}"
           cmp "$RUNNER_TEMP/divan-project-a.pyz" "$RUNNER_TEMP/divan-project-b.pyz"
-          python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
-          ruff check .
-          python scripts/clean_code.py --check
-          mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company
+
+      - name: Validate project runner bundle
+        run: python "$RUNNER_TEMP/divan-project-a.pyz" validate --json
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Clean-code gate
+        run: python scripts/clean_code.py --check
+
+      - name: Mypy
+        run: mypy scripts evals plugins/sadrazam/divan_runtime plugins/sadrazam/company
+
+      - name: Actionlint
+        shell: bash
+        run: |
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.10
           "$(go env GOPATH)/bin/actionlint"
-          python scripts/verify.py --coverage
+
+      - name: Canonical verification with coverage
+        run: python scripts/verify.py --coverage
+
       - name: Agent Skills resmi dogrulayici
         run: |
           pip install skills-ref==0.1.1
           for skill in plugins/*/skills/*; do agentskills validate "$skill"; done
+
       - name: Claude Code resmi dogrulayici
         run: |
           npx --yes @anthropic-ai/claude-code@2.1.212 plugin validate . --strict
