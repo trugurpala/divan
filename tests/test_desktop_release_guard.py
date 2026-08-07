@@ -3,11 +3,15 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import sys
 import tempfile
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "desktop_release_guard.py"
+SCRIPTS = str(SCRIPT.parent)
+if SCRIPTS not in sys.path:
+    sys.path.insert(0, SCRIPTS)
 SPEC = importlib.util.spec_from_file_location("desktop_release_guard", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 MODULE = importlib.util.module_from_spec(SPEC)
