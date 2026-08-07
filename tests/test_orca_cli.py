@@ -14,8 +14,8 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import cli, goal_execution, goals, orca_coordinator, receipts
-from divan_runtime.orca_engine import OrcaResult
+from divan_runtime import cli, goal_execution, goals, orca_coordinator, receipts  # noqa: E402
+from divan_runtime.orca_engine import OrcaResult  # noqa: E402
 
 
 class FakeOrcaEngine:
