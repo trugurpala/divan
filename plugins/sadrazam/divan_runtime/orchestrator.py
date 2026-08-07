@@ -78,14 +78,20 @@ class DivanOrchestrator:
         agent: str | None = None,
         prompt: str | None = None,
     ) -> DivanTask:
-        running = task.transition(TaskState.RUNNING, "execution started")
+        attempt = _next_execution_attempt(task)
+        execution_name = (
+            worktree_name
+            if attempt == 1
+            else f"{worktree_name}-attempt-{attempt}"
+        )
+        running = task.transition(TaskState.RUNNING, f"execution attempt {attempt} started")
         self.tasks.save(running)
         request = ExecutionRequest(
             action=ExecutionAction.WORKTREE_CREATE,
             project_root=running.project_root,
             mandate_id=running.mandate_id,
             args={
-                "name": worktree_name,
+                "name": execution_name,
                 "agent": agent,
                 "prompt": prompt or running.title,
             },
@@ -104,16 +110,25 @@ class DivanOrchestrator:
                     "argv": list(receipt.argv),
                     "mandate_id": receipt.mandate_id,
                     "payload": receipt.payload,
+                    "attempt": attempt,
+                    "worktree_name": execution_name,
                 },
             )
         )
-        metadata = dict(running.metadata)
-        metadata["execution"] = {
+        execution_record = {
             "engine": receipt.engine,
             "ok": receipt.ok,
             "exit_code": receipt.exit_code,
             "payload": receipt.payload,
+            "attempt": attempt,
+            "worktree_name": execution_name,
         }
+        metadata = dict(running.metadata)
+        metadata["execution"] = execution_record
+        history_raw = metadata.get("execution_history")
+        history = list(history_raw) if isinstance(history_raw, list) else []
+        history.append(execution_record)
+        metadata["execution_history"] = history
         running = replace(running, engine_id=receipt.engine, metadata=metadata)
         self.tasks.save(running)
         if receipt.ok:
@@ -282,6 +297,16 @@ class DivanOrchestrator:
     def _save(self, task: DivanTask) -> DivanTask:
         self.tasks.save(task)
         return task
+
+
+def _next_execution_attempt(task: DivanTask) -> int:
+    execution = task.metadata.get("execution")
+    if not isinstance(execution, Mapping):
+        return 1
+    attempt = execution.get("attempt")
+    if isinstance(attempt, int) and not isinstance(attempt, bool) and attempt >= 1:
+        return attempt + 1
+    return 2
 
 
 def _execution_worktree(task: DivanTask) -> str:
