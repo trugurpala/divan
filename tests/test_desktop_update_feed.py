@@ -6,6 +6,7 @@ import json
 import pathlib
 import tempfile
 import unittest
+from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "desktop_update_feed.py"
@@ -64,7 +65,7 @@ class DesktopUpdateFeedTests(unittest.TestCase):
             self.assertEqual(json.loads(manifest.read_text(encoding="utf-8")), evidence)
 
     def test_validate_feed_rejects_signature_url_or_version_mismatch(self) -> None:
-        def candidate() -> dict[str, object]:
+        def candidate() -> dict[str, Any]:
             return build_feed(
                 version="1.3.8",
                 installer_name="Divan_1.3.8_x64-setup.exe",
