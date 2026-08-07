@@ -201,6 +201,14 @@ function App() {
     selected && !["draft", "planned"].includes(selected.state),
   );
   const selectedEngine = selected?.engine_id || engine || readiness?.recommended_engine || "";
+  const hasExecutionReceipt = Boolean(
+    selected
+      && typeof selected.metadata.execution === "object"
+      && selected.metadata.execution !== null,
+  );
+  const interruptedExecution = Boolean(
+    selected?.state === "running" && !hasExecutionReceipt,
+  );
 
   useEffect(() => {
     if (!selected) {
@@ -213,14 +221,14 @@ function App() {
   }, [selectedId, selected?.state]);
 
   useEffect(() => {
-    if (!selected || !canReadDiff) {
+    if (!selected || !canReadDiff || interruptedExecution) {
       setTaskDiff(null);
       return;
     }
     coreRequest<TaskDiff>({ command: "task.diff", task_id: selected.task_id })
       .then(setTaskDiff)
       .catch(() => setTaskDiff(null));
-  }, [selectedId, selected?.state, canReadDiff]);
+  }, [selectedId, selected?.state, canReadDiff, interruptedExecution]);
 
   const run = async (label: string, action: () => Promise<void>) => {
     setBusy(label);
@@ -290,6 +298,16 @@ function App() {
         agent: agent || undefined,
         engine_id: executionEngine || undefined,
         prompt: selected.title,
+      });
+      await refreshTasks();
+    });
+
+  const recoverInterruptedTask = () =>
+    selected &&
+    run("recover", async () => {
+      await coreRequest<CoreTask>({
+        command: "task.recover.interrupted",
+        task_id: selected.task_id,
       });
       await refreshTasks();
     });
@@ -394,7 +412,7 @@ function App() {
             <button className="nav-item" onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
             <button
               className="nav-item"
-              disabled={!canReadDiff}
+              disabled={!canReadDiff || interruptedExecution}
               onClick={() => setActiveTab("diff")}
             >
               Değişiklikler
@@ -546,13 +564,22 @@ function App() {
                     <button className="active-tab">Özet</button>
                     <button onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
                     <button
-                      disabled={!canReadDiff}
+                      disabled={!canReadDiff || interruptedExecution}
                       onClick={() => setActiveTab("diff")}
                     >
                       Diff
                     </button>
                     <button disabled>Terminal</button>
                   </div>
+                  {interruptedExecution && (
+                    <section className="notice-card">
+                      <strong>Kesintiye uğramış execution bulundu.</strong>
+                      <p>
+                        Divan bu görevi otomatik devam ettirmedi. Önce kesintiyi RETRY durumuna
+                        al; tekrar çalıştırmak istersen sonraki adımda yeniden açık onay ver.
+                      </p>
+                    </section>
+                  )}
                   <div className="summary-grid">
                     <div>
                       <span className="eyebrow">EXECUTION ENGINE</span>
@@ -582,7 +609,12 @@ function App() {
                         {busy === "start" ? "Ajan çalışıyor…" : "Çalıştır"}
                       </button>
                     )}
-                    {(selected.state === "running" || selected.state === "review") && (
+                    {interruptedExecution && (
+                      <button className="primary" onClick={recoverInterruptedTask} disabled={busy !== null}>
+                        {busy === "recover" ? "Kurtarılıyor…" : "Kesintiyi retry'a hazırla"}
+                      </button>
+                    )}
+                    {(selected.state === "review" || (selected.state === "running" && !interruptedExecution)) && (
                       <button className="primary" onClick={reviewTask} disabled={busy !== null}>
                         {busy === "review" ? "Bağımsız reviewer çalışıyor…" : "Bağımsız review"}
                       </button>
@@ -620,7 +652,7 @@ function App() {
             "Bir görev oluşturduğunda burada gerçek Core durumu ve kanıtları görünecek."}
         </p>
         <dl>
-          <div><dt>Durum</dt><dd>{selected?.state ?? "—"}</dd></div>
+          <div><dt>Durum</dt><dd>{interruptedExecution ? "running / interrupted" : selected?.state ?? "—"}</dd></div>
           <div><dt>Engine</dt><dd>{selected?.engine_id || selectedEngine || "—"}</dd></div>
           <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
           <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
@@ -628,7 +660,7 @@ function App() {
         </dl>
         <button
           className="secondary"
-          disabled={!canReadDiff}
+          disabled={!canReadDiff || interruptedExecution}
           onClick={() => setActiveTab("diff")}
         >
           Değişiklikleri incele
