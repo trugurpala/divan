@@ -112,16 +112,26 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('checkError\n                ? "Kontrol tamamlanamadı"', app)
         self.assertIn("status?.available && !checkError", app)
 
-    def test_install_update_distinguishes_no_longer_available_from_installed(self) -> None:
+    def test_install_update_is_bound_to_the_explicitly_checked_candidate(self) -> None:
         app = APP.read_text(encoding="utf-8")
         main = MAIN.read_text(encoding="utf-8")
-        self.assertIn("struct UpdateInstallStatus", main)
-        self.assertIn("installed: true", main)
-        self.assertIn("installed: false", main)
+        check_start = main.index("async fn check_for_update(")
+        check_end = main.index('#[cfg(not(feature = "signed-updater"))]', check_start)
+        check_block = main[check_start:check_end]
+        install_start = main.index("async fn install_update(", check_end)
+        install_end = main.index('#[cfg(not(feature = "signed-updater"))]', install_start)
+        install_block = main[install_start:install_end]
+
+        self.assertIn("struct PendingUpdate", main)
+        self.assertIn(".manage(PendingUpdate::default())", main)
+        self.assertIn("*pending = None;", check_block)
+        self.assertLess(check_block.index("*pending = None;"), check_block.index("updater.check()"))
+        self.assertIn("*pending = Some(update);", check_block)
+        self.assertIn("pending.take()", install_block)
+        self.assertIn("no checked update is pending", install_block)
+        self.assertIn("download_and_install", install_block)
+        self.assertNotIn("updater.check()", install_block)
         self.assertIn('const result = await invoke<UpdateInstallStatus>("install_update"', app)
-        self.assertIn("if (!result.installed)", app)
-        self.assertIn("Hiçbir paket kurulmadı; tekrar kontrol et", app)
-        self.assertNotIn("setUpdateStatus({ available: false, version: null })", app)
 
     def test_desktop_interrupted_execution_requires_explicit_recovery_and_retry(self) -> None:
         app = APP.read_text(encoding="utf-8")
