@@ -76,6 +76,8 @@ def main() -> int:
             str(PLUGIN_ROOT),
             "--paths",
             str(BUILD_ROOT),
+            "--hidden-import",
+            "divan_desktop_build_info",
             "--distpath",
             str(DIST),
             "--workpath",
