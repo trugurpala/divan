@@ -1,7 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Divan",
-  "version": "0.1.0",
+  "version": "1.3.8",
+  "mainBinaryName": "Divan",
   "identifier": "com.ugurpala.divan",
   "build": {
     "beforeDevCommand": "pnpm dev",
