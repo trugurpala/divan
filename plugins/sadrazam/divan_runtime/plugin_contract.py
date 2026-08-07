@@ -116,13 +116,63 @@ class ManifestValidation:
 
 
 def validate_manifest_payload(payload: Any) -> ManifestValidation:
-    errors: list[PluginIssue] = []
     if not isinstance(payload, Mapping):
         return ManifestValidation(
             None,
-            (PluginIssue("PLUGIN_MANIFEST_ROOT_INVALID", "$", "manifest root must be an object"),),
+            (
+                PluginIssue(
+                    "PLUGIN_MANIFEST_ROOT_INVALID",
+                    "$",
+                    "manifest root must be an object",
+                ),
+            ),
         )
 
+    errors: list[PluginIssue] = []
+    _validate_root_fields(payload, errors)
+    _validate_versions(payload, errors)
+    plugin_id, display_name, version = _validate_identity(payload, errors)
+    kind, transport = _validate_plugin_types(payload, errors)
+    executable, capabilities, requires_mandate = _validate_runtime_fields(
+        payload, errors
+    )
+    _validate_capability_policy(kind, capabilities, requires_mandate, errors)
+    source_url = _object_url(payload.get("source"), "source", errors)
+    license_expression, license_evidence = _license(payload.get("license"), errors)
+
+    if errors:
+        return ManifestValidation(None, tuple(errors))
+
+    assert plugin_id is not None
+    assert display_name is not None
+    assert version is not None
+    assert kind is not None
+    assert transport is not None
+    assert executable is not None
+    assert source_url is not None
+    assert license_expression is not None
+    assert license_evidence is not None
+    return ManifestValidation(
+        PluginManifest(
+            plugin_id=plugin_id,
+            display_name=display_name,
+            version=version,
+            kind=kind,
+            transport=transport,
+            executable=executable,
+            capabilities=capabilities,
+            source_url=source_url,
+            license_expression=license_expression,
+            license_evidence=license_evidence,
+            requires_mandate=requires_mandate,
+        ),
+        (),
+    )
+
+
+def _validate_root_fields(
+    payload: Mapping[Any, Any], errors: list[PluginIssue]
+) -> None:
     for field in sorted(set(payload) - _ROOT_FIELDS):
         errors.append(
             PluginIssue(
@@ -132,6 +182,10 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
             )
         )
 
+
+def _validate_versions(
+    payload: Mapping[Any, Any], errors: list[PluginIssue]
+) -> None:
     if payload.get("schema_version") != PLUGIN_SCHEMA_VERSION:
         errors.append(
             PluginIssue(
@@ -149,13 +203,19 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
             )
         )
 
+
+def _validate_identity(
+    payload: Mapping[Any, Any], errors: list[PluginIssue]
+) -> tuple[str | None, str | None, str | None]:
     plugin_id = payload.get("id")
+    display_name = payload.get("display_name")
+    version = payload.get("version")
+
     if not isinstance(plugin_id, str) or not _ID_RE.fullmatch(plugin_id):
         errors.append(
             PluginIssue("PLUGIN_ID_INVALID", "$.id", "id must be lowercase kebab-case")
         )
-
-    display_name = payload.get("display_name")
+        plugin_id = None
     if not isinstance(display_name, str) or not display_name.strip():
         errors.append(
             PluginIssue(
@@ -164,13 +224,23 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
                 "display_name is required",
             )
         )
-
-    version = payload.get("version")
+        display_name = None
     if not isinstance(version, str) or not version.strip():
         errors.append(
             PluginIssue("PLUGIN_VERSION_INVALID", "$.version", "version is required")
         )
+        version = None
 
+    return (
+        plugin_id,
+        None if display_name is None else display_name.strip(),
+        None if version is None else version.strip(),
+    )
+
+
+def _validate_plugin_types(
+    payload: Mapping[Any, Any], errors: list[PluginIssue]
+) -> tuple[PluginKind | None, PluginTransport | None]:
     kind = _parse_enum(
         payload.get("kind"), PluginKind, "PLUGIN_KIND_INVALID", "$.kind", errors
     )
@@ -181,7 +251,12 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
         "$.transport",
         errors,
     )
+    return kind, transport
 
+
+def _validate_runtime_fields(
+    payload: Mapping[Any, Any], errors: list[PluginIssue]
+) -> tuple[str | None, tuple[str, ...], bool]:
     executable = payload.get("executable")
     if not isinstance(executable, str) or not _EXECUTABLE_RE.fullmatch(executable):
         errors.append(
@@ -191,9 +266,9 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
                 "executable must be a bare command name, never a path or shell string",
             )
         )
+        executable = None
 
     capabilities = _validate_capabilities(payload.get("capabilities"), errors)
-
     requires_mandate = payload.get("requires_mandate")
     if not isinstance(requires_mandate, bool):
         errors.append(
@@ -204,8 +279,18 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
             )
         )
         requires_mandate = False
+    return executable, capabilities, requires_mandate
 
-    if kind in _READ_ONLY_KINDS and MUTATING_CAPABILITIES.intersection(capabilities):
+
+def _validate_capability_policy(
+    kind: PluginKind | None,
+    capabilities: tuple[str, ...],
+    requires_mandate: bool,
+    errors: list[PluginIssue],
+) -> None:
+    mutating = MUTATING_CAPABILITIES.intersection(capabilities)
+    if kind in _READ_ONLY_KINDS and mutating:
+        assert kind is not None
         errors.append(
             PluginIssue(
                 "PLUGIN_READ_ONLY_KIND_MUTATES",
@@ -213,7 +298,7 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
                 f"{kind.value} plugins cannot request project/git mutation",
             )
         )
-    if MUTATING_CAPABILITIES.intersection(capabilities) and not requires_mandate:
+    if mutating and not requires_mandate:
         errors.append(
             PluginIssue(
                 "PLUGIN_MUTATION_REQUIRES_MANDATE",
@@ -221,38 +306,6 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
                 "mutating plugins must require a Divan-owned mandate",
             )
         )
-
-    source_url = _object_url(payload.get("source"), "source", errors)
-    license_expression, license_evidence = _license(payload.get("license"), errors)
-
-    if errors:
-        return ManifestValidation(None, tuple(errors))
-
-    assert isinstance(plugin_id, str)
-    assert isinstance(display_name, str)
-    assert isinstance(version, str)
-    assert isinstance(kind, PluginKind)
-    assert isinstance(transport, PluginTransport)
-    assert isinstance(executable, str)
-    assert source_url is not None
-    assert license_expression is not None
-    assert license_evidence is not None
-    return ManifestValidation(
-        PluginManifest(
-            plugin_id=plugin_id,
-            display_name=display_name.strip(),
-            version=version.strip(),
-            kind=kind,
-            transport=transport,
-            executable=executable,
-            capabilities=capabilities,
-            source_url=source_url,
-            license_expression=license_expression,
-            license_evidence=license_evidence,
-            requires_mandate=requires_mandate,
-        ),
-        (),
-    )
 
 
 def _validate_capabilities(
@@ -271,40 +324,51 @@ def _validate_capabilities(
     parsed: list[str] = []
     seen: set[str] = set()
     for index, capability in enumerate(value):
-        path = f"$.capabilities[{index}]"
-        if not isinstance(capability, str):
-            errors.append(
-                PluginIssue("PLUGIN_CAPABILITY_INVALID", path, "capability must be a string")
-            )
-            continue
-        if capability in seen:
-            errors.append(
-                PluginIssue(
-                    "PLUGIN_CAPABILITY_DUPLICATE",
-                    path,
-                    f"duplicate capability: {capability}",
-                )
-            )
-            continue
-        seen.add(capability)
-        parsed.append(capability)
-        if capability in DIVAN_RESERVED_CAPABILITIES:
-            errors.append(
-                PluginIssue(
-                    "PLUGIN_CAPABILITY_RESERVED",
-                    path,
-                    f"{capability} is owned by Divan and cannot be delegated",
-                )
-            )
-        elif capability not in ALLOWED_CAPABILITIES:
-            errors.append(
-                PluginIssue(
-                    "PLUGIN_CAPABILITY_UNKNOWN",
-                    path,
-                    f"unsupported capability: {capability}",
-                )
-            )
+        _validate_capability(capability, index, parsed, seen, errors)
     return tuple(sorted(parsed))
+
+
+def _validate_capability(
+    capability: Any,
+    index: int,
+    parsed: list[str],
+    seen: set[str],
+    errors: list[PluginIssue],
+) -> None:
+    path = f"$.capabilities[{index}]"
+    if not isinstance(capability, str):
+        errors.append(
+            PluginIssue("PLUGIN_CAPABILITY_INVALID", path, "capability must be a string")
+        )
+        return
+    if capability in seen:
+        errors.append(
+            PluginIssue(
+                "PLUGIN_CAPABILITY_DUPLICATE",
+                path,
+                f"duplicate capability: {capability}",
+            )
+        )
+        return
+
+    seen.add(capability)
+    parsed.append(capability)
+    if capability in DIVAN_RESERVED_CAPABILITIES:
+        errors.append(
+            PluginIssue(
+                "PLUGIN_CAPABILITY_RESERVED",
+                path,
+                f"{capability} is owned by Divan and cannot be delegated",
+            )
+        )
+    elif capability not in ALLOWED_CAPABILITIES:
+        errors.append(
+            PluginIssue(
+                "PLUGIN_CAPABILITY_UNKNOWN",
+                path,
+                f"unsupported capability: {capability}",
+            )
+        )
 
 
 def _object_url(
@@ -374,7 +438,7 @@ def _parse_enum(
     code: str,
     path: str,
     errors: list[PluginIssue],
-) -> StrEnum | None:
+):
     try:
         return enum_type(value)
     except (TypeError, ValueError):
