@@ -91,7 +91,11 @@ jobs:
         working-directory: apps/desktop
         run: pnpm build
 
-      - name: Build sidecar and NSIS installer
+      - name: Compile signed updater feature lane
+        working-directory: apps/desktop
+        run: cargo check --manifest-path src-tauri/Cargo.toml --features signed-updater
+
+      - name: Build sidecar and unsigned NSIS beta installer
         working-directory: apps/desktop
         run: pnpm desktop:build
 
