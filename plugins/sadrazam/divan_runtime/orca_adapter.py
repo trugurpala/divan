@@ -23,35 +23,36 @@ class OrcaExecutionAdapter:
         args = dict(request.args)
 
         if action is ExecutionAction.STATUS:
-            result = self.engine.status(cwd=request.project_root)
+            result = self.engine.status()
         elif action is ExecutionAction.WORKTREE_LIST:
-            result = self.engine.worktree_list(cwd=request.project_root)
+            result = self.engine.worktree_list(_required(args, "repo_selector"))
         elif action is ExecutionAction.WORKTREE_CREATE:
             result = self.engine.worktree_create(
                 name=_required(args, "name"),
                 repo_selector=args.get("repo_selector"),
                 agent=args.get("agent"),
                 prompt=args.get("prompt"),
+                setup=args.get("setup", "inherit"),
                 authority=authority,
-                cwd=request.project_root,
             )
         elif action is ExecutionAction.TERMINAL_READ:
-            result = self.engine.terminal_read(
-                terminal_id=_required(args, "terminal_id"),
-                cwd=request.project_root,
-            )
+            result = self.engine.terminal_read(_required(args, "terminal"))
         elif action is ExecutionAction.TERMINAL_WAIT:
+            timeout_ms = args.get("timeout_ms", 300_000)
+            if not isinstance(timeout_ms, int):
+                raise ValueError("timeout_ms must be an integer")
             result = self.engine.terminal_wait(
-                terminal_id=_required(args, "terminal_id"),
-                cwd=request.project_root,
+                _required(args, "terminal"),
+                timeout_ms=timeout_ms,
             )
         elif action is ExecutionAction.FILE_DIFF:
             result = self.engine.file_diff(
-                worktree=_required(args, "worktree"),
-                cwd=request.project_root,
+                path=_required(args, "path"),
+                worktree=args.get("worktree", "active"),
+                staged=bool(args.get("staged", False)),
             )
         elif action is ExecutionAction.SNAPSHOT:
-            result = self.engine.snapshot(cwd=request.project_root)
+            result = self.engine.snapshot(args.get("worktree", "active"))
         else:
             raise ValueError(f"unsupported Orca action: {action.value}")
 
