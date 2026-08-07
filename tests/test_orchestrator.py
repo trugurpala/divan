@@ -58,7 +58,7 @@ class OrchestratorTests(unittest.TestCase):
             task = orchestrator.approve_merge(task, review, approved=True)
             self.assertEqual(task.state, TaskState.MERGED)
             evidence = orchestrator.evidence.list("DIV-1")
-            self.assertEqual([item["kind"] for item in evidence], ["approval", "execution", "review"])
+            self.assertEqual([item["kind"] for item in evidence], ["execution", "review", "approval"])
             self.assertNotIn("secret", str(evidence))
 
 
