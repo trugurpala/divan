@@ -31,6 +31,11 @@ type UpdateStatus = {
   version: string | null;
 };
 
+type UpdateInstallStatus = {
+  installed: boolean;
+  version: string | null;
+};
+
 type ToolStatus = {
   id: string;
   display_name: string;
@@ -137,6 +142,8 @@ function App() {
   const [caps, setCaps] = useState<Capabilities | null>(null);
   const [shellCaps, setShellCaps] = useState<ShellCapabilities | null>(null);
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
+  const [updateCheckError, setUpdateCheckError] = useState<string | null>(null);
+  const [updateNotice, setUpdateNotice] = useState<string | null>(null);
   const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [projects, setProjects] = useState<ProjectRecord[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -154,7 +161,6 @@ function App() {
     const value = await coreRequest<Readiness>({ command: "readiness" });
     setReadiness(value);
     setAgent((current) => current || value.recommended_agent || "");
-    setEngine((current) => current || value.recommended_engine || "");
   };
 
   const refreshProjects = async () => {
@@ -192,15 +198,18 @@ function App() {
     () => projects.find((project) => project.project_id === selectedProjectId) ?? null,
     [projects, selectedProjectId],
   );
-  const availableAgents = useMemo(
-    () => readiness?.tools.filter((tool) => agentIds.has(tool.id) && tool.available) ?? [],
-    [readiness],
-  );
+  const availableEngines = readiness?.engines ?? [];
+  const operatorEngine = engine && availableEngines.includes(engine) ? engine : "";
+  const persistedTaskEngine =
+    selected?.engine_id && availableEngines.includes(selected.engine_id)
+      ? selected.engine_id
+      : "";
+  const selectedEngine =
+    operatorEngine || persistedTaskEngine || readiness?.recommended_engine || "";
   const selectedState = selected ? stateMap[selected.state] ?? "PLAN" : "PLAN";
   const canReadDiff = Boolean(
     selected && !["draft", "planned"].includes(selected.state),
   );
-  const selectedEngine = selected?.engine_id || engine || readiness?.recommended_engine || "";
   const hasExecutionReceipt = Boolean(
     selected
       && typeof selected.metadata.execution === "object"
@@ -266,7 +275,7 @@ function App() {
         command: "task.create",
         title: title.trim(),
         project_id: selectedProject?.project_id ?? undefined,
-        engine_id: engine || readiness?.recommended_engine || undefined,
+        engine_id: operatorEngine || undefined,
       });
       await refreshTasks();
       setSelectedId(created.task_id);
@@ -286,7 +295,8 @@ function App() {
   const startTask = () =>
     selected &&
     run("start", async () => {
-      const executionEngine = selected.engine_id || engine || readiness?.recommended_engine || "";
+      const executionEngine =
+        operatorEngine || persistedTaskEngine || readiness?.recommended_engine || "";
       const confirmed = window.confirm(
         `Divan bu görevi izole bir Git worktree içinde çalıştıracak.\n\nGörev: ${selected.title}\nAjan: ${agent || "otomatik"}\nMotor: ${executionEngine || "otomatik"}\n\nBir kez çalıştırmayı onaylıyor musun?`,
       );
@@ -369,12 +379,25 @@ function App() {
       await refreshTasks();
     });
 
-  const checkForUpdate = () =>
-    run("update-check", async () => {
-      setUpdateStatus(null);
+  const checkForUpdate = async () => {
+    setBusy("update-check");
+    setError(null);
+    setUpdateCheckError(null);
+    setUpdateNotice(null);
+    setUpdateStatus(null);
+    try {
       const status = await invoke<UpdateStatus>("check_for_update");
       setUpdateStatus(status);
-    });
+    } catch (value) {
+      const message = String(value);
+      setUpdateCheckError(
+        "Güncelleme kontrolü tamamlanamadı. Önceki sonuç güvenlik nedeniyle geçersiz sayıldı; yeniden kontrol et.",
+      );
+      setError(message);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const installUpdate = () =>
     run("update-install", async () => {
@@ -383,8 +406,14 @@ function App() {
         `İmzalı Divan ${updateStatus.version ?? "güncellemesi"} indirilecek, doğrulanacak, kurulacak ve uygulama yeniden başlatılacak. Devam edilsin mi?`,
       );
       if (!confirmed) return;
-      await invoke<void>("install_update", { approved: true });
-      setUpdateStatus({ available: false, version: null });
+      setUpdateNotice(null);
+      const result = await invoke<UpdateInstallStatus>("install_update", { approved: true });
+      if (!result.installed) {
+        setUpdateStatus(null);
+        setUpdateNotice(
+          "Güncelleme ikinci kontrolde artık mevcut değildi. Hiçbir paket kurulmadı; tekrar kontrol et.",
+        );
+      }
     });
 
   const apiVersion = caps?.api_version ?? caps?.apiVersion ?? 1;
@@ -476,6 +505,8 @@ function App() {
           <ReleaseView
             shellCaps={shellCaps}
             status={updateStatus}
+            checkError={updateCheckError}
+            notice={updateNotice}
             busy={busy}
             onCheck={checkForUpdate}
             onInstall={installUpdate}
@@ -529,7 +560,7 @@ function App() {
                       <span className="task-id">{task.task_id}</span>
                       <strong>{task.title}</strong>
                       <div className="task-meta">
-                        <span>{task.engine_id ?? "Motor bekliyor"}</span>
+                        <span>{task.engine_id ?? "Motor otomatik"}</span>
                         <span className={`state ${uiState.toLowerCase()}`}>{uiState}</span>
                       </div>
                     </button>
@@ -583,7 +614,7 @@ function App() {
                   <div className="summary-grid">
                     <div>
                       <span className="eyebrow">EXECUTION ENGINE</span>
-                      <strong>{selected.engine_id || selectedEngine || "bekliyor"}</strong>
+                      <strong>{selectedEngine || "bekliyor"}</strong>
                     </div>
                     <div>
                       <span className="eyebrow">AJAN</span>
@@ -653,7 +684,7 @@ function App() {
         </p>
         <dl>
           <div><dt>Durum</dt><dd>{interruptedExecution ? "running / interrupted" : selected?.state ?? "—"}</dd></div>
-          <div><dt>Engine</dt><dd>{selected?.engine_id || selectedEngine || "—"}</dd></div>
+          <div><dt>Engine</dt><dd>{selectedEngine || "—"}</dd></div>
           <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
           <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
           <div><dt>Mandate</dt><dd>{selected?.mandate_id ? "Var" : "Gerekli"}</dd></div>
@@ -687,12 +718,16 @@ function App() {
 function ReleaseView({
   shellCaps,
   status,
+  checkError,
+  notice,
   busy,
   onCheck,
   onInstall,
 }: {
   shellCaps: ShellCapabilities | null;
   status: UpdateStatus | null;
+  checkError: string | null;
+  notice: string | null;
   busy: string | null;
   onCheck: () => void;
   onInstall: () => void;
@@ -744,17 +779,21 @@ function ReleaseView({
           <section className="terminal-panel settings-agent">
             <span className="eyebrow">UPDATE STATUS</span>
             <strong>
-              {status === null
-                ? "Henüz kontrol edilmedi"
-                : status.available
-                  ? `Yeni sürüm: ${status.version ?? "mevcut"}`
-                  : "Bu sürüm güncel"}
+              {checkError
+                ? "Kontrol tamamlanamadı"
+                : status === null
+                  ? "Henüz kontrol edilmedi"
+                  : status.available
+                    ? `Yeni sürüm: ${status.version ?? "mevcut"}`
+                    : "Bu sürüm güncel"}
             </strong>
+            {checkError && <p className="error">{checkError}</p>}
+            {notice && <p>{notice}</p>}
             <div className="action-row">
               <button className="primary" onClick={onCheck} disabled={busy !== null}>
                 {busy === "update-check" ? "Kontrol ediliyor…" : "Güncellemeyi kontrol et"}
               </button>
-              {status?.available && (
+              {status?.available && !checkError && (
                 <button className="approve" onClick={onInstall} disabled={busy !== null}>
                   {busy === "update-install" ? "Kuruluyor…" : "İmzalı güncellemeyi yükle"}
                 </button>
@@ -829,8 +868,9 @@ function Settings({
           ))}
         </select>
         <p>
-          Native ve Orca aynı Divan execution contract arkasındadır. Yeni görevlerde seçimin
-          kullanılır; seçim yoksa Divan kullanılabilir motoru önerir.
+          Native ve Orca aynı Divan execution contract arkasındadır. Açık bir seçim yaparsan
+          planlanmış görevde de bu seçim önceliklidir; Otomatik seçiliyse yalnız hâlâ kullanılabilir
+          kayıtlı motor veya Divan'ın güncel önerisi kullanılır.
         </p>
       </section>
 
