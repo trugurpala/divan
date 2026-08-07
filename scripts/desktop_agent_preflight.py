@@ -5,7 +5,6 @@ import json
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 from typing import Sequence
 
 AUTH_MARKER = "DIVAN_AUTH_OK"
@@ -31,12 +30,18 @@ def _run(
             shell=False,
         )
     except subprocess.TimeoutExpired as error:
-        stdout = error.stdout.decode("utf-8", errors="replace") if isinstance(error.stdout, bytes) else (error.stdout or "")
-        stderr = error.stderr.decode("utf-8", errors="replace") if isinstance(error.stderr, bytes) else (error.stderr or "")
+        stdout = _timeout_text(error.stdout)
+        stderr = _timeout_text(error.stderr)
         return 124, stdout, stderr or "command timed out"
     except OSError as error:
         return 127, "", str(error)
     return completed.returncode, completed.stdout, completed.stderr
+
+
+def _timeout_text(value: str | bytes | None) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return value or ""
 
 
 def parse_codex_auth(text: str) -> str:
@@ -58,12 +63,18 @@ def parse_claude_probe(stdout: str) -> None:
     try:
         payload = json.loads(stdout.strip())
     except json.JSONDecodeError as error:
-        raise AgentPreflightError("Claude Code did not return JSON during auth probe") from error
+        raise AgentPreflightError(
+            "Claude Code did not return JSON during auth probe"
+        ) from error
     if not isinstance(payload, dict):
-        raise AgentPreflightError("Claude Code auth probe response is not a JSON object")
+        raise AgentPreflightError(
+            "Claude Code auth probe response is not a JSON object"
+        )
     result = payload.get("result")
     if not isinstance(result, str) or result.strip() != AUTH_MARKER:
-        raise AgentPreflightError("Claude Code auth probe did not return the expected marker")
+        raise AgentPreflightError(
+            "Claude Code auth probe did not return the expected marker"
+        )
 
 
 def preflight() -> dict[str, object]:
@@ -81,7 +92,8 @@ def preflight() -> dict[str, object]:
     codex_method = parse_codex_auth(codex_text)
 
     prompt = (
-        f"Return exactly {AUTH_MARKER}. Do not use tools, edit files, or run commands."
+        f"Return exactly {AUTH_MARKER}. "
+        "Do not use tools, edit files, or run commands."
     )
     code, stdout, _ = _run(
         (
