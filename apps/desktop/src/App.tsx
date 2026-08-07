@@ -18,6 +18,19 @@ type Capabilities = {
   commands?: string[];
 };
 
+type ShellCapabilities = {
+  product: string;
+  version: string;
+  apiVersion: number;
+  shell: string;
+  features: string[];
+};
+
+type UpdateStatus = {
+  available: boolean;
+  version: string | null;
+};
+
 type ToolStatus = {
   id: string;
   display_name: string;
@@ -89,7 +102,7 @@ type ReviewResult = {
 };
 
 type UiState = "PLAN" | "WORKING" | "REVIEW" | "PASS" | "APPROVAL";
-type ActiveTab = "summary" | "evidence" | "diff" | "settings";
+type ActiveTab = "summary" | "evidence" | "diff" | "releases" | "settings";
 
 const stateMap: Record<string, UiState> = {
   draft: "PLAN",
@@ -122,6 +135,8 @@ async function coreRequest<T>(request: Record<string, unknown>): Promise<T> {
 
 function App() {
   const [caps, setCaps] = useState<Capabilities | null>(null);
+  const [shellCaps, setShellCaps] = useState<ShellCapabilities | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
   const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [projects, setProjects] = useState<ProjectRecord[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -155,11 +170,15 @@ function App() {
   useEffect(() => {
     Promise.all([
       coreRequest<Capabilities>({ command: "capabilities" }),
+      invoke<ShellCapabilities>("divan_capabilities"),
       refreshReadiness(),
       refreshProjects(),
       refreshTasks(),
     ])
-      .then(([capabilities]) => setCaps(capabilities))
+      .then(([capabilities, shellCapabilities]) => {
+        setCaps(capabilities);
+        setShellCaps(shellCapabilities);
+      })
       .catch((value: unknown) => setError(String(value)));
   }, []);
 
@@ -328,6 +347,22 @@ function App() {
       await refreshTasks();
     });
 
+  const checkForUpdate = () =>
+    run("update-check", async () => {
+      const status = await invoke<UpdateStatus>("check_for_update");
+      setUpdateStatus(status);
+    });
+
+  const installUpdate = () =>
+    run("update-install", async () => {
+      if (!updateStatus?.available) return;
+      const confirmed = window.confirm(
+        `İmzalı Divan ${updateStatus.version ?? "güncellemesi"} indirilecek, doğrulanacak, kurulacak ve uygulama yeniden başlatılacak. Devam edilsin mi?`,
+      );
+      if (!confirmed) return;
+      await invoke<void>("install_update", { approved: true });
+    });
+
   const apiVersion = caps?.api_version ?? caps?.apiVersion ?? 1;
 
   return (
@@ -360,7 +395,7 @@ function App() {
             >
               Değişiklikler
             </button>
-            <button className="nav-item" disabled>Sürümler</button>
+            <button className="nav-item" onClick={() => setActiveTab("releases")}>Sürümler</button>
             <button className="nav-item" onClick={() => setActiveTab("settings")}>Ayarlar</button>
           </nav>
 
@@ -409,6 +444,14 @@ function App() {
       <section className="workspace">
         {activeTab === "settings" ? (
           <Settings readiness={readiness} agent={agent} setAgent={setAgent} />
+        ) : activeTab === "releases" ? (
+          <ReleaseView
+            shellCaps={shellCaps}
+            status={updateStatus}
+            busy={busy}
+            onCheck={checkForUpdate}
+            onInstall={installUpdate}
+          />
         ) : activeTab === "evidence" ? (
           <EvidenceView task={selected} evidence={evidence} />
         ) : activeTab === "diff" ? (
@@ -596,6 +639,72 @@ function App() {
         </small>
       </aside>
     </main>
+  );
+}
+
+function ReleaseView({
+  shellCaps,
+  status,
+  busy,
+  onCheck,
+  onInstall,
+}: {
+  shellCaps: ShellCapabilities | null;
+  status: UpdateStatus | null;
+  busy: string | null;
+  onCheck: () => void;
+  onInstall: () => void;
+}) {
+  const signedUpdater = shellCaps?.features.includes("signed-updater") ?? false;
+  return (
+    <section>
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">SÜRÜMLER / GÜNCELLEME</span>
+          <h1>Divan Desktop {shellCaps?.version ?? "—"}</h1>
+        </div>
+      </div>
+
+      {!signedUpdater ? (
+        <section className="notice-card">
+          <strong>Bu build stable updater içermiyor.</strong>
+          <p>
+            Beta/unsigned paketler kendini güncellemez. Stable build yalnız imzalı Tauri updater
+            artefaktlarını kabul eder; güncelleme kontrolü veya kurulumu otomatik başlatılmaz.
+          </p>
+        </section>
+      ) : (
+        <>
+          <section className="notice-card">
+            <strong>İmzalı güncelleme kanalı etkin.</strong>
+            <p>
+              Divan yalnız sen istediğinde güncelleme kontrolü yapar. Kurulum ayrıca açık onay
+              ister; Tauri imza doğrulaması geçmeden paket kurulmaz.
+            </p>
+          </section>
+          <section className="terminal-panel settings-agent">
+            <span className="eyebrow">UPDATE STATUS</span>
+            <strong>
+              {status === null
+                ? "Henüz kontrol edilmedi"
+                : status.available
+                  ? `Yeni sürüm: ${status.version ?? "mevcut"}`
+                  : "Bu sürüm güncel"}
+            </strong>
+            <div className="action-row">
+              <button className="primary" onClick={onCheck} disabled={busy !== null}>
+                {busy === "update-check" ? "Kontrol ediliyor…" : "Güncellemeyi kontrol et"}
+              </button>
+              {status?.available && (
+                <button className="approve" onClick={onInstall} disabled={busy !== null}>
+                  {busy === "update-install" ? "Kuruluyor…" : "İmzalı güncellemeyi yükle"}
+                </button>
+              )}
+            </div>
+          </section>
+        </>
+      )}
+    </section>
   );
 }
 
