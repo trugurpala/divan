@@ -20,21 +20,41 @@ class EvidenceRecord:
 
 
 def _canonical(payload: Mapping[str, Any]) -> bytes:
-    return json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return json.dumps(
+        payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
 
 
-def build_evidence(task_id: str, kind: str, status: str, summary: str, data: Mapping[str, Any]) -> EvidenceRecord:
+def build_evidence(
+    task_id: str,
+    kind: str,
+    status: str,
+    summary: str,
+    data: Mapping[str, Any],
+) -> EvidenceRecord:
     at = datetime.now(timezone.utc).isoformat()
-    body = {
+    evidence_data = dict(data)
+    body: dict[str, Any] = {
         "task_id": task_id,
         "kind": kind,
         "status": status,
         "summary": summary,
         "at": at,
-        "data": dict(data),
+        "data": evidence_data,
     }
     digest = hashlib.sha256(_canonical(body)).hexdigest()
-    return EvidenceRecord(**body, sha256=digest)
+    return EvidenceRecord(
+        task_id=task_id,
+        kind=kind,
+        status=status,
+        summary=summary,
+        at=at,
+        data=evidence_data,
+        sha256=digest,
+    )
 
 
 class EvidenceStore:
@@ -44,7 +64,10 @@ class EvidenceStore:
     def append(self, record: EvidenceRecord) -> Path:
         path = self.root / record.task_id / f"{record.at.replace(':', '-')}-{record.kind}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(asdict(record), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        path.write_text(
+            json.dumps(asdict(record), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
         return path
 
     def list(self, task_id: str) -> Sequence[dict[str, Any]]:
