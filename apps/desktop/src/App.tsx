@@ -353,6 +353,7 @@ function App() {
 
   const checkForUpdate = () =>
     run("update-check", async () => {
+      setUpdateStatus(null);
       const status = await invoke<UpdateStatus>("check_for_update");
       setUpdateStatus(status);
     });
@@ -365,6 +366,7 @@ function App() {
       );
       if (!confirmed) return;
       await invoke<void>("install_update", { approved: true });
+      setUpdateStatus({ available: false, version: null });
     });
 
   const apiVersion = caps?.api_version ?? caps?.apiVersion ?? 1;
@@ -663,13 +665,30 @@ function ReleaseView({
   onCheck: () => void;
   onInstall: () => void;
 }) {
-  const signedUpdater = shellCaps?.features.includes("signed-updater") ?? false;
+  if (shellCaps === null) {
+    return (
+      <section>
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">SÜRÜMLER / GÜNCELLEME</span>
+            <h1>Divan Desktop</h1>
+          </div>
+        </div>
+        <section className="notice-card">
+          <strong>Güncelleme yetenekleri okunuyor…</strong>
+          <p>Build kimliği doğrulanmadan beta veya stable kanal varsayımı yapılmaz.</p>
+        </section>
+      </section>
+    );
+  }
+
+  const signedUpdater = shellCaps.features.includes("signed-updater");
   return (
     <section>
       <div className="section-heading">
         <div>
           <span className="eyebrow">SÜRÜMLER / GÜNCELLEME</span>
-          <h1>Divan Desktop {shellCaps?.version ?? "—"}</h1>
+          <h1>Divan Desktop {shellCaps.version}</h1>
         </div>
       </div>
 
