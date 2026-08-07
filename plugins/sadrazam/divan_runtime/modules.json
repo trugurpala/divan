@@ -26,13 +26,18 @@
       "tr": "Divan Nizamı",
       "python_modules": [
         "governance",
-        "review_gate"
+        "review_gate",
+        "reviewer_runner",
+        "git_guard"
       ],
       "capabilities": [
         "authority_chain",
         "scope_control",
         "review_gate",
-        "release_approval_gate"
+        "release_approval_gate",
+        "independent_agent_review",
+        "review_snapshot_binding",
+        "guarded_fast_forward_merge"
       ],
       "depends_on": [
         "kernel"
