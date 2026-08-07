@@ -12,9 +12,9 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import receipts
-from divan_runtime.orca_coordinator import create_worktree
-from divan_runtime.orca_engine import OrcaEngine, RunnerResult
+from divan_runtime import receipts  # noqa: E402
+from divan_runtime.orca_coordinator import create_worktree  # noqa: E402
+from divan_runtime.orca_engine import OrcaEngine, RunnerResult  # noqa: E402
 
 GOAL_ID = "goal-123456789abc"
 
