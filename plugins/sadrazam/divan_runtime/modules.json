@@ -86,6 +86,7 @@
       "tr": "Defter",
       "python_modules": [
         "goals",
+        "goal_execution",
         "goal_archive",
         "adoption_common",
         "adoption_legacy",
@@ -100,6 +101,7 @@
       ],
       "capabilities": [
         "goal_state",
+        "goal_execution_preparation",
         "active_goal",
         "task_progress",
         "archive",
