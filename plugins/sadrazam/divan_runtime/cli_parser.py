@@ -100,7 +100,7 @@ def _add_runtime_contract_parsers(commands: Any) -> None:
 
 def _add_engine_registry_parser(commands: Any) -> None:
     engines = commands.add_parser(
-        "engines", help="inspect and validate Divan engine registry metadata"
+        "engines", help="inspect, validate, and run Divan execution engines"
     )
     subcommands = engines.add_subparsers(dest="engines_command", required=True)
     validate = subcommands.add_parser(
@@ -108,6 +108,31 @@ def _add_engine_registry_parser(commands: Any) -> None:
     )
     validate.add_argument("--registry", type=pathlib.Path, required=True)
     _common_output(validate)
+
+    status = subcommands.add_parser(
+        "status", help="inspect one execution engine without mutation"
+    )
+    status.add_argument("--engine", choices=("orca",), default="orca")
+    _common_output(status)
+
+    create = subcommands.add_parser(
+        "worktree-create",
+        help="create the first governed execution worktree for a PLANNED goal",
+    )
+    create.add_argument("--engine", choices=("orca",), default="orca")
+    create.add_argument(
+        "--project", type=pathlib.Path, default=pathlib.Path.cwd()
+    )
+    create.add_argument("--goal", required=True)
+    create.add_argument("--name", required=True)
+    create.add_argument("--repo-selector")
+    create.add_argument("--agent")
+    create.add_argument("--prompt")
+    create.add_argument(
+        "--setup", choices=("run", "skip", "inherit"), default="inherit"
+    )
+    _mutation_control(create)
+    _common_output(create)
 
 
 def _add_discovery_parsers(commands: Any) -> None:
@@ -217,10 +242,21 @@ def _add_goal_parsers(commands: Any) -> None:
     _planning_controls(goal_start)
     _mutation_control(goal_start)
     _common_output(goal_start)
+
     goal_status = goal_commands.add_parser("status")
     goal_status.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     goal_status.add_argument("--goal")
     _common_output(goal_status)
+
+    prepare = goal_commands.add_parser(
+        "prepare",
+        help="verify bound goal artifacts and advance only to the PLANNED gate",
+    )
+    prepare.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
+    prepare.add_argument("--goal", required=True)
+    _mutation_control(prepare)
+    _common_output(prepare)
+
     goal_resume = goal_commands.add_parser("resume")
     goal_resume.add_argument("--project", type=pathlib.Path, default=pathlib.Path.cwd())
     goal_resume.add_argument("--goal", required=True)
