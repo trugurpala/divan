@@ -236,6 +236,14 @@ def _handle_task_start(
     return _ok(started.to_dict())
 
 
+def _handle_task_recover_interrupted(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    active_router = _require_router(router)
+    recovered = _orchestrator(active_router).recover_interrupted(_load_task(payload))
+    return _ok(recovered.to_dict())
+
+
 def _handle_task_diff(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -366,6 +374,7 @@ _HANDLERS: dict[str, Handler] = {
     "task.create": _handle_task_create,
     "task.plan": _handle_task_plan,
     "task.start": _handle_task_start,
+    "task.recover.interrupted": _handle_task_recover_interrupted,
     "task.diff": _handle_task_diff,
     "task.review": _handle_task_review,
     "task.review.auto": _handle_task_review_auto,
