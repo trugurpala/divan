@@ -72,6 +72,21 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("forward_signed_recovery = $forwardRecovery", script)
         self.assertIn("downgrade_not_offered = $downgradeNotOffered", script)
 
+    def test_release_workflow_builds_frontend_before_updater_cargo_checks(self) -> None:
+        workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        e2e_start = workflow.index("  updater-e2e-windows:")
+        signed_start = workflow.index("  signed-windows-candidate:")
+        e2e = workflow[e2e_start:signed_start]
+        signed = workflow[signed_start:]
+
+        self.assertIn("Build updater e2e frontend context", e2e)
+        self.assertLess(e2e.index("run: pnpm build"), e2e.index("--features updater-e2e --locked"))
+        self.assertIn("Build signed updater frontend context", signed)
+        self.assertLess(
+            signed.index("run: pnpm build"),
+            signed.index("--features signed-updater --locked"),
+        )
+
     def test_release_workflow_requires_runtime_e2e_before_signed_candidate(self) -> None:
         workflow = RELEASE_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("updater-e2e-windows:", workflow)
