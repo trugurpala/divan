@@ -120,8 +120,11 @@ def snapshot_from_metadata(value: object) -> ReviewSnapshot:
     worktree = value.get("worktree")
     base_head = value.get("base_head")
     diff_sha256 = value.get("diff_sha256")
-    values = (worktree, base_head, diff_sha256)
-    if not all(isinstance(item, str) and item.strip() for item in values):
+    if not isinstance(worktree, str) or not worktree.strip():
+        raise GitGuardError("persisted reviewed Git snapshot is invalid")
+    if not isinstance(base_head, str) or not base_head.strip():
+        raise GitGuardError("persisted reviewed Git snapshot is invalid")
+    if not isinstance(diff_sha256, str) or not diff_sha256.strip():
         raise GitGuardError("persisted reviewed Git snapshot is invalid")
     return ReviewSnapshot(
         worktree=worktree.strip(),
