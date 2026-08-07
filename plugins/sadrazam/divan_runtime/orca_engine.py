@@ -95,11 +95,20 @@ class OrcaEngine:
     def status(self) -> OrcaResult:
         return self.run(self._command("status", "status"))
 
-    def worktree_list(self, repo_selector: str | None = None) -> OrcaResult:
-        args = ["worktree", "ps"]
-        if repo_selector:
-            args.extend(["--repo", repo_selector])
-        return self.run(self._command("worktree.list", *args))
+    def worktree_list(self, repo_selector: str) -> OrcaResult:
+        _require_value("repo_selector", repo_selector)
+        return self.run(
+            self._command(
+                "worktree.list",
+                "worktree",
+                "list",
+                "--repo",
+                repo_selector,
+            )
+        )
+
+    def worktree_ps(self) -> OrcaResult:
+        return self.run(self._command("worktree.ps", "worktree", "ps"))
 
     def worktree_create(
         self,
