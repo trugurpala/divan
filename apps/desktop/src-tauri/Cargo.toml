@@ -13,9 +13,10 @@ serde = { version = "1", features = ["derive"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-shell = "2"
-tauri-plugin-updater = "2"
+tauri-plugin-updater = { version = "2", optional = true }
 which = "8"
 
 [features]
 default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+signed-updater = ["dep:tauri-plugin-updater"]
