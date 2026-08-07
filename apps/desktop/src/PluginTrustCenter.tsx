@@ -279,7 +279,7 @@ export function PluginInspectorRail({
 }: TrustCenterProps) {
   if (!inspection) {
     return (
-      <aside className="plugin-rail" aria-label="Plugin Trust Center özeti">
+      <aside className="inspector plugin-rail" aria-label="Plugin Trust Center özeti">
         <span className="eyebrow">PLUGIN TRUST</span>
         <h2>Henüz manifest seçilmedi</h2>
         <p>Divan yalnız açıkça seçtiğin JSON manifesti inceleyecek; disk taraması yapmayacak.</p>
@@ -294,7 +294,7 @@ export function PluginInspectorRail({
   const status = stageCopy(inspection.stage);
   const manifest = inspection.manifest;
   return (
-    <aside className="plugin-rail" aria-label="Plugin Trust Center özeti">
+    <aside className="inspector plugin-rail" aria-label="Plugin Trust Center özeti">
       <span className="eyebrow">PLUGIN TRUST</span>
       <h2>{manifest?.display_name ?? inspection.artifact.manifest_name}</h2>
       <p>{status.title}</p>
