@@ -33,6 +33,26 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("update.download(|_, _| {}, || {}).await", runtime)
         self.assertIn("app.package_info().version", runtime)
 
+    def test_baseline_version_probe_runs_synchronously_before_async_updater_work(self) -> None:
+        runtime = E2E_RUST.read_text(encoding="utf-8")
+        maybe_start = runtime[
+            runtime.index("pub fn maybe_start") : runtime.index("fn report_version")
+        ]
+        report_version = runtime[
+            runtime.index("fn report_version") : runtime.index("async fn run")
+        ]
+
+        self.assertIn('if mode == "report-version"', maybe_start)
+        self.assertIn("report_version(app, &mode);", maybe_start)
+        self.assertLess(
+            maybe_start.index("report_version(app, &mode);"),
+            maybe_start.index("tauri::async_runtime::spawn"),
+        )
+        self.assertIn("app.package_info().version.to_string()", report_version)
+        self.assertIn('"installed version matches expected version"', report_version)
+        self.assertIn("finish(", report_version)
+        self.assertNotIn("async_runtime", report_version)
+
     def test_insecure_local_transport_exists_only_in_ephemeral_e2e_configs(self) -> None:
         script = UPDATER_SCRIPT.read_text(encoding="utf-8")
         production_verify = PRODUCTION_VERIFY_SCRIPT.read_text(encoding="utf-8")
