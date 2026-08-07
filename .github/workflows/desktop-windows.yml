@@ -1,0 +1,113 @@
+name: desktop-windows
+
+on:
+  pull_request:
+    paths:
+      - "apps/desktop/**"
+      - "plugins/sadrazam/divan_runtime/**"
+      - "scripts/build_project_runner.py"
+      - ".github/workflows/desktop-windows.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-windows-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-installer:
+    name: Windows installer
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Pin pnpm
+        shell: pwsh
+        run: npm install --global pnpm@11.9.0
+
+      - name: Select stable Rust
+        shell: pwsh
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustc --version
+          cargo --version
+
+      - name: Verify Windows build tools
+        shell: pwsh
+        run: |
+          node --version
+          pnpm --version
+          python --version
+          git --version
+          Get-Command llvm-rc -ErrorAction SilentlyContinue | Format-Table -AutoSize
+
+      - name: Run focused Python execution tests
+        shell: pwsh
+        run: |
+          python -m unittest tests.test_orca_engine tests.test_orca_coordinator
+
+      - name: Validate Divan runtime contracts
+        shell: pwsh
+        run: |
+          python scripts/divan.py validate --json
+
+      - name: Build exact-commit Divan runtime resource
+        shell: pwsh
+        run: |
+          python scripts/build_project_runner.py `
+            --output apps/desktop/src-tauri/resources/divan-project.pyz `
+            --source-commit "$(git rev-parse HEAD)"
+          python apps/desktop/src-tauri/resources/divan-project.pyz validate --json
+
+      - name: Install Desktop dependencies
+        working-directory: apps/desktop
+        shell: pwsh
+        run: pnpm install --no-frozen-lockfile
+
+      - name: TypeScript production build
+        working-directory: apps/desktop
+        shell: pwsh
+        run: pnpm build
+
+      - name: Rust check
+        working-directory: apps/desktop/src-tauri
+        shell: pwsh
+        run: cargo check --locked=false
+
+      - name: Build NSIS installer
+        working-directory: apps/desktop
+        shell: pwsh
+        run: pnpm tauri build --bundles nsis
+
+      - name: Normalize installer filename
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem "apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
+          if (-not $installer) { throw "NSIS installer was not produced" }
+          New-Item -ItemType Directory -Force -Path "dist/desktop" | Out-Null
+          Copy-Item $installer.FullName "dist/desktop/Divan-Setup-x64.exe"
+          Get-FileHash "dist/desktop/Divan-Setup-x64.exe" -Algorithm SHA256 | Format-List
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: Divan-Setup-x64
+          path: dist/desktop/Divan-Setup-x64.exe
+          if-no-files-found: error
+          retention-days: 14
