@@ -157,7 +157,7 @@ def inspect_acceptance_evidence(
     value = json.loads(raw.decode("utf-8-sig"))
     evidence = _mapping(value, "Windows acceptance evidence")
     required = {
-        "schema_version": 2,
+        "schema_version": 3,
         "product": "Divan",
         "version": expected_version,
         "platform": "windows",
@@ -184,6 +184,10 @@ def inspect_acceptance_evidence(
         raise DesktopReleaseError("Windows release acceptance requires a cross-agent reviewer")
     source_commit = _git_sha(evidence.get("source_commit"), "acceptance source_commit")
     source_tree = _git_sha(evidence.get("source_tree"), "acceptance source_tree")
+    core_commit = _git_sha(evidence.get("core_source_commit"), "Core source_commit")
+    core_tree = _git_sha(evidence.get("core_source_tree"), "Core source_tree")
+    if core_tree != source_tree:
+        raise DesktopReleaseError("installed Divan Core does not match the accepted source tree")
     expected_tree = (
         _git_sha(expected_source_tree, "expected source tree")
         if expected_source_tree is not None
@@ -203,6 +207,8 @@ def inspect_acceptance_evidence(
         "sha256": hashlib.sha256(raw).hexdigest(),
         "source_commit": source_commit,
         "source_tree": source_tree,
+        "core_source_commit": core_commit,
+        "core_source_tree": core_tree,
         "worker_agent": worker,
         "reviewer": reviewer,
     }
