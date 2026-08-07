@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - "apps/desktop/**"
+      - "plugins/sadrazam/divan_runtime/**"
+      - "scripts/divan-desktop-bridge.py"
+      - "scripts/build_desktop_core.py"
       - ".github/workflows/desktop-build.yml"
   workflow_dispatch:
 
@@ -14,14 +17,16 @@ jobs:
   desktop-windows:
     name: desktop-windows
     runs-on: windows-latest
-    timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: apps/desktop
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -33,19 +38,26 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          cache-dependency-path: apps/desktop/package.json
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install sidecar packager
+        run: python -m pip install --disable-pip-version-check pyinstaller
+
       - name: Install frontend dependencies
+        working-directory: apps/desktop
         run: pnpm install --no-frozen-lockfile
 
+      - name: Run desktop core tests
+        run: python -m unittest tests.test_desktop_protocol tests.test_task_store tests.test_orchestrator tests.test_execution_router tests.test_review_gate
+
       - name: Typecheck and build frontend
+        working-directory: apps/desktop
         run: pnpm build
 
-      - name: Build NSIS installer
+      - name: Build sidecar and NSIS installer
+        working-directory: apps/desktop
         run: pnpm desktop:build
 
       - name: Upload Windows bundle
