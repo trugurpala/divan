@@ -6,10 +6,12 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import tomllib
 from typing import Any, Mapping
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+_GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 class DesktopReleaseError(ValueError):
@@ -28,6 +30,13 @@ def _text(value: object, label: str) -> str:
     return value.strip()
 
 
+def _git_sha(value: object, label: str) -> str:
+    text = _text(value, label).casefold()
+    if not _GIT_SHA_RE.fullmatch(text):
+        raise DesktopReleaseError(f"{label} must be a full 40-character Git SHA")
+    return text
+
+
 def _deep_merge(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
     merged: dict[str, Any] = dict(base)
     for key, value in overlay.items():
@@ -40,7 +49,7 @@ def _deep_merge(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str
 
 
 def _read_json(path: pathlib.Path, label: str) -> Mapping[str, Any]:
-    return _mapping(json.loads(path.read_text(encoding="utf-8")), label)
+    return _mapping(json.loads(path.read_text(encoding="utf-8-sig")), label)
 
 
 def _desktop_inputs(root: pathlib.Path) -> tuple[str, Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
@@ -138,17 +147,23 @@ def _windows_signing_ready(windows_bundle: Mapping[str, Any]) -> bool:
     )
 
 
-def inspect_acceptance_evidence(path: pathlib.Path, expected_version: str) -> dict[str, Any]:
+def inspect_acceptance_evidence(
+    path: pathlib.Path,
+    expected_version: str,
+    *,
+    expected_source_tree: str | None = None,
+) -> dict[str, Any]:
     raw = path.read_bytes()
-    value = json.loads(raw.decode("utf-8"))
+    value = json.loads(raw.decode("utf-8-sig"))
     evidence = _mapping(value, "Windows acceptance evidence")
     required = {
-        "schema_version": 1,
+        "schema_version": 2,
         "product": "Divan",
         "version": expected_version,
         "platform": "windows",
         "result": "PASS",
         "authenticated_worker": True,
+        "authenticated_reviewer": True,
         "independent_reviewer": True,
         "review_bound_to_diff": True,
         "ff_only_merge": True,
@@ -161,10 +176,21 @@ def inspect_acceptance_evidence(path: pathlib.Path, expected_version: str) -> di
             )
     worker = evidence.get("worker_agent")
     reviewer = evidence.get("reviewer")
-    if worker not in {"codex", "claude", "opencode", "cursor-agent"}:
-        raise DesktopReleaseError("Windows acceptance evidence has an unsupported worker")
+    if worker not in {"codex", "claude"}:
+        raise DesktopReleaseError("Windows release acceptance worker must be Codex or Claude")
     if reviewer not in {"codex", "claude"}:
         raise DesktopReleaseError("Windows acceptance evidence has an unsupported reviewer")
+    if reviewer == worker:
+        raise DesktopReleaseError("Windows release acceptance requires a cross-agent reviewer")
+    source_commit = _git_sha(evidence.get("source_commit"), "acceptance source_commit")
+    source_tree = _git_sha(evidence.get("source_tree"), "acceptance source_tree")
+    expected_tree = (
+        _git_sha(expected_source_tree, "expected source tree")
+        if expected_source_tree is not None
+        else None
+    )
+    if expected_tree is not None and source_tree != expected_tree:
+        raise DesktopReleaseError("Windows acceptance evidence does not match the release source tree")
     kinds = evidence.get("evidence_kinds")
     required_kinds = {"execution", "review", "approval"}
     if not isinstance(kinds, list) or not required_kinds.issubset({str(item) for item in kinds}):
@@ -173,7 +199,10 @@ def inspect_acceptance_evidence(path: pathlib.Path, expected_version: str) -> di
         )
     return {
         "accepted": True,
+        "source_bound": expected_tree is not None,
         "sha256": hashlib.sha256(raw).hexdigest(),
+        "source_commit": source_commit,
+        "source_tree": source_tree,
         "worker_agent": worker,
         "reviewer": reviewer,
     }
@@ -184,6 +213,7 @@ def inspect_desktop(
     *,
     release_config: pathlib.Path | None = None,
     acceptance_evidence: pathlib.Path | None = None,
+    expected_source_tree: str | None = None,
 ) -> dict[str, Any]:
     root = root.resolve()
     version, package, tauri, windows, cargo = _desktop_inputs(root)
@@ -192,7 +222,11 @@ def inspect_desktop(
     config = _merged_config(tauri, windows, release_config)
     bundle, windows_bundle = _bundle_contract(config)
     acceptance = (
-        inspect_acceptance_evidence(acceptance_evidence, version)
+        inspect_acceptance_evidence(
+            acceptance_evidence,
+            version,
+            expected_source_tree=expected_source_tree,
+        )
         if acceptance_evidence is not None
         else None
     )
@@ -224,6 +258,8 @@ def require_stable_release(
     acceptance = report.get("acceptance_evidence")
     if not isinstance(acceptance, Mapping) or acceptance.get("accepted") is not True:
         blockers.append("real-user Windows acceptance evidence is missing")
+    elif acceptance.get("source_bound") is not True:
+        blockers.append("Windows acceptance evidence is not bound to the release source tree")
     if blockers:
         raise DesktopReleaseError("stable desktop release blocked: " + "; ".join(blockers))
     return {**dict(report), "stable_release": "READY"}
@@ -234,6 +270,7 @@ def main() -> int:
     parser.add_argument("--root", type=pathlib.Path, default=ROOT)
     parser.add_argument("--release-config", type=pathlib.Path)
     parser.add_argument("--acceptance-evidence", type=pathlib.Path)
+    parser.add_argument("--source-tree")
     parser.add_argument("--stable-release", action="store_true")
     args = parser.parse_args()
     try:
@@ -241,6 +278,7 @@ def main() -> int:
             args.root,
             release_config=args.release_config,
             acceptance_evidence=args.acceptance_evidence,
+            expected_source_tree=args.source_tree,
         )
         if args.stable_release:
             report = require_stable_release(report)
