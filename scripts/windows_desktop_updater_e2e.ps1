@@ -117,7 +117,7 @@ function Build-TestVersion {
 
     Push-Location $desktopRoot
     try {
-        & pnpm tauri build --bundles nsis --features updater-e2e --config $configPath
+        & pnpm tauri build --bundles nsis --features updater-e2e --config $configPath | Out-Host
         if ($LASTEXITCODE -ne 0) {
             throw "Tauri updater e2e build failed for version $Version"
         }
