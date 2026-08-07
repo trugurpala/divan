@@ -39,6 +39,105 @@ def _deep_merge(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str
     return merged
 
 
+def _read_json(path: pathlib.Path, label: str) -> Mapping[str, Any]:
+    return _mapping(json.loads(path.read_text(encoding="utf-8")), label)
+
+
+def _desktop_inputs(root: pathlib.Path) -> tuple[str, Mapping[str, Any], Mapping[str, Any], Mapping[str, Any], Mapping[str, Any]]:
+    desktop = root / "apps" / "desktop"
+    tauri_root = desktop / "src-tauri"
+    version = _text((root / "VERSION").read_text(encoding="utf-8"), "VERSION")
+    package = _read_json(desktop / "package.json", "package.json")
+    tauri = _read_json(tauri_root / "tauri.conf.json", "tauri.conf.json")
+    windows = _read_json(tauri_root / "tauri.windows.conf.json", "tauri.windows.conf.json")
+    cargo = _mapping(
+        tomllib.loads((tauri_root / "Cargo.toml").read_text(encoding="utf-8")),
+        "Cargo.toml",
+    )
+    return version, package, tauri, windows, cargo
+
+
+def _verify_versions(
+    version: str,
+    package: Mapping[str, Any],
+    tauri: Mapping[str, Any],
+    cargo: Mapping[str, Any],
+) -> None:
+    cargo_package = _mapping(cargo.get("package"), "Cargo package")
+    versions = {
+        "VERSION": version,
+        "package.json": _text(package.get("version"), "package version"),
+        "tauri.conf.json": _text(tauri.get("version"), "tauri version"),
+        "Cargo.toml": _text(cargo_package.get("version"), "Cargo version"),
+    }
+    if len(set(versions.values())) != 1:
+        raise DesktopReleaseError(f"desktop version drift: {versions}")
+
+
+def _verify_identity(tauri: Mapping[str, Any]) -> None:
+    expected = {
+        "productName": "Divan",
+        "mainBinaryName": "Divan",
+        "identifier": "com.ugurpala.divan",
+    }
+    for key, value in expected.items():
+        if tauri.get(key) != value:
+            raise DesktopReleaseError(f"unexpected Tauri {key}: {tauri.get(key)!r}")
+
+
+def _merged_config(
+    tauri: Mapping[str, Any],
+    windows: Mapping[str, Any],
+    release_config: pathlib.Path | None,
+) -> Mapping[str, Any]:
+    merged = _deep_merge(tauri, windows)
+    if release_config is None:
+        return merged
+    return _deep_merge(merged, _read_json(release_config, "desktop release config"))
+
+
+def _bundle_contract(config: Mapping[str, Any]) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
+    bundle = _mapping(config.get("bundle"), "Tauri bundle")
+    windows_bundle = _mapping(bundle.get("windows"), "Tauri Windows bundle")
+    nsis = _mapping(windows_bundle.get("nsis"), "Tauri NSIS bundle")
+    if nsis.get("installMode") != "currentUser":
+        raise DesktopReleaseError("NSIS installMode must remain currentUser")
+    external_bin = bundle.get("externalBin")
+    if not isinstance(external_bin, list) or "binaries/divan-core" not in external_bin:
+        raise DesktopReleaseError("Divan Core sidecar is missing from Windows bundle")
+    return bundle, windows_bundle
+
+
+def _updater_ready(config: Mapping[str, Any], bundle: Mapping[str, Any]) -> bool:
+    plugins = config.get("plugins")
+    if not isinstance(plugins, Mapping):
+        return False
+    updater = plugins.get("updater")
+    if not isinstance(updater, Mapping):
+        return False
+    pubkey = updater.get("pubkey")
+    endpoints = updater.get("endpoints")
+    return bool(
+        bundle.get("createUpdaterArtifacts") is True
+        and isinstance(pubkey, str)
+        and pubkey.strip()
+        and isinstance(endpoints, list)
+        and endpoints
+        and all(isinstance(item, str) and item.startswith("https://") for item in endpoints)
+    )
+
+
+def _windows_signing_ready(windows_bundle: Mapping[str, Any]) -> bool:
+    sign_command = windows_bundle.get("signCommand")
+    return bool(
+        isinstance(sign_command, str)
+        and sign_command.strip()
+        and "%1" in sign_command
+        and "\n" not in sign_command
+        and "\r" not in sign_command
+    )
+
+
 def inspect_acceptance_evidence(path: pathlib.Path, expected_version: str) -> dict[str, Any]:
     raw = path.read_bytes()
     value = json.loads(raw.decode("utf-8"))
@@ -67,9 +166,8 @@ def inspect_acceptance_evidence(path: pathlib.Path, expected_version: str) -> di
     if reviewer not in {"codex", "claude"}:
         raise DesktopReleaseError("Windows acceptance evidence has an unsupported reviewer")
     kinds = evidence.get("evidence_kinds")
-    if not isinstance(kinds, list) or not {"execution", "review", "approval"}.issubset(
-        {str(item) for item in kinds}
-    ):
+    required_kinds = {"execution", "review", "approval"}
+    if not isinstance(kinds, list) or not required_kinds.issubset({str(item) for item in kinds}):
         raise DesktopReleaseError(
             "Windows acceptance evidence must include execution, review and approval"
         )
@@ -88,119 +186,27 @@ def inspect_desktop(
     acceptance_evidence: pathlib.Path | None = None,
 ) -> dict[str, Any]:
     root = root.resolve()
-    version = _text((root / "VERSION").read_text(encoding="utf-8"), "VERSION")
-    package = json.loads(
-        (root / "apps" / "desktop" / "package.json").read_text(encoding="utf-8")
+    version, package, tauri, windows, cargo = _desktop_inputs(root)
+    _verify_versions(version, package, tauri, cargo)
+    _verify_identity(tauri)
+    config = _merged_config(tauri, windows, release_config)
+    bundle, windows_bundle = _bundle_contract(config)
+    acceptance = (
+        inspect_acceptance_evidence(acceptance_evidence, version)
+        if acceptance_evidence is not None
+        else None
     )
-    tauri = json.loads(
-        (root / "apps" / "desktop" / "src-tauri" / "tauri.conf.json").read_text(
-            encoding="utf-8"
-        )
-    )
-    windows = json.loads(
-        (
-            root
-            / "apps"
-            / "desktop"
-            / "src-tauri"
-            / "tauri.windows.conf.json"
-        ).read_text(encoding="utf-8")
-    )
-    cargo = tomllib.loads(
-        (root / "apps" / "desktop" / "src-tauri" / "Cargo.toml").read_text(
-            encoding="utf-8"
-        )
-    )
-
-    package_version = _text(
-        _mapping(package, "package.json").get("version"), "package version"
-    )
-    tauri_version = _text(
-        _mapping(tauri, "tauri.conf.json").get("version"), "tauri version"
-    )
-    cargo_version = _text(
-        _mapping(_mapping(cargo, "Cargo.toml").get("package"), "Cargo package").get(
-            "version"
-        ),
-        "Cargo version",
-    )
-    versions = {
-        "VERSION": version,
-        "package.json": package_version,
-        "tauri.conf.json": tauri_version,
-        "Cargo.toml": cargo_version,
-    }
-    if len(set(versions.values())) != 1:
-        raise DesktopReleaseError(f"desktop version drift: {versions}")
-
-    tauri_root = _mapping(tauri, "tauri.conf.json")
-    if tauri_root.get("productName") != "Divan":
-        raise DesktopReleaseError("Tauri productName must be Divan")
-    if tauri_root.get("mainBinaryName") != "Divan":
-        raise DesktopReleaseError("Tauri mainBinaryName must be Divan")
-    if tauri_root.get("identifier") != "com.ugurpala.divan":
-        raise DesktopReleaseError("unexpected Tauri application identifier")
-
-    merged_config = _deep_merge(tauri_root, _mapping(windows, "tauri.windows.conf.json"))
-    if release_config is not None:
-        release_value = json.loads(release_config.read_text(encoding="utf-8"))
-        merged_config = _deep_merge(
-            merged_config,
-            _mapping(release_value, "desktop release config"),
-        )
-
-    bundle = _mapping(merged_config.get("bundle"), "Tauri bundle")
-    windows_bundle = _mapping(bundle.get("windows"), "Tauri Windows bundle")
-    nsis = _mapping(windows_bundle.get("nsis"), "Tauri NSIS bundle")
-    if nsis.get("installMode") != "currentUser":
-        raise DesktopReleaseError("NSIS installMode must remain currentUser")
-
-    external_bin = bundle.get("externalBin")
-    if not isinstance(external_bin, list) or "binaries/divan-core" not in external_bin:
-        raise DesktopReleaseError("Divan Core sidecar is missing from Windows bundle")
-
-    plugins = merged_config.get("plugins")
-    updater_config = None
-    if isinstance(plugins, Mapping):
-        candidate = plugins.get("updater")
-        if isinstance(candidate, Mapping):
-            updater_config = candidate
-    endpoints = updater_config.get("endpoints") if updater_config else None
-    updater_ready = bool(
-        bundle.get("createUpdaterArtifacts") is True
-        and updater_config
-        and isinstance(updater_config.get("pubkey"), str)
-        and updater_config.get("pubkey", "").strip()
-        and isinstance(endpoints, list)
-        and endpoints
-        and all(isinstance(item, str) and item.startswith("https://") for item in endpoints)
-    )
-    sign_command = windows_bundle.get("signCommand")
-    windows_signing = bool(
-        isinstance(sign_command, str)
-        and sign_command.strip()
-        and "%1" in sign_command
-        and "\n" not in sign_command
-        and "\r" not in sign_command
-    )
-
-    report: dict[str, Any] = {
+    return {
         "status": "PASS",
         "version": version,
         "product": "Divan",
         "main_binary": "Divan.exe",
         "installer": "nsis-current-user",
         "core_sidecar": True,
-        "updater_configured": updater_ready,
-        "windows_signing_configured": windows_signing,
-        "acceptance_evidence": None,
+        "updater_configured": _updater_ready(config, bundle),
+        "windows_signing_configured": _windows_signing_ready(windows_bundle),
+        "acceptance_evidence": acceptance,
     }
-    if acceptance_evidence is not None:
-        report["acceptance_evidence"] = inspect_acceptance_evidence(
-            acceptance_evidence,
-            version,
-        )
-    return report
 
 
 def require_stable_release(
