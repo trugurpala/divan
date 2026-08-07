@@ -200,7 +200,11 @@ class NativeExecutionEngine:
         if not isinstance(worktree, str) or not worktree.strip():
             raise ValueError("worktree is required")
         path = request.args.get("path")
-        argv = ["git", "-C", worktree, "diff", "--no-ext-diff", "--"]
+        staged = request.args.get("staged") is True
+        argv = ["git", "-C", worktree, "diff", "--no-ext-diff"]
+        if staged:
+            argv.append("--cached")
+        argv.append("--")
         if isinstance(path, str) and path.strip() and path != "*":
             argv.append(path)
         code, stdout, stderr = self.git_runner(tuple(argv), None, 30.0)
@@ -208,7 +212,7 @@ class NativeExecutionEngine:
             request,
             code == 0,
             code,
-            {"diff": stdout} if code == 0 else None,
+            {"diff": stdout, "staged": staged} if code == 0 else None,
             tuple(argv),
             request.mandate_id,
             stdout,
