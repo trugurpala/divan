@@ -63,16 +63,43 @@ class DesktopUpdateFeedTests(unittest.TestCase):
             self.assertEqual(json.loads(output.read_text(encoding="utf-8")), feed)
             self.assertEqual(json.loads(manifest.read_text(encoding="utf-8")), evidence)
 
-    def test_validate_feed_rejects_signature_or_url_mismatch(self) -> None:
-        feed = build_feed(
-            version="1.3.8",
-            installer_name="Divan_1.3.8_x64-setup.exe",
-            artifact_base_url="https://updates.example.test/divan/",
-            signature="expected-signature",
-            pub_date="2026-08-07T16:00:00Z",
-        )
+    def test_validate_feed_rejects_signature_url_or_version_mismatch(self) -> None:
+        def candidate() -> dict[str, object]:
+            return build_feed(
+                version="1.3.8",
+                installer_name="Divan_1.3.8_x64-setup.exe",
+                artifact_base_url="https://updates.example.test/divan/",
+                signature="expected-signature",
+                pub_date="2026-08-07T16:00:00Z",
+            )
+
+        feed = candidate()
         feed["platforms"]["windows-x86_64"]["signature"] = "tampered"
         with self.assertRaisesRegex(UpdateFeedError, "signature"):
+            validate_feed(
+                feed,
+                version="1.3.8",
+                installer_name="Divan_1.3.8_x64-setup.exe",
+                artifact_base_url="https://updates.example.test/divan/",
+                signature="expected-signature",
+            )
+
+        feed = candidate()
+        feed["platforms"]["windows-x86_64"]["url"] = (
+            "https://updates.example.test/divan/Divan_1.3.9_x64-setup.exe"
+        )
+        with self.assertRaisesRegex(UpdateFeedError, "URL"):
+            validate_feed(
+                feed,
+                version="1.3.8",
+                installer_name="Divan_1.3.8_x64-setup.exe",
+                artifact_base_url="https://updates.example.test/divan/",
+                signature="expected-signature",
+            )
+
+        feed = candidate()
+        feed["version"] = "1.3.9"
+        with self.assertRaisesRegex(UpdateFeedError, "version"):
             validate_feed(
                 feed,
                 version="1.3.8",
