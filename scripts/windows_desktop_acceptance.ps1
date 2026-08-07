@@ -71,8 +71,8 @@ try {
     if (-not $build -or $build.source_commit -notmatch '^[0-9a-f]{40}$' -or $build.source_tree -notmatch '^[0-9a-f]{40}$') {
         throw "Installed Divan Core does not expose release build provenance"
     }
-    if ($build.source_tree -ne $sourceTree) {
-        throw "Installed Divan Core source tree does not match the acceptance checkout"
+    if ($build.source_commit -ne $sourceCommit -or $build.source_tree -ne $sourceTree) {
+        throw "Installed Divan Core source identity does not match the acceptance checkout"
     }
 
     git init $projectRoot | Out-Null
@@ -136,8 +136,9 @@ try {
     if ($reviewer -eq $worker) {
         throw "Release acceptance requires worker and reviewer to be different agents"
     }
-    if (-not $review.task.metadata.review_snapshot.diff_sha256) {
-        throw "Review was not bound to a staged diff SHA-256"
+    $reviewDiffSha256 = $review.task.metadata.review_snapshot.diff_sha256
+    if ($reviewDiffSha256 -notmatch '^[0-9a-f]{64}$') {
+        throw "Review was not bound to a valid staged diff SHA-256"
     }
 
     $task = Invoke-Core @{ command = "task.approval.request"; task_id = $task.task_id }
@@ -145,10 +146,11 @@ try {
     if ($task.state -ne "merged") {
         throw "Guarded merge did not reach merged state: $($task.state)"
     }
-    if (-not $task.metadata.merge.diff_sha256 -or -not $task.metadata.merge.commit_sha) {
-        throw "Guarded merge metadata is incomplete"
+    $mergedCommitSha = $task.metadata.merge.commit_sha
+    if ($task.metadata.merge.diff_sha256 -notmatch '^[0-9a-f]{64}$' -or $mergedCommitSha -notmatch '^[0-9a-f]{40}$') {
+        throw "Guarded merge metadata is incomplete or malformed"
     }
-    if ($task.metadata.merge.diff_sha256 -ne $review.task.metadata.review_snapshot.diff_sha256) {
+    if ($task.metadata.merge.diff_sha256 -ne $reviewDiffSha256) {
         throw "Merged diff hash does not match the independently reviewed snapshot"
     }
 
@@ -173,8 +175,8 @@ try {
         }
     }
     foreach ($record in $evidence) {
-        if (-not $record.sha256) {
-            throw "Acceptance evidence contains a record without SHA-256"
+        if ($record.sha256 -notmatch '^[0-9a-f]{64}$') {
+            throw "Acceptance evidence contains a record without a valid SHA-256"
         }
     }
 
@@ -197,13 +199,13 @@ try {
         ff_only_merge = $true
         task_state = $task.state
         evidence_kinds = $kinds
-        review_diff_sha256 = $review.task.metadata.review_snapshot.diff_sha256
-        merged_commit_sha = $task.metadata.merge.commit_sha
+        review_diff_sha256 = $reviewDiffSha256
+        merged_commit_sha = $mergedCommitSha
     }
     $outputDir = Split-Path -Parent $Output
     New-Item -ItemType Directory -Path $outputDir -Force | Out-Null
     $result | ConvertTo-Json -Depth 10 | Set-Content -Path $Output -Encoding utf8
-    Write-Host "PASS: source-bound cross-agent Windows acceptance evidence written to $Output"
+    Write-Host "PASS: exact-source cross-agent Windows acceptance evidence written to $Output"
 }
 finally {
     Remove-Item Env:DIVAN_DATA_DIR -ErrorAction SilentlyContinue
