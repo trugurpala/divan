@@ -8,9 +8,11 @@ import pathlib
 import tomllib
 from typing import Any, Mapping
 
-from desktop_release_evidence import DesktopReleaseError
-from desktop_release_evidence import inspect_acceptance_evidence
-from desktop_release_evidence import inspect_updater_e2e_evidence
+from desktop_release_evidence import (
+    DesktopReleaseError,
+    inspect_acceptance_evidence,
+    inspect_updater_e2e_evidence,
+)
 from desktop_release_evidence import mapping as _mapping
 from desktop_release_evidence import text as _text
 
