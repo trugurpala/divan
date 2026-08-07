@@ -179,6 +179,7 @@
         "providers",
         "project_readiness",
         "plugin_contract",
+        "plugin_manifest_validation",
         "plugin_discovery",
         "plugin_approval",
         "plugin_sdk"
