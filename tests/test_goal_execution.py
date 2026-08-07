@@ -11,7 +11,7 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime import goal_execution, goals, receipts, seyir_state
+from divan_runtime import goal_execution, goals, receipts, seyir_state  # noqa: E402
 
 
 class GoalExecutionPreparationTests(unittest.TestCase):
