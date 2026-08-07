@@ -21,11 +21,7 @@ from .desktop_protocol_support import (
 )
 from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
-from .knowledge_desktop import (
-    knowledge_analytics_payload,
-    knowledge_search_payload,
-    project_memory_payload,
-)
+from .knowledge_protocol import KNOWLEDGE_HANDLERS
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
@@ -131,35 +127,6 @@ def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
         "project_root",
         "DESKTOP_PROJECT_ROOT_INVALID",
     )
-
-
-def _handle_knowledge_analytics(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del payload, router
-    return _ok(knowledge_analytics_payload())
-
-
-def _handle_knowledge_search(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    query = _optional_string(payload, "query", "DESKTOP_KNOWLEDGE_QUERY_INVALID") or ""
-    return _ok(knowledge_search_payload(query))
-
-
-def _handle_knowledge_project(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    project_root = _resolve_project_root(payload)
-    if project_root is None:
-        raise ProtocolValidationError(
-            "DESKTOP_PROJECT_ROOT_REQUIRED",
-            "project_id or project_root is required",
-        )
-    intent = _optional_string(payload, "intent", "DESKTOP_KNOWLEDGE_INTENT_INVALID") or ""
-    return _ok(project_memory_payload(project_root, intent=intent))
 
 
 def _handle_task_list(
@@ -380,9 +347,7 @@ _HANDLERS: dict[str, Handler] = {
     "readiness": _handle_readiness,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
-    "knowledge.analytics": _handle_knowledge_analytics,
-    "knowledge.search": _handle_knowledge_search,
-    "knowledge.project": _handle_knowledge_project,
+    **KNOWLEDGE_HANDLERS,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,
