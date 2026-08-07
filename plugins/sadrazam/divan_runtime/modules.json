@@ -177,7 +177,11 @@
       "tr": "Sağlayıcılar",
       "python_modules": [
         "providers",
-        "project_readiness"
+        "project_readiness",
+        "plugin_contract",
+        "plugin_discovery",
+        "plugin_approval",
+        "plugin_sdk"
       ],
       "capabilities": [
         "local",
@@ -186,7 +190,11 @@
         "vercel",
         "local_tool_discovery",
         "windows_installed_app_discovery",
-        "subscription_auth_detection"
+        "subscription_auth_detection",
+        "plugin_manifest_validation",
+        "bounded_plugin_discovery",
+        "hash_bound_plugin_approval",
+        "sidecar_plugin_sdk"
       ],
       "depends_on": [
         "kernel",
