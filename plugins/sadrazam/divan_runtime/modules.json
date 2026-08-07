@@ -244,6 +244,7 @@
         "desktop_api",
         "desktop_protocol_support",
         "knowledge_desktop",
+        "knowledge_protocol",
         "desktop_protocol"
       ],
       "capabilities": [
