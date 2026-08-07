@@ -41,6 +41,13 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("DIVAN_ACCEPTANCE_INPUT: ${{ inputs.acceptance_evidence }}", self.text)
         self.assertIn("$evidence = $env:DIVAN_ACCEPTANCE_INPUT", self.text)
 
+    def test_acceptance_is_bound_to_exact_release_source_tree(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        self.assertIn("git rev-parse 'HEAD^{tree}'", signed)
+        self.assertIn("DIVAN_SOURCE_TREE=$sourceTree", signed)
+        self.assertIn("--source-tree $env:DIVAN_SOURCE_TREE", signed)
+        self.assertIn("--acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE", signed)
+
     def test_all_actions_are_immutable_sha_pinned(self) -> None:
         mutable = []
         for number, line in enumerate(self.text.splitlines(), 1):
