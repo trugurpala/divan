@@ -35,6 +35,14 @@ class OrcaEngineTests(unittest.TestCase):
         self.assertEqual(result.payload, {"ok": True})
         self.assertEqual(runner.calls[0], ("orca", "status", "--json"))
 
+    def test_worktree_list_uses_current_ps_command(self) -> None:
+        runner = FakeRunner()
+        OrcaEngine(runner=runner).worktree_list("id:repo-1")
+        self.assertEqual(
+            runner.calls[0],
+            ("orca", "worktree", "ps", "--repo", "id:repo-1", "--json"),
+        )
+
     def test_mutation_requires_mandate(self) -> None:
         runner = FakeRunner()
         engine = OrcaEngine(runner=runner)
@@ -56,6 +64,16 @@ class OrcaEngineTests(unittest.TestCase):
         self.assertNotIn("secret task context", result.argv)
         self.assertIn("<redacted-prompt>", result.argv)
         self.assertEqual(result.mandate_id, "mandate-123")
+
+    def test_worktree_create_rejects_unknown_setup_mode_before_runner(self) -> None:
+        runner = FakeRunner()
+        with self.assertRaisesRegex(ValueError, "setup must be run, skip, or inherit"):
+            OrcaEngine(runner=runner).worktree_create(
+                name="fix-login",
+                setup="unsafe-mode",
+                authority=ExecutionAuthority(execute=True, mandate_id="mandate-123"),
+            )
+        self.assertEqual(runner.calls, [])
 
 
 class DecisionTaxonomyTests(unittest.TestCase):
