@@ -13,7 +13,9 @@ from .execution_contract import ExecutionAction, ExecutionReceipt, ExecutionRequ
 
 ENGINE_ID = "native"
 _SLUG_RE = re.compile(r"[^a-zA-Z0-9._-]+")
-AgentRunner = Callable[[Sequence[str], Path, float], tuple[int, str, str]]
+AgentRunner = Callable[
+    [Sequence[str], Path, float, str | None], tuple[int, str, str]
+]
 GitRunner = Callable[[Sequence[str], Path | None, float], tuple[int, str, str]]
 
 
@@ -24,9 +26,9 @@ class AgentProfile:
     subscription_supported: bool
     timeout_seconds: float = 3600.0
 
-    def argv(self, binary: str, prompt: str) -> tuple[str, ...]:
+    def invocation(self, binary: str, prompt: str) -> tuple[tuple[str, ...], str | None]:
         if self.id == "codex":
-            return (binary, "exec", "--json", "--ephemeral", prompt)
+            return (binary, "exec", "--json", "--ephemeral", "-"), prompt
         if self.id == "claude":
             return (
                 binary,
@@ -35,12 +37,11 @@ class AgentProfile:
                 "json",
                 "--max-turns",
                 "50",
-                prompt,
-            )
+            ), prompt
         if self.id == "opencode":
-            return (binary, "run", prompt)
+            return (binary, "run", prompt), None
         if self.id == "cursor-agent":
-            return (binary, "-p", prompt, "--output-format", "json")
+            return (binary, "-p", prompt, "--output-format", "json"), None
         raise ValueError(f"unsupported native agent: {self.id}")
 
 
@@ -165,11 +166,12 @@ class NativeExecutionEngine:
             )
 
         profile = _profile(agent)
-        agent_argv = profile.argv(binary, prompt)
+        agent_argv, stdin_text = profile.invocation(binary, prompt)
         agent_code, agent_stdout, agent_stderr = self.agent_runner(
             agent_argv,
             destination,
             profile.timeout_seconds,
+            stdin_text,
         )
         evidence_argv = tuple(
             "<redacted-prompt>" if part == prompt else part for part in agent_argv
@@ -363,5 +365,25 @@ def _run_in_directory(
     argv: Sequence[str],
     cwd: Path,
     timeout: float,
+    stdin_text: str | None,
 ) -> tuple[int, str, str]:
-    return _run(argv, cwd, timeout)
+    try:
+        completed = subprocess.run(
+            list(argv),
+            cwd=cwd,
+            input=stdin_text,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+            check=False,
+            shell=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        stdout = _timeout_text(error.stdout)
+        stderr = _timeout_text(error.stderr) or "command timed out"
+        return 124, stdout, stderr
+    except OSError as error:
+        return 127, "", str(error)
+    return completed.returncode, completed.stdout, completed.stderr
