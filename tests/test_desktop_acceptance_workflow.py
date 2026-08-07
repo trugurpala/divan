@@ -7,6 +7,7 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "desktop-acceptance.yml"
 ACCEPTANCE_SCRIPT = ROOT / "scripts" / "windows_desktop_acceptance.ps1"
+PREFLIGHT_SCRIPT = ROOT / "scripts" / "desktop_agent_preflight.py"
 
 
 class DesktopAcceptanceWorkflowTests(unittest.TestCase):
@@ -23,7 +24,7 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         )
         self.assertIn("environment: desktop-acceptance", self.text)
 
-    def test_acceptance_requires_exact_source_sha_pin(self) -> None:
+    def test_acceptance_requires_exact_current_main_source_sha_pin(self) -> None:
         self.assertIn("source_sha:", self.text)
         self.assertIn("required: true", self.text)
         self.assertIn("DIVAN_EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}", self.text)
@@ -31,7 +32,7 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("source_sha must be an exact 40-character Git commit SHA", self.text)
         self.assertIn("Acceptance checkout does not match the workflow event source SHA", self.text)
         self.assertIn(
-            "Requested acceptance source SHA does not match the exact checked-out main commit",
+            "Requested acceptance source SHA does not match the exact current main commit",
             self.text,
         )
 
@@ -39,8 +40,16 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("divan-desktop-acceptance", self.text)
         self.assertNotIn("runs-on: [self-hosted, windows, x64]\n", self.text)
 
-    def test_acceptance_runner_must_have_both_real_agents(self) -> None:
-        self.assertIn('foreach ($agent in @("codex", "claude"))', self.text)
+    def test_acceptance_fails_fast_on_both_real_agent_sessions(self) -> None:
+        preflight = PREFLIGHT_SCRIPT.read_text(encoding="utf-8")
+        step = "Verify authenticated Codex and Claude sessions before build"
+        self.assertIn(step, self.text)
+        self.assertIn("python scripts/desktop_agent_preflight.py", self.text)
+        self.assertLess(self.text.index(step), self.text.index("Build exact-source NSIS candidate"))
+        self.assertIn('shutil.which("codex")', preflight)
+        self.assertIn('shutil.which("claude")', preflight)
+        self.assertIn('(codex, "login", "status")', preflight)
+        self.assertIn('"--permission-mode",\n            "plan"', preflight)
         self.assertIn("scripts/windows_desktop_acceptance.ps1", self.text)
         self.assertIn("--source-commit $sourceCommit", self.text)
         self.assertIn("--source-tree $sourceTree", self.text)
@@ -59,10 +68,13 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("retention-days: 30", self.text)
 
     def test_no_release_or_api_secrets_are_exposed_to_acceptance_job(self) -> None:
+        preflight = PREFLIGHT_SCRIPT.read_text(encoding="utf-8")
         self.assertNotIn("secrets.", self.text)
         self.assertNotIn("TAURI_SIGNING_PRIVATE_KEY", self.text)
         self.assertNotIn("OPENAI_API_KEY", self.text)
         self.assertNotIn("ANTHROPIC_API_KEY", self.text)
+        self.assertNotIn("OPENAI_API_KEY", preflight)
+        self.assertNotIn("ANTHROPIC_API_KEY", preflight)
 
     def test_all_actions_are_immutable_sha_pinned(self) -> None:
         mutable = []
