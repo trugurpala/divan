@@ -96,6 +96,19 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("if !approved", main)
         self.assertNotIn('invoke<UpdateStatus>("check_for_update")\n      .then', app)
 
+    def test_desktop_release_ui_fails_closed_on_unknown_or_stale_update_state(self) -> None:
+        app = APP.read_text(encoding="utf-8")
+        check_start = app.index('run("update-check"')
+        check_end = app.index("const installUpdate", check_start)
+        check_block = app[check_start:check_end]
+        self.assertLess(
+            check_block.index("setUpdateStatus(null)"),
+            check_block.index('invoke<UpdateStatus>("check_for_update")'),
+        )
+        self.assertIn("if (shellCaps === null)", app)
+        self.assertIn("Build kimliği doğrulanmadan beta veya stable kanal varsayımı yapılmaz", app)
+        self.assertIn("setUpdateStatus({ available: false, version: null })", app)
+
     def test_desktop_operator_can_choose_replaceable_execution_engine(self) -> None:
         app = APP.read_text(encoding="utf-8")
         self.assertIn("const [engine, setEngine]", app)
