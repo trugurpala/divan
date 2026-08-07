@@ -38,6 +38,29 @@ class FakeEngine:
         )
 
 
+class FlakyEngine:
+    engine_id = "native"
+
+    def __init__(self) -> None:
+        self.names: list[str] = []
+
+    def execute(self, request):
+        name = str(request.args.get("name"))
+        self.names.append(name)
+        ok = len(self.names) > 1
+        return ExecutionReceipt(
+            engine="native",
+            action=request.action,
+            ok=ok,
+            exit_code=0 if ok else 1,
+            payload={"worktree": f"C:/worktrees/{name}", "agent": "codex"},
+            stdout="",
+            stderr="" if ok else "worker failed",
+            argv=("codex", "exec", "<redacted-prompt>"),
+            mandate_id=request.mandate_id,
+        )
+
+
 class FakeReviewer:
     def review(self, *, task_title: str, diff: str, worker_agent: str | None = None):
         self.last_task_title = task_title
@@ -117,6 +140,7 @@ class OrchestratorTests(unittest.TestCase):
             )
             self.assertEqual(task.state, TaskState.RUNNING)
             self.assertEqual(task.metadata["execution"]["engine"], "native")
+            self.assertEqual(task.metadata["execution"]["attempt"], 1)
 
             task, decision = orchestrator.review_automated(task)
             self.assertEqual(task.state, TaskState.PASSED)
@@ -130,8 +154,14 @@ class OrchestratorTests(unittest.TestCase):
             task = orchestrator.request_approval(task)
             task = orchestrator.approve_merge(task, approved=True)
             self.assertEqual(task.state, TaskState.MERGED)
-            self.assertEqual((project / "app.txt").read_text(encoding="utf-8"), "after\n")
-            self.assertEqual(_git(project, "rev-parse", "HEAD"), task.metadata["merge"]["commit_sha"])
+            self.assertEqual(
+                (project / "app.txt").read_text(encoding="utf-8"),
+                "after\n",
+            )
+            self.assertEqual(
+                _git(project, "rev-parse", "HEAD"),
+                task.metadata["merge"]["commit_sha"],
+            )
 
             task = orchestrator.release(task)
             self.assertEqual(task.state, TaskState.RELEASED)
@@ -142,6 +172,42 @@ class OrchestratorTests(unittest.TestCase):
                 ["execution", "review", "approval", "release"],
             )
             self.assertNotIn("secret", str(evidence))
+
+    def test_retry_uses_fresh_worktree_name_and_preserves_attempt_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            engine = FlakyEngine()
+            orchestrator = DivanOrchestrator(
+                ExecutionRouter([engine], default_engine="native"),
+                state_root=root / "tasks",
+                evidence_root=root / "evidence",
+            )
+            task = orchestrator.create_task(
+                task_id="DIV-RETRY",
+                title="Retry worker",
+                engine_id="native",
+                mandate_id="m-retry",
+            )
+            task = orchestrator.plan(task)
+            task = orchestrator.start(
+                task,
+                worktree_name="DIV-RETRY",
+                agent="codex",
+            )
+            self.assertEqual(task.state, TaskState.RETRY)
+
+            task = orchestrator.start(
+                task,
+                worktree_name="DIV-RETRY",
+                agent="codex",
+            )
+            self.assertEqual(task.state, TaskState.RUNNING)
+            self.assertEqual(engine.names, ["DIV-RETRY", "DIV-RETRY-attempt-2"])
+            self.assertEqual(task.metadata["execution"]["attempt"], 2)
+            self.assertEqual(
+                [row["attempt"] for row in task.metadata["execution_history"]],
+                [1, 2],
+            )
 
     def test_approval_requires_persisted_pass_review(self):
         with tempfile.TemporaryDirectory() as directory:
