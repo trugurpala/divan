@@ -12,6 +12,7 @@ from .knowledge_contract import (
     KnowledgeOrigin,
     KnowledgeStatus,
     ObservationOutcome,
+    validate_optional_sha256,
 )
 
 _SCHEMA = """
@@ -114,6 +115,10 @@ class KnowledgeStore:
         evidence_sha256: str | None = None,
         note: str = "",
     ) -> None:
+        project = project_id.strip()
+        if not project:
+            raise ValueError("knowledge observation project_id is required")
+        validate_optional_sha256(evidence_sha256, field="observation evidence_sha256")
         self.get(item_id)
         with self._connect() as connection:
             connection.execute(
@@ -124,7 +129,7 @@ class KnowledgeStore:
                 """,
                 (
                     item_id,
-                    project_id.strip(),
+                    project,
                     outcome.value,
                     evidence_sha256,
                     note.strip()[:1000],
