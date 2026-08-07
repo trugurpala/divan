@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from .desktop_api import DesktopApi
 from .desktop_state import evidence_root, task_root
-from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
@@ -87,27 +86,23 @@ def _require_router(router: ExecutionRouter | None) -> ExecutionRouter:
 
 
 def _recommended_engine(engines: list[str]) -> str | None:
-    if "orca" in engines:
-        return "orca"
-    if "native" in engines:
-        return "native"
+    for engine_id in ("orca", "native"):
+        if engine_id in engines:
+            return engine_id
     return engines[0] if engines else None
 
 
 def _handle_capabilities(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del payload
-    api = DesktopApi(router or ExecutionRouter([]))
-    value = api.capabilities()
+    value = DesktopApi(router or ExecutionRouter([])).capabilities()
     value["commands"] = tuple(_HANDLERS)
     return _ok(value)
 
 
 def _handle_readiness(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del payload
     readiness = discover_tools()
@@ -131,16 +126,14 @@ def _handle_readiness(
 
 
 def _handle_project_list(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del payload, router
     return _ok([asdict(item) for item in ProjectRegistry().list()])
 
 
 def _handle_project_register(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del router
     root = _required_string(payload, "root", "DESKTOP_PROJECT_ROOT_REQUIRED")
@@ -148,27 +141,21 @@ def _handle_project_register(
 
 
 def _handle_task_list(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del payload, router
     return _ok(DesktopApi.serialize_tasks(_tasks().list()))
 
 
 def _handle_task_get(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del router
     return _ok(_load_task(payload).to_dict())
 
 
 def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
-    project_id = _optional_string(
-        payload,
-        "project_id",
-        "DESKTOP_PROJECT_ID_INVALID",
-    )
+    project_id = _optional_string(payload, "project_id", "DESKTOP_PROJECT_ID_INVALID")
     if project_id:
         return ProjectRegistry().get(project_id).root
     return _optional_string(
@@ -179,8 +166,7 @@ def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
 
 
 def _handle_task_create(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     del router
     title = _required_string(payload, "title", "DESKTOP_TASK_TITLE_REQUIRED")
@@ -205,8 +191,7 @@ def _handle_task_create(
 
 
 def _handle_task_plan(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
     task = _load_task(payload)
@@ -231,18 +216,16 @@ def _execution_task(payload: Mapping[str, Any], task: DivanTask) -> DivanTask:
 
 
 def _handle_task_start(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
     task = _execution_task(payload, _load_task(payload))
     agent = _optional_string(payload, "agent", "DESKTOP_AGENT_INVALID")
     prompt = _optional_string(payload, "prompt", "DESKTOP_TASK_PROMPT_INVALID")
-    worktree_name = _optional_string(
-        payload,
-        "worktree_name",
-        "DESKTOP_WORKTREE_NAME_INVALID",
-    ) or task.task_id
+    worktree_name = (
+        _optional_string(payload, "worktree_name", "DESKTOP_WORKTREE_NAME_INVALID")
+        or task.task_id
+    )
     _tasks().save(task)
     started = _orchestrator(active_router).start(
         task,
@@ -253,60 +236,19 @@ def _handle_task_start(
     return _ok(started.to_dict())
 
 
-def _execution_worktree(task: DivanTask) -> str | None:
-    execution = task.metadata.get("execution")
-    if not isinstance(execution, Mapping):
-        return None
-    receipt_payload = execution.get("payload")
-    if not isinstance(receipt_payload, Mapping):
-        return None
-    worktree = receipt_payload.get("worktree")
-    if not isinstance(worktree, str) or not worktree.strip():
-        return None
-    return worktree.strip()
-
-
 def _handle_task_diff(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
     task = _load_task(payload)
-    requested_worktree = _optional_string(
-        payload,
-        "worktree",
-        "DESKTOP_WORKTREE_INVALID",
-    )
-    worktree = requested_worktree or _execution_worktree(task)
-    if not worktree:
+    worktree = _optional_string(payload, "worktree", "DESKTOP_WORKTREE_INVALID")
+    if worktree is None and DesktopApi.execution_worktree(task) is None:
         raise ProtocolValidationError(
             "DESKTOP_TASK_WORKTREE_UNAVAILABLE",
             "task has no execution worktree yet",
         )
     path = _optional_string(payload, "path", "DESKTOP_DIFF_PATH_INVALID") or "*"
-    receipt = active_router.execute(
-        ExecutionRequest(
-            action=ExecutionAction.FILE_DIFF,
-            project_root=task.project_root,
-            mandate_id=task.mandate_id,
-            args={"worktree": worktree, "path": path},
-        ),
-        task.engine_id,
-    )
-    diff = ""
-    if isinstance(receipt.payload, Mapping):
-        value = receipt.payload.get("diff")
-        if isinstance(value, str):
-            diff = value
-    return _ok(
-        {
-            "engine": receipt.engine,
-            "ok": receipt.ok,
-            "exit_code": receipt.exit_code,
-            "path": path,
-            "diff": diff,
-        }
-    )
+    return _ok(DesktopApi(active_router).task_diff(task, worktree=worktree, path=path))
 
 
 def _parse_review_checks(payload: Mapping[str, Any]) -> list[CheckResult]:
@@ -342,8 +284,7 @@ def _parse_review_checks(payload: Mapping[str, Any]) -> list[CheckResult]:
 
 
 def _handle_task_review(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
     updated, decision = _orchestrator(active_router).review(
@@ -363,16 +304,15 @@ def _handle_task_review(
 
 
 def _handle_approval_request(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
-    return _ok(_orchestrator(active_router).request_approval(_load_task(payload)).to_dict())
+    task = _orchestrator(active_router).request_approval(_load_task(payload))
+    return _ok(task.to_dict())
 
 
 def _handle_task_approve(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
     if payload.get("approved") is not True:
@@ -385,16 +325,14 @@ def _handle_task_approve(
 
 
 def _handle_task_release(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
-    active_router = _require_router(router)
-    return _ok(_orchestrator(active_router).release(_load_task(payload)).to_dict())
+    task = _orchestrator(_require_router(router)).release(_load_task(payload))
+    return _ok(task.to_dict())
 
 
 def _handle_evidence_list(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     task_id = _task_id(payload)
     active_router = router or ExecutionRouter([])
@@ -402,12 +340,10 @@ def _handle_evidence_list(
 
 
 def _handle_engine_status(
-    payload: Mapping[str, Any],
-    router: ExecutionRouter | None,
+    payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
-    active_router = _require_router(router)
     engine_id = _optional_string(payload, "engine_id", "DESKTOP_ENGINE_ID_INVALID")
-    return _ok(DesktopApi(active_router).engine_status(engine_id))
+    return _ok(DesktopApi(_require_router(router)).engine_status(engine_id))
 
 
 _HANDLERS: dict[str, Handler] = {
