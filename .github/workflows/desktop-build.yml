@@ -18,9 +18,11 @@ on:
       - "tests/test_orchestrator.py"
       - "tests/test_reviewer_runner.py"
       - "tests/test_git_guard.py"
+      - "tests/test_desktop_acceptance_workflow.py"
       - "tests/test_desktop_release_guard.py"
       - "tests/test_prepare_desktop_release_config.py"
       - "tests/test_desktop_release_workflow.py"
+      - ".github/workflows/desktop-acceptance.yml"
       - ".github/workflows/desktop-build.yml"
       - ".github/workflows/desktop-release.yml"
   workflow_dispatch:
@@ -78,6 +80,7 @@ jobs:
           tests.test_review_gate
           tests.test_reviewer_runner
           tests.test_git_guard
+          tests.test_desktop_acceptance_workflow
           tests.test_desktop_release_guard
           tests.test_prepare_desktop_release_config
           tests.test_desktop_release_workflow
@@ -130,13 +133,11 @@ jobs:
           if (-not $payload.ok -or $payload.result.product -ne "Divan") {
             throw "Installed Divan Core sidecar returned an invalid capabilities response"
           }
+          $expectedCommit = (& git rev-parse HEAD).Trim()
           $expectedTree = (& git rev-parse 'HEAD^{tree}').Trim()
           $provenance = $payload.result.build_provenance
-          if (-not $provenance -or $provenance.source_tree -ne $expectedTree) {
-            throw "Installed Divan Core provenance does not match the checked-out source tree"
-          }
-          if ($provenance.source_commit -notmatch '^[0-9a-f]{40}$') {
-            throw "Installed Divan Core source commit provenance is invalid"
+          if (-not $provenance -or $provenance.source_commit -ne $expectedCommit -or $provenance.source_tree -ne $expectedTree) {
+            throw "Installed Divan Core provenance does not match the exact checked-out source identity"
           }
 
           $app = Start-Process -FilePath $appExe -PassThru
