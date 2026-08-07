@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from .desktop_state import worktree_root
+from .executable_locator import locate_executable
 from .execution_contract import ExecutionAction, ExecutionReceipt, ExecutionRequest
 
 ENGINE_ID = "native"
@@ -218,11 +219,9 @@ class NativeExecutionEngine:
 def _discover_agents(which: Callable[[str], str | None]) -> dict[str, str]:
     found: dict[str, str] = {}
     for profile in AGENT_PROFILES:
-        for alias in profile.aliases:
-            path = which(alias)
-            if path:
-                found[profile.id] = path
-                break
+        path = locate_executable(profile.aliases, which=which)
+        if path:
+            found[profile.id] = path
     return found
 
 
