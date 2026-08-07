@@ -18,13 +18,31 @@ class FakeOrca:
     def __init__(self) -> None:
         self.calls = []
 
-    def status(self, cwd=None):
-        self.calls.append(("status", cwd))
-        return OrcaResult(True, 0, {"ready": True}, "", "", ("orca", "status", "--json"), None)
+    def status(self):
+        self.calls.append(("status",))
+        return OrcaResult(
+            action="status",
+            argv=("orca", "status", "--json"),
+            mutating=False,
+            mandate_id=None,
+            exit_code=0,
+            payload={"ready": True},
+            stdout="",
+            stderr="",
+        )
 
     def worktree_create(self, **kwargs):
         self.calls.append(("worktree_create", kwargs))
-        return OrcaResult(True, 0, {"created": True}, "", "", ("orca", "worktree", "create"), kwargs["authority"].mandate_id)
+        return OrcaResult(
+            action="worktree.create",
+            argv=("orca", "worktree", "create"),
+            mutating=True,
+            mandate_id=kwargs["authority"].mandate_id,
+            exit_code=0,
+            payload={"created": True},
+            stdout="",
+            stderr="",
+        )
 
 
 class OrcaExecutionAdapterTests(unittest.TestCase):
@@ -34,7 +52,7 @@ class OrcaExecutionAdapterTests(unittest.TestCase):
         receipt = adapter.execute(ExecutionRequest(ExecutionAction.STATUS, project_root="C:/repo"))
         self.assertEqual(receipt.engine, "orca")
         self.assertTrue(receipt.ok)
-        self.assertEqual(fake.calls[0], ("status", "C:/repo"))
+        self.assertEqual(fake.calls[0], ("status",))
 
     def test_worktree_create_forwards_mandate(self):
         fake = FakeOrca()
