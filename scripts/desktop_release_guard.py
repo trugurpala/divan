@@ -13,6 +13,7 @@ from typing import Any, Mapping
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 _GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+_SEMVER_CORE_RE = re.compile(r"^(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?$")
 
 
 class DesktopReleaseError(ValueError):
@@ -43,6 +44,14 @@ def _sha256(value: object, label: str) -> str:
     if not _SHA256_RE.fullmatch(text):
         raise DesktopReleaseError(f"{label} must be a full 64-character SHA-256")
     return text
+
+
+def _semver_core(value: object, label: str) -> tuple[int, int, int]:
+    text = _text(value, label)
+    match = _SEMVER_CORE_RE.fullmatch(text)
+    if match is None:
+        raise DesktopReleaseError(f"{label} must be a semantic version")
+    return tuple(int(part) for part in match.groups())
 
 
 def _deep_merge(base: Mapping[str, Any], overlay: Mapping[str, Any]) -> dict[str, Any]:
@@ -241,11 +250,97 @@ def inspect_acceptance_evidence(
     }
 
 
+def inspect_updater_e2e_evidence(
+    path: pathlib.Path,
+    expected_version: str,
+    *,
+    expected_source_commit: str | None = None,
+    expected_source_tree: str | None = None,
+) -> dict[str, Any]:
+    raw = path.read_bytes()
+    value = json.loads(raw.decode("utf-8-sig"))
+    evidence = _mapping(value, "signed updater E2E evidence")
+    required = {
+        "schema_version": 1,
+        "status": "pass",
+        "valid_signed_upgrade": True,
+        "tampered_signature_rejected": True,
+        "forward_signed_recovery": True,
+        "downgrade_not_offered": True,
+        "signatures_mandatory": True,
+        "test_only_insecure_transport": True,
+        "production_transport_policy": "https-only",
+    }
+    for key, expected in required.items():
+        if evidence.get(key) != expected:
+            raise DesktopReleaseError(
+                f"signed updater E2E evidence requires {key}={expected!r}"
+            )
+
+    source_commit = _git_sha(evidence.get("source_commit"), "updater E2E source_commit")
+    source_tree = _git_sha(evidence.get("source_tree"), "updater E2E source_tree")
+    baseline_version = _text(evidence.get("baseline_version"), "updater E2E baseline_version")
+    upgraded_version = _text(evidence.get("upgraded_version"), "updater E2E upgraded_version")
+    recovered_version = _text(evidence.get("recovered_version"), "updater E2E recovered_version")
+    if baseline_version != expected_version:
+        raise DesktopReleaseError(
+            "signed updater E2E baseline version does not match the release version"
+        )
+    baseline_core = _semver_core(baseline_version, "updater E2E baseline_version")
+    upgraded_core = _semver_core(upgraded_version, "updater E2E upgraded_version")
+    recovered_core = _semver_core(recovered_version, "updater E2E recovered_version")
+    if not baseline_core < upgraded_core < recovered_core:
+        raise DesktopReleaseError(
+            "signed updater E2E versions must prove monotonic N -> N+1 -> N+2 recovery"
+        )
+
+    expected_commit = (
+        _git_sha(expected_source_commit, "expected source commit")
+        if expected_source_commit is not None
+        else None
+    )
+    expected_tree = (
+        _git_sha(expected_source_tree, "expected source tree")
+        if expected_source_tree is not None
+        else None
+    )
+    if expected_commit is not None and source_commit != expected_commit:
+        raise DesktopReleaseError("signed updater E2E evidence does not match the release source commit")
+    if expected_tree is not None and source_tree != expected_tree:
+        raise DesktopReleaseError("signed updater E2E evidence does not match the release source tree")
+
+    digest_fields = (
+        "baseline_installer_sha256",
+        "upgrade_installer_sha256",
+        "recovery_installer_sha256",
+        "baseline_signature_sha256",
+        "upgrade_signature_sha256",
+        "recovery_signature_sha256",
+    )
+    digests = {
+        field: _sha256(evidence.get(field), f"updater E2E {field}")
+        for field in digest_fields
+    }
+    source_bound = expected_commit is not None and expected_tree is not None
+    return {
+        "verified": True,
+        "source_bound": source_bound,
+        "sha256": hashlib.sha256(raw).hexdigest(),
+        "source_commit": source_commit,
+        "source_tree": source_tree,
+        "baseline_version": baseline_version,
+        "upgraded_version": upgraded_version,
+        "recovered_version": recovered_version,
+        "digests": digests,
+    }
+
+
 def inspect_desktop(
     root: pathlib.Path = ROOT,
     *,
     release_config: pathlib.Path | None = None,
     acceptance_evidence: pathlib.Path | None = None,
+    updater_e2e_evidence: pathlib.Path | None = None,
     expected_source_commit: str | None = None,
     expected_source_tree: str | None = None,
 ) -> dict[str, Any]:
@@ -265,6 +360,16 @@ def inspect_desktop(
         if acceptance_evidence is not None
         else None
     )
+    updater_e2e = (
+        inspect_updater_e2e_evidence(
+            updater_e2e_evidence,
+            version,
+            expected_source_commit=expected_source_commit,
+            expected_source_tree=expected_source_tree,
+        )
+        if updater_e2e_evidence is not None
+        else None
+    )
     return {
         "status": "PASS",
         "version": version,
@@ -275,6 +380,7 @@ def inspect_desktop(
         "updater_configured": _updater_ready(config, bundle),
         "windows_signing_configured": _windows_signing_ready(windows_bundle),
         "acceptance_evidence": acceptance,
+        "updater_e2e_evidence": updater_e2e,
     }
 
 
@@ -290,6 +396,11 @@ def require_stable_release(
         blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing")
     if report.get("windows_signing_configured") is not True:
         blockers.append("Windows Authenticode signCommand is not configured")
+    updater_e2e = report.get("updater_e2e_evidence")
+    if not isinstance(updater_e2e, Mapping) or updater_e2e.get("verified") is not True:
+        blockers.append("signed updater E2E evidence is missing")
+    elif updater_e2e.get("source_bound") is not True:
+        blockers.append("signed updater E2E evidence is not bound to the exact release source identity")
     acceptance = report.get("acceptance_evidence")
     if not isinstance(acceptance, Mapping) or acceptance.get("accepted") is not True:
         blockers.append("real-user Windows acceptance evidence is missing")
@@ -305,6 +416,7 @@ def main() -> int:
     parser.add_argument("--root", type=pathlib.Path, default=ROOT)
     parser.add_argument("--release-config", type=pathlib.Path)
     parser.add_argument("--acceptance-evidence", type=pathlib.Path)
+    parser.add_argument("--updater-e2e-evidence", type=pathlib.Path)
     parser.add_argument("--source-commit")
     parser.add_argument("--source-tree")
     parser.add_argument("--stable-release", action="store_true")
@@ -314,6 +426,7 @@ def main() -> int:
             args.root,
             release_config=args.release_config,
             acceptance_evidence=args.acceptance_evidence,
+            updater_e2e_evidence=args.updater_e2e_evidence,
             expected_source_commit=args.source_commit,
             expected_source_tree=args.source_tree,
         )
