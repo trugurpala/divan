@@ -103,8 +103,10 @@ jobs:
           fi
 
           branch_policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies")"
-          if [[ "$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$branch_policies")" -ne 1 ]]; then
-            echo "desktop-acceptance must allow exactly the main branch policy" >&2
+          total_policy_count="$(jq '.branch_policies | length' <<<"$branch_policies")"
+          main_policy_count="$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$branch_policies")"
+          if [[ "$total_policy_count" -ne 1 || "$main_policy_count" -ne 1 ]]; then
+            echo "desktop-acceptance must allow only the main branch policy" >&2
             exit 1
           fi
 
