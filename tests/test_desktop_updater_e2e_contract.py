@@ -99,14 +99,17 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("forward_signed_recovery = $forwardRecovery", script)
         self.assertIn("downgrade_not_offered = $downgradeNotOffered", script)
 
-    def test_signed_upgrade_proves_binary_replacement_before_runtime_probe(self) -> None:
+    def test_signed_upgrade_proves_binary_and_runtime_before_test_only_cleanup(self) -> None:
         script = UPDATER_SCRIPT.read_text(encoding="utf-8")
         binary_start = script.index("function Get-InstalledBinaryVersion")
-        binary_end = script.index("function Wait-UpdaterInstallerExit", binary_start)
+        binary_end = script.index("function Clear-VerifiedUpdaterInstaller", binary_start)
         binary_block = script[binary_start:binary_end]
-        exit_start = script.index("function Wait-UpdaterInstallerExit")
-        exit_end = script.index("function Invoke-Probe", exit_start)
-        exit_block = script[exit_start:exit_end]
+        cleanup_start = script.index("function Clear-VerifiedUpdaterInstaller")
+        cleanup_end = script.index("function Invoke-Probe", cleanup_start)
+        cleanup_block = script[cleanup_start:cleanup_end]
+        runtime_start = script.index("function Wait-InstalledVersion")
+        runtime_end = script.index("function Invoke-SignedUpgrade", runtime_start)
+        runtime_block = script[runtime_start:runtime_end]
         upgrade_start = script.index("function Invoke-SignedUpgrade")
         upgrade_end = script.index("$previousPrivateKey", upgrade_start)
         upgrade_block = script[upgrade_start:upgrade_end]
@@ -117,19 +120,30 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("[version]$Expected", binary_block)
         self.assertIn("Get-InstalledBinaryVersion -Path $installedApp", binary_block)
         self.assertIn("throw", binary_block)
-        self.assertIn('Get-Process -Name "Divan-*-installer"', exit_block)
-        self.assertIn("throw", exit_block)
+
+        self.assertIn('Get-Process -Name "Divan-*-installer"', cleanup_block)
+        self.assertIn("Stop-Process -Id $installer.Id -Force", cleanup_block)
+        self.assertIn("Installer lifetime is not release evidence", cleanup_block)
+        self.assertIn("after both the on-disk PE version", cleanup_block)
+        self.assertIn("Test-only updater installer cleanup did not complete", cleanup_block)
+
+        self.assertIn("WaitForExit(5000)", runtime_block)
+        self.assertIn("Stop-Process -Id $process.Id -Force", runtime_block)
+        self.assertIn("cannot keep the passive NSIS updater open", runtime_block)
+
         self.assertIn("Wait-InstalledBinaryVersion -Expected $Expected", upgrade_block)
         self.assertIn("Wait-InstalledVersion -Expected $Expected", upgrade_block)
-        self.assertIn("Wait-UpdaterInstallerExit -Expected $Expected", upgrade_block)
+        self.assertIn("Clear-VerifiedUpdaterInstaller -Expected $Expected", upgrade_block)
         self.assertLess(
             upgrade_block.index("Wait-InstalledBinaryVersion -Expected $Expected"),
             upgrade_block.index("Wait-InstalledVersion -Expected $Expected"),
         )
         self.assertLess(
             upgrade_block.index("Wait-InstalledVersion -Expected $Expected"),
-            upgrade_block.index("Wait-UpdaterInstallerExit -Expected $Expected"),
+            upgrade_block.index("Clear-VerifiedUpdaterInstaller -Expected $Expected"),
         )
+        self.assertNotIn("Wait-UpdaterInstallerExit", script)
+        self.assertNotIn("remained active after the installed runtime", script)
         self.assertNotIn("Wait-UpdaterInstallerCompletion", script)
         self.assertIn("Wait-InstalledBinaryVersion -Expected $versionN", script)
 
