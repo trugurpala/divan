@@ -20,6 +20,41 @@ class DesktopProductionReadinessWorkflowTests(unittest.TestCase):
         self.assertIn("if: github.ref == 'refs/heads/main'", self.workflow)
         self.assertIn("environment: production-release", self.workflow)
         self.assertIn("runs-on: windows-latest", self.workflow)
+        self.assertIn("needs: production-release-environment-policy", self.workflow)
+
+    def test_production_release_policy_is_fail_closed_before_and_after_approval(self) -> None:
+        preflight_start = self.workflow.index("  production-release-environment-policy:")
+        readiness_start = self.workflow.index("  production-readiness:")
+        preflight = self.workflow[preflight_start:readiness_start]
+        readiness = self.workflow[readiness_start:]
+
+        self.assertIn(
+            "Verify production-release environment is protected before readiness approval",
+            preflight,
+        )
+        self.assertIn("GH_TOKEN: ${{ github.token }}", preflight)
+        self.assertIn("environments/production-release", preflight)
+        self.assertIn('select(.type == "required_reviewers")', preflight)
+        self.assertIn("prevent_self_review", preflight)
+        self.assertIn("can_admins_bypass", preflight)
+        self.assertIn("deployment-branch-policies", preflight)
+        self.assertIn("production-release must allow only the main branch policy", preflight)
+        self.assertNotIn("secrets.", preflight)
+
+        self.assertIn("needs: production-release-environment-policy", readiness)
+        post_start = readiness.index("- name: Re-verify production-release policy after environment approval")
+        checkout_start = readiness.index("- name: Checkout exact main source", post_start)
+        post_approval = readiness[post_start:checkout_start]
+        self.assertLess(post_start, checkout_start)
+        self.assertIn("DIVAN_POLICY_TOKEN: ${{ github.token }}", post_approval)
+        self.assertIn("Bearer $env:DIVAN_POLICY_TOKEN", post_approval)
+        self.assertIn("required_reviewers", post_approval)
+        self.assertIn("prevent_self_review", post_approval)
+        self.assertIn("can_admins_bypass", post_approval)
+        self.assertIn("deployment-branch-policies", post_approval)
+        self.assertIn("must still allow only the main branch after environment approval", post_approval)
+        self.assertNotIn("secrets.", post_approval)
+        self.assertEqual(self.workflow.count("DIVAN_POLICY_TOKEN: ${{ github.token }}"), 1)
 
     def test_readiness_requires_exact_accepted_main_source_sha_pin(self) -> None:
         self.assertIn("source_sha:", self.workflow)
