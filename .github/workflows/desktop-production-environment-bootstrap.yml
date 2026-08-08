@@ -26,6 +26,7 @@ jobs:
     timeout-minutes: 5
     environment: production-release
     permissions:
+      actions: read
       contents: read
     steps:
       - name: Validate bootstrap inputs and independent reviewer
