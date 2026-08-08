@@ -1,0 +1,134 @@
+name: Desktop Acceptance Environment Bootstrap
+
+on:
+  workflow_dispatch:
+    inputs:
+      reviewer_type:
+        description: "Required reviewer kind for desktop-acceptance"
+        required: true
+        default: User
+        type: choice
+        options:
+          - User
+          - Team
+      reviewer_id:
+        description: "Numeric GitHub user/team ID allowed to approve desktop-acceptance"
+        required: true
+        type: string
+      prevent_self_review:
+        description: "Prevent the workflow initiator from approving the acceptance deployment"
+        required: true
+        default: false
+        type: boolean
+
+permissions: read-all
+
+jobs:
+  bootstrap-desktop-acceptance:
+    name: bootstrap-desktop-acceptance
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: production-release
+    permissions:
+      contents: read
+    steps:
+      - name: Validate bootstrap inputs
+        shell: bash
+        env:
+          REVIEWER_TYPE: ${{ inputs.reviewer_type }}
+          REVIEWER_ID: ${{ inputs.reviewer_id }}
+        run: |
+          set -euo pipefail
+          if [[ "$REVIEWER_TYPE" != "User" && "$REVIEWER_TYPE" != "Team" ]]; then
+            echo "reviewer_type must be User or Team" >&2
+            exit 1
+          fi
+          if [[ ! "$REVIEWER_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo "reviewer_id must be a positive numeric GitHub user/team ID" >&2
+            exit 1
+          fi
+
+      - name: Verify bootstrap still targets current main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          event_sha="${GITHUB_SHA,,}"
+          if [[ ! "$event_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "bootstrap workflow event SHA is not an exact Git commit" >&2
+            exit 1
+          fi
+          live_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha' | tr '[:upper:]' '[:lower:]')"
+          if [[ ! "$live_main" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "current main source SHA could not be resolved" >&2
+            exit 1
+          fi
+          if [[ "$event_sha" != "$live_main" ]]; then
+            echo "main moved after bootstrap dispatch; restart on current main" >&2
+            exit 1
+          fi
+
+      - name: Create or reconcile protected desktop-acceptance environment
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
+          REVIEWER_TYPE: ${{ inputs.reviewer_type }}
+          REVIEWER_ID: ${{ inputs.reviewer_id }}
+          PREVENT_SELF_REVIEW: ${{ inputs.prevent_self_review }}
+        run: |
+          set -euo pipefail
+
+          payload="$(jq -n \
+            --arg reviewer_type "$REVIEWER_TYPE" \
+            --argjson reviewer_id "$REVIEWER_ID" \
+            --argjson prevent_self_review "$PREVENT_SELF_REVIEW" \
+            '{
+              wait_timer: 0,
+              prevent_self_review: $prevent_self_review,
+              reviewers: [{type: $reviewer_type, id: $reviewer_id}],
+              deployment_branch_policy: {
+                protected_branches: false,
+                custom_branch_policies: true
+              }
+            }')"
+
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance" \
+            --input - <<<"$payload" >/dev/null
+
+          policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies")"
+          main_policy_count="$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$policies")"
+          if [[ "$main_policy_count" -eq 0 ]]; then
+            gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies" \
+              -f name=main >/dev/null
+          fi
+
+          environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance")"
+          reviewer_match="$(jq \
+            --arg reviewer_type "$REVIEWER_TYPE" \
+            --argjson reviewer_id "$REVIEWER_ID" \
+            '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]? | select(.type == $reviewer_type and .reviewer.id == $reviewer_id)] | length' \
+            <<<"$environment_json")"
+          if [[ "$reviewer_match" -ne 1 ]]; then
+            echo "desktop-acceptance required reviewer policy does not match requested reviewer" >&2
+            exit 1
+          fi
+
+          branch_policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies")"
+          total_policy_count="$(jq '.branch_policies | length' <<<"$branch_policies")"
+          main_policy_count="$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$branch_policies")"
+          if [[ "$total_policy_count" -ne 1 || "$main_policy_count" -ne 1 ]]; then
+            echo "desktop-acceptance must allow only the main branch policy" >&2
+            exit 1
+          fi
+
+          echo "desktop-acceptance environment is protected and restricted to main"

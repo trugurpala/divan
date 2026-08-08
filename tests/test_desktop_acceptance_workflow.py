@@ -38,7 +38,32 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         )
         self.assertIn('select(.type == "required_reviewers")', preflight)
         self.assertIn("reviewer_count", preflight)
+        self.assertIn("custom_branch_policies", preflight)
+        self.assertIn("deployment-branch-policies", preflight)
+        self.assertIn("total_policy_count", preflight)
+        self.assertIn('select(.name == "main")', preflight)
+        self.assertIn("must allow only the main branch", preflight)
         self.assertIn("needs: acceptance-environment-policy", acceptance)
+
+    def test_acceptance_revalidates_environment_after_gate_before_checkout(self) -> None:
+        acceptance_start = self.text.index("  real-user-windows-acceptance:")
+        acceptance = self.text[acceptance_start:]
+        policy_start = acceptance.index(
+            "Re-verify desktop-acceptance policy after environment approval"
+        )
+        checkout_start = acceptance.index("Checkout exact source commit")
+        self.assertLess(policy_start, checkout_start)
+        policy = acceptance[policy_start:checkout_start]
+        self.assertIn("actions: read", acceptance[:policy_start])
+        self.assertIn("DIVAN_POLICY_TOKEN: ${{ github.token }}", policy)
+        self.assertIn("Bearer $env:DIVAN_POLICY_TOKEN", policy)
+        self.assertIn("environments/desktop-acceptance", policy)
+        self.assertIn('Where-Object { $_.type -eq "required_reviewers" }', policy)
+        self.assertIn("custom_branch_policies", policy)
+        self.assertIn("deployment-branch-policies", policy)
+        self.assertIn('Where-Object { $_.name -eq "main" }', policy)
+        self.assertIn("must still allow only the main branch", policy)
+        self.assertNotIn("DIVAN_POLICY_TOKEN", acceptance[checkout_start:])
 
     def test_acceptance_requires_exact_current_main_source_sha_pin(self) -> None:
         self.assertIn("source_sha:", self.text)
