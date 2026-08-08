@@ -141,6 +141,9 @@ Completion evidence:
 - updater endpoint is absolute HTTPS and production-controlled
 - artifact base URL targets the exact immutable `desktop-v<version>` GitHub Release tag
 - no private signing material is committed to the repository or acceptance/readiness evidence
+- `Desktop Stable Candidate` requires the successful `Desktop Production Readiness` run ID as an explicit input before any production candidate build
+- the candidate verifies that readiness run is a successful manual run on the same exact `main` SHA, downloads exactly one readiness JSON artifact, verifies its GitHub attestation against `.github/workflows/desktop-production-readiness.yml`, and revalidates all required PASS/secret-minimization fields
+- a stale, unattested, source-mismatched or failed readiness run cannot authorize the stable candidate
 
 A readiness PASS proves that the protected release lane can actually use the provisioned signing material; it does not replace DSK-08's production public/private updater key-pair runtime verification on the final signed installer.
 
@@ -151,6 +154,7 @@ A readiness PASS proves that the protected release lane can actually use the pro
 Completion evidence:
 
 - stable workflow runs before `main` moves away from the exact accepted source commit
+- the stable candidate first consumes attested DSK-07 readiness evidence from that same exact `main` commit
 - acceptance run ID is source-bound to the same exact `main` commit and its attestation verifies
 - release guard reports stable-ready
 - NSIS installer Authenticode signature is valid

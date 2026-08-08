@@ -221,6 +221,95 @@ function Wait-Marker {
     throw "Updater e2e marker timed out after $TimeoutSeconds seconds"
 }
 
+function Get-InstalledBinaryVersion {
+    param([string]$Path)
+
+    if (-not (Test-Path $Path -PathType Leaf)) {
+        return $null
+    }
+
+    try {
+        $versionInfo = (Get-Item -LiteralPath $Path -ErrorAction Stop).VersionInfo
+        $rawVersion = [string]$versionInfo.ProductVersion
+        if (-not $rawVersion) {
+            $rawVersion = [string]$versionInfo.FileVersion
+        }
+        if (-not $rawVersion) {
+            return $null
+        }
+        $match = [regex]::Match($rawVersion, '\d+\.\d+\.\d+(?:\.\d+)?')
+        if (-not $match.Success) {
+            return $null
+        }
+        return [version]$match.Value
+    }
+    catch {
+        # NSIS can briefly replace or lock the executable. A read failure is
+        # not a PASS; the bounded caller retries until the file is readable.
+        return $null
+    }
+}
+
+function Wait-InstalledBinaryVersion {
+    param(
+        [string]$Expected,
+        [int]$TimeoutSeconds = 180
+    )
+
+    $expectedVersion = [version]$Expected
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $deadline) {
+        $observed = Get-InstalledBinaryVersion -Path $installedApp
+        if (
+            $null -ne $observed -and
+            $observed.Major -eq $expectedVersion.Major -and
+            $observed.Minor -eq $expectedVersion.Minor -and
+            $observed.Build -eq $expectedVersion.Build
+        ) {
+            return $observed
+        }
+        Start-Sleep -Milliseconds 500
+    }
+
+    throw "Installed Divan binary version did not become $Expected within $TimeoutSeconds seconds"
+}
+
+function Clear-VerifiedUpdaterInstaller {
+    param(
+        [string]$Expected,
+        [int]$GraceSeconds = 8,
+        [int]$CleanupTimeoutSeconds = 10
+    )
+
+    # Installer lifetime is not release evidence. On headless hosted Windows
+    # runners the passive NSIS process can outlive a completed replacement.
+    # This cleanup is permitted only after both the on-disk PE version and a
+    # freshly launched Tauri runtime have independently proven $Expected.
+    $graceDeadline = [DateTime]::UtcNow.AddSeconds($GraceSeconds)
+    while ([DateTime]::UtcNow -lt $graceDeadline) {
+        $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
+        if ($installers.Count -eq 0) {
+            return
+        }
+        Start-Sleep -Milliseconds 500
+    }
+
+    $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
+    foreach ($installer in $installers) {
+        Stop-Process -Id $installer.Id -Force -ErrorAction SilentlyContinue
+    }
+
+    $cleanupDeadline = [DateTime]::UtcNow.AddSeconds($CleanupTimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $cleanupDeadline) {
+        if (@(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue).Count -eq 0) {
+            return
+        }
+        Start-Sleep -Milliseconds 250
+    }
+
+    throw "Test-only updater installer cleanup did not complete after verified runtime $Expected"
+}
+
 function Invoke-Probe {
     param(
         [string]$Mode,
@@ -262,6 +351,13 @@ function Wait-InstalledVersion {
                 if (Test-Path $markerPath -PathType Leaf) {
                     $marker = Read-Marker -Path $markerPath
                     if ($marker["status"] -eq "pass") {
+                        # The Rust probe writes the marker immediately before
+                        # app.exit(). Ensure this test-only process actually
+                        # drains so it cannot keep the passive NSIS updater open.
+                        if (-not $process.HasExited -and -not $process.WaitForExit(5000)) {
+                            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+                            $null = $process.WaitForExit(5000)
+                        }
                         return $marker
                     }
                     break
@@ -295,7 +391,16 @@ function Invoke-SignedUpgrade {
     if ($null -ne $result) {
         return $result
     }
-    return Wait-InstalledVersion -Expected $Expected -TimeoutSeconds 150
+
+    # Tauri quits the Windows application before NSIS installation. Prove the
+    # replacement from two independent product signals: first the on-disk PE
+    # version, then Tauri's own runtime package version. Only after both pass do
+    # we perform bounded test-runner cleanup for any passive NSIS process that
+    # lingers on the headless hosted runner. Cleanup never authorizes PASS.
+    Wait-InstalledBinaryVersion -Expected $Expected -TimeoutSeconds 180 | Out-Null
+    $runtimeResult = Wait-InstalledVersion -Expected $Expected -TimeoutSeconds 90
+    Clear-VerifiedUpdaterInstaller -Expected $Expected
+    return $runtimeResult
 }
 
 $previousPrivateKey = $env:TAURI_SIGNING_PRIVATE_KEY
@@ -363,6 +468,7 @@ try {
     if (-not (Test-Path $installedApp -PathType Leaf)) {
         throw "Installed Divan.exe was not found after baseline install"
     }
+    Wait-InstalledBinaryVersion -Expected $versionN -TimeoutSeconds 30 | Out-Null
     Wait-InstalledVersion -Expected $versionN -TimeoutSeconds 45 | Out-Null
 
     Set-TestFeed -Artifact $artifactN1 -Port $port

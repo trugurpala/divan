@@ -11,6 +11,7 @@ from typing import Any, Mapping
 from desktop_release_evidence import (
     DesktopReleaseError,
     inspect_acceptance_evidence,
+    inspect_production_readiness_evidence,
     inspect_updater_e2e_evidence,
 )
 from desktop_release_evidence import mapping as _mapping
@@ -149,6 +150,7 @@ def inspect_desktop(
     root: pathlib.Path = ROOT,
     *,
     release_config: pathlib.Path | None = None,
+    production_readiness_evidence: pathlib.Path | None = None,
     acceptance_evidence: pathlib.Path | None = None,
     updater_e2e_evidence: pathlib.Path | None = None,
     expected_source_commit: str | None = None,
@@ -160,6 +162,16 @@ def inspect_desktop(
     _verify_identity(tauri)
     config = _merged_config(tauri, windows, release_config)
     bundle, windows_bundle = _bundle_contract(config)
+    production_readiness = (
+        inspect_production_readiness_evidence(
+            production_readiness_evidence,
+            version,
+            expected_source_commit=expected_source_commit,
+            expected_source_tree=expected_source_tree,
+        )
+        if production_readiness_evidence is not None
+        else None
+    )
     acceptance = (
         inspect_acceptance_evidence(
             acceptance_evidence,
@@ -189,9 +201,26 @@ def inspect_desktop(
         "core_sidecar": True,
         "updater_configured": _updater_ready(config, bundle),
         "windows_signing_configured": _windows_signing_ready(windows_bundle),
+        "production_readiness_evidence": production_readiness,
         "acceptance_evidence": acceptance,
         "updater_e2e_evidence": updater_e2e,
     }
+
+
+def _evidence_blocker(
+    report: Mapping[str, Any],
+    *,
+    key: str,
+    verified_key: str,
+    missing: str,
+    unbound: str,
+) -> str | None:
+    evidence = report.get(key)
+    if not isinstance(evidence, Mapping) or evidence.get(verified_key) is not True:
+        return missing
+    if evidence.get("source_bound") is not True:
+        return unbound
+    return None
 
 
 def require_stable_release(
@@ -206,29 +235,61 @@ def require_stable_release(
         blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing")
     if report.get("windows_signing_configured") is not True:
         blockers.append("Windows Authenticode signCommand is not configured")
-    updater_e2e = report.get("updater_e2e_evidence")
-    if not isinstance(updater_e2e, Mapping) or updater_e2e.get("verified") is not True:
-        blockers.append("signed updater E2E evidence is missing")
-    elif updater_e2e.get("source_bound") is not True:
-        blockers.append(
-            "signed updater E2E evidence is not bound to the exact release source identity"
-        )
-    acceptance = report.get("acceptance_evidence")
-    if not isinstance(acceptance, Mapping) or acceptance.get("accepted") is not True:
-        blockers.append("real-user Windows acceptance evidence is missing")
-    elif acceptance.get("source_bound") is not True:
-        blockers.append(
-            "Windows acceptance evidence is not bound to the exact release source identity"
-        )
+    evidence_blockers = (
+        _evidence_blocker(
+            report,
+            key="production_readiness_evidence",
+            verified_key="verified",
+            missing="production signing readiness evidence is missing",
+            unbound=(
+                "production signing readiness evidence is not bound to the exact "
+                "release source identity"
+            ),
+        ),
+        _evidence_blocker(
+            report,
+            key="updater_e2e_evidence",
+            verified_key="verified",
+            missing="signed updater E2E evidence is missing",
+            unbound=(
+                "signed updater E2E evidence is not bound to the exact release "
+                "source identity"
+            ),
+        ),
+        _evidence_blocker(
+            report,
+            key="acceptance_evidence",
+            verified_key="accepted",
+            missing="real-user Windows acceptance evidence is missing",
+            unbound=(
+                "Windows acceptance evidence is not bound to the exact release "
+                "source identity"
+            ),
+        ),
+    )
+    blockers.extend(blocker for blocker in evidence_blockers if blocker is not None)
     if blockers:
         raise DesktopReleaseError("stable desktop release blocked: " + "; ".join(blockers))
     return {**dict(report), "stable_release": "READY"}
+
+
+def _readiness_evidence_path(
+    cli_path: pathlib.Path | None,
+    env: Mapping[str, str],
+) -> pathlib.Path | None:
+    if cli_path is not None:
+        return cli_path
+    value = env.get("DIVAN_PRODUCTION_READINESS_EVIDENCE")
+    if not value or not value.strip():
+        return None
+    return pathlib.Path(value.strip())
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=pathlib.Path, default=ROOT)
     parser.add_argument("--release-config", type=pathlib.Path)
+    parser.add_argument("--production-readiness-evidence", type=pathlib.Path)
     parser.add_argument("--acceptance-evidence", type=pathlib.Path)
     parser.add_argument("--updater-e2e-evidence", type=pathlib.Path)
     parser.add_argument("--source-commit")
@@ -236,9 +297,14 @@ def main() -> int:
     parser.add_argument("--stable-release", action="store_true")
     args = parser.parse_args()
     try:
+        readiness_evidence = _readiness_evidence_path(
+            args.production_readiness_evidence,
+            os.environ,
+        )
         report = inspect_desktop(
             args.root,
             release_config=args.release_config,
+            production_readiness_evidence=readiness_evidence,
             acceptance_evidence=args.acceptance_evidence,
             updater_e2e_evidence=args.updater_e2e_evidence,
             expected_source_commit=args.source_commit,

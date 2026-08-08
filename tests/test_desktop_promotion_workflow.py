@@ -25,6 +25,10 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertIn("cancel-in-progress: false", self.text)
 
     def test_dispatch_ids_are_mapped_through_environment_not_shell_interpolation(self) -> None:
+        self.assertIn(
+            "DIVAN_PRODUCTION_READINESS_RUN_ID: ${{ inputs.production_readiness_run_id }}",
+            self.text,
+        )
         self.assertIn("DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}", self.text)
         self.assertIn("DIVAN_CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}", self.text)
         run_lines = "\n".join(
@@ -33,11 +37,26 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertNotIn("${{ inputs.", run_lines)
         self.assertIn("^[1-9][0-9]*$", self.text)
 
-    def test_acceptance_and_candidate_are_exact_source_bound_and_attested(self) -> None:
-        self.assertIn('Desktop Real-User Acceptance', self.text)
-        self.assertIn('.github/workflows/desktop-acceptance.yml', self.text)
-        self.assertIn('Desktop Stable Candidate', self.text)
-        self.assertIn('.github/workflows/desktop-release.yml', self.text)
+    def test_readiness_acceptance_and_candidate_are_exact_source_bound_and_attested(self) -> None:
+        readiness = self.text.index("Verify exact production readiness run and attestation")
+        acceptance = self.text.index("Verify exact real-user acceptance run and attestation")
+        candidate = self.text.index("Verify exact signed candidate run and download artifacts")
+        guard = self.text.index("Re-establish stable release guard on promotion host")
+        self.assertLess(readiness, acceptance)
+        self.assertLess(acceptance, candidate)
+        self.assertLess(candidate, guard)
+        self.assertIn("Desktop Production Readiness", self.text)
+        self.assertIn(".github/workflows/desktop-production-readiness.yml", self.text)
+        self.assertIn("divan-production-readiness", self.text)
+        self.assertIn("production readiness evidence attestation verification failed", self.text)
+        self.assertIn(
+            '"DIVAN_PRODUCTION_READINESS_EVIDENCE=$evidence"',
+            self.text,
+        )
+        self.assertIn("Desktop Real-User Acceptance", self.text)
+        self.assertIn(".github/workflows/desktop-acceptance.yml", self.text)
+        self.assertIn("Desktop Stable Candidate", self.text)
+        self.assertIn(".github/workflows/desktop-release.yml", self.text)
         self.assertIn('$metadata.event -ne "workflow_dispatch"', self.text)
         self.assertIn('$metadata.conclusion -ne "success"', self.text)
         self.assertIn('$metadata.head_sha -ne $env:DIVAN_SOURCE_COMMIT', self.text)
@@ -50,6 +69,7 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertIn("prepare_desktop_release_config.py", self.text)
         self.assertIn("desktop_release_guard.py", self.text)
         self.assertIn("--stable-release", self.text)
+        self.assertIn("DIVAN_PRODUCTION_READINESS_EVIDENCE", self.text)
         self.assertIn("--acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE", self.text)
         self.assertIn("--updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE", self.text)
         self.assertIn("--source-commit $env:DIVAN_SOURCE_COMMIT", self.text)
@@ -101,6 +121,11 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertNotIn("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", self.text)
         self.assertIn("DIVAN_UPDATER_PUBKEY", self.text)
         self.assertIn("DIVAN_WINDOWS_SIGN_COMMAND", self.text)
+
+    def test_release_notes_record_all_authorizing_runs(self) -> None:
+        self.assertIn("Production readiness run: `$env:DIVAN_PRODUCTION_READINESS_RUN_ID`", self.text)
+        self.assertIn("Acceptance run: `$env:DIVAN_ACCEPTANCE_RUN_ID`", self.text)
+        self.assertIn("Signed candidate run: `$env:DIVAN_CANDIDATE_RUN_ID`", self.text)
 
     def test_all_actions_are_immutable_sha_pinned(self) -> None:
         mutable = []
