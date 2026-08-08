@@ -99,26 +99,39 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("forward_signed_recovery = $forwardRecovery", script)
         self.assertIn("downgrade_not_offered = $downgradeNotOffered", script)
 
-    def test_signed_upgrade_waits_for_nsis_installer_before_version_probe(self) -> None:
+    def test_signed_upgrade_proves_binary_replacement_before_runtime_probe(self) -> None:
         script = UPDATER_SCRIPT.read_text(encoding="utf-8")
-        wait_start = script.index("function Wait-UpdaterInstallerCompletion")
-        wait_end = script.index("function Invoke-Probe", wait_start)
-        wait_block = script[wait_start:wait_end]
+        binary_start = script.index("function Get-InstalledBinaryVersion")
+        binary_end = script.index("function Wait-UpdaterInstallerExit", binary_start)
+        binary_block = script[binary_start:binary_end]
+        exit_start = script.index("function Wait-UpdaterInstallerExit")
+        exit_end = script.index("function Invoke-Probe", exit_start)
+        exit_block = script[exit_start:exit_end]
         upgrade_start = script.index("function Invoke-SignedUpgrade")
         upgrade_end = script.index("$previousPrivateKey", upgrade_start)
         upgrade_block = script[upgrade_start:upgrade_end]
 
-        self.assertIn('Get-Process -Name "Divan-*-installer"', wait_block)
-        self.assertIn("$startupDeadline", wait_block)
-        self.assertIn("$seenInstaller", wait_block)
-        self.assertIn("$quietSince", wait_block)
-        self.assertIn("throw", wait_block)
-        self.assertIn("Wait-UpdaterInstallerCompletion -Expected $Expected", upgrade_block)
+        self.assertIn("VersionInfo", binary_block)
+        self.assertIn("ProductVersion", binary_block)
+        self.assertIn("FileVersion", binary_block)
+        self.assertIn("[version]$Expected", binary_block)
+        self.assertIn("Get-InstalledBinaryVersion -Path $installedApp", binary_block)
+        self.assertIn("throw", binary_block)
+        self.assertIn('Get-Process -Name "Divan-*-installer"', exit_block)
+        self.assertIn("throw", exit_block)
+        self.assertIn("Wait-InstalledBinaryVersion -Expected $Expected", upgrade_block)
+        self.assertIn("Wait-InstalledVersion -Expected $Expected", upgrade_block)
+        self.assertIn("Wait-UpdaterInstallerExit -Expected $Expected", upgrade_block)
         self.assertLess(
-            upgrade_block.index("Wait-UpdaterInstallerCompletion -Expected $Expected"),
+            upgrade_block.index("Wait-InstalledBinaryVersion -Expected $Expected"),
             upgrade_block.index("Wait-InstalledVersion -Expected $Expected"),
         )
-        self.assertNotIn("Wait-InstalledVersion -Expected $Expected -TimeoutSeconds 150", upgrade_block)
+        self.assertLess(
+            upgrade_block.index("Wait-InstalledVersion -Expected $Expected"),
+            upgrade_block.index("Wait-UpdaterInstallerExit -Expected $Expected"),
+        )
+        self.assertNotIn("Wait-UpdaterInstallerCompletion", script)
+        self.assertIn("Wait-InstalledBinaryVersion -Expected $versionN", script)
 
     def test_production_key_pair_verifier_uses_tauri_download_without_install(self) -> None:
         script = PRODUCTION_VERIFY_SCRIPT.read_text(encoding="utf-8")
