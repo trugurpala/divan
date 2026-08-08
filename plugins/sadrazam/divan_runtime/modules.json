@@ -147,7 +147,11 @@
         "task_model",
         "task_store",
         "execution_recovery",
-        "orchestrator"
+        "orchestrator",
+        "knowledge_contract",
+        "knowledge_capture",
+        "knowledge_store",
+        "knowledge_projection"
       ],
       "capabilities": [
         "goal_state",
@@ -160,7 +164,11 @@
         "desktop_task_state",
         "atomic_task_persistence",
         "fail_closed_execution_recovery",
-        "task_orchestration"
+        "task_orchestration",
+        "local_knowledge_fabric",
+        "deterministic_failure_lessons",
+        "cross_project_reuse_analytics",
+        "generated_knowledge_projection"
       ],
       "depends_on": [
         "kernel",
