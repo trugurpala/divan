@@ -169,18 +169,41 @@ jobs:
     env:
       DIVAN_PRODUCTION_READINESS_RUN_ID: ${{ inputs.production_readiness_run_id }}
       DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
-      DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
-      DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
-      DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
-      DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout exact source commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
+      - name: Verify signed candidate source is still current main
+        shell: pwsh
+        env:
+          DIVAN_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $actual = (& git rev-parse HEAD).Trim().ToLowerInvariant()
+          $eventSha = "$env:GITHUB_SHA".Trim().ToLowerInvariant()
+          if ($actual -notmatch '^[0-9a-f]{40}$' -or $eventSha -notmatch '^[0-9a-f]{40}$') {
+            throw "Signed candidate source identity could not be resolved"
+          }
+          if ($actual -ne $eventSha) {
+            throw "Signed candidate checkout does not match the workflow event source SHA"
+          }
+
+          $headers = @{
+            Authorization = "Bearer $env:DIVAN_GITHUB_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $ref = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/main"
+          $liveMain = "$($ref.object.sha)".Trim().ToLowerInvariant()
+          if ($liveMain -notmatch '^[0-9a-f]{40}$') {
+            throw "Current main source SHA could not be resolved"
+          }
+          if ($liveMain -ne $actual) {
+            throw "main moved after stable-candidate dispatch or environment approval; restart DSK-06 through DSK-08 on current main"
+          }
 
       - name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -226,6 +249,8 @@ jobs:
 
       - name: Resolve and verify attested production readiness evidence
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $runId = $env:DIVAN_PRODUCTION_READINESS_RUN_ID
           if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
@@ -282,6 +307,8 @@ jobs:
 
       - name: Resolve and verify attested real-user acceptance evidence
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $runId = $env:DIVAN_ACCEPTANCE_RUN_ID
           if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
@@ -342,6 +369,10 @@ jobs:
 
       - name: Generate ephemeral signed release configuration
         shell: pwsh
+        env:
+          DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
+          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
+          DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
         run: |
           $config = Join-Path $env:RUNNER_TEMP "tauri.release.conf.json"
           python scripts/prepare_desktop_release_config.py --output $config
@@ -361,6 +392,9 @@ jobs:
       - name: Build signed NSIS and updater artifacts
         working-directory: apps/desktop
         shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           pnpm tauri build --bundles nsis --features signed-updater --config $env:DIVAN_RELEASE_CONFIG
           if ($LASTEXITCODE -ne 0) { throw "signed Tauri build failed" }
@@ -388,6 +422,8 @@ jobs:
 
       - name: Verify production updater key pair with Tauri runtime
         shell: pwsh
+        env:
+          DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
         run: |
           $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
           $evidence = Join-Path $env:RUNNER_TEMP "divan-production-updater-verify.json"
@@ -415,6 +451,8 @@ jobs:
 
       - name: Generate source-bound updater feed and promotion manifest
         shell: pwsh
+        env:
+          DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
         run: |
           $bundle = "apps/desktop/src-tauri/target/release/bundle/nsis"
           $feed = Join-Path $bundle "latest.json"
@@ -470,3 +508,11 @@ jobs:
           path: apps/desktop/src-tauri/target/release/bundle/nsis/*
           if-no-files-found: error
           retention-days: 14
+
+      - name: Remove ephemeral signed release configuration
+        if: always()
+        shell: pwsh
+        run: |
+          if ($env:DIVAN_RELEASE_CONFIG -and (Test-Path $env:DIVAN_RELEASE_CONFIG -PathType Leaf)) {
+            Remove-Item -LiteralPath $env:DIVAN_RELEASE_CONFIG -Force
+          }
