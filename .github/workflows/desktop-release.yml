@@ -9,6 +9,7 @@ on:
       - "apps/desktop/package.json"
       - "apps/desktop/pnpm-lock.yaml"
       - "apps/desktop/src-tauri/**"
+      - "scripts/desktop_release_evidence.py"
       - "scripts/desktop_release_guard.py"
       - "scripts/desktop_update_feed.py"
       - "scripts/prepare_desktop_release_config.py"
@@ -350,7 +351,7 @@ jobs:
       - name: Enforce stable release gate before build
         shell: pwsh
         run: |
-          python scripts/desktop_release_guard.py --release-config $env:DIVAN_RELEASE_CONFIG --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
+          python scripts/desktop_release_guard.py --release-config $env:DIVAN_RELEASE_CONFIG --production-readiness-evidence $env:DIVAN_PRODUCTION_READINESS_EVIDENCE --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
           if ($LASTEXITCODE -ne 0) { throw "stable release gate failed" }
 
       - name: Build self-contained Core sidecar
