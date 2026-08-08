@@ -70,6 +70,7 @@ jobs:
     timeout-minutes: 20
     environment: production-release
     permissions:
+      actions: read
       attestations: write
       contents: read
       id-token: write
