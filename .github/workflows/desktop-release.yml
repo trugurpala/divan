@@ -149,7 +149,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "updater e2e drifted Desktop dependency lockfiles" }
 
       - name: Upload signed updater e2e evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: divan-desktop-updater-e2e
           path: ${{ env.DIVAN_UPDATER_E2E_EVIDENCE }}
@@ -597,7 +597,7 @@ jobs:
           subject-path: "apps/desktop/src-tauri/target/release/bundle/nsis/*"
 
       - name: Upload signed desktop candidate
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: divan-desktop-signed-candidate
           path: apps/desktop/src-tauri/target/release/bundle/nsis/*
