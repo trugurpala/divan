@@ -221,6 +221,50 @@ function Wait-Marker {
     throw "Updater e2e marker timed out after $TimeoutSeconds seconds"
 }
 
+function Wait-UpdaterInstallerCompletion {
+    param(
+        [string]$Expected,
+        [int]$StartupGraceSeconds = 20,
+        [int]$TimeoutSeconds = 180
+    )
+
+    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
+    $startupDeadline = [DateTime]::UtcNow.AddSeconds($StartupGraceSeconds)
+    $seenInstaller = $false
+    $quietSince = $null
+
+    while ([DateTime]::UtcNow -lt $deadline) {
+        $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
+        if ($installers.Count -gt 0) {
+            $seenInstaller = $true
+            $quietSince = $null
+            Start-Sleep -Seconds 1
+            continue
+        }
+
+        if ($seenInstaller) {
+            if ($null -eq $quietSince) {
+                $quietSince = [DateTime]::UtcNow
+            }
+            if (([DateTime]::UtcNow - $quietSince).TotalSeconds -ge 3) {
+                return
+            }
+            Start-Sleep -Milliseconds 500
+            continue
+        }
+
+        if ([DateTime]::UtcNow -ge $startupDeadline) {
+            # Some updater implementations complete the installer before the
+            # harness observes its process. A bounded grace period avoids
+            # racing process creation without inventing a PASS condition.
+            return
+        }
+        Start-Sleep -Milliseconds 500
+    }
+
+    throw "Updater installer for $Expected did not become idle within $TimeoutSeconds seconds"
+}
+
 function Invoke-Probe {
     param(
         [string]$Mode,
@@ -295,7 +339,13 @@ function Invoke-SignedUpgrade {
     if ($null -ne $result) {
         return $result
     }
-    return Wait-InstalledVersion -Expected $Expected -TimeoutSeconds 150
+
+    # The Windows updater can terminate Divan before spawning the NSIS
+    # installer. Do not launch report-version probes while that installer is
+    # still replacing the installed executable; doing so can itself keep the
+    # file busy and turn the E2E harness into the source of the timeout.
+    Wait-UpdaterInstallerCompletion -Expected $Expected -TimeoutSeconds 180
+    return Wait-InstalledVersion -Expected $Expected -TimeoutSeconds 90
 }
 
 $previousPrivateKey = $env:TAURI_SIGNING_PRIVATE_KEY
