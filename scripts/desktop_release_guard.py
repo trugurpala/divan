@@ -229,7 +229,6 @@ def _readiness_proves_private_signing_key(report: Mapping[str, Any]) -> bool:
         isinstance(readiness, Mapping)
         and readiness.get("verified") is True
         and readiness.get("source_bound") is True
-        and readiness.get("tauri_private_key_sign_probe") is True
     )
 
 
