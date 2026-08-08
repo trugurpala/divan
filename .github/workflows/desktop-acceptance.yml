@@ -31,6 +31,7 @@ jobs:
           reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
           protected_branches="$(jq -r '.deployment_branch_policy.protected_branches // false' <<<"$environment_json")"
           custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
+          can_admins_bypass="$(jq -r '.can_admins_bypass // true' <<<"$environment_json")"
           if [[ "$environment_name" != "desktop-acceptance" ]]; then
             echo "desktop-acceptance environment must exist before acceptance dispatch" >&2
             exit 1
@@ -41,6 +42,10 @@ jobs:
           fi
           if [[ "$protected_branches" != "false" || "$custom_branch_policies" != "true" ]]; then
             echo "desktop-acceptance environment must use only custom deployment branch policies" >&2
+            exit 1
+          fi
+          if [[ "$can_admins_bypass" != "false" ]]; then
+            echo "desktop-acceptance environment must disallow administrator bypass before acceptance dispatch" >&2
             exit 1
           fi
 
@@ -91,6 +96,9 @@ jobs:
           }
           if ($environment.deployment_branch_policy.protected_branches -or -not $environment.deployment_branch_policy.custom_branch_policies) {
             throw "desktop-acceptance must still use only custom deployment branch policies before acceptance starts"
+          }
+          if ($environment.can_admins_bypass -ne $false) {
+            throw "desktop-acceptance administrator bypass became enabled before acceptance started"
           }
 
           $branchPolicies = Invoke-RestMethod `
