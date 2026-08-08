@@ -33,7 +33,8 @@ class DesktopAcceptanceBootstrapWorkflowTests(unittest.TestCase):
         self.assertIn("deployment-branch-policies", self.text)
         self.assertIn("-f name=main", self.text)
         self.assertIn("required reviewer policy does not match requested reviewer", self.text)
-        self.assertIn("must allow exactly the main branch policy", self.text)
+        self.assertIn("total_policy_count", self.text)
+        self.assertIn("must allow only the main branch policy", self.text)
 
     def test_admin_token_is_step_scoped(self) -> None:
         secret_binding = "GH_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}"
