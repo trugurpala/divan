@@ -11,8 +11,35 @@ on:
 permissions: read-all
 
 jobs:
+  acceptance-environment-policy:
+    name: acceptance-environment-policy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
+      - name: Verify desktop-acceptance environment is pre-created and protected
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance")"
+          environment_name="$(jq -r '.name // empty' <<<"$environment_json")"
+          reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
+          if [[ "$environment_name" != "desktop-acceptance" ]]; then
+            echo "desktop-acceptance environment must exist before acceptance dispatch" >&2
+            exit 1
+          fi
+          if [[ "$reviewer_count" -lt 1 ]]; then
+            echo "desktop-acceptance environment must have at least one required reviewer" >&2
+            exit 1
+          fi
+
   real-user-windows-acceptance:
     name: real-user-windows-acceptance
+    needs: acceptance-environment-policy
     if: github.ref == 'refs/heads/main'
     runs-on: [self-hosted, windows, x64, divan-desktop-acceptance]
     timeout-minutes: 60
