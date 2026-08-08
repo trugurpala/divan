@@ -56,6 +56,13 @@ class DesktopProductionReadinessWorkflowTests(unittest.TestCase):
         self.assertNotIn("secrets.", post_approval)
         self.assertEqual(self.workflow.count("DIVAN_POLICY_TOKEN: ${{ github.token }}"), 1)
 
+    def test_post_approval_environment_revalidation_has_actions_read_permission(self) -> None:
+        readiness_start = self.workflow.index("  production-readiness:")
+        steps_start = self.workflow.index("    steps:", readiness_start)
+        readiness_header = self.workflow[readiness_start:steps_start]
+        self.assertIn("    permissions:\n      actions: read\n", readiness_header)
+        self.assertNotIn("actions: write", readiness_header)
+
     def test_readiness_requires_exact_accepted_main_source_sha_pin(self) -> None:
         self.assertIn("source_sha:", self.workflow)
         self.assertIn("required: true", self.workflow)
