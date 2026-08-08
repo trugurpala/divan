@@ -15,11 +15,6 @@ on:
         description: "Numeric GitHub user/team ID allowed to approve desktop-acceptance"
         required: true
         type: string
-      prevent_self_review:
-        description: "Prevent the workflow initiator from approving the acceptance deployment"
-        required: true
-        default: false
-        type: boolean
 
 permissions: read-all
 
@@ -70,7 +65,7 @@ jobs:
             exit 1
           fi
 
-      - name: Verify production-release approval cannot be bypassed
+      - name: Verify production-release approval is independent and cannot be bypassed
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -78,13 +73,38 @@ jobs:
           set -euo pipefail
           environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/production-release")"
           environment_name="$(jq -r '.name // empty' <<<"$environment_json")"
+          required_rule_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers")] | length' <<<"$environment_json")"
+          reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
+          prevent_self_review_actual="$(jq -r '[.protection_rules[]? | select(.type == "required_reviewers")][0].prevent_self_review // false' <<<"$environment_json")"
+          protected_branches="$(jq -r '.deployment_branch_policy.protected_branches // false' <<<"$environment_json")"
+          custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
           can_admins_bypass="$(jq -r '.can_admins_bypass // true' <<<"$environment_json")"
           if [[ "$environment_name" != "production-release" ]]; then
             echo "production-release environment must exist before desktop-acceptance bootstrap" >&2
             exit 1
           fi
+          if [[ "$required_rule_count" -ne 1 || "$reviewer_count" -ne 1 ]]; then
+            echo "production-release must have exactly one required reviewer and no alternate approval authority" >&2
+            exit 1
+          fi
+          if [[ "$prevent_self_review_actual" != "true" ]]; then
+            echo "production-release must prevent self-review before desktop-acceptance bootstrap" >&2
+            exit 1
+          fi
+          if [[ "$protected_branches" != "false" || "$custom_branch_policies" != "true" ]]; then
+            echo "production-release must use only custom deployment branch policies" >&2
+            exit 1
+          fi
           if [[ "$can_admins_bypass" != "false" ]]; then
             echo "production-release must disallow administrator bypass before desktop-acceptance bootstrap" >&2
+            exit 1
+          fi
+
+          branch_policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/production-release/deployment-branch-policies")"
+          total_policy_count="$(jq '.branch_policies | length' <<<"$branch_policies")"
+          main_policy_count="$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$branch_policies")"
+          if [[ "$total_policy_count" -ne 1 || "$main_policy_count" -ne 1 ]]; then
+            echo "production-release must allow only the main branch policy" >&2
             exit 1
           fi
 
@@ -94,17 +114,15 @@ jobs:
           GH_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
           REVIEWER_TYPE: ${{ inputs.reviewer_type }}
           REVIEWER_ID: ${{ inputs.reviewer_id }}
-          PREVENT_SELF_REVIEW: ${{ inputs.prevent_self_review }}
         run: |
           set -euo pipefail
 
           payload="$(jq -n \
             --arg reviewer_type "$REVIEWER_TYPE" \
             --argjson reviewer_id "$REVIEWER_ID" \
-            --argjson prevent_self_review "$PREVENT_SELF_REVIEW" \
             '{
               wait_timer: 0,
-              prevent_self_review: $prevent_self_review,
+              prevent_self_review: true,
               reviewers: [{type: $reviewer_type, id: $reviewer_id}],
               deployment_branch_policy: {
                 protected_branches: false,
@@ -146,8 +164,8 @@ jobs:
             echo "desktop-acceptance must have exactly the requested required reviewer and no alternate approval authority" >&2
             exit 1
           fi
-          if [[ "$prevent_self_review_actual" != "$PREVENT_SELF_REVIEW" ]]; then
-            echo "desktop-acceptance prevent_self_review does not match the requested policy" >&2
+          if [[ "$prevent_self_review_actual" != "true" ]]; then
+            echo "desktop-acceptance must prevent workflow initiators from approving their own acceptance deployment" >&2
             exit 1
           fi
           if [[ "$protected_branches" != "false" || "$custom_branch_policies" != "true" ]]; then
@@ -167,4 +185,4 @@ jobs:
             exit 1
           fi
 
-          echo "desktop-acceptance environment has exact reviewer authority, no admin bypass, and is restricted to main"
+          echo "desktop-acceptance environment has exact independent reviewer authority, no admin bypass, and is restricted to main"
