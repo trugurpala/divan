@@ -49,6 +49,27 @@ jobs:
             exit 1
           fi
 
+      - name: Verify bootstrap still targets current main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          event_sha="${GITHUB_SHA,,}"
+          if [[ ! "$event_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "bootstrap workflow event SHA is not an exact Git commit" >&2
+            exit 1
+          fi
+          live_main="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha' | tr '[:upper:]' '[:lower:]')"
+          if [[ ! "$live_main" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "current main source SHA could not be resolved" >&2
+            exit 1
+          fi
+          if [[ "$event_sha" != "$live_main" ]]; then
+            echo "main moved after bootstrap dispatch; restart on current main" >&2
+            exit 1
+          fi
+
       - name: Create or reconcile protected desktop-acceptance environment
         shell: bash
         env:
