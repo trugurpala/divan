@@ -32,9 +32,24 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("source_sha must be an exact 40-character Git commit SHA", self.text)
         self.assertIn("Acceptance checkout does not match the workflow event source SHA", self.text)
         self.assertIn(
-            "Requested acceptance source SHA does not match the exact current main commit",
+            "Requested acceptance source SHA does not match the workflow source commit",
             self.text,
         )
+        self.assertIn("Invoke-RestMethod", self.text)
+        self.assertIn("git/ref/heads/main", self.text)
+        self.assertIn(
+            "main moved after acceptance dispatch; restart acceptance on current main",
+            self.text,
+        )
+
+    def test_live_main_token_is_scoped_only_to_source_verification_step(self) -> None:
+        verify_start = self.text.index("Verify requested acceptance source identity")
+        next_step = self.text.index("Resolve acceptance evidence path", verify_start)
+        verify = self.text[verify_start:next_step]
+        rest = self.text[next_step:]
+        self.assertIn("DIVAN_GITHUB_TOKEN: ${{ github.token }}", verify)
+        self.assertIn("Bearer $env:DIVAN_GITHUB_TOKEN", verify)
+        self.assertNotIn("DIVAN_GITHUB_TOKEN", rest)
 
     def test_acceptance_runner_uses_dedicated_release_label(self) -> None:
         self.assertIn("divan-desktop-acceptance", self.text)
