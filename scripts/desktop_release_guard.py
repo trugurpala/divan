@@ -223,6 +223,16 @@ def _evidence_blocker(
     return None
 
 
+def _readiness_proves_private_signing_key(report: Mapping[str, Any]) -> bool:
+    readiness = report.get("production_readiness_evidence")
+    return bool(
+        isinstance(readiness, Mapping)
+        and readiness.get("verified") is True
+        and readiness.get("source_bound") is True
+        and readiness.get("tauri_private_key_sign_probe") is True
+    )
+
+
 def require_stable_release(
     report: Mapping[str, Any],
     env: Mapping[str, str] | None = None,
@@ -231,8 +241,13 @@ def require_stable_release(
     blockers: list[str] = []
     if report.get("updater_configured") is not True:
         blockers.append("signed Tauri updater is not configured")
-    if not environment.get("TAURI_SIGNING_PRIVATE_KEY"):
-        blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing")
+    if (
+        not environment.get("TAURI_SIGNING_PRIVATE_KEY")
+        and not _readiness_proves_private_signing_key(report)
+    ):
+        blockers.append(
+            "TAURI_SIGNING_PRIVATE_KEY is missing and production readiness does not prove key usability"
+        )
     if report.get("windows_signing_configured") is not True:
         blockers.append("Windows Authenticode signCommand is not configured")
     evidence_blockers = (
