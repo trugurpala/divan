@@ -58,6 +58,7 @@ jobs:
     timeout-minutes: 60
     environment: desktop-acceptance
     permissions:
+      actions: read
       contents: read
       id-token: write
       attestations: write
@@ -65,6 +66,40 @@ jobs:
     env:
       DIVAN_EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}
     steps:
+      - name: Re-verify desktop-acceptance policy after environment approval
+        shell: pwsh
+        env:
+          DIVAN_POLICY_TOKEN: ${{ github.token }}
+        run: |
+          $headers = @{
+            Authorization = "Bearer $env:DIVAN_POLICY_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $environment = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/environments/desktop-acceptance"
+          if ("$($environment.name)" -ne "desktop-acceptance") {
+            throw "desktop-acceptance environment changed after policy preflight"
+          }
+          $requiredReviewerRules = @($environment.protection_rules | Where-Object { $_.type -eq "required_reviewers" })
+          $reviewerCount = @($requiredReviewerRules | ForEach-Object { $_.reviewers } | Where-Object { $_ }).Count
+          if ($reviewerCount -lt 1) {
+            throw "desktop-acceptance lost its required reviewer protection before acceptance started"
+          }
+          if (-not $environment.deployment_branch_policy.custom_branch_policies) {
+            throw "desktop-acceptance lost its custom deployment branch policy before acceptance started"
+          }
+
+          $branchPolicies = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies"
+          $policies = @($branchPolicies.branch_policies)
+          $mainPolicies = @($policies | Where-Object { $_.name -eq "main" })
+          if ($policies.Count -ne 1 -or $mainPolicies.Count -ne 1) {
+            throw "desktop-acceptance must still allow only the main branch after environment approval"
+          }
+
       - name: Checkout exact source commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
