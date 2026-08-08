@@ -17,6 +17,14 @@ class DesktopProductionEnvironmentBootstrapWorkflowTests(unittest.TestCase):
         self.assertIn("if: github.ref == 'refs/heads/main'", self.text)
         self.assertIn("environment: production-release", self.text)
 
+    def test_bootstrap_has_only_read_only_actions_permission_for_policy_checks(self) -> None:
+        job_start = self.text.index("  bootstrap-production-release:")
+        steps_start = self.text.index("    steps:", job_start)
+        job_header = self.text[job_start:steps_start]
+        self.assertIn("actions: read", job_header)
+        self.assertNotIn("actions: write", job_header)
+        self.assertIn("contents: read", job_header)
+
     def test_bootstrap_requires_exact_independent_reviewer_identity(self) -> None:
         self.assertIn("reviewer_type:", self.text)
         self.assertIn("reviewer_id:", self.text)
