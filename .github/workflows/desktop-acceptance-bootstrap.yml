@@ -113,13 +113,26 @@ jobs:
           fi
 
           environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance")"
+          required_rule_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers")] | length' <<<"$environment_json")"
+          reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
           reviewer_match="$(jq \
             --arg reviewer_type "$REVIEWER_TYPE" \
             --argjson reviewer_id "$REVIEWER_ID" \
             '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]? | select(.type == $reviewer_type and .reviewer.id == $reviewer_id)] | length' \
             <<<"$environment_json")"
-          if [[ "$reviewer_match" -ne 1 ]]; then
-            echo "desktop-acceptance required reviewer policy does not match requested reviewer" >&2
+          prevent_self_review_actual="$(jq -r '[.protection_rules[]? | select(.type == "required_reviewers")][0].prevent_self_review // false' <<<"$environment_json")"
+          protected_branches="$(jq -r '.deployment_branch_policy.protected_branches // false' <<<"$environment_json")"
+          custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
+          if [[ "$required_rule_count" -ne 1 || "$reviewer_count" -ne 1 || "$reviewer_match" -ne 1 ]]; then
+            echo "desktop-acceptance must have exactly the requested required reviewer and no alternate approval authority" >&2
+            exit 1
+          fi
+          if [[ "$prevent_self_review_actual" != "$PREVENT_SELF_REVIEW" ]]; then
+            echo "desktop-acceptance prevent_self_review does not match the requested policy" >&2
+            exit 1
+          fi
+          if [[ "$protected_branches" != "false" || "$custom_branch_policies" != "true" ]]; then
+            echo "desktop-acceptance must use only custom deployment branch policies" >&2
             exit 1
           fi
 
@@ -131,4 +144,4 @@ jobs:
             exit 1
           fi
 
-          echo "desktop-acceptance environment is protected and restricted to main"
+          echo "desktop-acceptance environment has exact reviewer authority and is restricted to main"

@@ -44,9 +44,22 @@ class DesktopAcceptanceBootstrapWorkflowTests(unittest.TestCase):
         self.assertIn("custom_branch_policies: true", self.text)
         self.assertIn("deployment-branch-policies", self.text)
         self.assertIn("-f name=main", self.text)
-        self.assertIn("required reviewer policy does not match requested reviewer", self.text)
+        self.assertIn("required_rule_count", self.text)
+        self.assertIn("reviewer_count", self.text)
+        self.assertIn("no alternate approval authority", self.text)
+        self.assertIn("prevent_self_review_actual", self.text)
+        self.assertIn("prevent_self_review does not match the requested policy", self.text)
+        self.assertIn("protected_branches", self.text)
+        self.assertIn("must use only custom deployment branch policies", self.text)
         self.assertIn("total_policy_count", self.text)
         self.assertIn("must allow only the main branch policy", self.text)
+
+    def test_bootstrap_verifies_exact_requested_reviewer_authority(self) -> None:
+        self.assertIn('select(.type == "required_reviewers")', self.text)
+        self.assertIn('.reviewer.id == $reviewer_id', self.text)
+        self.assertIn('"$required_rule_count" -ne 1', self.text)
+        self.assertIn('"$reviewer_count" -ne 1', self.text)
+        self.assertIn('"$reviewer_match" -ne 1', self.text)
 
     def test_admin_token_is_step_scoped(self) -> None:
         secret_binding = "GH_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}"
