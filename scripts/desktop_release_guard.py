@@ -207,6 +207,22 @@ def inspect_desktop(
     }
 
 
+def _evidence_blocker(
+    report: Mapping[str, Any],
+    *,
+    key: str,
+    verified_key: str,
+    missing: str,
+    unbound: str,
+) -> str | None:
+    evidence = report.get(key)
+    if not isinstance(evidence, Mapping) or evidence.get(verified_key) is not True:
+        return missing
+    if evidence.get("source_bound") is not True:
+        return unbound
+    return None
+
+
 def require_stable_release(
     report: Mapping[str, Any],
     env: Mapping[str, str] | None = None,
@@ -219,30 +235,39 @@ def require_stable_release(
         blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing")
     if report.get("windows_signing_configured") is not True:
         blockers.append("Windows Authenticode signCommand is not configured")
-    production_readiness = report.get("production_readiness_evidence")
-    if (
-        not isinstance(production_readiness, Mapping)
-        or production_readiness.get("verified") is not True
-    ):
-        blockers.append("production signing readiness evidence is missing")
-    elif production_readiness.get("source_bound") is not True:
-        blockers.append(
-            "production signing readiness evidence is not bound to the exact release source identity"
-        )
-    updater_e2e = report.get("updater_e2e_evidence")
-    if not isinstance(updater_e2e, Mapping) or updater_e2e.get("verified") is not True:
-        blockers.append("signed updater E2E evidence is missing")
-    elif updater_e2e.get("source_bound") is not True:
-        blockers.append(
-            "signed updater E2E evidence is not bound to the exact release source identity"
-        )
-    acceptance = report.get("acceptance_evidence")
-    if not isinstance(acceptance, Mapping) or acceptance.get("accepted") is not True:
-        blockers.append("real-user Windows acceptance evidence is missing")
-    elif acceptance.get("source_bound") is not True:
-        blockers.append(
-            "Windows acceptance evidence is not bound to the exact release source identity"
-        )
+    evidence_blockers = (
+        _evidence_blocker(
+            report,
+            key="production_readiness_evidence",
+            verified_key="verified",
+            missing="production signing readiness evidence is missing",
+            unbound=(
+                "production signing readiness evidence is not bound to the exact "
+                "release source identity"
+            ),
+        ),
+        _evidence_blocker(
+            report,
+            key="updater_e2e_evidence",
+            verified_key="verified",
+            missing="signed updater E2E evidence is missing",
+            unbound=(
+                "signed updater E2E evidence is not bound to the exact release "
+                "source identity"
+            ),
+        ),
+        _evidence_blocker(
+            report,
+            key="acceptance_evidence",
+            verified_key="accepted",
+            missing="real-user Windows acceptance evidence is missing",
+            unbound=(
+                "Windows acceptance evidence is not bound to the exact release "
+                "source identity"
+            ),
+        ),
+    )
+    blockers.extend(blocker for blocker in evidence_blockers if blocker is not None)
     if blockers:
         raise DesktopReleaseError("stable desktop release blocked: " + "; ".join(blockers))
     return {**dict(report), "stable_release": "READY"}
