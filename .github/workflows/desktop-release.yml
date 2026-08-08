@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/desktop-acceptance.yml"
+      - ".github/workflows/desktop-production-readiness.yml"
       - ".github/workflows/desktop-release.yml"
       - "apps/desktop/package.json"
       - "apps/desktop/pnpm-lock.yaml"
@@ -12,10 +13,12 @@ on:
       - "scripts/desktop_update_feed.py"
       - "scripts/prepare_desktop_release_config.py"
       - "scripts/windows_desktop_acceptance.ps1"
+      - "scripts/windows_desktop_production_readiness.ps1"
       - "scripts/windows_desktop_production_updater_verify.ps1"
       - "scripts/windows_desktop_updater_e2e.ps1"
       - "tests/test_desktop_acceptance_workflow.py"
       - "tests/test_desktop_dependency_locking.py"
+      - "tests/test_desktop_production_readiness_workflow.py"
       - "tests/test_desktop_release_guard.py"
       - "tests/test_desktop_update_feed.py"
       - "tests/test_desktop_updater_e2e_contract.py"
@@ -23,6 +26,10 @@ on:
       - "tests/test_desktop_release_workflow.py"
   workflow_dispatch:
     inputs:
+      production_readiness_run_id:
+        description: "Successful Desktop Production Readiness workflow run ID for this exact main commit"
+        required: true
+        type: string
       acceptance_run_id:
         description: "Successful Desktop Real-User Acceptance workflow run ID for this exact main commit"
         required: true
@@ -51,6 +58,7 @@ jobs:
           python -m unittest
           tests.test_desktop_acceptance_workflow
           tests.test_desktop_dependency_locking
+          tests.test_desktop_production_readiness_workflow
           tests.test_desktop_release_guard
           tests.test_desktop_update_feed
           tests.test_desktop_updater_e2e_contract
@@ -158,6 +166,7 @@ jobs:
       id-token: write
       artifact-metadata: write
     env:
+      DIVAN_PRODUCTION_READINESS_RUN_ID: ${{ inputs.production_readiness_run_id }}
       DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
       DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
       DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
@@ -213,6 +222,62 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             throw "Desktop dependency lockfiles drifted before stable candidate build"
           }
+
+      - name: Resolve and verify attested production readiness evidence
+        shell: pwsh
+        run: |
+          $runId = $env:DIVAN_PRODUCTION_READINESS_RUN_ID
+          if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
+            throw "production_readiness_run_id must be a numeric Desktop Production Readiness workflow run ID"
+          }
+          $metadataJson = gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$runId"
+          if ($LASTEXITCODE -ne 0 -or -not $metadataJson) {
+            throw "Production readiness workflow run metadata could not be loaded"
+          }
+          $metadata = $metadataJson | ConvertFrom-Json
+          if ($metadata.name -ne "Desktop Production Readiness") {
+            throw "Production readiness run came from an unexpected workflow: $($metadata.name)"
+          }
+          if ($metadata.event -ne "workflow_dispatch" -or $metadata.conclusion -ne "success") {
+            throw "Production readiness run is not a successful manual run"
+          }
+          if ($metadata.head_branch -ne "main" -or $metadata.head_sha -ne $env:GITHUB_SHA) {
+            throw "Production readiness run is not bound to this exact main source commit"
+          }
+
+          $downloadDir = Join-Path $env:RUNNER_TEMP "divan-production-readiness"
+          New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
+          gh run download $runId --repo $env:GITHUB_REPOSITORY --name divan-production-readiness --dir $downloadDir
+          if ($LASTEXITCODE -ne 0) { throw "Production readiness evidence artifact download failed" }
+          $evidenceFiles = @(Get-ChildItem $downloadDir -Filter "*.json" -File -Recurse)
+          if ($evidenceFiles.Count -ne 1) {
+            throw "Production readiness artifact must contain exactly one JSON evidence file"
+          }
+          $evidence = $evidenceFiles[0].FullName
+          gh attestation verify $evidence --repo $env:GITHUB_REPOSITORY --signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/desktop-production-readiness.yml" --source-ref refs/heads/main --source-digest $env:GITHUB_SHA
+          if ($LASTEXITCODE -ne 0) { throw "Production readiness evidence provenance attestation verification failed" }
+
+          $payload = Get-Content $evidence -Raw | ConvertFrom-Json
+          $sourceCommit = (& git rev-parse HEAD).Trim()
+          $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim()
+          if ($payload.status -ne "pass" -or $payload.source_commit -ne $sourceCommit -or $payload.source_tree -ne $sourceTree) {
+            throw "Production readiness evidence is not a PASS bound to exact release source"
+          }
+          foreach ($field in @(
+            "release_overlay_valid",
+            "updater_public_key_configured",
+            "updater_endpoint_https",
+            "artifact_base_exact_release_tag",
+            "authenticode_sign_command_usable",
+            "authenticode_signature_valid",
+            "tauri_private_key_sign_probe"
+          )) {
+            if ($payload.$field -ne $true) { throw "Production readiness evidence missing required PASS: $field" }
+          }
+          if ($payload.private_signing_material_persisted -ne $false -or $payload.secret_values_in_evidence -ne $false) {
+            throw "Production readiness evidence violated secret-minimization policy"
+          }
+          "DIVAN_PRODUCTION_READINESS_EVIDENCE=$evidence" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Resolve and verify attested real-user acceptance evidence
         shell: pwsh
