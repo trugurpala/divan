@@ -132,11 +132,17 @@ Completion evidence:
 Completion evidence:
 
 - protected `production-release` environment is configured
-- Windows Authenticode certificate/sign command is available to the release job
+- `Desktop Production Readiness` succeeds as a manual `main` run inside that protected environment
+- attested readiness evidence is bound to the exact workflow source commit/tree and contains no private signing material
+- Windows Authenticode certificate/sign command successfully signs an isolated probe executable and Windows reports the signature as valid
+- Tauri updater private key successfully signs an isolated probe through the official Tauri signer CLI
 - Tauri updater private key is protected and available only to the release lane
-- updater public key is configured
+- updater public key is configured without exposing its value in readiness evidence
 - updater endpoint is absolute HTTPS and production-controlled
-- no private signing material is committed to the repository or acceptance evidence
+- artifact base URL targets the exact immutable `desktop-v<version>` GitHub Release tag
+- no private signing material is committed to the repository or acceptance/readiness evidence
+
+A readiness PASS proves that the protected release lane can actually use the provisioned signing material; it does not replace DSK-08's production public/private updater key-pair runtime verification on the final signed installer.
 
 ### DSK-08 — Signed stable candidate is verified and promoted
 
