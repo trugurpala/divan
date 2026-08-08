@@ -46,7 +46,7 @@ gh workflow run desktop-acceptance-bootstrap.yml --ref main `
   -f prevent_self_review=false
 ```
 
-Use `reviewer_type=Team` with the numeric team ID when a team owns deployment approval. Set `prevent_self_review=true` only when a different eligible reviewer can approve the deployment. The bootstrap creates or reconciles the required-reviewer policy, enables custom deployment branch policies, adds `main`, and then fails unless `main` is the only allowed branch policy. It never receives Codex, Claude, Authenticode or Tauri signing secrets.
+Use `reviewer_type=Team` with the numeric team ID when a team owns deployment approval. Set `prevent_self_review=true` only when a different eligible reviewer can approve the deployment. After `production-release` approval, the bootstrap re-resolves live `main` using the step-scoped GitHub token and fails before the admin token is exposed if the workflow event SHA is stale. It then creates or reconciles the required-reviewer policy, enables custom deployment branch policies, adds `main`, and fails unless `main` is the only allowed branch policy. It never receives Codex, Claude, Authenticode or Tauri signing secrets.
 
 After the bootstrap passes, confirm the repository environment UI shows `desktop-acceptance` with the intended reviewer before starting acceptance.
 
