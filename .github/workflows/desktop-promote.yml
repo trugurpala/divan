@@ -39,12 +39,6 @@ jobs:
       DIVAN_PRODUCTION_READINESS_RUN_ID: ${{ inputs.production_readiness_run_id }}
       DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
       DIVAN_CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
-      DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
-      DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
-      DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
-      DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
-      DIVAN_RELEASE_ADMIN_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -52,25 +46,55 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Verify promotion source is still current main
+        shell: pwsh
+        env:
+          DIVAN_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $actual = (& git rev-parse HEAD).Trim().ToLowerInvariant()
+          $eventSha = "$env:GITHUB_SHA".Trim().ToLowerInvariant()
+          if ($actual -notmatch '^[0-9a-f]{40}$' -or $eventSha -notmatch '^[0-9a-f]{40}$') {
+            throw "promotion source identity could not be resolved"
+          }
+          if ($actual -ne $eventSha) {
+            throw "promotion checkout does not match the workflow event source SHA"
+          }
+
+          $headers = @{
+            Authorization = "Bearer $env:DIVAN_GITHUB_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $ref = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/main"
+          $liveMain = "$($ref.object.sha)".Trim().ToLowerInvariant()
+          if ($liveMain -notmatch '^[0-9a-f]{40}$') {
+            throw "current main source SHA could not be resolved"
+          }
+          if ($liveMain -ne $actual) {
+            throw "main moved after promotion dispatch or environment approval; restart DSK-06 through DSK-08 on current main"
+          }
+          "DIVAN_SOURCE_COMMIT=$actual" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.11"
 
-      - name: Resolve exact source and Desktop release identity
+      - name: Resolve Desktop release identity
         shell: pwsh
+        env:
+          DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
         run: |
-          $sourceCommit = (& git rev-parse HEAD).Trim()
-          $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim()
-          if ($sourceCommit -ne $env:GITHUB_SHA -or $sourceCommit -notmatch '^[0-9a-f]{40}$') {
-            throw "promotion checkout is not the exact workflow source commit"
+          $sourceCommit = "$env:DIVAN_SOURCE_COMMIT".Trim().ToLowerInvariant()
+          $actual = (& git rev-parse HEAD).Trim().ToLowerInvariant()
+          $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim().ToLowerInvariant()
+          if ($sourceCommit -notmatch '^[0-9a-f]{40}$' -or $actual -ne $sourceCommit) {
+            throw "promotion checkout is not the verified workflow source commit"
           }
           if ($sourceTree -notmatch '^[0-9a-f]{40}$') {
             throw "promotion source tree could not be resolved"
-          }
-          $liveMain = (gh api "repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha').Trim()
-          if ($LASTEXITCODE -ne 0 -or $liveMain -ne $sourceCommit) {
-            throw "main moved after acceptance/candidate selection; rerun acceptance and candidate on current main"
           }
           $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
           if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$') {
@@ -81,13 +105,14 @@ jobs:
           if ($env:DIVAN_UPDATER_ARTIFACT_BASE_URL.TrimEnd('/') -ne $expectedArtifactBase) {
             throw "production artifact base URL must target the exact immutable Desktop GitHub Release tag: $expectedArtifactBase"
           }
-          "DIVAN_SOURCE_COMMIT=$sourceCommit" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "DIVAN_SOURCE_TREE=$sourceTree" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "DIVAN_DESKTOP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "DIVAN_DESKTOP_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Verify exact production readiness run and attestation
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $runId = $env:DIVAN_PRODUCTION_READINESS_RUN_ID
           if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
@@ -118,6 +143,8 @@ jobs:
 
       - name: Verify exact real-user acceptance run and attestation
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $runId = $env:DIVAN_ACCEPTANCE_RUN_ID
           if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
@@ -148,6 +175,8 @@ jobs:
 
       - name: Verify exact signed candidate run and download artifacts
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $runId = $env:DIVAN_CANDIDATE_RUN_ID
           if (-not $runId -or $runId -notmatch '^[1-9][0-9]*$') {
@@ -188,15 +217,31 @@ jobs:
 
       - name: Re-establish stable release guard on promotion host
         shell: pwsh
+        env:
+          DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
+          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
+          DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
         run: |
           $config = Join-Path $env:RUNNER_TEMP "tauri.promotion.conf.json"
+          "DIVAN_PROMOTION_RELEASE_CONFIG=$config" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           python scripts/prepare_desktop_release_config.py --output $config
           if ($LASTEXITCODE -ne 0) { throw "release configuration validation failed" }
           python scripts/desktop_release_guard.py --release-config $config --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
           if ($LASTEXITCODE -ne 0) { throw "stable release guard rejected promotion" }
 
+      - name: Remove ephemeral promotion release configuration
+        if: always()
+        shell: pwsh
+        run: |
+          if ($env:DIVAN_PROMOTION_RELEASE_CONFIG -and (Test-Path $env:DIVAN_PROMOTION_RELEASE_CONFIG -PathType Leaf)) {
+            Remove-Item -LiteralPath $env:DIVAN_PROMOTION_RELEASE_CONFIG -Force
+          }
+
       - name: Validate downloaded signed candidate and prepare promotion bundle
         shell: pwsh
+        env:
+          DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
+          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
         run: |
           $promotionDir = Join-Path $env:RUNNER_TEMP "divan-promotion"
           New-Item -ItemType Directory -Path $promotionDir -Force | Out-Null
@@ -222,6 +267,9 @@ jobs:
 
       - name: Verify immutable-release repository policy
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIVAN_RELEASE_ADMIN_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}
         run: |
           if (-not $env:DIVAN_RELEASE_ADMIN_TOKEN) { throw "production-release/DIVAN_RELEASE_ADMIN_TOKEN is required" }
           $defaultToken = $env:GH_TOKEN
@@ -236,6 +284,8 @@ jobs:
 
       - name: Require production updater endpoint to be pre-staged with exact feed
         shell: pwsh
+        env:
+          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
         run: |
           $localFeed = Join-Path $env:DIVAN_PROMOTION_DIR "latest.json"
           $remoteFeed = Join-Path $env:RUNNER_TEMP "latest.remote.json"
@@ -257,6 +307,8 @@ jobs:
 
       - name: Publish or verify immutable Desktop GitHub Release
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $liveMain = (gh api "repos/$env:GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha').Trim()
           if ($liveMain -ne $env:DIVAN_SOURCE_COMMIT) {
@@ -299,6 +351,9 @@ jobs:
 
       - name: Independently re-download and verify promoted release
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
         run: |
           $tag = $env:DIVAN_DESKTOP_TAG
           $readback = Join-Path $env:RUNNER_TEMP "divan-release-readback"
