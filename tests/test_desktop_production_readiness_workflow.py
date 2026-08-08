@@ -21,7 +21,39 @@ class DesktopProductionReadinessWorkflowTests(unittest.TestCase):
         self.assertIn("environment: production-release", self.workflow)
         self.assertIn("runs-on: windows-latest", self.workflow)
 
-    def test_readiness_receives_required_signing_material_only_in_protected_job(self) -> None:
+    def test_readiness_requires_exact_accepted_main_source_sha_pin(self) -> None:
+        self.assertIn("source_sha:", self.workflow)
+        self.assertIn("required: true", self.workflow)
+        self.assertIn("DIVAN_EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}", self.workflow)
+        self.assertIn("Verify requested production-readiness source identity", self.workflow)
+        self.assertIn("source_sha must be an exact 40-character Git commit SHA", self.workflow)
+        self.assertIn("Production readiness checkout does not match the workflow event source SHA", self.workflow)
+        self.assertIn(
+            "Requested production readiness source SHA does not match the workflow source commit",
+            self.workflow,
+        )
+        self.assertIn("Invoke-RestMethod", self.workflow)
+        self.assertIn("git/ref/heads/main", self.workflow)
+        self.assertIn(
+            "main moved after production readiness dispatch; restart DSK-06 and DSK-07 on current main",
+            self.workflow,
+        )
+
+    def test_live_main_token_is_scoped_only_to_source_verification_step(self) -> None:
+        verify_start = self.workflow.index("Verify requested production-readiness source identity")
+        setup_start = self.workflow.index("Setup Python", verify_start)
+        verify = self.workflow[verify_start:setup_start]
+        rest = self.workflow[setup_start:]
+        self.assertIn("DIVAN_GITHUB_TOKEN: ${{ github.token }}", verify)
+        self.assertIn("Bearer $env:DIVAN_GITHUB_TOKEN", verify)
+        self.assertNotIn("DIVAN_GITHUB_TOKEN", rest)
+
+    def test_signing_material_is_scoped_only_to_the_probe_step(self) -> None:
+        probe_start = self.workflow.index("Probe production signing and updater material")
+        attest_start = self.workflow.index("Attest production readiness evidence", probe_start)
+        probe = self.workflow[probe_start:attest_start]
+        before_probe = self.workflow[:probe_start]
+        after_probe = self.workflow[attest_start:]
         for name in (
             "DIVAN_UPDATER_PUBKEY",
             "DIVAN_UPDATER_ENDPOINT",
@@ -30,7 +62,11 @@ class DesktopProductionReadinessWorkflowTests(unittest.TestCase):
             "TAURI_SIGNING_PRIVATE_KEY",
             "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
         ):
-            self.assertIn(f"{name}: ${{{{ secrets.{name} }}}}", self.workflow)
+            secret_ref = f"{name}: ${{{{ secrets.{name} }}}}"
+            self.assertIn(secret_ref, probe)
+            self.assertNotIn(f"secrets.{name}", before_probe)
+            self.assertNotIn(f"secrets.{name}", after_probe)
+            self.assertEqual(self.workflow.count(f"secrets.{name}"), 1)
         self.assertIn("permissions: read-all", self.workflow)
         self.assertIn("contents: read", self.workflow)
         self.assertNotIn("contents: write", self.workflow)
@@ -47,7 +83,7 @@ class DesktopProductionReadinessWorkflowTests(unittest.TestCase):
         self.assertIn("GITHUB_SHA", self.probe)
 
     def test_authenticode_probe_executes_real_sign_command_on_isolated_pe(self) -> None:
-        self.assertIn('System32/where.exe', self.probe)
+        self.assertIn("System32/where.exe", self.probe)
         self.assertIn('$signCommandTemplate.Replace("%1", $quotedProbe)', self.probe)
         self.assertIn("& $env:ComSpec /d /s /c $signCommand", self.probe)
         self.assertIn("Get-AuthenticodeSignature $authenticodeProbe", self.probe)
