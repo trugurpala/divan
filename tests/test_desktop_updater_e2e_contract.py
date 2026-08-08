@@ -7,7 +7,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 CARGO = ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml"
 MAIN = ROOT / "apps" / "desktop" / "src-tauri" / "src" / "main.rs"
 E2E_RUST = ROOT / "apps" / "desktop" / "src-tauri" / "src" / "updater_e2e.rs"
-BASE_CONFIG = ROOT / "apps" / "desktop" / "src-tauri" / "tauri.conf.json"
+BASE_CONFIG = ROOT / "apps" / "desktop"" / "src-tauri" / "tauri.conf.json"
 WINDOWS_CONFIG = ROOT / "apps" / "desktop" / "src-tauri" / "tauri.windows.conf.json"
 PREPARE_RELEASE = ROOT / "scripts" / "prepare_desktop_release_config.py"
 UPDATER_SCRIPT = ROOT / "scripts" / "windows_desktop_updater_e2e.ps1"
@@ -186,7 +186,10 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("windows_desktop_updater_e2e.ps1", workflow)
         self.assertIn("--features updater-e2e --locked", workflow)
         self.assertIn("divan-desktop-updater-e2e", workflow)
-        self.assertIn("needs: [contract, updater-e2e-windows]", workflow)
+        self.assertIn(
+            "needs: [contract, updater-e2e-windows, production-release-environment-policy]",
+            workflow,
+        )
         self.assertIn("pnpm tauri build --bundles nsis --features signed-updater", workflow)
         self.assertNotIn(
             "pnpm tauri build --bundles nsis --features updater-e2e --config $env:DIVAN_RELEASE_CONFIG",
