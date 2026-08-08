@@ -70,6 +70,24 @@ jobs:
             exit 1
           fi
 
+      - name: Verify production-release approval cannot be bypassed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/production-release")"
+          environment_name="$(jq -r '.name // empty' <<<"$environment_json")"
+          can_admins_bypass="$(jq -r '.can_admins_bypass // true' <<<"$environment_json")"
+          if [[ "$environment_name" != "production-release" ]]; then
+            echo "production-release environment must exist before desktop-acceptance bootstrap" >&2
+            exit 1
+          fi
+          if [[ "$can_admins_bypass" != "false" ]]; then
+            echo "production-release must disallow administrator bypass before desktop-acceptance bootstrap" >&2
+            exit 1
+          fi
+
       - name: Create or reconcile protected desktop-acceptance environment
         shell: bash
         env:
@@ -123,6 +141,7 @@ jobs:
           prevent_self_review_actual="$(jq -r '[.protection_rules[]? | select(.type == "required_reviewers")][0].prevent_self_review // false' <<<"$environment_json")"
           protected_branches="$(jq -r '.deployment_branch_policy.protected_branches // false' <<<"$environment_json")"
           custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
+          can_admins_bypass="$(jq -r '.can_admins_bypass // true' <<<"$environment_json")"
           if [[ "$required_rule_count" -ne 1 || "$reviewer_count" -ne 1 || "$reviewer_match" -ne 1 ]]; then
             echo "desktop-acceptance must have exactly the requested required reviewer and no alternate approval authority" >&2
             exit 1
@@ -135,6 +154,10 @@ jobs:
             echo "desktop-acceptance must use only custom deployment branch policies" >&2
             exit 1
           fi
+          if [[ "$can_admins_bypass" != "false" ]]; then
+            echo "desktop-acceptance must disallow administrator bypass; disable 'Allow administrators to bypass configured protection rules' and rerun bootstrap" >&2
+            exit 1
+          fi
 
           branch_policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies")"
           total_policy_count="$(jq '.branch_policies | length' <<<"$branch_policies")"
@@ -144,4 +167,4 @@ jobs:
             exit 1
           fi
 
-          echo "desktop-acceptance environment has exact reviewer authority and is restricted to main"
+          echo "desktop-acceptance environment has exact reviewer authority, no admin bypass, and is restricted to main"
