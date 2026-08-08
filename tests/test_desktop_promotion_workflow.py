@@ -132,7 +132,8 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertIn("DIVAN_WINDOWS_SIGN_COMMAND", self.text)
 
     def test_promotion_secrets_are_step_scoped_not_job_scoped(self) -> None:
-        job_env_start = self.text.index("    env:\n", self.text.index("jobs:"))
+        promote_start = self.text.index("  promote:")
+        job_env_start = self.text.index("    env:\n", promote_start)
         steps_start = self.text.index("    steps:", job_env_start)
         job_env = self.text[job_env_start:steps_start]
         self.assertNotIn("secrets.", job_env)
