@@ -33,7 +33,22 @@ Prerequisites:
 
 - protected Windows x64 self-hosted runner online with labels `self-hosted`, `windows`, `x64`, `divan-desktop-acceptance`
 - genuine authenticated Codex and Claude Code sessions available to that runner account
-- `desktop-acceptance` environment approval/policy satisfied
+- `desktop-acceptance` environment exists, has a required reviewer, and is restricted to `main`
+
+If `desktop-acceptance` is not yet configured, do not trigger the acceptance job and let GitHub auto-create an unprotected environment. Instead, use the repository-owned `Desktop Acceptance Environment Bootstrap` workflow. It runs only from `main`, is itself gated by the already-protected `production-release` environment, and uses the step-scoped `DIVAN_RELEASE_ADMIN_TOKEN` only for the environment API calls.
+
+The bootstrap requires the numeric GitHub user/team ID that will approve acceptance deployments:
+
+```powershell
+gh workflow run desktop-acceptance-bootstrap.yml --ref main `
+  -f reviewer_type=User `
+  -f reviewer_id=<NUMERIC_GITHUB_USER_ID> `
+  -f prevent_self_review=false
+```
+
+Use `reviewer_type=Team` with the numeric team ID when a team owns deployment approval. Set `prevent_self_review=true` only when a different eligible reviewer can approve the deployment. The bootstrap creates or reconciles the required-reviewer policy, enables custom deployment branch policies, adds `main`, and then fails unless `main` is the only allowed branch policy. It never receives Codex, Claude, Authenticode or Tauri signing secrets.
+
+After the bootstrap passes, confirm the repository environment UI shows `desktop-acceptance` with the intended reviewer before starting acceptance.
 
 Dispatch `Desktop Real-User Acceptance` with the exact source SHA:
 
@@ -41,7 +56,7 @@ Dispatch `Desktop Real-User Acceptance` with the exact source SHA:
 gh workflow run desktop-acceptance.yml --ref main -f source_sha=$SourceSha
 ```
 
-The workflow first re-resolves the live `main` ref after environment approval and fails before agent/build work if it no longer equals `source_sha`. It must then pass the authenticated agent preflight, build/install the exact source, execute the real worker -> diff -> independent cross-agent reviewer -> approval -> `ff-only` merge flow, verify installed Core provenance, attest the privacy-minimal JSON evidence and upload exactly the expected acceptance artifact.
+The workflow first verifies that `desktop-acceptance` already exists with a required reviewer before the self-hosted Windows job is eligible to start. After environment approval it re-resolves the live `main` ref and fails before agent/build work if it no longer equals `source_sha`. It must then pass the authenticated agent preflight, build/install the exact source, execute the real worker -> diff -> independent cross-agent reviewer -> approval -> `ff-only` merge flow, verify installed Core provenance, attest the privacy-minimal JSON evidence and upload exactly the expected acceptance artifact.
 
 Record the successful workflow run ID as `AcceptanceRunId`. Do not continue with a failed, cancelled, stale or source-mismatched run.
 
@@ -93,7 +108,7 @@ Record the successful manual workflow run ID as `CandidateRunId`.
 
 Before irreversible promotion, the production updater endpoint must serve the exact source-bound `latest.json` produced by the successful candidate run. Do not hand-edit the feed into a different installer URL, signature or version.
 
-The repository immutable-release policy must be enabled before promotion. The protected `production-release` environment must also provide `DIVAN_RELEASE_ADMIN_TOKEN` with only the repository administration capability required by the promotion workflow's immutable-release policy check.
+The repository immutable-release policy must be enabled before promotion. The protected `production-release` environment must also provide `DIVAN_RELEASE_ADMIN_TOKEN` with only the repository administration capability required by the acceptance bootstrap and promotion workflow's administrative checks.
 
 Do not publish the GitHub Release manually; the promotion workflow owns the verified publication step.
 
