@@ -223,16 +223,32 @@ def _evidence_blocker(
     return None
 
 
+def _readiness_proves_private_signing_key(report: Mapping[str, Any]) -> bool:
+    readiness = report.get("production_readiness_evidence")
+    return bool(
+        isinstance(readiness, Mapping)
+        and readiness.get("verified") is True
+        and readiness.get("source_bound") is True
+    )
+
+
 def require_stable_release(
     report: Mapping[str, Any],
     env: Mapping[str, str] | None = None,
+    *,
+    allow_attested_signing_authority: bool = False,
 ) -> dict[str, Any]:
     environment = os.environ if env is None else env
     blockers: list[str] = []
     if report.get("updater_configured") is not True:
         blockers.append("signed Tauri updater is not configured")
-    if not environment.get("TAURI_SIGNING_PRIVATE_KEY"):
-        blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing")
+    has_live_signing_key = bool(environment.get("TAURI_SIGNING_PRIVATE_KEY"))
+    has_attested_signing_authority = bool(
+        allow_attested_signing_authority
+        and _readiness_proves_private_signing_key(report)
+    )
+    if not has_live_signing_key and not has_attested_signing_authority:
+        blockers.append("TAURI_SIGNING_PRIVATE_KEY is missing for this stable release gate")
     if report.get("windows_signing_configured") is not True:
         blockers.append("Windows Authenticode signCommand is not configured")
     evidence_blockers = (
@@ -295,6 +311,14 @@ def main() -> int:
     parser.add_argument("--source-commit")
     parser.add_argument("--source-tree")
     parser.add_argument("--stable-release", action="store_true")
+    parser.add_argument(
+        "--allow-attested-signing-authority",
+        action="store_true",
+        help=(
+            "allow verified source-bound production-readiness evidence to stand in "
+            "for the live Tauri private key on non-signing promotion hosts"
+        ),
+    )
     args = parser.parse_args()
     try:
         readiness_evidence = _readiness_evidence_path(
@@ -311,7 +335,10 @@ def main() -> int:
             expected_source_tree=args.source_tree,
         )
         if args.stable_release:
-            report = require_stable_release(report)
+            report = require_stable_release(
+                report,
+                allow_attested_signing_authority=args.allow_attested_signing_authority,
+            )
     except (
         OSError,
         json.JSONDecodeError,

@@ -14,6 +14,7 @@ on:
       - "tests/test_desktop_promotion_guard.py"
       - "tests/test_desktop_promotion_workflow.py"
       - "tests/test_desktop_release_guard.py"
+      - "tests/test_desktop_release_readiness_authority.py"
       - "tests/test_desktop_update_feed.py"
       - "tests/test_desktop_updater_e2e_contract.py"
 
@@ -41,6 +42,7 @@ jobs:
           tests.test_desktop_promotion_guard
           tests.test_desktop_promotion_workflow
           tests.test_desktop_release_guard
+          tests.test_desktop_release_readiness_authority
           tests.test_desktop_update_feed
           tests.test_desktop_updater_e2e_contract
 
