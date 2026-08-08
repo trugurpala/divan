@@ -23,10 +23,19 @@ class DesktopAcceptanceBootstrapWorkflowTests(unittest.TestCase):
         self.assertIn("reviewer_id must be a positive numeric GitHub user/team ID", self.text)
         self.assertIn("reviewers: [{type: $reviewer_type, id: $reviewer_id}]", self.text)
 
+    def test_bootstrap_forces_self_review_prevention(self) -> None:
+        inputs = self.text[self.text.index("workflow_dispatch:") : self.text.index("permissions: read-all")]
+        self.assertNotIn("prevent_self_review:", inputs)
+        self.assertIn("prevent_self_review: true", self.text)
+        self.assertIn(
+            "desktop-acceptance must prevent workflow initiators from approving their own acceptance deployment",
+            self.text,
+        )
+
     def test_bootstrap_revalidates_live_main_and_production_gate_before_admin_mutation(self) -> None:
         source_check = self.text.index("Verify bootstrap still targets current main")
         production_gate = self.text.index(
-            "Verify production-release approval cannot be bypassed"
+            "Verify production-release approval is independent and cannot be bypassed"
         )
         admin_mutation = self.text.index(
             "Create or reconcile protected desktop-acceptance environment"
@@ -41,6 +50,14 @@ class DesktopAcceptanceBootstrapWorkflowTests(unittest.TestCase):
         self.assertNotIn("DIVAN_RELEASE_ADMIN_TOKEN", source_block)
         self.assertIn("GH_TOKEN: ${{ github.token }}", production_block)
         self.assertIn("environments/production-release", production_block)
+        self.assertIn("required_rule_count", production_block)
+        self.assertIn("reviewer_count", production_block)
+        self.assertIn("exactly one required reviewer", production_block)
+        self.assertIn("prevent_self_review_actual", production_block)
+        self.assertIn("must prevent self-review", production_block)
+        self.assertIn("custom_branch_policies", production_block)
+        self.assertIn("deployment-branch-policies", production_block)
+        self.assertIn("must allow only the main branch policy", production_block)
         self.assertIn("can_admins_bypass", production_block)
         self.assertIn("must disallow administrator bypass", production_block)
         self.assertNotIn("DIVAN_RELEASE_ADMIN_TOKEN", production_block)
@@ -58,7 +75,7 @@ class DesktopAcceptanceBootstrapWorkflowTests(unittest.TestCase):
         self.assertIn("reviewer_count", self.text)
         self.assertIn("no alternate approval authority", self.text)
         self.assertIn("prevent_self_review_actual", self.text)
-        self.assertIn("prevent_self_review does not match the requested policy", self.text)
+        self.assertIn("must prevent workflow initiators", self.text)
         self.assertIn("protected_branches", self.text)
         self.assertIn("must use only custom deployment branch policies", self.text)
         self.assertIn("can_admins_bypass", self.text)
