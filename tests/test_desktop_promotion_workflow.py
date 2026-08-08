@@ -69,11 +69,20 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertIn("prepare_desktop_release_config.py", self.text)
         self.assertIn("desktop_release_guard.py", self.text)
         self.assertIn("--stable-release", self.text)
+        self.assertIn("--allow-attested-signing-authority", self.text)
         self.assertIn("DIVAN_PRODUCTION_READINESS_EVIDENCE", self.text)
         self.assertIn("--acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE", self.text)
         self.assertIn("--updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE", self.text)
         self.assertIn("--source-commit $env:DIVAN_SOURCE_COMMIT", self.text)
         self.assertIn("--source-tree $env:DIVAN_SOURCE_TREE", self.text)
+
+    def test_promotion_release_config_is_ephemeral_even_when_guard_fails(self) -> None:
+        start = self.text.index("Re-establish stable release guard on promotion host")
+        end = self.text.index("Validate downloaded signed candidate", start)
+        guard_step = self.text[start:end]
+        self.assertIn("try {", guard_step)
+        self.assertIn("} finally {", guard_step)
+        self.assertIn("Remove-Item -LiteralPath $config -Force", guard_step)
 
     def test_candidate_is_checked_before_immutable_publication(self) -> None:
         guard = self.text.index("desktop_promotion_guard.py")
@@ -121,6 +130,37 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         self.assertNotIn("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", self.text)
         self.assertIn("DIVAN_UPDATER_PUBKEY", self.text)
         self.assertIn("DIVAN_WINDOWS_SIGN_COMMAND", self.text)
+
+    def test_promotion_secrets_are_step_scoped_not_job_scoped(self) -> None:
+        job_env_start = self.text.index("    env:\n", self.text.index("jobs:"))
+        steps_start = self.text.index("    steps:", job_env_start)
+        job_env = self.text[job_env_start:steps_start]
+        self.assertNotIn("secrets.", job_env)
+        self.assertNotIn("GH_TOKEN", job_env)
+        self.assertEqual(
+            self.text.count(
+                "DIVAN_RELEASE_ADMIN_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}"
+            ),
+            1,
+        )
+        self.assertEqual(
+            self.text.count("DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}"),
+            1,
+        )
+        self.assertEqual(
+            self.text.count(
+                "DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}"
+            ),
+            1,
+        )
+        immutable = self.text.index("Verify immutable-release repository policy")
+        endpoint = self.text.index("Require production updater endpoint", immutable)
+        immutable_step = self.text[immutable:endpoint]
+        self.assertIn(
+            "DIVAN_RELEASE_ADMIN_TOKEN: ${{ secrets.DIVAN_RELEASE_ADMIN_TOKEN }}",
+            immutable_step,
+        )
+        self.assertIn("GH_TOKEN: ${{ github.token }}", immutable_step)
 
     def test_release_notes_record_all_authorizing_runs(self) -> None:
         self.assertIn("Production readiness run: `$env:DIVAN_PRODUCTION_READINESS_RUN_ID`", self.text)
