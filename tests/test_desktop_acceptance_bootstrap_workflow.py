@@ -23,6 +23,18 @@ class DesktopAcceptanceBootstrapWorkflowTests(unittest.TestCase):
         self.assertIn("reviewer_id must be a positive numeric GitHub user/team ID", self.text)
         self.assertIn("reviewers: [{type: $reviewer_type, id: $reviewer_id}]", self.text)
 
+    def test_bootstrap_revalidates_live_main_before_admin_mutation(self) -> None:
+        source_check = self.text.index("Verify bootstrap still targets current main")
+        admin_mutation = self.text.index(
+            "Create or reconcile protected desktop-acceptance environment"
+        )
+        self.assertLess(source_check, admin_mutation)
+        source_block = self.text[source_check:admin_mutation]
+        self.assertIn("GH_TOKEN: ${{ github.token }}", source_block)
+        self.assertIn("git/ref/heads/main", source_block)
+        self.assertIn("main moved after bootstrap dispatch; restart on current main", source_block)
+        self.assertNotIn("DIVAN_RELEASE_ADMIN_TOKEN", source_block)
+
     def test_bootstrap_is_fail_closed_and_main_restricted(self) -> None:
         self.assertIn("set -euo pipefail", self.text)
         self.assertIn(
