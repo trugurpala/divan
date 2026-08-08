@@ -41,7 +41,7 @@ Dispatch `Desktop Real-User Acceptance` with the exact source SHA:
 gh workflow run desktop-acceptance.yml --ref main -f source_sha=$SourceSha
 ```
 
-The workflow must pass the authenticated agent preflight, build/install the exact source, execute the real worker -> diff -> independent cross-agent reviewer -> approval -> `ff-only` merge flow, verify installed Core provenance, attest the privacy-minimal JSON evidence and upload exactly the expected acceptance artifact.
+The workflow first re-resolves the live `main` ref after environment approval and fails before agent/build work if it no longer equals `source_sha`. It must then pass the authenticated agent preflight, build/install the exact source, execute the real worker -> diff -> independent cross-agent reviewer -> approval -> `ff-only` merge flow, verify installed Core provenance, attest the privacy-minimal JSON evidence and upload exactly the expected acceptance artifact.
 
 Record the successful workflow run ID as `AcceptanceRunId`. Do not continue with a failed, cancelled, stale or source-mismatched run.
 
@@ -65,13 +65,13 @@ $LiveMain = (gh api repos/$env:GITHUB_REPOSITORY/git/ref/heads/main --jq '.objec
 if ($LiveMain -ne $SourceSha) { throw 'main moved; restart from DSK-06 on the new source' }
 ```
 
-Dispatch `Desktop Production Readiness`:
+Dispatch `Desktop Production Readiness` with the same accepted source SHA:
 
 ```powershell
-gh workflow run desktop-production-readiness.yml --ref main
+gh workflow run desktop-production-readiness.yml --ref main -f source_sha=$SourceSha
 ```
 
-The workflow must prove that the configured Authenticode command can create a Windows signature reported as valid, that the Tauri private key can sign through the official Tauri signer CLI, that updater/public configuration is valid, and that attested evidence contains no private signing material.
+The workflow re-resolves live `main` after protected-environment approval and fails before dependency setup/signing if it differs from `source_sha`. Production signing/updater secrets are exposed only to the isolated signing-probe step, not checkout/setup/attestation/upload steps. The workflow must prove that the configured Authenticode command can create a Windows signature reported as valid, that the Tauri private key can sign through the official Tauri signer CLI, that updater/public configuration is valid, and that attested evidence contains no private signing material.
 
 Record the successful workflow run ID as `ProductionReadinessRunId`.
 

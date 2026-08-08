@@ -2,6 +2,11 @@ name: Desktop Production Readiness
 
 on:
   workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Exact accepted main commit SHA approved for production readiness"
+        required: true
+        type: string
 
 permissions: read-all
 
@@ -18,17 +23,46 @@ jobs:
       id-token: write
       artifact-metadata: write
     env:
-      DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
-      DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
-      DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
-      DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      DIVAN_EXPECTED_SOURCE_SHA: ${{ inputs.source_sha }}
     steps:
       - name: Checkout exact main source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+
+      - name: Verify requested production-readiness source identity
+        shell: pwsh
+        env:
+          DIVAN_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $expected = "$env:DIVAN_EXPECTED_SOURCE_SHA".Trim().ToLowerInvariant()
+          $actual = (& git rev-parse HEAD).Trim().ToLowerInvariant()
+          $eventSha = "$env:GITHUB_SHA".Trim().ToLowerInvariant()
+          if ($expected -notmatch '^[0-9a-f]{40}$') {
+            throw "source_sha must be an exact 40-character Git commit SHA"
+          }
+          if ($actual -ne $eventSha) {
+            throw "Production readiness checkout does not match the workflow event source SHA"
+          }
+          if ($expected -ne $actual) {
+            throw "Requested production readiness source SHA does not match the workflow source commit"
+          }
+
+          $headers = @{
+            Authorization = "Bearer $env:DIVAN_GITHUB_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $ref = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/main"
+          $liveMain = "$($ref.object.sha)".Trim().ToLowerInvariant()
+          if ($liveMain -notmatch '^[0-9a-f]{40}$') {
+            throw "Current main source SHA could not be resolved"
+          }
+          if ($expected -ne $liveMain) {
+            throw "main moved after production readiness dispatch; restart DSK-06 and DSK-07 on current main"
+          }
 
       - name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -60,6 +94,13 @@ jobs:
 
       - name: Probe production signing and updater material
         shell: pwsh
+        env:
+          DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}
+          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}
+          DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}
+          DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           $evidence = Join-Path $env:RUNNER_TEMP "divan-production-readiness.json"
           & scripts/windows_desktop_production_readiness.ps1 -Output $evidence
