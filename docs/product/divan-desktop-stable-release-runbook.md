@@ -28,7 +28,27 @@ When running outside GitHub Actions, set `GITHUB_REPOSITORY` first or replace it
 
 Do not merge another commit to `main` until the release chain completes. If `main` moves, stop and restart this runbook from step 1.
 
-## 2. DSK-06 — Real-user Windows acceptance
+## 2. Harden `production-release` before DSK-06
+
+Do not start DSK-06 while `production-release` permits self-review or administrator bypass. The repository-owned `Desktop Production Environment Bootstrap` workflow exists to reconcile the API-configurable parts of this gate without exposing release-administration credentials to the rest of the workflow.
+
+Choose exactly one independent GitHub user or team as release reviewer. For a user reviewer, the numeric reviewer ID must not be the user who dispatches the bootstrap:
+
+```powershell
+gh workflow run desktop-production-environment-bootstrap.yml --ref main `
+  -f reviewer_type=User `
+  -f reviewer_id=<INDEPENDENT_NUMERIC_GITHUB_USER_ID>
+```
+
+Use `reviewer_type=Team` with the numeric team ID when a team owns release approval. The bootstrap is itself attached to the existing `production-release` environment, requires the existing migration gate to have one reviewer and only the `main` deployment branch before the release-admin token is exposed, and re-resolves live `main` before mutation. It then reconciles exactly one requested reviewer, forces `prevent_self_review: true`, removes stray deployment branch policies and preserves only `main`.
+
+The GitHub environment update API does not provide a field that switches administrator bypass off. Therefore the bootstrap verifies `can_admins_bypass` after reconciliation and intentionally fails closed while bypass remains enabled. If it reports that condition, open the repository `production-release` environment settings, disable **Allow administrators to bypass configured protection rules**, then rerun the bootstrap. Do not work around that failure by weakening the workflow.
+
+The `DIVAN_RELEASE_ADMIN_TOKEN` is scoped only to the reconciliation step. This bootstrap does not receive Codex, Claude, Authenticode, updater signing or Tauri private-key secrets.
+
+After the bootstrap passes, independently confirm `production-release` shows exactly the intended reviewer, self-review prevention enabled, administrator bypass disabled and only the `main` deployment branch policy. Then continue with DSK-06 on the still-frozen `$SourceSha`.
+
+## 3. DSK-06 — Real-user Windows acceptance
 
 Prerequisites:
 
@@ -61,7 +81,7 @@ The workflow first verifies that `desktop-acceptance` already exists with exactl
 
 Record the successful workflow run ID as `AcceptanceRunId`. Do not continue with a failed, cancelled, stale or source-mismatched run.
 
-## 3. DSK-07 — Production signing readiness
+## 4. DSK-07 — Production signing readiness
 
 The protected `production-release` environment must provide these secret names without exposing their values:
 
@@ -91,7 +111,7 @@ The workflow first performs a GitHub-hosted fail-closed policy preflight before 
 
 Record the successful workflow run ID as `ProductionReadinessRunId`.
 
-## 4. DSK-08a — Build and verify the signed stable candidate
+## 5. DSK-08a — Build and verify the signed stable candidate
 
 Confirm `main` still equals `$SourceSha`, then dispatch `Desktop Stable Candidate` with both exact-source run IDs:
 
@@ -105,15 +125,15 @@ The candidate workflow must independently verify that readiness and acceptance a
 
 Record the successful manual workflow run ID as `CandidateRunId`.
 
-## 5. Pre-stage the production updater feed
+## 6. Pre-stage the production updater feed
 
 Before irreversible promotion, the production updater endpoint must serve the exact source-bound `latest.json` produced by the successful candidate run. Do not hand-edit the feed into a different installer URL, signature or version.
 
-The repository immutable-release policy must be enabled before promotion. The protected `production-release` environment must also provide `DIVAN_RELEASE_ADMIN_TOKEN` with only the repository administration capability required by the acceptance bootstrap and promotion workflow's administrative checks.
+The repository immutable-release policy must be enabled before promotion. The protected `production-release` environment must also provide `DIVAN_RELEASE_ADMIN_TOKEN` with only the repository administration capability required by the environment bootstrap workflows and promotion workflow's administrative checks.
 
 Do not publish the GitHub Release manually; the promotion workflow owns the verified publication step.
 
-## 6. DSK-08b — Verify and promote the stable release
+## 7. DSK-08b — Verify and promote the stable release
 
 Confirm `main` still equals `$SourceSha`, then dispatch `Desktop Stable Promotion`:
 
@@ -126,7 +146,7 @@ gh workflow run desktop-promote.yml --ref main `
 
 Promotion must fail closed unless all three run IDs belong to successful manual workflows on the same exact source SHA. It re-downloads and verifies evidence/artifacts, re-runs the stable release guard, verifies the immutable-release policy, checks the pre-staged production updater feed, publishes or idempotently verifies the namespaced `desktop-v<version>` GitHub Release, re-downloads promoted assets, verifies byte identity/attestations/Authenticode and confirms the live updater artifact URL serves the exact promoted installer.
 
-## 7. Completion criteria
+## 8. Completion criteria
 
 Do not mark the stable Windows release complete until the canonical checklist records DSK-06, DSK-07 and DSK-08 as DONE from the real successful run IDs and exact accepted source identity.
 
