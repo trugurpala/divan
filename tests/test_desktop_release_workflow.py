@@ -8,6 +8,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "desktop-release.yml"
 BUILD_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-build.yml"
 ACCEPTANCE_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-acceptance.yml"
+PRODUCTION_READINESS_WORKFLOW = ROOT / ".github" / "workflows" / "desktop-production-readiness.yml"
 CARGO = ROOT / "apps" / "desktop" / "src-tauri" / "Cargo.toml"
 MAIN = ROOT / "apps" / "desktop" / "src-tauri" / "src" / "main.rs"
 APP = ROOT / "apps" / "desktop" / "src" / "App.tsx"
@@ -41,14 +42,52 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('$updaterSignaturePath = "$($installer.FullName).sig"', signed)
         self.assertIn("actions/attest-build-provenance@", signed)
 
-    def test_dispatch_acceptance_run_id_is_not_interpolated_inside_shell_script(self) -> None:
+    def test_dispatch_run_ids_are_not_interpolated_inside_shell_script(self) -> None:
         run_blocks = "\n".join(
             line for line in self.text.splitlines() if line.lstrip().startswith("run:")
         )
         self.assertNotIn("${{ inputs.", run_blocks)
+        self.assertIn(
+            "DIVAN_PRODUCTION_READINESS_RUN_ID: ${{ inputs.production_readiness_run_id }}",
+            self.text,
+        )
         self.assertIn("DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}", self.text)
+        self.assertIn("$runId = $env:DIVAN_PRODUCTION_READINESS_RUN_ID", self.text)
         self.assertIn("$runId = $env:DIVAN_ACCEPTANCE_RUN_ID", self.text)
         self.assertNotIn("acceptance_evidence:", self.text)
+
+    def test_production_readiness_artifact_is_attested_by_exact_workflow_and_same_main_commit(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        readiness_start = signed.index("Resolve and verify attested production readiness evidence")
+        acceptance_start = signed.index("Resolve and verify attested real-user acceptance evidence")
+        readiness = signed[readiness_start:acceptance_start]
+        self.assertIn('if ($metadata.name -ne "Desktop Production Readiness")', readiness)
+        self.assertIn('$metadata.event -ne "workflow_dispatch"', readiness)
+        self.assertIn('$metadata.head_branch -ne "main"', readiness)
+        self.assertIn("$metadata.head_sha -ne $env:GITHUB_SHA", readiness)
+        self.assertIn("gh run download $runId", readiness)
+        self.assertIn("--name divan-production-readiness", readiness)
+        self.assertIn("gh attestation verify $evidence", readiness)
+        self.assertIn(
+            '--signer-workflow "$env:GITHUB_REPOSITORY/.github/workflows/desktop-production-readiness.yml"',
+            readiness,
+        )
+        self.assertIn("--source-ref refs/heads/main", readiness)
+        self.assertIn("--source-digest $env:GITHUB_SHA", readiness)
+        self.assertIn('if ($payload.status -ne "pass"', readiness)
+        self.assertIn("$payload.source_commit -ne $sourceCommit", readiness)
+        self.assertIn("$payload.source_tree -ne $sourceTree", readiness)
+        self.assertIn("private_signing_material_persisted", readiness)
+        self.assertIn("secret_values_in_evidence", readiness)
+        self.assertLess(readiness_start, acceptance_start)
+
+    def test_release_contract_tracks_production_readiness_changes(self) -> None:
+        self.assertIn('      - ".github/workflows/desktop-production-readiness.yml"', self.text)
+        self.assertIn('      - "scripts/windows_desktop_production_readiness.ps1"', self.text)
+        self.assertIn('      - "tests/test_desktop_production_readiness_workflow.py"', self.text)
+        contract = self.text[self.text.index("  contract:") : self.text.index("  updater-e2e-windows:")]
+        self.assertIn("tests.test_desktop_production_readiness_workflow", contract)
+        self.assertTrue(PRODUCTION_READINESS_WORKFLOW.exists())
 
     def test_acceptance_artifact_is_attested_by_exact_workflow_and_same_main_commit(self) -> None:
         signed = self.text[self.text.index("  signed-windows-candidate:") :]
