@@ -38,6 +38,11 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         )
         self.assertIn('select(.type == "required_reviewers")', preflight)
         self.assertIn("reviewer_count", preflight)
+        self.assertIn("custom_branch_policies", preflight)
+        self.assertIn("deployment-branch-policies", preflight)
+        self.assertIn("total_policy_count", preflight)
+        self.assertIn('select(.name == "main")', preflight)
+        self.assertIn("must allow only the main branch", preflight)
         self.assertIn("needs: acceptance-environment-policy", acceptance)
 
     def test_acceptance_requires_exact_current_main_source_sha_pin(self) -> None:
