@@ -32,21 +32,21 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 
 **Status:** DONE
 
-Completion evidence on latest stable-release hardening PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`:
+Completion evidence on latest stable-release hardening PR #131 exact head `abd6c0daec61dc6e6b35cc86e823dbc43122631e`:
 
-- `quality-gate` run `31236372832` PASS
-- `compatibility` run `31236372822` PASS
-- `site-tests` run `31236372803` PASS
-- `wiki-sync` run `31236372817` PASS
-- `dependency-review` run `31236372806` PASS
-- `CodeQL` run `31236372829` PASS
-- `Desktop Build` run `31236372811` PASS
-- `Desktop Stable Candidate` run `31236372814` PASS
-- `Desktop Promotion Contract` run `31236372799` PASS
+- `quality-gate` run `31247795267` PASS
+- `compatibility` run `31247795264` PASS
+- `site-tests` run `31247795279` PASS
+- `wiki-sync` run `31247795271` PASS
+- `dependency-review` run `31247795276` PASS
+- `CodeQL` run `31247795275` PASS
+- `Desktop Build` run `31247795288` PASS
+- `Desktop Stable Candidate` run `31247795263` PASS
+- `Desktop Promotion Contract` run `31247795272` PASS
 - no unresolved correctness/security review thread
 - PR was mergeable and was merged with exact-head protection
 
-The exact-head CI evidence above is authoritative only for PR #127 head `d3b685f4c66736165c0adc2369ca286a7578ea36`; any later Desktop runtime/release workflow source change must establish fresh DSK-01 evidence before stable acceptance or promotion. Documentation-only governance commits do not retroactively invalidate that runtime CI, but they do change the exact `main` source identity that DSK-06 must accept.
+The exact-head CI evidence above is authoritative only for PR #131 head `abd6c0daec61dc6e6b35cc86e823dbc43122631e`; any later Desktop runtime/release workflow source change must establish fresh DSK-01 evidence before stable acceptance or promotion. Documentation-only governance commits do not retroactively invalidate that runtime CI, but they do change the exact `main` source identity that DSK-06 must accept.
 
 ### DSK-02 — Reproducible Node and Rust dependency resolution
 
@@ -81,7 +81,7 @@ Completion evidence:
 - first-run matrix runs with Orca absent, then with a deterministic Orca executable present, and verifies Orca remains a replaceable engine while Divan retains mandate/approval authority
 - lifecycle JSON is bound to exact source commit/tree and revalidated by the Windows workflow before artifact upload
 - NSIS uninstall removes the application while preserving identifier-scoped project/task Core state
-- `Desktop Build` run `31236372811` PASS on PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`
+- `Desktop Build` run `31247795288` PASS on PR #131 exact head `abd6c0daec61dc6e6b35cc86e823dbc43122631e`
 
 ### DSK-04 — Signed updater upgrade and rollback verification
 
@@ -89,7 +89,7 @@ Completion evidence:
 
 Completion evidence:
 
-- `Desktop Stable Candidate` run `31236372814` PASS on PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`
+- `Desktop Stable Candidate` run `31247795263` PASS on PR #131 exact head `abd6c0daec61dc6e6b35cc86e823dbc43122631e`
 - signed N -> N+1 upgrade test runs on Windows
 - updater endpoint metadata is validated against the signed installer/signature pair
 - failed signature or mismatched update metadata fails closed
@@ -106,9 +106,9 @@ Tauri updater signatures are mandatory and cannot be disabled. The stable client
 Completion evidence:
 
 - the original verified Desktop product slice was merged from PR #118 after DSK-01 through DSK-04 were satisfied for that reviewed source
-- subsequent stable-release hardening PRs #122, #124, #125, #126 and #127 were independently exact-head verified before merge
-- latest stable-release hardening PR #127 exact head was `d3b685f4c66736165c0adc2369ca286a7578ea36`
-- PR #127 merged to `main` as `e6b88c4756c5c1d29d3afe4b20a7b3b54895a8ab`; later documentation-only governance merges do not replace this recorded runtime-hardening evidence
+- subsequent stable-release hardening PRs #122, #124, #125, #126, #127, #129, #130 and #131 were independently exact-head verified before merge; PR #128 was a documentation-only governance/runbook update
+- latest stable-release hardening PR #131 exact head was `abd6c0daec61dc6e6b35cc86e823dbc43122631e`
+- PR #131 merged to `main` as `82c7a3d833e628cb00c576f2b19a9c2fa7592057`; later documentation-only governance merges do not replace this recorded runtime-hardening evidence
 - DSK-06 does not self-reference this checklist commit: acceptance must explicitly pin the exact current `main` workflow event SHA at dispatch time and revalidate the live `main` ref before expensive work
 - DSK-08 must consume acceptance/readiness evidence from that same exact accepted `main` SHA; if `main` moves after acceptance, promotion fails closed and DSK-06/DSK-07 must be rerun
 
