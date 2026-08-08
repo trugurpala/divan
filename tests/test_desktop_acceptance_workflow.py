@@ -24,7 +24,7 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         )
         self.assertIn("environment: desktop-acceptance", self.text)
 
-    def test_acceptance_environment_must_preexist_with_required_reviewer(self) -> None:
+    def test_acceptance_environment_must_preexist_with_exact_reviewer_authority(self) -> None:
         preflight_start = self.text.index("  acceptance-environment-policy:")
         acceptance_start = self.text.index("  real-user-windows-acceptance:")
         preflight = self.text[preflight_start:acceptance_start]
@@ -37,8 +37,13 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
             preflight,
         )
         self.assertIn('select(.type == "required_reviewers")', preflight)
+        self.assertIn("required_rule_count", preflight)
         self.assertIn("reviewer_count", preflight)
+        self.assertIn("exactly one required reviewer", preflight)
+        self.assertIn("no alternate approval authority", preflight)
+        self.assertIn("protected_branches", preflight)
         self.assertIn("custom_branch_policies", preflight)
+        self.assertIn("must use only custom deployment branch policies", preflight)
         self.assertIn("deployment-branch-policies", preflight)
         self.assertIn("total_policy_count", preflight)
         self.assertIn('select(.name == "main")', preflight)
@@ -59,7 +64,12 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("Bearer $env:DIVAN_POLICY_TOKEN", policy)
         self.assertIn("environments/desktop-acceptance", policy)
         self.assertIn('Where-Object { $_.type -eq "required_reviewers" }', policy)
+        self.assertIn("$requiredReviewerRules.Count -ne 1", policy)
+        self.assertIn("$reviewerCount -ne 1", policy)
+        self.assertIn("exactly one required reviewer", policy)
+        self.assertIn("protected_branches", policy)
         self.assertIn("custom_branch_policies", policy)
+        self.assertIn("only custom deployment branch policies", policy)
         self.assertIn("deployment-branch-policies", policy)
         self.assertIn('Where-Object { $_.name -eq "main" }', policy)
         self.assertIn("must still allow only the main branch", policy)
