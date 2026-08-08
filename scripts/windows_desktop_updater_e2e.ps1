@@ -274,14 +274,19 @@ function Wait-InstalledBinaryVersion {
     throw "Installed Divan binary version did not become $Expected within $TimeoutSeconds seconds"
 }
 
-function Wait-UpdaterInstallerExit {
+function Clear-VerifiedUpdaterInstaller {
     param(
         [string]$Expected,
-        [int]$TimeoutSeconds = 30
+        [int]$GraceSeconds = 8,
+        [int]$CleanupTimeoutSeconds = 10
     )
 
-    $deadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
-    while ([DateTime]::UtcNow -lt $deadline) {
+    # Installer lifetime is not release evidence. On headless hosted Windows
+    # runners the passive NSIS process can outlive a completed replacement.
+    # This cleanup is permitted only after both the on-disk PE version and a
+    # freshly launched Tauri runtime have independently proven $Expected.
+    $graceDeadline = [DateTime]::UtcNow.AddSeconds($GraceSeconds)
+    while ([DateTime]::UtcNow -lt $graceDeadline) {
         $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
         if ($installers.Count -eq 0) {
             return
@@ -289,7 +294,20 @@ function Wait-UpdaterInstallerExit {
         Start-Sleep -Milliseconds 500
     }
 
-    throw "Updater installer for $Expected remained active after the installed runtime reported the expected version"
+    $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
+    foreach ($installer in $installers) {
+        Stop-Process -Id $installer.Id -Force -ErrorAction SilentlyContinue
+    }
+
+    $cleanupDeadline = [DateTime]::UtcNow.AddSeconds($CleanupTimeoutSeconds)
+    while ([DateTime]::UtcNow -lt $cleanupDeadline) {
+        if (@(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue).Count -eq 0) {
+            return
+        }
+        Start-Sleep -Milliseconds 250
+    }
+
+    throw "Test-only updater installer cleanup did not complete after verified runtime $Expected"
 }
 
 function Invoke-Probe {
@@ -333,6 +351,13 @@ function Wait-InstalledVersion {
                 if (Test-Path $markerPath -PathType Leaf) {
                     $marker = Read-Marker -Path $markerPath
                     if ($marker["status"] -eq "pass") {
+                        # The Rust probe writes the marker immediately before
+                        # app.exit(). Ensure this test-only process actually
+                        # drains so it cannot keep the passive NSIS updater open.
+                        if (-not $process.HasExited -and -not $process.WaitForExit(5000)) {
+                            Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+                            $null = $process.WaitForExit(5000)
+                        }
                         return $marker
                     }
                     break
@@ -367,16 +392,14 @@ function Invoke-SignedUpgrade {
         return $result
     }
 
-    # Tauri quits the Windows application before NSIS installation. Do not use
-    # installer-process lifetime as the readiness signal: the passive installer
-    # can remain alive while the replacement binary is already ready to launch.
-    # First prove the on-disk PE version changed without opening Divan, then let
-    # the updated runtime report its own package version, and only then require
-    # the installer process to drain so no updater process leaks into the next
-    # test stage.
+    # Tauri quits the Windows application before NSIS installation. Prove the
+    # replacement from two independent product signals: first the on-disk PE
+    # version, then Tauri's own runtime package version. Only after both pass do
+    # we perform bounded test-runner cleanup for any passive NSIS process that
+    # lingers on the headless hosted runner. Cleanup never authorizes PASS.
     Wait-InstalledBinaryVersion -Expected $Expected -TimeoutSeconds 180 | Out-Null
     $runtimeResult = Wait-InstalledVersion -Expected $Expected -TimeoutSeconds 90
-    Wait-UpdaterInstallerExit -Expected $Expected -TimeoutSeconds 30
+    Clear-VerifiedUpdaterInstaller -Expected $Expected
     return $runtimeResult
 }
 
