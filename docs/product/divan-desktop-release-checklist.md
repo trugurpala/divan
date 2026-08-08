@@ -25,6 +25,7 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 - Manual, main-only real-user acceptance and signed-candidate workflows.
 - Dedicated `divan-desktop-acceptance` runner label and attested acceptance evidence contract.
 - Authenticode/updater/signature/source-provenance stable-release gates are fail-closed.
+- Desktop acceptance, production readiness, signed candidate and stable promotion all require non-bypassable GitHub environment policy and revalidate it after approval before protected work begins.
 
 ## Canonical remaining gates
 
@@ -32,21 +33,21 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 
 **Status:** DONE
 
-Completion evidence on latest stable-release hardening PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`:
+Completion evidence on latest stable-release hardening PR #146 exact head `a2d9aa84462ac1344d1049a2c6dbc7e20c1c9570`:
 
-- `quality-gate` run `31236372832` PASS
-- `compatibility` run `31236372822` PASS
-- `site-tests` run `31236372803` PASS
-- `wiki-sync` run `31236372817` PASS
-- `dependency-review` run `31236372806` PASS
-- `CodeQL` run `31236372829` PASS
-- `Desktop Build` run `31236372811` PASS
-- `Desktop Stable Candidate` run `31236372814` PASS
-- `Desktop Promotion Contract` run `31236372799` PASS
+- `quality-gate` run `31262469580` PASS
+- `compatibility` run `31262469545` PASS
+- `site-tests` run `31262469593` PASS
+- `wiki-sync` run `31262469577` PASS
+- `dependency-review` run `31262469548` PASS
+- `CodeQL` run `31262469583` PASS
+- `Desktop Build` run `31262469549` PASS
+- `Desktop Stable Candidate` run `31262469563` PASS
+- `Desktop Promotion Contract` run `31262469596` PASS
 - no unresolved correctness/security review thread
 - PR was mergeable and was merged with exact-head protection
 
-The exact-head CI evidence above is authoritative only for PR #127 head `d3b685f4c66736165c0adc2369ca286a7578ea36`; any later Desktop runtime/release workflow source change must establish fresh DSK-01 evidence before stable acceptance or promotion. Documentation-only governance commits do not retroactively invalidate that runtime CI, but they do change the exact `main` source identity that DSK-06 must accept.
+The exact-head CI evidence above is authoritative only for PR #146 head `a2d9aa84462ac1344d1049a2c6dbc7e20c1c9570`; any later Desktop runtime/release workflow source change must establish fresh DSK-01 evidence before stable acceptance or promotion. Documentation-only governance commits do not retroactively invalidate that runtime CI, but they do change the exact `main` source identity that DSK-06 must accept.
 
 ### DSK-02 — Reproducible Node and Rust dependency resolution
 
@@ -81,7 +82,7 @@ Completion evidence:
 - first-run matrix runs with Orca absent, then with a deterministic Orca executable present, and verifies Orca remains a replaceable engine while Divan retains mandate/approval authority
 - lifecycle JSON is bound to exact source commit/tree and revalidated by the Windows workflow before artifact upload
 - NSIS uninstall removes the application while preserving identifier-scoped project/task Core state
-- `Desktop Build` run `31236372811` PASS on PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`
+- `Desktop Build` run `31262469549` PASS on PR #146 exact head `a2d9aa84462ac1344d1049a2c6dbc7e20c1c9570`
 
 ### DSK-04 — Signed updater upgrade and rollback verification
 
@@ -89,7 +90,7 @@ Completion evidence:
 
 Completion evidence:
 
-- `Desktop Stable Candidate` run `31236372814` PASS on PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`
+- `Desktop Stable Candidate` run `31262469563` PASS on PR #146 exact head `a2d9aa84462ac1344d1049a2c6dbc7e20c1c9570`
 - signed N -> N+1 upgrade test runs on Windows
 - updater endpoint metadata is validated against the signed installer/signature pair
 - failed signature or mismatched update metadata fails closed
@@ -106,9 +107,9 @@ Tauri updater signatures are mandatory and cannot be disabled. The stable client
 Completion evidence:
 
 - the original verified Desktop product slice was merged from PR #118 after DSK-01 through DSK-04 were satisfied for that reviewed source
-- subsequent stable-release hardening PRs #122, #124, #125, #126 and #127 were independently exact-head verified before merge
-- latest stable-release hardening PR #127 exact head was `d3b685f4c66736165c0adc2369ca286a7578ea36`
-- PR #127 merged to `main` as `e6b88c4756c5c1d29d3afe4b20a7b3b54895a8ab`; later documentation-only governance merges do not replace this recorded runtime-hardening evidence
+- subsequent stable-release hardening continued through PR #146, with each runtime/release-workflow change exact-head verified before merge
+- latest stable-release hardening PR #146 exact head was `a2d9aa84462ac1344d1049a2c6dbc7e20c1c9570`
+- PR #146 merged to `main` as `6b572d6b3018148d516beaaf01dc4bc0bab501c7`; later documentation-only governance merges do not replace this recorded runtime-hardening evidence
 - DSK-06 does not self-reference this checklist commit: acceptance must explicitly pin the exact current `main` workflow event SHA at dispatch time and revalidate the live `main` ref before expensive work
 - DSK-08 must consume acceptance/readiness evidence from that same exact accepted `main` SHA; if `main` moves after acceptance, promotion fails closed and DSK-06/DSK-07 must be rerun
 
@@ -118,6 +119,9 @@ Completion evidence:
 
 Completion evidence:
 
+- `desktop-acceptance` environment exists before acceptance dispatch
+- the environment has exactly one required reviewer, `prevent_self_review: true`, `can_admins_bypass: false`, custom deployment branch policies enabled, protected-branch mode disabled, and exactly one allowed `main` branch policy
+- the same environment policy passes both the GitHub-hosted preflight and the post-approval Windows revalidation before checkout, agent or build work
 - protected Windows x64 self-hosted runner has the dedicated `divan-desktop-acceptance` label
 - genuine Codex and Claude Code authenticated sessions are present
 - authenticated agent preflight passes before the expensive Desktop build begins
@@ -134,7 +138,8 @@ Completion evidence:
 
 Completion evidence:
 
-- protected `production-release` environment is configured
+- protected `production-release` environment is configured with exactly one required reviewer, `prevent_self_review: true`, `can_admins_bypass: false`, custom deployment branch policies enabled, protected-branch mode disabled, and exactly one allowed `main` branch policy
+- `Desktop Production Readiness` verifies that policy before protected work and revalidates it immediately after environment approval
 - `Desktop Production Readiness` succeeds as a manual `main` run inside that protected environment
 - readiness input `source_sha` equals the DSK-06 accepted SHA, the workflow event SHA and the live `main` ref re-resolved after protected-environment approval
 - if `main` moved after readiness dispatch, readiness fails before dependency/signing work and DSK-06/DSK-07 restart on current `main`
@@ -160,6 +165,7 @@ A readiness PASS proves that the protected release lane can actually use the pro
 Completion evidence:
 
 - stable workflow runs before `main` moves away from the exact accepted source commit
+- signed candidate and final promotion each verify the strict non-bypassable `production-release` policy before protected work and revalidate it immediately after environment approval
 - the stable candidate first consumes attested DSK-07 readiness evidence from that same exact `main` commit
 - acceptance run ID is source-bound to the same exact `main` commit and its attestation verifies
 - release guard reports stable-ready
