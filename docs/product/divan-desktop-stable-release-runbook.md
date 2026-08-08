@@ -12,6 +12,7 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 - Never upload, paste into issue/PR text, or commit Authenticode credentials, Tauri private keys, private-key passwords, or signing command secret values.
 - Do not treat a PR contract run, unsigned installer, synthetic acceptance file, or unattested artifact as stable-release evidence.
 - Keep the `desktop-acceptance` and `production-release` GitHub environments protected.
+- Both release environments must use exactly one required reviewer, prevent self-review, disallow administrator bypass, use custom deployment branch policies, and allow only `main`.
 
 ## 1. Resolve and freeze the source identity
 
@@ -33,20 +34,20 @@ Prerequisites:
 
 - protected Windows x64 self-hosted runner online with labels `self-hosted`, `windows`, `x64`, `divan-desktop-acceptance`
 - genuine authenticated Codex and Claude Code sessions available to that runner account
-- `desktop-acceptance` environment exists, has a required reviewer, and is restricted to `main`
+- `production-release` already hardened with exactly one required reviewer, self-review prevention enabled, administrator bypass disabled, and only the `main` deployment branch policy
+- `desktop-acceptance` environment exists, has exactly one required reviewer, prevents self-review, disallows administrator bypass, and is restricted to `main`
 
-If `desktop-acceptance` is not yet configured, do not trigger the acceptance job and let GitHub auto-create an unprotected environment. Instead, use the repository-owned `Desktop Acceptance Environment Bootstrap` workflow. It runs only from `main`, is itself gated by the already-protected `production-release` environment, and uses the step-scoped `DIVAN_RELEASE_ADMIN_TOKEN` only for the environment API calls.
+If `desktop-acceptance` is not yet configured, do not trigger the acceptance job and let GitHub auto-create an unprotected environment. Instead, use the repository-owned `Desktop Acceptance Environment Bootstrap` workflow. It runs only from `main`, is itself gated by `production-release`, and uses the step-scoped `DIVAN_RELEASE_ADMIN_TOKEN` only for the environment API calls.
 
 The bootstrap requires the numeric GitHub user/team ID that will approve acceptance deployments:
 
 ```powershell
 gh workflow run desktop-acceptance-bootstrap.yml --ref main `
   -f reviewer_type=User `
-  -f reviewer_id=<NUMERIC_GITHUB_USER_ID> `
-  -f prevent_self_review=false
+  -f reviewer_id=<NUMERIC_GITHUB_USER_ID>
 ```
 
-Use `reviewer_type=Team` with the numeric team ID when a team owns deployment approval. Set `prevent_self_review=true` only when a different eligible reviewer can approve the deployment. After `production-release` approval, the bootstrap re-resolves live `main` using the step-scoped GitHub token and fails before the admin token is exposed if the workflow event SHA is stale. It then creates or reconciles the required-reviewer policy, enables custom deployment branch policies, adds `main`, and fails unless `main` is the only allowed branch policy. It never receives Codex, Claude, Authenticode or Tauri signing secrets.
+Use `reviewer_type=Team` with the numeric team ID when a team owns deployment approval. The bootstrap always enforces `prevent_self_review: true`; it is not a caller-selectable release shortcut. Before the release-admin token is exposed, it verifies that `production-release` still has exactly one required reviewer, self-review prevention enabled, administrator bypass disabled, custom deployment branch policies enabled, and exactly one `main` branch policy. After `production-release` approval, the bootstrap also re-resolves live `main` using the step-scoped GitHub token and fails if the workflow event SHA is stale. It then creates or reconciles `desktop-acceptance` with the exact requested reviewer, self-review prevention, no administrator bypass and main-only deployment policy. It never receives Codex, Claude, Authenticode or Tauri signing secrets.
 
 After the bootstrap passes, confirm the repository environment UI shows `desktop-acceptance` with the intended reviewer before starting acceptance.
 
@@ -56,7 +57,7 @@ Dispatch `Desktop Real-User Acceptance` with the exact source SHA:
 gh workflow run desktop-acceptance.yml --ref main -f source_sha=$SourceSha
 ```
 
-The workflow first verifies that `desktop-acceptance` already exists with a required reviewer before the self-hosted Windows job is eligible to start. After environment approval it re-resolves the live `main` ref and fails before agent/build work if it no longer equals `source_sha`. It must then pass the authenticated agent preflight, build/install the exact source, execute the real worker -> diff -> independent cross-agent reviewer -> approval -> `ff-only` merge flow, verify installed Core provenance, attest the privacy-minimal JSON evidence and upload exactly the expected acceptance artifact.
+The workflow first verifies that `desktop-acceptance` already exists with exactly one required reviewer, self-review prevention, no administrator bypass and only the `main` deployment branch policy before the self-hosted Windows job is eligible to start. After environment approval it re-checks the same policy, re-resolves the live `main` ref and fails before checkout/agent/build work if the environment or source identity changed. It must then pass the authenticated agent preflight, build/install the exact source, execute the real worker -> diff -> independent cross-agent reviewer -> approval -> `ff-only` merge flow, verify installed Core provenance, attest the privacy-minimal JSON evidence and upload exactly the expected acceptance artifact.
 
 Record the successful workflow run ID as `AcceptanceRunId`. Do not continue with a failed, cancelled, stale or source-mismatched run.
 
@@ -73,7 +74,7 @@ The protected `production-release` environment must provide these secret names w
 
 The artifact base must target the exact immutable Desktop release namespace `desktop-v<version>`, and the updater endpoint must be production-controlled HTTPS.
 
-Before dispatch, confirm `main` still equals `$SourceSha`:
+Before dispatch, confirm `main` still equals `$SourceSha` and confirm `production-release` still has exactly one required reviewer, self-review prevention enabled, administrator bypass disabled, custom deployment branch policies, and only `main` allowed.
 
 ```powershell
 $LiveMain = (gh api repos/$env:GITHUB_REPOSITORY/git/ref/heads/main --jq '.object.sha').Trim()
@@ -86,7 +87,7 @@ Dispatch `Desktop Production Readiness` with the same accepted source SHA:
 gh workflow run desktop-production-readiness.yml --ref main -f source_sha=$SourceSha
 ```
 
-The workflow re-resolves live `main` after protected-environment approval and fails before dependency setup/signing if it differs from `source_sha`. Production signing/updater secrets are exposed only to the isolated signing-probe step, not checkout/setup/attestation/upload steps. The workflow must prove that the configured Authenticode command can create a Windows signature reported as valid, that the Tauri private key can sign through the official Tauri signer CLI, that updater/public configuration is valid, and that attested evidence contains no private signing material.
+The workflow first performs a GitHub-hosted fail-closed policy preflight before the protected Windows readiness job becomes eligible to run. After environment approval it re-checks the same required-reviewer, self-review, no-admin-bypass and main-only policy before checkout. It then re-resolves live `main` and fails before dependency setup/signing if it differs from `source_sha`. Production signing/updater secrets are exposed only to the isolated signing-probe step, not policy checks, checkout, setup, attestation or upload steps. The workflow must prove that the configured Authenticode command can create a Windows signature reported as valid, that the Tauri private key can sign through the official Tauri signer CLI, that updater/public configuration is valid, and that attested evidence contains no private signing material.
 
 Record the successful workflow run ID as `ProductionReadinessRunId`.
 
