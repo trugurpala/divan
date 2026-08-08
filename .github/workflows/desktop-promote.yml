@@ -23,8 +23,60 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  production-release-environment-policy:
+    name: production-release-environment-policy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    steps:
+      - name: Verify production-release environment is protected before stable promotion approval
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/production-release")"
+          environment_name="$(jq -r '.name // empty' <<<"$environment_json")"
+          required_rule_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers")] | length' <<<"$environment_json")"
+          reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
+          prevent_self_review="$(jq -r '[.protection_rules[]? | select(.type == "required_reviewers")][0].prevent_self_review // false' <<<"$environment_json")"
+          protected_branches="$(jq -r '.deployment_branch_policy.protected_branches // false' <<<"$environment_json")"
+          custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
+          can_admins_bypass="$(jq -r '.can_admins_bypass // true' <<<"$environment_json")"
+          if [[ "$environment_name" != "production-release" ]]; then
+            echo "production-release environment must exist before stable promotion" >&2
+            exit 1
+          fi
+          if [[ "$required_rule_count" -ne 1 || "$reviewer_count" -ne 1 ]]; then
+            echo "production-release must have exactly one required reviewer and no alternate approval authority" >&2
+            exit 1
+          fi
+          if [[ "$prevent_self_review" != "true" ]]; then
+            echo "production-release must prevent workflow initiators from approving their own stable promotion" >&2
+            exit 1
+          fi
+          if [[ "$protected_branches" != "false" || "$custom_branch_policies" != "true" ]]; then
+            echo "production-release must use only custom deployment branch policies" >&2
+            exit 1
+          fi
+          if [[ "$can_admins_bypass" != "false" ]]; then
+            echo "production-release must disallow administrator bypass before stable promotion" >&2
+            exit 1
+          fi
+
+          branch_policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/production-release/deployment-branch-policies")"
+          total_policy_count="$(jq '.branch_policies | length' <<<"$branch_policies")"
+          main_policy_count="$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$branch_policies")"
+          if [[ "$total_policy_count" -ne 1 || "$main_policy_count" -ne 1 ]]; then
+            echo "production-release must allow only the main branch policy" >&2
+            exit 1
+          fi
+
   promote:
     name: verify-and-promote-desktop-stable
+    needs: production-release-environment-policy
     if: github.ref == 'refs/heads/main'
     runs-on: windows-latest
     timeout-minutes: 25
@@ -40,6 +92,46 @@ jobs:
       DIVAN_ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
       DIVAN_CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
     steps:
+      - name: Re-verify production-release policy after environment approval
+        shell: pwsh
+        env:
+          DIVAN_POLICY_TOKEN: ${{ github.token }}
+        run: |
+          $headers = @{
+            Authorization = "Bearer $env:DIVAN_POLICY_TOKEN"
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          $environment = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/environments/production-release"
+          if ("$($environment.name)" -ne "production-release") {
+            throw "production-release environment changed after policy preflight"
+          }
+          $requiredReviewerRules = @($environment.protection_rules | Where-Object { $_.type -eq "required_reviewers" })
+          $reviewerCount = @($requiredReviewerRules | ForEach-Object { $_.reviewers } | Where-Object { $_ }).Count
+          if ($requiredReviewerRules.Count -ne 1 -or $reviewerCount -ne 1) {
+            throw "production-release must still have exactly one required reviewer after environment approval"
+          }
+          if ($requiredReviewerRules[0].prevent_self_review -ne $true) {
+            throw "production-release must still prevent self-review after environment approval"
+          }
+          if ($environment.deployment_branch_policy.protected_branches -or -not $environment.deployment_branch_policy.custom_branch_policies) {
+            throw "production-release must still use only custom deployment branch policies before stable promotion starts"
+          }
+          if ($environment.can_admins_bypass -ne $false) {
+            throw "production-release administrator bypass became enabled before stable promotion started"
+          }
+
+          $branchPolicies = Invoke-RestMethod `
+            -Headers $headers `
+            -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/environments/production-release/deployment-branch-policies"
+          $policies = @($branchPolicies.branch_policies)
+          $mainPolicies = @($policies | Where-Object { $_.name -eq "main" })
+          if ($policies.Count -ne 1 -or $mainPolicies.Count -ne 1) {
+            throw "production-release must still allow only the main branch after environment approval"
+          }
+
       - name: Checkout exact source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
