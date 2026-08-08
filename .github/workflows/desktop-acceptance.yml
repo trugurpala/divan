@@ -28,12 +28,25 @@ jobs:
           environment_json="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance")"
           environment_name="$(jq -r '.name // empty' <<<"$environment_json")"
           reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
+          custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
           if [[ "$environment_name" != "desktop-acceptance" ]]; then
             echo "desktop-acceptance environment must exist before acceptance dispatch" >&2
             exit 1
           fi
           if [[ "$reviewer_count" -lt 1 ]]; then
             echo "desktop-acceptance environment must have at least one required reviewer" >&2
+            exit 1
+          fi
+          if [[ "$custom_branch_policies" != "true" ]]; then
+            echo "desktop-acceptance environment must use custom deployment branch policies" >&2
+            exit 1
+          fi
+
+          branch_policies="$(gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance/deployment-branch-policies")"
+          total_policy_count="$(jq '.branch_policies | length' <<<"$branch_policies")"
+          main_policy_count="$(jq '[.branch_policies[]? | select(.name == "main")] | length' <<<"$branch_policies")"
+          if [[ "$total_policy_count" -ne 1 || "$main_policy_count" -ne 1 ]]; then
+            echo "desktop-acceptance environment must allow only the main branch" >&2
             exit 1
           fi
 
