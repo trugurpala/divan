@@ -64,9 +64,9 @@ class DesktopProductionReadinessWorkflowTests(unittest.TestCase):
         ):
             secret_ref = f"{name}: ${{{{ secrets.{name} }}}}"
             self.assertIn(secret_ref, probe)
-            self.assertNotIn(f"secrets.{name}", before_probe)
-            self.assertNotIn(f"secrets.{name}", after_probe)
-            self.assertEqual(self.workflow.count(f"secrets.{name}"), 1)
+            self.assertNotIn(secret_ref, before_probe)
+            self.assertNotIn(secret_ref, after_probe)
+            self.assertEqual(self.workflow.count(secret_ref), 1)
         self.assertIn("permissions: read-all", self.workflow)
         self.assertIn("contents: read", self.workflow)
         self.assertNotIn("contents: write", self.workflow)
