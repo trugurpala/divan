@@ -46,7 +46,7 @@ Completion evidence on latest stable-release hardening PR #127 exact head `d3b68
 - no unresolved correctness/security review thread
 - PR was mergeable and was merged with exact-head protection
 
-The exact-head CI evidence above is authoritative only for PR #127 head `d3b685f4c66736165c0adc2369ca286a7578ea36`; any later Desktop/release source change must establish fresh DSK-01 evidence before stable acceptance or promotion.
+The exact-head CI evidence above is authoritative only for PR #127 head `d3b685f4c66736165c0adc2369ca286a7578ea36`; any later Desktop runtime/release workflow source change must establish fresh DSK-01 evidence before stable acceptance or promotion. Documentation-only governance commits do not retroactively invalidate that runtime CI, but they do change the exact `main` source identity that DSK-06 must accept.
 
 ### DSK-02 — Reproducible Node and Rust dependency resolution
 
@@ -108,9 +108,9 @@ Completion evidence:
 - the original verified Desktop product slice was merged from PR #118 after DSK-01 through DSK-04 were satisfied for that reviewed source
 - subsequent stable-release hardening PRs #122, #124, #125, #126 and #127 were independently exact-head verified before merge
 - latest stable-release hardening PR #127 exact head was `d3b685f4c66736165c0adc2369ca286a7578ea36`
-- resulting current stable-release `main` commit is `e6b88c4756c5c1d29d3afe4b20a7b3b54895a8ab`
-- DSK-06 does not self-reference this checklist commit: acceptance must explicitly pin the exact current `main` workflow event SHA at dispatch time
-- DSK-08 must consume acceptance evidence from that same exact accepted `main` SHA; if `main` moves after acceptance, promotion fails closed and acceptance must be rerun
+- PR #127 merged to `main` as `e6b88c4756c5c1d29d3afe4b20a7b3b54895a8ab`; later documentation-only governance merges do not replace this recorded runtime-hardening evidence
+- DSK-06 does not self-reference this checklist commit: acceptance must explicitly pin the exact current `main` workflow event SHA at dispatch time and revalidate the live `main` ref before expensive work
+- DSK-08 must consume acceptance/readiness evidence from that same exact accepted `main` SHA; if `main` moves after acceptance, promotion fails closed and DSK-06/DSK-07 must be rerun
 
 ### DSK-06 — Exact-main real-user Windows acceptance
 
@@ -121,7 +121,9 @@ Completion evidence:
 - protected Windows x64 self-hosted runner has the dedicated `divan-desktop-acceptance` label
 - genuine Codex and Claude Code authenticated sessions are present
 - authenticated agent preflight passes before the expensive Desktop build begins
-- acceptance input `source_sha` equals the exact current `main` workflow event SHA
+- acceptance input `source_sha` equals the exact workflow event SHA and the live `main` ref re-resolved after protected-environment approval
+- if `main` moved after dispatch, acceptance fails before agent/build work and must restart on current `main`
+- the GitHub token used only to resolve live `main` is step-scoped and is not inherited by Codex, Claude or later acceptance steps
 - real worker -> diff -> independent cross-agent review -> approval -> `ff-only` merge passes
 - installed Core commit/tree matches accepted source commit/tree
 - privacy-minimal acceptance JSON is attested by the expected workflow
@@ -134,6 +136,9 @@ Completion evidence:
 
 - protected `production-release` environment is configured
 - `Desktop Production Readiness` succeeds as a manual `main` run inside that protected environment
+- readiness input `source_sha` equals the DSK-06 accepted SHA, the workflow event SHA and the live `main` ref re-resolved after protected-environment approval
+- if `main` moved after readiness dispatch, readiness fails before dependency/signing work and DSK-06/DSK-07 restart on current `main`
+- production signing/updater secret values are exposed only to the isolated signing-probe step, not checkout, dependency setup, attestation or artifact-upload steps
 - attested readiness evidence is bound to the exact workflow source commit/tree and contains no private signing material
 - Windows Authenticode certificate/sign command successfully signs an isolated probe executable and Windows reports the signature as valid
 - Tauri updater private key successfully signs an isolated probe through the official Tauri signer CLI
