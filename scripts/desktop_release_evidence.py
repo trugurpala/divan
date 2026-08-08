@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import json
 import pathlib
@@ -50,6 +51,17 @@ def semver_core(value: object, label: str) -> tuple[int, int, int]:
     return int(major), int(minor), int(patch)
 
 
+def _utc_timestamp(value: object, label: str) -> tuple[str, dt.datetime]:
+    result = text(value, label)
+    try:
+        parsed = dt.datetime.fromisoformat(result.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise DesktopReleaseError(f"{label} must be an ISO-8601 timestamp") from error
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise DesktopReleaseError(f"{label} must include a UTC offset")
+    return result, parsed.astimezone(dt.timezone.utc)
+
+
 def _load_evidence(path: pathlib.Path, label: str) -> tuple[bytes, Mapping[str, Any]]:
     raw = path.read_bytes()
     value = json.loads(raw.decode("utf-8-sig"))
@@ -89,6 +101,82 @@ def _expected_source(
     if expected_tree is not None and source_tree != expected_tree:
         raise DesktopReleaseError(f"{label} does not match the release source tree")
     return expected_commit is not None and expected_tree is not None
+
+
+def inspect_production_readiness_evidence(
+    path: pathlib.Path,
+    expected_version: str,
+    *,
+    expected_source_commit: str | None = None,
+    expected_source_tree: str | None = None,
+) -> dict[str, Any]:
+    raw, evidence = _load_evidence(path, "production readiness evidence")
+    _require_fields(
+        evidence,
+        {
+            "schema_version": 1,
+            "status": "pass",
+            "product": "Divan Desktop",
+            "version": expected_version,
+            "production_environment": "production-release",
+            "release_overlay_valid": True,
+            "updater_public_key_configured": True,
+            "updater_endpoint_https": True,
+            "artifact_base_exact_release_tag": True,
+            "authenticode_sign_command_usable": True,
+            "authenticode_signature_valid": True,
+            "tauri_private_key_sign_probe": True,
+            "private_signing_material_persisted": False,
+            "secret_values_in_evidence": False,
+        },
+        "production readiness evidence",
+    )
+    password_configured = evidence.get("tauri_private_key_password_configured")
+    if not isinstance(password_configured, bool):
+        raise DesktopReleaseError(
+            "production readiness evidence tauri_private_key_password_configured must be boolean"
+        )
+    source_commit = git_sha(
+        evidence.get("source_commit"),
+        "production readiness source_commit",
+    )
+    source_tree = git_sha(
+        evidence.get("source_tree"),
+        "production readiness source_tree",
+    )
+    source_bound = _expected_source(
+        source_commit,
+        source_tree,
+        expected_source_commit,
+        expected_source_tree,
+        label="production readiness evidence",
+    )
+    public_key_hash = sha256(
+        evidence.get("updater_public_key_sha256"),
+        "production readiness updater_public_key_sha256",
+    )
+    signer_hash = sha256(
+        evidence.get("authenticode_signer_thumbprint_sha256"),
+        "production readiness authenticode_signer_thumbprint_sha256",
+    )
+    not_after_text, not_after = _utc_timestamp(
+        evidence.get("authenticode_certificate_not_after_utc"),
+        "production readiness authenticode_certificate_not_after_utc",
+    )
+    if not_after <= dt.datetime.now(dt.timezone.utc):
+        raise DesktopReleaseError("production readiness Authenticode certificate is expired")
+    return {
+        "verified": True,
+        "source_bound": source_bound,
+        "sha256": hashlib.sha256(raw).hexdigest(),
+        "source_commit": source_commit,
+        "source_tree": source_tree,
+        "version": expected_version,
+        "updater_public_key_sha256": public_key_hash,
+        "authenticode_signer_thumbprint_sha256": signer_hash,
+        "authenticode_certificate_not_after_utc": not_after_text,
+        "tauri_private_key_password_configured": password_configured,
+    }
 
 
 def _acceptance_agents(evidence: Mapping[str, Any]) -> tuple[object, object]:
