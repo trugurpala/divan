@@ -32,20 +32,21 @@ Divan Core remains authoritative for task state, mandate, evidence, review, appr
 
 **Status:** DONE
 
-Completion evidence on PR #118 exact head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`:
+Completion evidence on latest stable-release hardening PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`:
 
-- `quality-gate` PASS
-- `compatibility` PASS
-- `site-tests` PASS
-- `wiki-sync` PASS
-- `dependency-review` PASS
-- `CodeQL` PASS
-- `Desktop Build` PASS
-- `Desktop Stable Candidate` PR contract PASS
+- `quality-gate` run `31236372832` PASS
+- `compatibility` run `31236372822` PASS
+- `site-tests` run `31236372803` PASS
+- `wiki-sync` run `31236372817` PASS
+- `dependency-review` run `31236372806` PASS
+- `CodeQL` run `31236372829` PASS
+- `Desktop Build` run `31236372811` PASS
+- `Desktop Stable Candidate` run `31236372814` PASS
+- `Desktop Promotion Contract` run `31236372799` PASS
 - no unresolved correctness/security review thread
-- PR was mergeable
+- PR was mergeable and was merged with exact-head protection
 
-The exact-head CI evidence is authoritative only for PR #118 head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`; later Desktop PR heads must establish their own DSK-01 evidence.
+The exact-head CI evidence above is authoritative only for PR #127 head `d3b685f4c66736165c0adc2369ca286a7578ea36`; any later Desktop/release source change must establish fresh DSK-01 evidence before stable acceptance or promotion.
 
 ### DSK-02 — Reproducible Node and Rust dependency resolution
 
@@ -80,7 +81,7 @@ Completion evidence:
 - first-run matrix runs with Orca absent, then with a deterministic Orca executable present, and verifies Orca remains a replaceable engine while Divan retains mandate/approval authority
 - lifecycle JSON is bound to exact source commit/tree and revalidated by the Windows workflow before artifact upload
 - NSIS uninstall removes the application while preserving identifier-scoped project/task Core state
-- `Desktop Build` run `31217121462` PASS on PR #118 exact head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
+- `Desktop Build` run `31236372811` PASS on PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`
 
 ### DSK-04 — Signed updater upgrade and rollback verification
 
@@ -88,7 +89,7 @@ Completion evidence:
 
 Completion evidence:
 
-- `Desktop Stable Candidate` run `31217121375` job `signed-updater-e2e` PASS on PR #118 exact head `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
+- `Desktop Stable Candidate` run `31236372814` PASS on PR #127 exact head `d3b685f4c66736165c0adc2369ca286a7578ea36`
 - signed N -> N+1 upgrade test runs on Windows
 - updater endpoint metadata is validated against the signed installer/signature pair
 - failed signature or mismatched update metadata fails closed
@@ -104,10 +105,10 @@ Tauri updater signatures are mandatory and cannot be disabled. The stable client
 
 Completion evidence:
 
-- DSK-01 through DSK-04 are DONE for the reviewed PR #118 source
-- PR #118 was squash-merged with expected-head protection on `f2eeebfd857f2362ec2f8a5faaaaf7a79c7a9b84`
-- resulting historical Desktop merge commit is `1d3b30e5db952818c105293deeb0113b893e0c1f`
-- resulting historical source tree is `a434f63b59f6313f2e33197ba125eca294df422e`
+- the original verified Desktop product slice was merged from PR #118 after DSK-01 through DSK-04 were satisfied for that reviewed source
+- subsequent stable-release hardening PRs #122, #124, #125, #126 and #127 were independently exact-head verified before merge
+- latest stable-release hardening PR #127 exact head was `d3b685f4c66736165c0adc2369ca286a7578ea36`
+- resulting current stable-release `main` commit is `e6b88c4756c5c1d29d3afe4b20a7b3b54895a8ab`
 - DSK-06 does not self-reference this checklist commit: acceptance must explicitly pin the exact current `main` workflow event SHA at dispatch time
 - DSK-08 must consume acceptance evidence from that same exact accepted `main` SHA; if `main` moves after acceptance, promotion fails closed and acceptance must be rerun
 
@@ -169,4 +170,4 @@ Completion evidence:
 
 Divan Desktop is **stable Windows release complete only when DSK-01 through DSK-08 are all DONE**.
 
-A passing PR contract, unsigned beta installer, synthetic acceptance record, stale acceptance run, missing lockfile, unverified update feed, source-mismatched lifecycle evidence or unsigned artifact must never be described as a stable release.
+A passing PR contract, unsigned beta installer, synthetic acceptance record, stale acceptance run, missing lockfile, unverified updater feed, source-mismatched lifecycle evidence or unsigned artifact must never be described as a stable release.
