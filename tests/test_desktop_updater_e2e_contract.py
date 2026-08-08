@@ -186,7 +186,10 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("windows_desktop_updater_e2e.ps1", workflow)
         self.assertIn("--features updater-e2e --locked", workflow)
         self.assertIn("divan-desktop-updater-e2e", workflow)
-        self.assertIn("needs: [contract, updater-e2e-windows]", workflow)
+        self.assertIn(
+            "needs: [contract, updater-e2e-windows, production-release-environment-policy]",
+            workflow,
+        )
         self.assertIn("pnpm tauri build --bundles nsis --features signed-updater", workflow)
         self.assertNotIn(
             "pnpm tauri build --bundles nsis --features updater-e2e --config $env:DIVAN_RELEASE_CONFIG",
