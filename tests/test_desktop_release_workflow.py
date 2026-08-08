@@ -42,6 +42,74 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('$updaterSignaturePath = "$($installer.FullName).sig"', signed)
         self.assertIn("actions/attest-build-provenance@", signed)
 
+    def test_signed_candidate_revalidates_live_main_before_setup(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        verify_start = signed.index("- name: Verify signed candidate source is still current main")
+        setup_start = signed.index("- name: Setup Python", verify_start)
+        verify = signed[verify_start:setup_start]
+        self.assertLess(verify_start, setup_start)
+        self.assertIn("DIVAN_GITHUB_TOKEN: ${{ github.token }}", verify)
+        self.assertIn("git/ref/heads/main", verify)
+        self.assertIn("$liveMain -ne $actual", verify)
+        self.assertIn("main moved after stable-candidate dispatch or environment approval", verify)
+        self.assertNotIn("secrets.", verify)
+
+    def test_signed_candidate_scopes_tokens_and_signing_secrets_to_required_steps(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        job_env = signed[: signed.index("    steps:")]
+        self.assertNotIn("secrets.", job_env)
+        self.assertNotIn("GH_TOKEN:", job_env)
+        self.assertNotIn("DIVAN_GITHUB_TOKEN:", job_env)
+
+        setup_start = signed.index("- name: Setup Python")
+        readiness_start = signed.index("- name: Resolve and verify attested production readiness evidence")
+        setup_and_dependencies = signed[setup_start:readiness_start]
+        self.assertNotIn("secrets.", setup_and_dependencies)
+        self.assertNotIn("GH_TOKEN:", setup_and_dependencies)
+
+        self.assertEqual(signed.count("          GH_TOKEN: ${{ github.token }}"), 2)
+        self.assertEqual(signed.count("          DIVAN_GITHUB_TOKEN: ${{ github.token }}"), 1)
+        self.assertEqual(
+            signed.count("          DIVAN_UPDATER_ENDPOINT: ${{ secrets.DIVAN_UPDATER_ENDPOINT }}"),
+            1,
+        )
+        self.assertEqual(
+            signed.count(
+                "          DIVAN_UPDATER_ARTIFACT_BASE_URL: ${{ secrets.DIVAN_UPDATER_ARTIFACT_BASE_URL }}"
+            ),
+            1,
+        )
+        self.assertEqual(
+            signed.count(
+                "          DIVAN_WINDOWS_SIGN_COMMAND: ${{ secrets.DIVAN_WINDOWS_SIGN_COMMAND }}"
+            ),
+            1,
+        )
+        self.assertEqual(
+            signed.count(
+                "          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}"
+            ),
+            1,
+        )
+        self.assertEqual(
+            signed.count(
+                "          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}"
+            ),
+            1,
+        )
+        self.assertEqual(
+            signed.count("          DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}"),
+            2,
+        )
+
+    def test_signed_candidate_removes_ephemeral_release_config_even_on_failure(self) -> None:
+        signed = self.text[self.text.index("  signed-windows-candidate:") :]
+        cleanup_start = signed.index("- name: Remove ephemeral signed release configuration")
+        cleanup = signed[cleanup_start:]
+        self.assertIn("if: always()", cleanup)
+        self.assertIn("Test-Path $env:DIVAN_RELEASE_CONFIG -PathType Leaf", cleanup)
+        self.assertIn("Remove-Item -LiteralPath $env:DIVAN_RELEASE_CONFIG -Force", cleanup)
+
     def test_dispatch_run_ids_are_not_interpolated_inside_shell_script(self) -> None:
         run_blocks = "\n".join(
             line for line in self.text.splitlines() if line.lstrip().startswith("run:")
