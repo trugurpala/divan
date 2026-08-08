@@ -29,6 +29,7 @@ jobs:
           environment_name="$(jq -r '.name // empty' <<<"$environment_json")"
           required_rule_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers")] | length' <<<"$environment_json")"
           reviewer_count="$(jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]?] | length' <<<"$environment_json")"
+          prevent_self_review="$(jq -r '[.protection_rules[]? | select(.type == "required_reviewers")][0].prevent_self_review // false' <<<"$environment_json")"
           protected_branches="$(jq -r '.deployment_branch_policy.protected_branches // false' <<<"$environment_json")"
           custom_branch_policies="$(jq -r '.deployment_branch_policy.custom_branch_policies // false' <<<"$environment_json")"
           can_admins_bypass="$(jq -r '.can_admins_bypass // true' <<<"$environment_json")"
@@ -38,6 +39,10 @@ jobs:
           fi
           if [[ "$required_rule_count" -ne 1 || "$reviewer_count" -ne 1 ]]; then
             echo "desktop-acceptance environment must have exactly one required reviewer and no alternate approval authority" >&2
+            exit 1
+          fi
+          if [[ "$prevent_self_review" != "true" ]]; then
+            echo "desktop-acceptance environment must prevent workflow initiators from approving their own acceptance deployment" >&2
             exit 1
           fi
           if [[ "$protected_branches" != "false" || "$custom_branch_policies" != "true" ]]; then
@@ -93,6 +98,9 @@ jobs:
           $reviewerCount = @($requiredReviewerRules | ForEach-Object { $_.reviewers } | Where-Object { $_ }).Count
           if ($requiredReviewerRules.Count -ne 1 -or $reviewerCount -ne 1) {
             throw "desktop-acceptance must still have exactly one required reviewer after environment approval"
+          }
+          if ($requiredReviewerRules[0].prevent_self_review -ne $true) {
+            throw "desktop-acceptance must still prevent self-review after environment approval"
           }
           if ($environment.deployment_branch_policy.protected_branches -or -not $environment.deployment_branch_policy.custom_branch_policies) {
             throw "desktop-acceptance must still use only custom deployment branch policies before acceptance starts"
