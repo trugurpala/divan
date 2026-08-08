@@ -24,6 +24,22 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         )
         self.assertIn("environment: desktop-acceptance", self.text)
 
+    def test_acceptance_environment_must_preexist_with_required_reviewer(self) -> None:
+        preflight_start = self.text.index("  acceptance-environment-policy:")
+        acceptance_start = self.text.index("  real-user-windows-acceptance:")
+        preflight = self.text[preflight_start:acceptance_start]
+        acceptance = self.text[acceptance_start:]
+        self.assertLess(preflight_start, acceptance_start)
+        self.assertIn("runs-on: ubuntu-latest", preflight)
+        self.assertNotIn("environment:", preflight)
+        self.assertIn(
+            'gh api "repos/$GITHUB_REPOSITORY/environments/desktop-acceptance"',
+            preflight,
+        )
+        self.assertIn('select(.type == "required_reviewers")', preflight)
+        self.assertIn("reviewer_count", preflight)
+        self.assertIn("needs: acceptance-environment-policy", acceptance)
+
     def test_acceptance_requires_exact_current_main_source_sha_pin(self) -> None:
         self.assertIn("source_sha:", self.text)
         self.assertIn("required: true", self.text)
