@@ -39,19 +39,31 @@ def _ready_report(*, readiness_source_bound: bool = True) -> dict[str, object]:
 
 
 class DesktopReleaseReadinessAuthorityTests(unittest.TestCase):
-    def test_verified_readiness_authorizes_promotion_guard_without_private_key(self) -> None:
-        ready = require_stable_release(_ready_report(), {})
+    def test_verified_readiness_authorizes_explicit_promotion_guard_without_private_key(self) -> None:
+        ready = require_stable_release(
+            _ready_report(),
+            {},
+            allow_attested_signing_authority=True,
+        )
 
         self.assertEqual(ready["stable_release"], "READY")
 
-    def test_unbound_readiness_cannot_substitute_for_private_key(self) -> None:
+    def test_candidate_style_guard_still_requires_live_private_key(self) -> None:
         with self.assertRaisesRegex(
             DesktopReleaseError,
-            "production readiness does not prove key usability",
+            "TAURI_SIGNING_PRIVATE_KEY is missing",
+        ):
+            require_stable_release(_ready_report(), {})
+
+    def test_unbound_readiness_cannot_authorize_promotion_without_private_key(self) -> None:
+        with self.assertRaisesRegex(
+            DesktopReleaseError,
+            "TAURI_SIGNING_PRIVATE_KEY is missing",
         ):
             require_stable_release(
                 _ready_report(readiness_source_bound=False),
                 {},
+                allow_attested_signing_authority=True,
             )
 
 
