@@ -20,6 +20,7 @@ SPEC.loader.exec_module(MODULE)
 DesktopReleaseError = MODULE.DesktopReleaseError
 inspect_desktop = MODULE.inspect_desktop
 require_stable_release = MODULE.require_stable_release
+readiness_evidence_path = MODULE._readiness_evidence_path
 SOURCE_COMMIT = "a" * 40
 SOURCE_TREE = "b" * 40
 REVIEW_DIFF = "c" * 64
@@ -53,6 +54,33 @@ def _acceptance(version: str, **overrides: object) -> dict[str, object]:
     return value
 
 
+def _production_readiness(version: str, **overrides: object) -> dict[str, object]:
+    value: dict[str, object] = {
+        "schema_version": 1,
+        "status": "pass",
+        "product": "Divan Desktop",
+        "source_commit": SOURCE_COMMIT,
+        "source_tree": SOURCE_TREE,
+        "version": version,
+        "production_environment": "production-release",
+        "release_overlay_valid": True,
+        "updater_public_key_configured": True,
+        "updater_public_key_sha256": "7" * 64,
+        "updater_endpoint_https": True,
+        "artifact_base_exact_release_tag": True,
+        "authenticode_sign_command_usable": True,
+        "authenticode_signature_valid": True,
+        "authenticode_signer_thumbprint_sha256": "8" * 64,
+        "authenticode_certificate_not_after_utc": "2099-01-01T00:00:00Z",
+        "tauri_private_key_sign_probe": True,
+        "tauri_private_key_password_configured": True,
+        "private_signing_material_persisted": False,
+        "secret_values_in_evidence": False,
+    }
+    value.update(overrides)
+    return value
+
+
 def _updater_e2e(version: str, **overrides: object) -> dict[str, object]:
     major, minor, patch = (int(part) for part in version.split("."))
     value: dict[str, object] = {
@@ -81,6 +109,26 @@ def _updater_e2e(version: str, **overrides: object) -> dict[str, object]:
     return value
 
 
+def _release_config(path: pathlib.Path) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "bundle": {
+                    "createUpdaterArtifacts": True,
+                    "windows": {"signCommand": "sign-tool %1"},
+                },
+                "plugins": {
+                    "updater": {
+                        "pubkey": "PUBLIC-KEY",
+                        "endpoints": ["https://updates.example.test/latest.json"],
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 class DesktopReleaseGuardTests(unittest.TestCase):
     def test_desktop_identity_and_versions_are_aligned(self) -> None:
         report = inspect_desktop(ROOT)
@@ -91,6 +139,7 @@ class DesktopReleaseGuardTests(unittest.TestCase):
         self.assertTrue(report["core_sidecar"])
         self.assertFalse(report["updater_configured"])
         self.assertFalse(report["windows_signing_configured"])
+        self.assertIsNone(report["production_readiness_evidence"])
         self.assertIsNone(report["updater_e2e_evidence"])
 
     def test_stable_release_fails_closed_without_external_release_materials(self) -> None:
@@ -104,21 +153,10 @@ class DesktopReleaseGuardTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             temp_root = pathlib.Path(temp)
             release_config = temp_root / "release.json"
-            release_config.write_text(
-                json.dumps(
-                    {
-                        "bundle": {
-                            "createUpdaterArtifacts": True,
-                            "windows": {"signCommand": "sign-tool %1"},
-                        },
-                        "plugins": {
-                            "updater": {
-                                "pubkey": "PUBLIC-KEY",
-                                "endpoints": ["https://updates.example.test/latest.json"],
-                            }
-                        },
-                    }
-                ),
+            _release_config(release_config)
+            readiness = temp_root / "readiness.json"
+            readiness.write_text(
+                json.dumps(_production_readiness(version)),
                 encoding="utf-8",
             )
             acceptance = temp_root / "acceptance.json"
@@ -129,6 +167,7 @@ class DesktopReleaseGuardTests(unittest.TestCase):
             report = inspect_desktop(
                 ROOT,
                 release_config=release_config,
+                production_readiness_evidence=readiness,
                 acceptance_evidence=acceptance,
                 updater_e2e_evidence=updater_e2e,
                 expected_source_commit=SOURCE_COMMIT,
@@ -141,6 +180,12 @@ class DesktopReleaseGuardTests(unittest.TestCase):
 
         self.assertTrue(ready["updater_configured"])
         self.assertTrue(ready["windows_signing_configured"])
+        self.assertTrue(ready["production_readiness_evidence"]["verified"])
+        self.assertTrue(ready["production_readiness_evidence"]["source_bound"])
+        self.assertEqual(
+            ready["production_readiness_evidence"]["source_commit"],
+            SOURCE_COMMIT,
+        )
         self.assertTrue(ready["updater_e2e_evidence"]["verified"])
         self.assertTrue(ready["updater_e2e_evidence"]["source_bound"])
         self.assertEqual(ready["updater_e2e_evidence"]["source_commit"], SOURCE_COMMIT)
@@ -151,13 +196,47 @@ class DesktopReleaseGuardTests(unittest.TestCase):
         self.assertEqual(ready["acceptance_evidence"]["review_diff_sha256"], REVIEW_DIFF)
         self.assertEqual(ready["stable_release"], "READY")
 
+    def test_stable_release_requires_production_readiness_even_with_other_evidence(self) -> None:
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = pathlib.Path(temp)
+            release_config = temp_root / "release.json"
+            _release_config(release_config)
+            acceptance = temp_root / "acceptance.json"
+            acceptance.write_text(json.dumps(_acceptance(version)), encoding="utf-8")
+            updater_e2e = temp_root / "updater-e2e.json"
+            updater_e2e.write_text(json.dumps(_updater_e2e(version)), encoding="utf-8")
+            report = inspect_desktop(
+                ROOT,
+                release_config=release_config,
+                acceptance_evidence=acceptance,
+                updater_e2e_evidence=updater_e2e,
+                expected_source_commit=SOURCE_COMMIT,
+                expected_source_tree=SOURCE_TREE,
+            )
+            with self.assertRaisesRegex(
+                DesktopReleaseError,
+                "production signing readiness evidence is missing",
+            ):
+                require_stable_release(
+                    report,
+                    {"TAURI_SIGNING_PRIVATE_KEY": "configured"},
+                )
+
     def test_stable_release_requires_updater_e2e_even_with_real_acceptance(self) -> None:
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         with tempfile.TemporaryDirectory() as temp:
-            acceptance = pathlib.Path(temp) / "acceptance.json"
+            temp_root = pathlib.Path(temp)
+            readiness = temp_root / "readiness.json"
+            readiness.write_text(
+                json.dumps(_production_readiness(version)),
+                encoding="utf-8",
+            )
+            acceptance = temp_root / "acceptance.json"
             acceptance.write_text(json.dumps(_acceptance(version)), encoding="utf-8")
             report = inspect_desktop(
                 ROOT,
+                production_readiness_evidence=readiness,
                 acceptance_evidence=acceptance,
                 expected_source_commit=SOURCE_COMMIT,
                 expected_source_tree=SOURCE_TREE,
@@ -176,12 +255,18 @@ class DesktopReleaseGuardTests(unittest.TestCase):
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         with tempfile.TemporaryDirectory() as temp:
             temp_root = pathlib.Path(temp)
+            readiness = temp_root / "readiness.json"
+            readiness.write_text(
+                json.dumps(_production_readiness(version)),
+                encoding="utf-8",
+            )
             acceptance = temp_root / "acceptance.json"
             acceptance.write_text(json.dumps(_acceptance(version)), encoding="utf-8")
             updater_e2e = temp_root / "updater-e2e.json"
             updater_e2e.write_text(json.dumps(_updater_e2e(version)), encoding="utf-8")
             report = inspect_desktop(
                 ROOT,
+                production_readiness_evidence=readiness,
                 acceptance_evidence=acceptance,
                 updater_e2e_evidence=updater_e2e,
                 expected_source_tree=SOURCE_TREE,
@@ -196,6 +281,64 @@ class DesktopReleaseGuardTests(unittest.TestCase):
                     },
                     {"TAURI_SIGNING_PRIVATE_KEY": "configured"},
                 )
+
+    def test_production_readiness_evidence_rejects_wrong_source_commit(self) -> None:
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        with tempfile.TemporaryDirectory() as temp:
+            evidence = pathlib.Path(temp) / "readiness.json"
+            evidence.write_text(
+                json.dumps(_production_readiness(version)),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(DesktopReleaseError, "release source commit"):
+                inspect_desktop(
+                    ROOT,
+                    production_readiness_evidence=evidence,
+                    expected_source_commit="e" * 40,
+                    expected_source_tree=SOURCE_TREE,
+                )
+
+    def test_production_readiness_rejects_secret_minimization_violation(self) -> None:
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        with tempfile.TemporaryDirectory() as temp:
+            evidence = pathlib.Path(temp) / "readiness.json"
+            evidence.write_text(
+                json.dumps(_production_readiness(version, secret_values_in_evidence=True)),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(DesktopReleaseError, "secret_values_in_evidence=False"):
+                inspect_desktop(ROOT, production_readiness_evidence=evidence)
+
+    def test_production_readiness_rejects_expired_certificate(self) -> None:
+        version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+        with tempfile.TemporaryDirectory() as temp:
+            evidence = pathlib.Path(temp) / "readiness.json"
+            evidence.write_text(
+                json.dumps(
+                    _production_readiness(
+                        version,
+                        authenticode_certificate_not_after_utc="2000-01-01T00:00:00Z",
+                    )
+                ),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(DesktopReleaseError, "certificate is expired"):
+                inspect_desktop(ROOT, production_readiness_evidence=evidence)
+
+    def test_readiness_evidence_env_handoff_is_supported(self) -> None:
+        self.assertEqual(
+            readiness_evidence_path(None, {"DIVAN_PRODUCTION_READINESS_EVIDENCE": "C:/evidence/readiness.json"}),
+            pathlib.Path("C:/evidence/readiness.json"),
+        )
+        cli = pathlib.Path("explicit.json")
+        self.assertEqual(
+            readiness_evidence_path(
+                cli,
+                {"DIVAN_PRODUCTION_READINESS_EVIDENCE": "ignored.json"},
+            ),
+            cli,
+        )
+        self.assertIsNone(readiness_evidence_path(None, {}))
 
     def test_updater_e2e_evidence_rejects_wrong_source_commit(self) -> None:
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
