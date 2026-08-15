@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -13,6 +15,8 @@ if str(PLUGIN_ROOT) not in sys.path:
 
 from divan_runtime import goals
 from divan_runtime.agency_status import build_project_agency_status
+from divan_runtime.desktop_protocol import handle_request
+from divan_runtime.project_registry import ProjectRegistry
 from divan_runtime.task_model import TaskState
 from divan_runtime.task_store import TaskStore
 
@@ -107,6 +111,34 @@ class AgencyStatusTests(unittest.TestCase):
         self.assertEqual(status["phase"], "BLOCKED")
         self.assertEqual(status["attention"], "blocked")
         self.assertEqual(status["state_health"], "invalid")
+
+    def test_desktop_protocol_exposes_project_agency_status(self):
+        with tempfile.TemporaryDirectory() as project_dir, tempfile.TemporaryDirectory() as data_dir:
+            project = pathlib.Path(project_dir)
+            self._git_project(project)
+            with patch.dict(os.environ, {"DIVAN_DATA_DIR": data_dir}, clear=False):
+                project_id = ProjectRegistry().register(str(project)).project_id
+                created = handle_request(
+                    {
+                        "command": "goal.create",
+                        "project_id": project_id,
+                        "intent": "Kullanıcıya anlaşılır proje durumu göster ve test et",
+                        "approve_plan_write": True,
+                    }
+                )
+                status = handle_request(
+                    {
+                        "command": "project.agency.status",
+                        "project_id": project_id,
+                    }
+                )
+                capabilities = handle_request({"command": "capabilities"})
+
+        self.assertTrue(created["ok"], created)
+        self.assertTrue(status["ok"], status)
+        self.assertEqual(status["result"]["phase"], "READY_FOR_EXECUTION")
+        self.assertGreater(status["result"]["work_packages"]["total"], 0)
+        self.assertIn("project.agency.status", capabilities["result"]["commands"])
 
 
 if __name__ == "__main__":
