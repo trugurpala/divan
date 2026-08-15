@@ -1,164 +1,316 @@
 # DIVAN — AI SOFTWARE AGENCY OS MASTER MANDATE
 
-> **Owner mandate / Padişah emri**
+> **Padişah Fermanı / Standing Owner Delegation — REV 2**
 >
-> This document is the transformation contract for the existing `trugurpala/divan` repository. It is not a greenfield rewrite request. Preserve proven work, reconcile current branches and evidence, and evolve the real product into a human-friendly, local-first AI Software Agency OS.
+> This is the binding transformation mandate for the existing `trugurpala/divan` repository. It is intentionally written for Claude Code Desktop and other capable coding agents operating on the owner's Windows 11 machine.
 >
-> **Product name stays `Divan`.** Machine/domain identifiers remain stable and English where already public (`owner`, `task`, `project`, etc.). Turkish presentation is first-class. The human owner may be presented as **`Padişah · Patron`**, but this is a UX label, not a new authority model.
+> **Do not build a second product. The product is Divan. Do not wait for the owner to supervise routine engineering. Own the locally achievable outcome.**
 
 ---
 
-## 0. EXECUTION MODE — READ THIS BEFORE TOUCHING CODE
+## 0. PRIMARY DIRECTIVE
 
-You are not being asked to produce another proposal. You are being asked to **inspect → reconcile → plan → implement → verify → continue** until the locally achievable product outcome is complete or a genuinely non-resolvable owner decision blocks you.
+The owner has delegated broad standing technical authority for this transformation.
 
-### Owner authorization granted by this mandate
+Your job is not to produce another proposal and stop. Your job is:
 
-You may, without repeatedly asking the owner:
+```text
+UNDERSTAND
+→ VERIFY CURRENT REALITY
+→ RESEARCH ONLY WHAT IS MISSING
+→ DECIDE
+→ PLAN
+→ IMPLEMENT
+→ TEST
+→ INDEPENDENTLY REVIEW
+→ RECOVER/REPLAN WHEN NEEDED
+→ COLLECT EVIDENCE
+→ INTEGRATE
+→ RECORD MEMORY
+→ CONTINUE
+```
 
-- inspect the repository, git history, local environment and installed agent CLIs;
-- create local branches and isolated worktrees;
-- edit code, tests, docs and repo-owned configuration within the mandate;
-- run build, test, lint, typecheck, benchmark, browser, security and packaging commands;
-- use installed Codex / Claude Code as bounded workers or independent reviewers when their real installed capabilities are verified first;
-- create commits and draft/open PRs for completed, independently verified slices;
-- rebase or reconstruct **your own** mandate branches when required by current `main`;
-- update `.divan/progress.md`, BLUEPRINT/ADR material and evidence required by the repository contract.
+Continue until the locally achievable Agency OS outcome is complete, a hard external gate is reached, or evidence proves a different architectural decision is necessary.
 
-You **must still ask the owner** before:
+### The anti-permission-loop rule
 
-- publishing a release/tag or promoting to production;
-- deleting or irreversibly transforming owner/customer data;
-- spending money or changing a paid plan/quota;
-- weakening a security/quality gate;
-- accepting a large product-scope tradeoff with meaningful business consequences;
-- changing credentials, global OS security settings or unrelated projects;
-- force-pushing, bypassing branch protection or discarding user-authored work.
+Within the standing delegation below, **asking the owner for routine technical permission is a product defect**.
 
-A failed tool, missing credential or provider quota is a runtime condition to classify and recover from where possible — not a reason to abandon the entire plan.
+Do not ask questions such as:
 
-### Never do these
+- Which library should I use?
+- Should I refactor this file?
+- Should I add tests?
+- Should I add a migration?
+- Should I create a worktree?
+- Should I retry the worker?
+- Should I use Codex or Claude?
+- Should I add a skill/plugin/tool?
+- Should I update a stale document?
+- Should I open a PR?
+- Should I fix the CI failure I caused?
+- Should I inspect current official documentation?
 
-- Do not rewrite Divan from scratch.
-- Do not create a second orchestration authority beside Divan Core.
-- Do not replace working stdlib-only core behavior merely because an external framework looks fashionable.
-- Do not install a large tool stack before proving the local gap it solves.
-- Do not revive deprecated Company OS paths except for compatibility.
-- Do not treat a model's self-report as evidence.
-- Do not call compilation alone “done”.
-- Do not mark `UNKNOWN`, `SKIPPED`, `NOT_INSTALLED` or timeout as PASS.
-- Do not silently expand scope.
-- Do not ask the owner routine framework/library/implementation questions that Divan can resolve through repository evidence and current official documentation.
+If repository evidence, current official documentation, tests, benchmarks and the Ferman are sufficient to decide, **decide and act**.
+
+When two technical choices are both valid, prefer the one that is:
+
+1. safer;
+2. simpler;
+3. more replaceable;
+4. easier to verify;
+5. better aligned with current Divan architecture;
+6. lower in token/runtime/maintenance cost.
+
+Record meaningful decisions; do not turn them into chat interruptions.
 
 ---
 
-# 1. CURRENT REALITY — PRESERVE THIS FOUNDATION
+# 1. STANDING TECHNICAL DELEGATION
 
-The repository is already far beyond a prompt collection. Before implementation, verify current `HEAD`; the reference state at the time this mandate was authored was `main` at `68e91fdf48dbcc385be567f4b525a682eeb9af05`. **If HEAD has moved, never reset to this SHA.** Reconcile the mandate with newer verified work.
+The owner grants Divan/Claude Code standing authority to perform the following without asking again when needed to satisfy the active Ferman or this Agency OS mandate.
 
-Current proven concepts that must be preserved unless tests demonstrate a defect:
+## Repository and Git authority
 
-- one public product: **Divan**;
-- owner-first authority chain and fail-closed mutation rules;
-- `plugins/sadrazam/divan_runtime/` as the canonical modular core;
-- current project contract, Ferman / Nizâm-ı Sefer concepts and bounded planning;
-- `ExecutionRouter` and replaceable execution engines;
-- worktree-oriented implementation isolation;
-- independent Claude/Codex review requirement before guarded merge;
-- evidence receipts, deterministic hashes and owner approval boundaries;
-- verified Claude Code + Codex host installation paths;
-- 42 skills and the current modular package model (`sadrazam`, `core-pack`, `ui-pack`, `react-pack`, `zanaat-pack`);
-- current plugin/marketplace metadata and candidate-adoption discipline;
-- Tauri 2 + React desktop application and self-contained `divan-core` sidecar;
-- Windows NSIS build/release lanes and real-user acceptance contract;
+You may:
+
+- inspect all repository code, history, branches, PRs, workflows and evidence;
+- create and remove your own temporary branches/worktrees;
+- edit code, tests, documentation, configuration and project-owned scripts;
+- create migrations and compatibility adapters;
+- stage and commit verified work;
+- open/update/close/supersede development PRs when evidence justifies it;
+- rebase or reconstruct your own branches on current `main`;
+- resolve merge conflicts while preserving user-authored work;
+- merge a Ferman-scoped technical PR when all required current repository gates, independent review and branch protection requirements pass;
+- update `.divan/progress.md`, ADRs, evidence and other durable state.
+
+Never bypass branch protection, fabricate checks, force-push over user work, or discard unrelated changes.
+
+## Engineering authority
+
+You may autonomously:
+
+- choose implementation details and internal architecture;
+- refactor when required for correctness, maintainability or testability;
+- add/remove project dependencies after source/license/security/compatibility review;
+- create or update tests, fixtures, evals and fault-injection scenarios;
+- add observability required to prove behavior;
+- add schema migrations with compatibility and rollback evidence;
+- improve build/CI/dev tooling;
+- add feature flags or compatibility layers;
+- fix adjacent defects discovered while implementing when they directly block or invalidate the Ferman;
+- update user-facing copy/UX required by acceptance criteria;
+- prepare release artifacts and release evidence.
+
+## Capability authority — skills, agents, plugins and tools
+
+You are explicitly authorized to acquire or create missing engineering capability when it provides measurable value.
+
+You may:
+
+- use existing Divan skills and packages;
+- create a new Divan skill/recipe when a reusable procedure is missing;
+- create bounded specialist agent roles/subagents;
+- use Codex, Claude Code and other locally proven compatible agents as workers/reviewers;
+- evaluate and adapt open-source tools;
+- add a plugin/adapter/MCP/CLI integration behind Divan contracts;
+- add local scanners, browser tooling, code-navigation/context tools or build utilities;
+- create hooks/doctor checks from repeated incidents;
+- replace a failing optional tool with a better adapter-compatible alternative.
+
+Do **not** install or vendor things merely because they are popular. Every persistent capability must earn its place through the capability-acquisition pipeline in this mandate.
+
+## Local machine authority
+
+For this project you may run the commands required to inspect, build, test, benchmark, package and debug Divan and its controlled fixtures.
+
+Prefer project-scoped/reversible installation. Do not silently weaken Windows security, change unrelated global configuration, expose credentials, or mutate unrelated projects.
+
+---
+
+# 2. THE ONLY HARD OWNER GATES
+
+The standing delegation is intentionally broad, but it is not a license to create irreversible external consequences.
+
+Stop for owner input only when the next necessary action is one of these and no safe reversible alternative exists:
+
+1. deleting or irreversibly transforming real owner/customer data;
+2. purchasing something, increasing a paid quota/plan, or creating material new spend;
+3. changing credentials/accounts, transferring ownership or exposing a secret;
+4. weakening a required security/quality gate or accepting a known serious vulnerability;
+5. changing unrelated projects or machine-wide security policy;
+6. bypassing branch protection or destroying user-authored work;
+7. making an ambiguous **business/product outcome** choice where evidence cannot infer intent;
+8. public production deployment, public release/tag promotion or another irreversible external publication step.
+
+A missing tool, failed test, merge conflict, stale PR, unavailable worker, retry, refactor, dependency choice, architecture implementation detail or local build problem is **not** an owner gate.
+
+When a hard gate is reached, do not ask an empty question. Present:
+
+```text
+Karar gerekiyor
+Sorun: ...
+Divan'ın önerisi: ...
+Alternatif: ...
+Risk: ...
+Ek süre/maliyet: ...
+```
+
+---
+
+# 3. SCOPE MODEL — OWNER INTENT VS TECHNICAL SCOPE
+
+Replace the simplistic idea that “only the owner may expand any scope” with two different scopes.
+
+## Product Intent Scope — owner-owned
+
+Only a new/updated Ferman may materially change:
+
+- the desired user/business outcome;
+- target users;
+- product constraints;
+- explicit exclusions;
+- acceptance criteria with business meaning;
+- real external side effects.
+
+Divan may clarify these from evidence, but must not silently invent a different product.
+
+## Technical Execution Scope — Divan-owned under this mandate
+
+Divan may autonomously expand, contract or reshape technical scope when reasonably necessary to achieve the Product Intent Scope safely.
+
+This includes:
+
+- additional files;
+- tests and fixtures;
+- refactors;
+- migrations;
+- internal APIs;
+- CI/build/release preparation;
+- documentation;
+- accessibility work;
+- security hardening;
+- observability;
+- memory/context infrastructure;
+- new skills;
+- agent roles;
+- plugins/adapters;
+- MCP/CLI/tool integrations;
+- dependency changes;
+- recovery logic;
+- compatibility work.
+
+Technical expansion must be **evidence-based, reversible where practical, recorded and still traceable to the Ferman**.
+
+Do not interrupt the owner merely because the correct implementation is larger than the first naive file list.
+
+---
+
+# 4. CURRENT DIVAN IS THE FOUNDATION — NEVER GREENFIELD-REWRITE IT
+
+Before every implementation pass, verify current `HEAD`; do not assume the reference SHA in this document is still current.
+
+Preserve and evolve proven Divan concepts instead of creating parallel systems:
+
+- one product: **Divan**;
+- canonical core under `plugins/sadrazam/divan_runtime/`;
+- Ferman / Nizâm-ı Sefer planning;
+- current owner/governance checks;
+- `ExecutionRouter` and replaceable engines/providers;
+- `TaskStore`, existing task states and receipts;
+- worktree-based implementation isolation;
+- independent Claude/Codex review before guarded merge;
+- evidence store and source-bound hashes;
+- verified Claude Code and Codex host paths;
+- existing skills and modular packages;
+- candidate/license/eval discipline;
+- Tauri 2 + React Desktop;
+- self-contained Divan Core sidecar;
+- Windows NSIS build/release/acceptance lanes;
 - immutable release/checksum philosophy;
-- `python scripts/verify.py` + `git diff --check` as canonical repo-wide local verification unless current `AGENTS.md` says otherwise;
-- current public writing, security, licensing, benchmark and adoption rules.
+- canonical repository verification in current `AGENTS.md`.
 
-The current Desktop already has a **Patron Masası** surface. Treat it as the seed of the new human-facing command center, not disposable prototype code.
+The current **Patron Masası** is the seed of the Agency OS command center.
+
+Do not replace working stdlib-only core behavior with a fashionable framework unless a measured gap survives a smaller internal solution.
 
 ---
 
-# 2. PRODUCT DEFINITION — WHAT DIVAN MUST BECOME
+# 5. PRODUCT DESTINATION
 
 ## One sentence
 
-**Divan is a local-first AI Software Agency OS where a human owner says what outcome is wanted, Divan researches and remembers, turns that outcome into a product and engineering plan, delegates bounded work to real coding agents, independently verifies the result, and brings only important decisions and evidence back to the human.**
+**Divan is a local-first AI Software Agency OS where the human states the desired outcome, and Divan remembers, researches, plans, delegates, recovers, verifies and delivers through real coding agents while exposing only the decisions the human actually needs to make.**
 
 ## Product promise
 
 > **Ne istediğini söyle. Divan gerisini yönetsin.**
 
-The owner is a vibe coder / product owner, not a process supervisor. The product must reduce cognitive load rather than expose the complexity of agents, tool calls, retries and infrastructure.
+The normal user is the **👑 Padişah · Patron**.
 
-### What the owner should normally do
+The user should not need to become:
 
-1. Choose a project or start a new one.
-2. Write a Ferman in ordinary language.
-3. Review the high-level plan only when useful.
-4. Answer only genuinely consequential decisions.
-5. Receive a verified result, evidence summary and clear next action.
+- a prompt engineer;
+- a worktree operator;
+- a process supervisor;
+- a CI detective;
+- a token accountant;
+- a plugin administrator;
+- a terminal log reader.
 
-### What the owner should normally NOT need to do
-
-- select a worker for each task;
-- know MCP/ACP/JSON-RPC details;
-- manage worktrees;
-- watch terminals;
-- retry stuck workers manually;
-- choose basic implementation libraries without a product reason;
-- remember old architectural decisions;
-- repeatedly explain the repository to a new agent;
-- manually collect test output and screenshots;
-- interpret raw stack traces for ordinary failures.
+Technical depth remains available on demand, but complexity is Divan's responsibility.
 
 ---
 
-# 3. HUMAN AUTHORITY MODEL — PADİŞAH IS A HUMAN
+# 6. ROLE MODEL — ROLE ≠ PROCESS ≠ MODEL
 
-Keep technical machine IDs stable. Presentation hierarchy:
+Keep stable machine/domain identifiers where compatibility matters. Human-facing presentation may use the Divan metaphor.
 
-| Machine concept | Human-facing Turkish | Responsibility |
-|---|---|---|
-| `owner` | **👑 Padişah · Patron** | Goal, constraints, business decisions, final authority |
-| mandate/goal | **📜 Ferman** | Desired outcome and acceptance boundary |
-| agency core | **🏛 Divan** | End-to-end project authority and state |
-| orchestrator | **Sadrazam** | Decompose, sequence, route, replan |
-| intelligence | **🔎 İstihbarat** | Memory-first research and freshness checks |
-| product | **Ürün Divanı** | User/problem/MVP/requirements |
-| design | **🎨 Mühendishane** | UX, UI, design system, accessibility |
-| architecture | **🏗 Mimarlık Divanı** | Stack/API/DB/security/deploy decisions |
-| execution | **⚔ Ocak** | Codex, Claude Code and future workers |
-| tools | **🧰 Cephanelik** | CLI, MCP, API, browser, scanners |
-| skills/plugins | **🎓 Talimhane** | Skills, plugins, recipes, hooks, workflows |
-| quality | **🕵 Teftiş Ocağı** | Tests, browser QA, security, independent review |
-| delivery | **📦 Teslimat Divanı** | Installer, docs, release evidence, rollback |
-| maintenance | **🏥 Bakım Ocağı** | Bugs, updates, monitoring, security maintenance |
-| memory | **🧠 Arşiv** | Decisions, incidents, lessons, intelligence |
-| budget | **💰 Defterdar** | Time, tokens, quota, cost/confidence |
-| policy | **⚖ Kanun** | Permissions, scope, approvals, sandbox policy |
+| Responsibility | Human-facing concept |
+|---|---|
+| owner | 👑 Padişah · Patron |
+| mandate/goal | 📜 Ferman |
+| agency state | 🏛 Divan |
+| orchestration | Sadrazam |
+| plan challenge | Müşavir |
+| research | 🔎 İstihbarat |
+| product | Ürün Divanı |
+| UX/design | 🎨 Mühendishane |
+| architecture | 🏗 Mimarlık Divanı |
+| execution | ⚔ Ocak |
+| skills/recipes | 🎓 Talimhane |
+| tools/plugins | 🧰 Cephanelik |
+| independent quality | 🕵 Teftiş Ocağı |
+| memory | 🧠 Arşiv |
+| budget/usage | 💰 Defterdar |
+| policy | ⚖ Kanun |
+| delivery | 📦 Teslimat Divanı |
+| reliability/incident | 🏥 Bakım Ocağı |
 
-**Do not implement each role as a permanent model process.** Roles are domain responsibilities. A small number of real agents may perform multiple roles at different stages.
+Do not instantiate a permanent model for every title.
 
-Default execution topology should remain small:
+Default topology:
 
-- one planner/architect where reasoning is needed;
-- one builder per independent workstream;
-- one independent reviewer that did not author the change;
-- additional specialists only when evidence shows true parallel value.
+```text
+1 planner/architect when needed
++ 1 builder per truly independent workstream
++ 1 independent reviewer that did not author the change
++ specialists only when the task proves the need
+```
 
 More agents are not automatically better.
 
 ---
 
-# 4. THE ROOT OBJECT IS PROJECT, NOT TASK
+# 7. PROJECT IS THE ROOT OBJECT
 
-Tasks are implementation details. The owner experiences a **Project**.
+The human experiences a **Project**, not a bag of tasks.
 
-Introduce or evolve canonical project-level lifecycle/state without breaking existing task/goal receipts:
+Evolve additive project lifecycle state around existing compatible receipts:
 
 ```text
-IDEA / INTAKE
+INTAKE
 → INTELLIGENCE
 → PRODUCT_DEFINITION
 → UX_DESIGN
@@ -167,468 +319,318 @@ IDEA / INTAKE
 → READY_FOR_EXECUTION
 → IMPLEMENTATION
 → VERIFICATION
-→ STAGING / ACCEPTANCE
+→ ACCEPTANCE
 → DELIVERY_READY
-→ RELEASED (only after owner/release authority)
+→ RELEASED
 → MAINTENANCE
 → LEARNING
 ```
 
-The migration may use additive schemas and compatibility projections. Do not rewrite old receipts in place.
+Prefer existing types and adapters over duplicates. Canonical concepts should converge on:
 
-Canonical project artifacts/concepts should converge on:
+- ProjectRecord;
+- Ferman/Mandate;
+- ProductContract;
+- UXContract;
+- ArchitectureDecision;
+- ExecutionRoute/DAG;
+- WorkPackage;
+- Attempt/AgentRun;
+- PolicyDecision;
+- GateResult;
+- EvidenceManifest;
+- OwnerDecision;
+- Incident;
+- KnowledgeItem;
+- DeliveryReceipt.
 
-- `ProjectRecord`
-- `Ferman` / mandate
-- `ProjectContract`
-- `ProductContract`
-- `UXContract`
-- architecture decisions / ADRs
-- execution route / DAG
-- `WorkPackage`
-- `Attempt`
-- `AgentRun`
-- `PolicyDecision`
-- `GateResult`
-- `EvidenceManifest`
-- `OwnerDecision`
-- `Incident`
-- `KnowledgeItem` / memory record
-- release/delivery receipt
-
-Do not create duplicate concepts where an existing Divan type already covers the same responsibility. Prefer migration/adapters over parallel models.
+Old valid receipts remain valid. Migrate additively; never rewrite historical evidence in place.
 
 ---
 
-# 5. MEMORY-FIRST INTELLIGENCE — THE MOST IMPORTANT PRODUCT ADVANTAGE
+# 8. MEMORY-FIRST AGENCY
 
-Before new research, Divan must ask:
+Before fresh research or rereading a large repository, Divan must ask:
 
-1. What do we already know about this project?
-2. What decision was already made and why?
+1. What do we already know?
+2. What was already decided and why?
 3. Have we seen this failure before?
-4. Is the stored knowledge still fresh enough?
-5. What is missing and therefore deserves new research/tool calls?
+4. Is stored knowledge fresh enough for this decision?
+5. What is genuinely missing?
 
-## Memory classes
+Use and reconcile existing Knowledge Fabric / Agency Memory work rather than building a second store.
 
-At minimum distinguish:
+Memory classes should cover at least:
 
-- **Constitution memory** — stable Divan/repo rules;
-- **Project memory** — stack, commands, architecture, critical paths, constraints;
-- **Decision memory** — what was decided, alternatives, reason, scope and freshness;
-- **Mistake/incident memory** — symptom, root cause, fix, regression evidence;
-- **Intelligence memory** — researched frameworks/tools/licenses/providers + provenance + freshness;
-- **Skill/recipe memory** — successful repeatable workflows;
-- **Retrospective memory** — estimate vs actual, retries, reviewer catches, failure patterns.
+- constitution/rules;
+- project profile;
+- architecture decisions;
+- incidents/root causes;
+- researched technology intelligence with provenance/freshness;
+- reusable recipes/skills;
+- retrospectives and observed outcomes.
 
-## The most important learning rule
+## Learning promotion ladder
 
-A repeated lesson should not remain only prose.
-
-Prefer this promotion ladder:
+A repeated lesson should move toward enforcement:
 
 ```text
-incident / lesson
+incident
 → structured memory
-→ if deterministic: regression test
-→ if permission/safety: policy gate
-→ if reusable procedure: skill/recipe
-→ if environment/tool event: hook/doctor check
+→ regression test when deterministic
+→ policy gate when safety/permission related
+→ skill/recipe when procedural
+→ doctor/hook when environment related
 ```
 
-The best memory is knowledge the model no longer needs to remember because the system now enforces it.
+The strongest memory is a rule the model no longer needs to remember because the system now enforces it.
 
-## Existing work to reuse
-
-Do not build a second memory system blindly. Inspect and reconcile the existing draft work:
-
-- PR **#121** — local-first Divan Knowledge Fabric v1;
-- PR **#123** — project-aware Agency Memory read model.
-
-These branches may be behind current `main`; rebase/reconstruct the smallest valid slices on top of current verified state. Preserve the stated design strengths: structured knowledge kinds, provenance, candidate/validated/deprecated lifecycle, SQLite local persistence, separate observations, explainable analytics and no silent auto-promotion.
-
-### Semantic/vector retrieval
-
-Do **not** add a vector database simply because it is fashionable. First benchmark the structured/lexical retrieval from Knowledge Fabric on realistic Divan project histories. Only if recall/token metrics justify it, evaluate an optional replaceable semantic-index adapter. The canonical source must remain inspectable and exportable; an index must be rebuildable.
+Never silently turn popularity or repeated success into authority. Validation remains explicit and evidence-backed.
 
 ---
 
-# 6. CONTEXT AND TOKEN ECONOMY
+# 9. CONTEXT COMPILER — TOKEN ECONOMY IS ARCHITECTURE
 
-The fastest agent is the one that does not reread the entire world.
+Do not send every worker the entire repository, all skills and all history.
 
-Implement a `ContextCompiler` concept above providers. It should assemble the smallest task-specific context pack from:
+Build/evolve a `ContextCompiler` that selects the smallest useful task pack from:
 
-- Ferman and acceptance criteria;
+- active Ferman and acceptance criteria;
 - project summary;
-- relevant architecture decisions;
-- relevant prior incident(s);
+- relevant decisions;
+- relevant prior incidents;
 - related symbols/interfaces/tests;
-- current diff and active failure;
-- current official framework documentation only when needed;
+- active diff/failure;
+- current official framework documentation when needed;
 - required quality/policy rules.
 
-Use progressive disclosure. Never inject all skills, all history, all research and the full repository by default.
+Track useful metrics with honest confidence:
 
-Track metrics such as:
-
-- candidate context bytes/tokens;
-- selected context bytes/tokens;
-- reused memory count;
-- external research calls avoided by fresh memory;
-- duplicate context eliminated;
-- tool-output bytes externalized/summarized;
-- worker input/output token counts **only where the provider exposes reliable data**;
+- candidate vs selected context size;
+- memory hits;
+- research calls avoided;
+- duplicate context removed;
+- tool output summarized/externalized;
+- provider token/cost only when observable;
 - confidence: `exact | estimated | unknown`.
 
-Existing Divan planning context budgets must remain honest planning assumptions unless the installed host verifies a real limit.
-
-Possible community tools such as semantic code retrieval or repo packing are **candidates**, not mandatory dependencies. Evaluate through Divan's existing candidate, license, benchmark and adoption process. Do not bypass `registry/candidates.json`, `UPSTREAM.md`, `THIRD_PARTY_LICENSES.md` and relevant eval rules.
+External code-navigation/repo-packing/vector tools may be evaluated, but they are adapters/indexes, not canonical memory.
 
 ---
 
-# 7. INTELLIGENCE DEPARTMENT — RESEARCH MUST BE A GATE, NOT DECORATION
+# 10. CAPABILITY ACQUISITION PIPELINE — DIVAN MAY GROW NEW HANDS
 
-Before architecture or dependency adoption, create/update a `Project Intelligence Dossier` sufficient to answer:
+When a task needs a capability Divan does not currently have, **do not immediately ask the owner**.
 
-## Product intelligence
-
-- What problem is being solved?
-- Who uses it?
-- What is already standard in this product category?
-- Which requested features are MVP vs later?
-- What must explicitly stay out of scope?
-
-## Repository intelligence
-
-- current architecture and runtime paths;
-- active framework/package/runtime versions;
-- build/test/release commands;
-- persistence and migration surfaces;
-- auth/security boundaries;
-- existing debt and known failures;
-- current open branches/PRs that overlap the task.
-
-## Technology intelligence
-
-For each material dependency/tool:
-
-- current installed/project version;
-- official docs/API/CLI behavior;
-- Windows compatibility where relevant;
-- license and redistribution constraints;
-- maintenance status and security risk;
-- why existing Divan primitives are insufficient;
-- `KEEP | ADD | ADAPT | LATER | REPLACE | REJECT` decision;
-- exit/replacement strategy.
-
-Research is allowed to produce `PLAN_BLOCKED` when a critical unknown would make implementation guesswork.
-
-Do not research stable facts on every run. Use freshness timestamps and only refresh stale/critical knowledge.
-
----
-
-# 8. PRODUCT + UX BEFORE DEEP IMPLEMENTATION
-
-A Ferman should produce human/product contracts before a large code wave.
-
-## Product Contract
-
-Capture at least:
-
-- problem statement;
-- target user;
-- jobs/outcomes;
-- user journeys;
-- functional requirements;
-- non-functional requirements;
-- MVP / later / out-of-scope;
-- testable acceptance criteria;
-- success metrics where meaningful;
-- material product risks.
-
-## UX Contract
-
-For UI work, define testable experience constraints such as:
-
-- primary task path;
-- maximum complexity/steps where meaningful;
-- responsive behavior;
-- loading / empty / error states;
-- keyboard and focus behavior;
-- accessibility requirements;
-- no raw stack traces or provider jargon in normal mode;
-- human-readable recovery state;
-- technical details available on demand rather than hidden forever.
-
-Use the existing `ui-pack`, `product-design-audit`, browser testing and relevant React package instead of creating a second design system without need.
-
----
-
-# 9. TWO-PASS PLANNING — SADRAZAM + MÜŞAVİR
-
-The current deterministic Nizâm-ı Sefer planner is valuable and must remain a **validator/planning authority**, not be replaced by free-form model prose.
-
-Evolve planning into two layers:
-
-1. **Proposal layer** — a capable agent may synthesize product/architecture/task proposals from bounded context.
-2. **Deterministic Divan validation/materialization** — schemas, dependencies, scope, authority, evidence and budget are checked by code before becoming executable work packages.
-
-Then run an independent **Müşavir** review of the plan before execution for non-trivial projects.
-
-Müşavir asks:
-
-- Is a requirement missing?
-- Is there a broken user journey?
-- Is migration/rollback missing?
-- Did the plan forget security/authz/negative tests?
-- Did it confuse “code written” with “feature delivered”?
-- Are browser/mobile/accessibility/error states covered where applicable?
-- Are release/installer/docs/maintenance obligations present?
-- Can tasks truly run in parallel without same-file conflict?
-- Did the planner request a capability not proven on this machine?
-
-Only after this challenge should the final route be locked/materialized.
-
----
-
-# 10. IMMEDIATE OPEN-PR SEQUENCE — DO NOT DUPLICATE ACTIVE WORK
-
-Before starting new implementation, inspect all current open PRs and branch relationships.
-
-Highest-value current stack at mandate authoring time:
-
-1. **#156** — `goal.preview` / explicit `goal.create` Nizâm-ı Sefer Desktop planning on current main;
-2. **#157** — materialize route tasks into dependency-aware, receipt-bound work packages;
-3. **#158** — connect Patron Masası to the real Ferman preview/save flow.
-
-They are stacked. Do not flatten them blindly or create competing implementations. Verify required CI, diff and current base. If still valid, land/reconstruct them in dependency order. If `main` moved, preserve behavior through a fresh minimal port and rerun all required checks.
-
-Also reconcile, later in the sequence:
-
-- **#121 / #123** — Knowledge Fabric + project-aware Agency Memory;
-- **#119** — fail-closed Plugin SDK / Plugin Trust Center.
-
-Do not merge a stale draft merely because its design is desirable. Bring each valuable slice to current `main`, rerun current verification, and retire/supersede obsolete branches cleanly.
-
-Dependabot PRs are maintenance work and must not be mixed into feature proof unless the dependency is required for that slice.
-
----
-
-# 11. EXECUTION FABRIC — BUILD ON THE CURRENT CORE
-
-Reuse and extend:
-
-- `DivanOrchestrator`;
-- `TaskStore`;
-- `ExecutionRouter`;
-- execution receipts;
-- worktree creation;
-- review snapshot;
-- guarded fast-forward merge;
-- evidence store;
-- current engine/provider contracts.
-
-Do not replace these with a third-party workflow engine unless a measured reliability gap survives a smaller internal fix.
-
-## Agent adapters
-
-Codex and Claude Code are first-class installed workers. Detect capability; do not guess it.
-
-For each host, record a capability manifest with at least:
-
-- executable/version;
-- authentication state when safely observable;
-- noninteractive/programmatic mode support;
-- structured output/event support;
-- resume/session support;
-- approval/permission controls;
-- MCP/skills/plugins support where proven;
-- sandbox/worktree behavior;
-- last verified time/source;
-- supported Divan operations.
-
-Before relying on a CLI flag or protocol, inspect the installed binary (`--version`, `--help`, documented protocol) and/or current official vendor documentation. Existing tests/registry claims are not permission to guess a future CLI.
-
-If a richer native integration is supported by the installed host, implement it behind the existing adapter boundary. Keep a safe bounded CLI fallback where appropriate.
-
-## Worker reliability additions
-
-Add, incrementally and with deterministic tests:
-
-- attempt identity separate from task identity;
-- worker lease;
-- heartbeat / liveness timestamp;
-- stalled classification;
-- checkpoint metadata;
-- idempotent retry/backoff;
-- interrupted/orphaned recovery;
-- resume when safely supported;
-- replacement worker selection when resume is impossible;
-- provider/quota/auth failure classification;
-- circuit breaker to stop expensive retry loops;
-- explicit cancellation.
-
-A process PID alone is not proof of healthy work.
-
-Suggested recovery states (adapt to existing enums rather than creating duplicates):
+Run this pipeline:
 
 ```text
-RUNNING
-→ SUSPECTED_STALLED
-→ ORPHANED / INTERRUPTED
-→ RECOVERY_PENDING
-→ RESUMED | REPLACED | RETRY | BLOCKED
+CAPABILITY GAP
+→ search existing Divan capability
+→ inspect installed host capability
+→ current official docs
+→ current OSS candidates if still needed
+→ compare smallest viable options
+→ source/license/security review
+→ quarantine/isolated smoke test
+→ contract test
+→ benchmark/eval when the choice affects quality/performance
+→ ADOPT | ADAPT | REJECT | LATER
+→ pin identity/version
+→ register capability
+→ document rollback/removal
+→ use through a Divan adapter/skill contract
 ```
 
-Test this by **actually killing** a worker/process in a controlled fixture/acceptance run. Do not certify recovery from mocked state transitions alone.
+Possible outputs include:
+
+- a new skill;
+- a reusable recipe;
+- an agent adapter;
+- a quality adapter;
+- a plugin;
+- an MCP integration;
+- a CLI wrapper;
+- a local service;
+- a doctor check;
+- a regression test.
+
+Rules:
+
+- prefer official APIs/protocols over scraping terminal text;
+- prefer replaceable adapters over core coupling;
+- do not vendor unlicensed material;
+- do not download and execute unknown scripts without inspection;
+- do not expose all capabilities to every worker;
+- do not add a heavyweight runtime until a real measured gap justifies it.
 
 ---
 
-# 12. POLICY, SCOPE AND SANDBOX
+# 11. FERMANDAN İCRAYA — TWO-PASS PLANNING
 
-Prompts are not a sandbox.
+Do not replace deterministic Nizâm-ı Sefer validation with free-form model prose.
 
-Preserve current owner authority and worktree boundaries, then strengthen enforcement in layers:
+Use two layers:
 
-- allowed/denied project paths;
+### A. Proposal intelligence
+
+A capable planner may synthesize:
+
+- product outcome;
+- UX contract;
+- architecture options;
+- risks;
+- work breakdown;
+- dependencies;
+- evidence requirements.
+
+### B. Deterministic Divan materialization
+
+Divan code validates:
+
+- schema;
+- dependencies;
+- technical authority;
+- product intent boundaries;
+- executable capability availability;
+- scope constraints;
+- evidence requirements;
+- safe parallelism;
+- budgets/limits that are actually measurable.
+
+For non-trivial work, run an independent **Müşavir** plan challenge before execution.
+
+Müşavir checks missing requirements, migrations, rollback, security, browser/accessibility/error states, release obligations, same-file parallel conflicts and unsupported capabilities.
+
+---
+
+# 12. REAL WORKERS — CODEX + CLAUDE FIRST, OTHERS AS ADAPTERS
+
+Detect real installed capability; never guess CLI flags or model availability.
+
+For each worker/provider record what can actually be proven:
+
+- executable/version;
+- usable/auth state where safely observable;
+- structured/noninteractive mode;
+- session/resume support;
+- approval/permission controls;
+- skills/plugins/MCP support;
+- worktree/sandbox behavior;
+- last verification source/time.
+
+Prefer richer supported integrations behind adapters. Keep bounded fallback paths where useful.
+
+## Attempt reliability
+
+Task identity and execution attempt identity must be separate.
+
+Incrementally support:
+
+- lease;
+- heartbeat/liveness;
+- checkpoint;
+- stall detection;
+- idempotent retry/backoff;
+- interrupted/orphaned recovery;
+- safe resume when supported;
+- replacement worker selection;
+- auth/quota/provider failure classification;
+- circuit breaker;
+- explicit cancellation.
+
+A PID is not health.
+
+Prove recovery by controlled real process interruption, not only mocked transitions.
+
+If a worker fails and the next safe action is inferable, recover automatically instead of asking the owner.
+
+---
+
+# 13. WORKSPACE, POLICY AND SCOPE ENFORCEMENT
+
+A prompt is not a sandbox.
+
+Strengthen current worktree/authority controls with enforceable layers where practical:
+
+- allowed/denied paths;
 - symlink/path traversal rejection;
 - explicit mutation authority;
-- per-task tool/capability allowlist;
-- protected secrets/credentials;
-- network policy where the runtime can truly enforce it;
-- resource/time/tool-call ceilings that can actually be measured;
-- post-run diff validation against the contract;
-- no merge if the diff escaped scope.
+- tool/capability allowlists;
+- secret redaction/brokering;
+- resource/time/tool-call ceilings where measurable;
+- network restrictions where truly enforceable;
+- post-run diff validation;
+- no merge if diff escapes validated technical scope.
 
-Do not make WSL2 or Docker a mandatory dependency merely because stronger isolation is desirable. Divan is Windows-first and currently has a native working distribution. If stronger Linux isolation is added, make it a replaceable **optional execution profile** and prove the UX/install story first.
-
-Do not give workers raw long-lived secrets when a narrower brokered action can solve the task.
+Windows-native operation remains first-class. WSL/Docker/stronger isolation may become optional execution profiles only if their measured benefit and user experience justify them.
 
 ---
 
-# 13. TALİMHANE + CEPHANELİK — EXTENSIONS WITHOUT CHAOS
+# 14. TEFTİŞ — NO AGENT GRADES ITS OWN HOMEWORK
 
-The repository already has package/marketplace concepts. Continue from them.
+Worker self-report is not proof.
 
-## Distinguish clearly
+Select relevant quality profiles from the actual project/risk. Potential gates include, when applicable:
 
-- **Skill**: procedural knowledge, progressively loaded;
-- **Plugin/package**: versioned bundle of capabilities;
-- **MCP/API/CLI**: live tool/action surface;
-- **Agent adapter**: worker/session interface;
-- **Quality adapter**: independent evidence producer.
-
-Do not expose all extensions to every worker.
-
-## Trust levels
-
-Converge on a simple human-readable status model, reusing PR #119 where appropriate:
-
-- `CORE_CERTIFIED`
-- `CURATED`
-- `EXPERIMENTAL`
-- `BLOCKED`
-
-Activation must be based on evidence, not popularity.
-
-Before a community extension becomes activatable:
-
-1. source + exact version/commit identity;
-2. license;
-3. permissions/capabilities;
-4. scripts/hooks inspection;
-5. secret/security scan where applicable;
-6. isolated smoke test;
-7. contract test;
-8. removal/rollback path;
-9. observed compatibility with current host;
-10. trust decision recorded with evidence.
-
-Reuse the existing candidate registry and Plugin SDK draft rather than inventing a parallel marketplace.
-
----
-
-# 14. TEFTİŞ — AN AGENT MAY NOT MARK ITS OWN HOMEWORK COMPLETE
-
-The worker's “done” message is not evidence.
-
-Project-specific quality profiles should be selected from observable stack/risk. Do not run irrelevant tools for theater.
-
-Potential gates, when applicable:
-
-- project-native unit tests;
-- integration tests;
+- unit/integration tests;
 - typecheck/lint;
 - production build;
-- migration validation;
-- browser E2E;
-- screenshots/trace where UI evidence matters;
-- accessibility checks;
-- secret scan;
-- dependency/vulnerability scan;
-- SAST where relevant;
+- migration verification;
+- Playwright/browser E2E;
+- accessibility;
+- secret scanning;
+- vulnerability/dependency scanning;
+- SAST;
 - auth/authz negative tests;
-- installer smoke;
-- upgrade/rollback smoke;
-- independent Codex/Claude review;
+- installer/upgrade/rollback smoke;
+- independent Claude/Codex review;
 - evidence manifest validation.
 
-Keep status semantics explicit:
+Status vocabulary is strict:
 
 ```text
 PASS | FAIL | BLOCKED | NOT_INSTALLED | UNKNOWN
 ```
 
-Only PASS is PASS.
+Only `PASS` is pass.
 
-## Browser quality
-
-Use the existing browser-testing capability. Prefer deterministic Playwright tests/CLI for repeatable product flows. Use agent-driven browser exploration only when discovery/debugging benefits from it. Capture artifacts only when they prove acceptance criteria; do not create screenshot noise.
-
-## Security/tool candidates
-
-External scanners (for example dependency/vulnerability, secret or SAST tools) are evidence producers, not Divan authority. Evaluate and adapt them through existing candidate/plugin governance. Do not couple Divan Core to a scanner.
+If a required quality tool is missing, the Capability Acquisition Pipeline may install/adapt a suitable project-scoped tool automatically. If no safe option exists, mark the gate truthfully; do not fake success.
 
 ---
 
-# 15. EVIDENCE MANIFEST — THE DELIVERY RECEIPT
+# 15. EVIDENCE — DELIVERY RECEIPT
 
-Build on the current evidence store and receipts. For a material work package/project delivery, be able to reconstruct:
+For material work, Divan must be able to reconstruct:
 
-- project / Ferman / work package / attempt IDs;
-- base and result commit identity;
-- branch/worktree identity;
-- changed files and diff digest;
-- commands run + exit status;
-- required gate results;
-- browser/security/build artifacts where applicable;
-- reviewer identity and result;
-- policy decisions/denials;
+- project/Ferman/work package/attempt IDs;
+- base/result commit;
+- branch/worktree;
+- changed files + diff digest;
+- commands + exit codes;
+- gate results;
+- build/browser/security artifacts where relevant;
+- reviewer identity/result;
+- policy denials;
 - worker/provider/session identity where safe;
 - duration/retries;
-- token/cost fields with `exact|estimated|unknown` confidence;
-- owner approvals;
-- timestamp and source versions.
+- token/cost with confidence when available;
+- owner decisions/hard gates;
+- timestamps/source versions.
 
-Human UI shows a short summary; Technical mode can expose the full receipt.
+Human UI shows a compact explanation. Technical mode exposes the receipt.
 
 ---
 
-# 16. PADİŞAH UX — HUMAN LANGUAGE IS A PRODUCT REQUIREMENT
+# 16. PADİŞAH UX — OWNER ATTENTION IS A SCARCE RESOURCE
 
-The normal user must not experience Divan as an admin panel for processes.
+Normal UI has three depths:
 
-## Three information depths
+1. **👑 Padişah · Patron** — outcome, progress, problem, decision, result.
+2. **🏛 Divan** — plan, workstreams, memory, risks, evidence.
+3. **🛠 Teknik** — exact agent, command, worktree, trace, diff, receipt, logs.
 
-1. **👑 Padişah · Patron** — outcome, progress, problems, decisions, result.
-2. **🏛 Divan** — project plan, departments, work packages, risks, evidence status.
-3. **🛠 Teknik** — exact agent, command, worktree, trace, receipt, diff, raw logs.
-
-Technical detail is **available**, not forced.
-
-## Every important status should answer five things
+Every important status answers:
 
 1. Ne oluyor?
 2. Ne durumda?
@@ -636,26 +638,7 @@ Technical detail is **available**, not forced.
 4. Divan ne yapıyor?
 5. Benden bir şey gerekiyor mu?
 
-Bad:
-
-```text
-worker codex-7 exit=1 retry=2
-```
-
-Good:
-
-```text
-Backend çalışanı görevi bitiremedi.
-Sebep: yeni değişiklik bir testi bozdu.
-Divan yapılan işi kaydetti ve güvenli ikinci denemeyi başlattı.
-Sizden şu anda işlem beklenmiyor.
-```
-
-The technical event remains available under “Teknik ayrıntılar”.
-
-## Human notification compression
-
-Thousands of technical events should collapse into something like:
+Collapse technical noise:
 
 ```text
 0 kritik sorun
@@ -663,332 +646,289 @@ Thousands of technical events should collapse into something like:
 2 bilgi
 ```
 
-Treat **owner attention as a limited resource**, like token budget.
+Do not turn routine failures into owner interruptions. Retry/recover/replan first.
 
-## Ask the owner only when needed
-
-Normally ask only for:
-
-- irreversible production/data operation;
-- material budget/quota increase;
-- unavailable credential/login;
-- ambiguous business outcome;
-- security/quality exception;
-- major scope/timeline tradeoff;
-- release/promotion decision.
-
-Do not ask “Postgres mi SQLite mı?” unless the answer materially changes product ownership and repository evidence cannot settle it.
-
-## Completion language
-
-Separate:
+Completion language:
 
 - **Yapıldı** — implementation exists;
-- **Kontrol ediliyor** — independent verification running;
-- **Hazır** — required independent gates/evidence passed.
+- **Kontrol ediliyor** — independent verification is running;
+- **Hazır** — required gates/evidence passed.
 
-Only the last one may be presented as ready to the owner.
+Only the last one is delivery-ready.
 
 ---
 
-# 17. PATRON MASASI → REAL AGENCY COMMAND CENTER
+# 17. PATRON MASASI → AGENCY COMMAND CENTER
 
-Evolve the current Patron Masası in vertical slices. Do not turn `PatronDesk.tsx` or `App.tsx` into a larger monolith; extract typed UI modules as the surface expands.
+Evolve the real existing Desktop vertically; do not build fake dashboards ahead of Core truth.
 
-Target primary navigation:
+Target navigation, only as underlying data becomes real:
 
-- **Taht** — projects, overall health, decisions, ready deliveries;
+- **Taht** — projects, health, decisions, ready deliveries;
 - **Ferman** — natural-language intake;
 - **Divan** — Intelligence → Product → UX → Architecture → Plan;
-- **Ocak** — human-readable team/workstream status;
-- **Teftiş** — quality/evidence summary;
+- **Ocak** — workstreams/workers in human language;
+- **Teftiş** — quality/evidence;
 - **Arşiv** — memory/decisions/incidents;
-- **Talimhane & Cephanelik** — certified extension/tool inventory;
-- **Defterdar** — usage/time/token/quota visibility;
-- **Teslimat** — installer/release/rollback/evidence.
+- **Talimhane** — skills/recipes;
+- **Cephanelik** — plugins/tools/adapters and trust state;
+- **Defterdar** — usage/time/token/quota truth;
+- **Teslimat** — integration/release/rollback evidence.
 
-Do not make all screens before the underlying core state exists. Every visible worker, progress percentage and PASS must be backed by real Core data.
+Do not let `PatronDesk.tsx` or `App.tsx` become permanent monoliths as the product grows. Extract typed components/read models with tests.
 
-### Recommended autonomy settings
-
-Expose simple user-facing modes but map them to deterministic authority policy:
-
-- **Kontrollü** — more checkpoints;
-- **Dengeli** — default; only material-risk decisions interrupt the owner;
-- **Tam Divan** — reversible local technical decisions proceed automatically, while hard owner gates remain hard.
-
-No UI mode may bypass release/data/security owner gates.
+Default autonomy is effectively **Tam Divan for reversible technical work** under this mandate.
 
 ---
 
-# 18. INSTALLATION / FIRST RUN — WINDOWS 11 MUST FEEL LIKE A PRODUCT
+# 18. WINDOWS 11 PRODUCT EXPERIENCE
 
-Do not invent a second installer. Extend the existing Tauri/NSIS Desktop release chain.
+Do not invent a second installer. Extend the existing Tauri/NSIS chain.
 
-Existing product intent is correct: the end-user installer contains the Core sidecar and does not require a separate Python installation.
-
-Target first-run UX:
+First-run should feel like a product:
 
 ```text
 Divan hazırlanıyor…
-✓ Git
 ✓ Divan Core
-✓ Codex bulundu / giriş durumu
-✓ Claude Code bulundu / giriş durumu
+✓ Git
+✓ Codex: durum
+✓ Claude Code: durum
 ✓ proje çalışma alanı
-✓ temel teftiş kabiliyetleri
-
-[Codex'i bağla]   [Claude Code'u bağla]
+✓ temel teftiş yetenekleri
 
 Divan hazır.
 [Proje ekle] [Yeni Ferman]
 ```
 
-Never collect provider credentials into Divan UI if the official provider login can own them.
+Do not collect provider secrets into Divan if official login owns them.
 
-Build/maintain a user-friendly **Doctor** view/command that reports capability truth, not merely executable presence. It should distinguish:
+Doctor must distinguish:
 
 - installed;
-- authenticated/usable when safely detectable;
-- verified capability;
+- usable/authenticated where observable;
+- capability verified;
 - degraded;
 - unavailable;
 - incompatible.
 
-Keep advanced CLI controls available for maintainers; ordinary daily usage should not require terminal commands.
+Executable presence alone is not readiness.
 
 ---
 
-# 19. MULTI-MACHINE IS AN EXTENSION OF THE SAME MODEL, NOT A SECOND PRODUCT
+# 19. OPEN WORK — FINISH BEFORE DUPLICATING
 
-Do not prioritize distributed workers before single-machine recovery is proven.
+At the time this mandate was authored, high-value work already existed in stacked/draft PRs. Always inspect their current truth before acting.
 
-After local reliability is strong, define a replaceable worker registration contract including:
+Priority sequence:
 
-- worker id;
-- hostname/display name;
-- OS/architecture;
-- CPU/RAM/GPU capability;
-- installed runtimes/tools/agent capabilities;
-- labels;
-- concurrency capacity;
-- health/heartbeat;
-- trust/enrollment identity.
+1. **#156** — real Nizâm-ı Sefer goal preview/persistence;
+2. **#157** — dependency-aware receipt-bound work packages;
+3. **#158** — Patron Masası real Ferman preview/save flow;
+4. **#121 / #123** — Knowledge Fabric + project-aware Agency Memory;
+5. **#119** — fail-closed Plugin SDK / Trust Center.
 
-The owner should see “Ofis PC — 2 çalışan müsait”, not transport-protocol details.
+Do not merge stale code blindly. Rebase, port or supersede the smallest valuable behavior on current `main`, rerun current gates, then retire obsolete branches cleanly.
 
-Only add a message bus/distributed workflow dependency when a real second-node test demonstrates the need. Keep remote-worker security stronger than local UI convenience.
+Do not mix unrelated dependency maintenance into feature proof unless required.
 
 ---
 
-# 20. BACKTEST / PALABENCH PRINCIPLE — MEASURE THE SYSTEM, NOT THE PROMPT
+# 20. IMPLEMENTATION PASSES
 
-Use and extend the repository's existing `evals/` and benchmark rules rather than inventing marketing scores.
+The order is binding unless current evidence shows that a dependency changed.
 
-Create an Agency OS evaluation set only when implementation reaches the relevant features. Cover realistic classes such as:
+## PASS 0 — Current truth
 
-- small bug fix;
-- bounded feature;
-- refactor with preserved behavior;
-- large-repo context retrieval;
-- stale-memory detection;
-- repeated-known-error prevention;
-- worker crash;
-- provider unavailable/quota failure;
-- scope/path violation;
-- failing test / browser regression;
-- merge conflict;
-- restart/recovery;
-- independent reviewer catching a planted defect;
-- installer/first-run failure;
-- plugin drift/permission rejection.
+- read `CLAUDE.md`, `AGENTS.md`, this mandate, `BLUEPRINT.md`, `.divan/progress.md` and relevant current product/release docs;
+- inspect git status/branch/history/open PRs;
+- verify installed tool/agent versions and capabilities;
+- run current handoff/baseline verification;
+- classify: already done / partial / missing / stale / blocked;
+- preserve unrelated user work.
 
-Track actual metrics such as:
+**Exit:** reproducible baseline and exact next implementation slice.
 
-- task success rate;
-- first-pass success;
-- human interventions;
-- recovery success;
-- scope violations blocked;
-- escaped defects;
-- reviewer catch rate;
-- median completion time;
-- retries;
-- context bytes/tokens;
-- memory hits/research avoided;
-- exact/estimated/unknown usage cost.
+## PASS 1 — Real Ferman pipeline
 
-Use predeclared acceptance thresholds and the existing repo benchmark discipline. If results are noisy or too expensive to repeat, say so; do not invent precision.
+Finish/reconcile #156 → #157 → #158 on current main.
 
----
+**Exit:** natural-language Ferman → read-only preview → explicit persistence → dependency-aware real work packages → real Patron Masası data; planning grants no source mutation by itself.
 
-# 21. IMPLEMENTATION PASSES — ORDER IS BINDING UNLESS EVIDENCE CHANGES IT
+## PASS 2 — Project-level Agency lifecycle
 
-## PASS 0 — Truth and branch reconciliation
+Add Product/UX/Architecture/Agency lifecycle projections additively around existing goal/task receipts.
 
-**Goal:** one trustworthy current baseline.
+**Exit:** one project can move from Ferman through execution readiness with machine-readable state and clear owner-facing status.
 
-- Read `CLAUDE.md`, `AGENTS.md`, `BLUEPRINT.md`, `.divan/progress.md`, current product docs, release/CI contracts and relevant tests.
-- Run `python scripts/handoff.py --check` if current contract still requires it.
-- Record current branch, status, tool versions and installed Codex/Claude capabilities.
-- Inventory open PRs, especially #156/#157/#158/#121/#123/#119.
-- Identify stale documentation that contradicts current code.
-- Run the canonical baseline verification before modifying implementation.
-- Do not “clean up” unrelated owner changes.
+## PASS 3 — Memory-first intelligence
 
-**Exit:** current truth recorded; exact next slice known; baseline reproducible.
+Reconcile #121/#123. Add freshness, project-open lookup, task-close learning and promotion of deterministic lessons to tests/policies/skills/hooks.
 
-## PASS 1 — Finish real Ferman planning flow
+**Exit:** a later task reuses a validated prior decision/lesson with provenance instead of rediscovering it.
 
-Bring #156 → #157 → #158 behavior onto current main in correct dependency order.
+## PASS 4 — Resilient real workers
 
-**Exit acceptance:**
+Improve Codex/Claude capability discovery and attempt lifecycle: lease, heartbeat, checkpoint, stall, retry, resume/replacement, cancel, provider classification.
 
-- ordinary-language Ferman;
-- read-only preview;
-- explicit plan persistence;
-- dependency-aware work packages;
-- no execution authority granted by planning;
-- Patron Masası shows real plan data;
-- current CI green.
+**Exit:** real controlled worker interruption produces truthful recovery and evidence.
 
-## PASS 2 — Project/Agency lifecycle contracts
+## PASS 5 — Capability acquisition + Plugin Trust
 
-Add the project-level Agency OS lifecycle and product/UX/intelligence artifacts additively around existing goal/task contracts.
+Reconcile #119 and implement the smallest persistent capability acquisition path required by real gaps.
 
-**Exit acceptance:** one project can move from Ferman through planning with machine-readable project/product/UX/architecture state and clear owner-facing status without breaking v1 receipts.
+**Exit:** skill/plugin/tool candidates can be provenance-bound, permission-reviewed, tested, activated/rejected and rolled back without becoming Divan authority.
 
-## PASS 3 — Knowledge Fabric / Memory-first Intelligence
+## PASS 6 — Context compiler
 
-Rebase/adapt #121/#123 onto the now-current core.
+Measure baseline first. Add relevant code/memory/doc retrieval and progressive disclosure.
 
-Add freshness/recall behavior and project-open/task-close learning workflow. Make recurring deterministic lessons promotable to tests/policies/skills.
-
-**Exit acceptance:** a second task can reuse a prior validated decision/lesson without rereading/researching the entire source, with provenance and no silent auto-authority.
-
-## PASS 4 — Worker capability + resilient attempts
-
-Improve real Codex/Claude worker capability discovery and execution attempt lifecycle. Add lease/heartbeat/checkpoint/stall/retry/replacement/cancel in minimal slices.
-
-**Exit acceptance:** controlled worker kill/restart scenario produces truthful recovery evidence; provider unavailable state does not masquerade as success.
-
-## PASS 5 — Plugin SDK / Cephanelik Trust
-
-Rebase/adapt #119 and wire trust state into the human UI without granting plugin authority prematurely.
-
-**Exit acceptance:** a plugin can be inspected, provenance-bound, permission-reviewed and smoke/contract tested before activation; drift invalidates approval.
-
-## PASS 6 — Context Compiler + token/memory economy
-
-Measure baseline context behavior first. Add retrieval/context compiler around existing project/memory/code sources. Evaluate external context tools only if they win the declared benchmark and license/safety gates.
-
-**Exit acceptance:** representative tasks receive smaller relevant context with no correctness regression and measured before/after evidence.
+**Exit:** representative tasks receive smaller relevant context with no correctness regression, measured before/after.
 
 ## PASS 7 — Teftiş Factory
 
-Make quality profiles first-class, connect relevant project-native + browser + security gates and improve EvidenceManifest.
+Make quality profiles and EvidenceManifest stronger; connect relevant browser/security/build gates through adapters.
 
-**Exit acceptance:** deliberately planted UI/test/security defect is caught; unknown/missing tools fail closed for required gates.
+**Exit:** planted failures are caught; missing required gates cannot become PASS.
 
-## PASS 8 — Full human Padişah UX
+## PASS 8 — Full Padişah UX
 
-Refactor expanding PatronDesk/App code into maintainable typed components/views. Implement the three information depths and decision compression.
+Refactor Desktop into maintainable typed views/read models and implement the three information depths plus compressed decisions/recovery states.
 
-**Exit acceptance:** a vibe coder can create a project/Ferman, understand progress, survive a worker failure, review a decision and inspect evidence without seeing terminal details unless requested.
+**Exit:** a non-expert can create a Ferman, understand progress/failure/recovery, review evidence and continue without terminal supervision.
 
-## PASS 9 — Installer / onboarding / doctor
+## PASS 9 — Installer/onboarding/doctor
 
-Use existing NSIS/Tauri release system. Improve first-run provider/capability discovery, official login guidance and recovery.
+Use current Windows release system. Improve first-run capability truth and recovery.
 
-**Exit acceptance:** clean Windows user installs, opens app, attaches a repo, connects installed Codex/Claude, runs a real bounded task, restarts and retains state. Existing real-user acceptance lane must prove it.
+**Exit:** clean Windows install → attach repo → real bounded agent task → restart → state preserved, proven by current real-user acceptance lane.
 
-## PASS 10 — Multi-machine (only after local reliability)
+## PASS 10 — Multi-machine only after local reliability
 
-Add one remote worker profile behind a stable worker contract; avoid broad cluster complexity.
+Add a stable worker registration contract and one remote-worker proof if genuinely useful.
 
-**Exit acceptance:** second trusted machine can execute an isolated work package and return evidence; disconnect/reconnect is handled truthfully.
+**Exit:** second trusted machine executes an isolated package and returns evidence; disconnect is handled truthfully.
 
-## PASS 11 — Agency OS evaluation + release candidate
+## PASS 11 — Agency OS eval/release readiness
 
-Run realistic fault-injection/eval suite, fix regressions, update docs and produce the release-ready evidence package.
+Use repository eval discipline plus real fault injection for bug fix, feature, refactor, memory reuse, worker crash, provider failure, scope violation, browser regression, reviewer catch, restart, installer and plugin drift cases.
 
-**Exit:** all required gates pass, known limitations documented, owner receives a release decision. **Do not publish without explicit owner release authority.**
+**Exit:** release-ready evidence package and documented limitations. Public promotion remains a hard owner gate.
 
 ---
 
-# 22. FIRST END-TO-END VERTICAL SLICE — DO THIS BEFORE BIG UI EXPANSION
+# 21. VERTICAL-SLICE RULE
 
-Prove the whole loop with one small but real task, for example:
-
-> “Bu projeye küçük bir kullanıcı-visible özellik/health davranışı ekle ve kanıtla.”
-
-The exact task must be suitable for the chosen fixture/project.
-
-Required chain:
+Before broad UI expansion, prove one real end-to-end loop:
 
 ```text
 Padişah Ferman
-→ memory/intelligence lookup
-→ product/acceptance summary
+→ memory/intelligence
+→ product/acceptance
 → plan proposal
-→ deterministic plan validation
+→ deterministic validation
 → work package
 → isolated worktree
-→ real Codex or Claude builder
-→ project-native tests
+→ real builder
+→ project-native quality
 → independent other-agent review
 → evidence
 → owner-friendly result
-→ guarded merge eligibility
-→ memory/lesson capture
+→ guarded integration
+→ lesson/memory capture
 ```
 
-Do not build dozens of screens before this chain works on a real repository.
+Do not build ten beautiful screens around mocked workers.
 
 ---
 
-# 23. DEFINITION OF DONE FOR THE PRODUCT
+# 22. SELF-HEALING OPERATING DOCTRINE
 
-Divan is not “Agency OS ready” because the UI looks complete. A release candidate must prove, at minimum:
+When something fails, use this order before interrupting the owner:
 
-1. clean Windows install with current installer;
-2. startup/doctor identifies real tool state truthfully;
+```text
+classify failure
+→ preserve work/evidence
+→ determine whether retry is safe
+→ retry with bounded backoff if transient
+→ resume session if proven safe
+→ replace worker/provider if capability-equivalent
+→ shrink/rebuild context if context failure
+→ repair environment/project-scoped dependency if local
+→ replan task graph if assumptions changed
+→ record incident/lesson
+→ continue unaffected work
+```
+
+Stop loops with circuit breakers. Never spend indefinitely because retries are possible.
+
+If the same class of failure appears again, convert the lesson into enforcement where possible.
+
+---
+
+# 23. DEFINITION OF DONE — AGENCY OS READY
+
+Do not declare Agency OS ready because code compiled or UI looks complete.
+
+A release candidate must prove at minimum:
+
+1. clean Windows install;
+2. truthful Doctor/capability state;
 3. project registration;
 4. ordinary-language Ferman;
-5. memory-first intelligence;
-6. product/UX/architecture/planning artifacts where required;
-7. dependency-aware work packages;
-8. real Codex and/or Claude bounded execution;
-9. isolated concurrent writers where parallelism is used;
-10. worker failure recovery;
-11. scope violation rejection;
-12. required tests/browser/security gates for the chosen profile;
+5. memory-first lookup;
+6. product/UX/architecture artifacts when applicable;
+7. deterministic dependency-aware work packages;
+8. real Codex/Claude bounded execution;
+9. safe isolation for concurrent writers;
+10. worker interruption recovery;
+11. technical scope/path violation blocking;
+12. relevant test/browser/security gates;
 13. independent review;
-14. human-readable evidence summary;
-15. no merge before required approval/gates;
-16. controlled merge path;
+14. human-readable evidence;
+15. no integration before required gates;
+16. controlled branch/PR/merge path;
 17. restart persistence;
 18. lesson/memory capture;
-19. uninstall/update/recovery contracts remain healthy;
-20. public docs match the real product;
-21. signed/stable release chain only when its existing production prerequisites are truly satisfied.
+19. plugin/tool trust and rollback for adopted extensions;
+20. update/uninstall/recovery health;
+21. public docs matching observed product behavior.
 
-If any required item is blocked by missing credentials/infrastructure, report it as BLOCKED with exact evidence and continue all independent achievable work.
+Unknown, skipped, missing or timed-out evidence is never silently converted to PASS.
 
 ---
 
-# 24. STATUS REPORTING TO THE HUMAN
+# 24. DURABLE MEMORY — DO NOT DEPEND ON THIS CHAT
 
-Do not dump a developer diary on the owner.
+The owner should never need to repeat this authorization because a model session changed.
 
-At meaningful checkpoints report in this format:
+Persist project truth in the repository and Divan state, not conversational memory alone.
+
+At each meaningful pass update the appropriate durable surfaces, especially:
+
+- `.divan/progress.md`;
+- architecture/ADR decisions;
+- evidence/receipts;
+- capability/trust records;
+- knowledge/incident records;
+- relevant tests;
+- this mandate only when the owner changes the mandate.
+
+A later explicit owner instruction overrides this document. Until then, this standing technical delegation remains the project instruction for the Agency OS transformation.
+
+---
+
+# 25. STATUS REPORTING — DO THE WORK, THEN COMPRESS THE STORY
+
+Do not stream a developer diary to the owner.
+
+At meaningful checkpoints report:
 
 ```text
 Ne yaptım
 - ...
 
 Şu an durum
-- Proje: %X (only if based on defined milestones, never invented)
+- Milestone: ...
 - Çalışan: ...
 - Teftiş: ...
 - Kritik sorun: ...
@@ -1000,60 +940,32 @@ Sizden karar gerekiyor mu?
 - Hayır
 ```
 
-If owner input is required:
+Only report a percentage if it is calculated from defined milestones/gates.
 
-```text
-Karar gerekiyor
-Sorun: ...
-Divan önerisi: ...
-Alternatif: ...
-Risk: ...
-Ek süre/maliyet: ...
-```
-
-Do not ask a question without also giving the recommended decision.
+When no hard gate exists, the final line should usually be **Hayır** and work should continue.
 
 ---
 
-# 25. CODING / QUALITY DISCIPLINE
+# 26. START NOW
 
-- Prefer vertical slices over broad scaffolding.
-- Preserve current behavior before refactoring.
-- For large files (notably Desktop UI), baseline behavior/tests before extraction.
-- One canonical source of state; UI projections must not become authority.
-- Every new provider/tool behind an adapter/contract.
-- Every critical adapter gets contract tests.
-- Every recovery feature gets real kill/interruption tests.
-- Every security boundary gets negative tests.
-- Every persisted schema change gets compatibility/migration evidence.
-- Every user-visible feature gets human-language states for success/loading/error/recovery.
-- Every external candidate follows license/source/adoption rules.
-- Keep dependencies minimal; “available OSS” is not a reason to add it.
-- Keep secrets out of logs/evidence/public docs.
-- Never fabricate token/cost/model capability.
-- Never hide skipped quality gates.
+When Claude Code Desktop reads this mandate:
 
----
+1. Do not ask the owner to restate the dream.
+2. Do not ask for routine technical authorization.
+3. Read current repository truth and verify the machine capabilities.
+4. Run baseline/handoff checks.
+5. Reconcile open work before creating duplicates.
+6. Start PASS 0 and move into PASS 1 immediately when baseline permits.
+7. Use skills, agents, plugins, tools and external research as needed through the rules above.
+8. Implement in vertical slices.
+9. Run targeted tests, canonical verification and independent review.
+10. Commit/integrate verified Ferman-scoped technical work under the standing repository authority.
+11. Update durable progress/evidence/memory.
+12. Recover and continue when workers/tools fail.
+13. Stop only at a hard owner gate or when no safe next action can be derived from evidence.
 
-# 26. START NOW — DO NOT STOP AFTER WRITING A PLAN
+The governing question is:
 
-When this mandate is given to Claude Code Desktop:
+> **Can the human say what they want once, and can Divan safely do the engineering work, obtain the capabilities it needs, recover from failure, prove the result and remember the lesson without requiring the human to become the orchestrator?**
 
-1. Read the repository contracts and current git truth.
-2. Verify that this mandate is still compatible with newer `main`; preserve newer valid work.
-3. Run the baseline verification.
-4. Inspect the current stacked planning PRs (#156/#157/#158) and all overlapping open work.
-5. Produce a short current-state delta: **already done / partially done / missing / stale**.
-6. Start PASS 1 immediately using the smallest safe branch/worktree strategy.
-7. After each pass, run targeted tests then canonical verification, independent review and CI as applicable.
-8. Update durable project state and evidence before moving to the next pass.
-9. Continue automatically through locally achievable passes. Do not return merely because one implementation task finished.
-10. Stop only for a real owner gate, missing external credential/infrastructure that cannot be bypassed safely, or a failure whose next safe action cannot be inferred from evidence.
-
-The guiding standard is not “how much code did you write?”
-
-It is:
-
-> **Can a human say what they want, can Divan understand and remember it, can Divan safely organize real agents to produce it, can independent checks prove it, and can the human understand the result without becoming the system administrator?**
-
-Until that answer is demonstrated with real evidence, the transformation is not complete.
+Until this is demonstrated by real evidence, the transformation continues.
