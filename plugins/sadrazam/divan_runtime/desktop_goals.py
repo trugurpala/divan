@@ -4,13 +4,15 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
-from . import engine, goals
+from . import engine, goal_tasks, goals
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
 from .desktop_protocol_support import required_string as _required_string
+from .desktop_state import task_root
 from .execution_router import ExecutionRouter
 from .project_registry import ProjectRegistry
+from .task_store import TaskStore
 
 
 def _project_root(payload: Mapping[str, Any]) -> Path:
@@ -39,6 +41,14 @@ def _intent(payload: Mapping[str, Any]) -> str:
         payload,
         "intent",
         "DESKTOP_GOAL_INTENT_REQUIRED",
+    )
+
+
+def _goal_id(payload: Mapping[str, Any]) -> str:
+    return _required_string(
+        payload,
+        "goal_id",
+        "DESKTOP_GOAL_ID_REQUIRED",
     )
 
 
@@ -138,6 +148,29 @@ def create_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def materialize_goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Persist Desktop work packages only after explicit task-state approval."""
+    if payload.get("approve_task_materialization") is not True:
+        raise ProtocolValidationError(
+            "DESKTOP_GOAL_TASK_APPROVAL_REQUIRED",
+            "materializing goal work packages requires explicit approval",
+        )
+    return goal_tasks.materialize_goal(
+        _project_root(payload),
+        _goal_id(payload),
+        TaskStore(task_root()),
+    )
+
+
+def list_goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Read materialized work packages for one registered project goal."""
+    return goal_tasks.goal_tasks(
+        _project_root(payload),
+        _goal_id(payload),
+        TaskStore(task_root()),
+    )
+
+
 def handle_goal_preview(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -150,3 +183,17 @@ def handle_goal_create(
 ) -> dict[str, Any]:
     del router
     return _ok(create_goal(payload))
+
+
+def handle_goal_materialize(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(materialize_goal_tasks(payload))
+
+
+def handle_goal_tasks(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(list_goal_tasks(payload))
