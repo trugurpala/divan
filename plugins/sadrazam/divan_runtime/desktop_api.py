@@ -158,10 +158,6 @@ def _project_root(payload: Mapping[str, Any]) -> Path:
     return Path(project_root).expanduser().resolve()
 
 
-def _goal_id(payload: Mapping[str, Any]) -> str:
-    return _required_string(payload, "goal_id", "DESKTOP_GOAL_ID_REQUIRED")
-
-
 def _goal_intent(payload: Mapping[str, Any]) -> str:
     return _required_string(
         payload,
@@ -242,7 +238,7 @@ def preview_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def create_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Persist goal planning artifacts only after explicit plan-write approval."""
+    """Persist goal artifacts and local work packages after plan-write approval."""
     if payload.get("approve_plan_write") is not True:
         raise ProtocolValidationError(
             "DESKTOP_GOAL_WRITE_APPROVAL_REQUIRED",
@@ -253,32 +249,13 @@ def create_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
     target = _goal_target(payload)
     result = goals.start_goal(root, intent, target, True, environment={})
     route = _goal_route(root, intent, target)
+    work_packages = TaskStore(task_root()).materialize_goal(root, str(result["goal_id"]))
     return {
         "goal": result,
         "summary": _goal_summary(route),
+        "work_packages": work_packages,
         "execution_authority": "not-granted",
     }
-
-
-def materialize_goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Persist Desktop work packages only after explicit task-state approval."""
-    if payload.get("approve_task_materialization") is not True:
-        raise ProtocolValidationError(
-            "DESKTOP_GOAL_TASK_APPROVAL_REQUIRED",
-            "materializing goal work packages requires explicit approval",
-        )
-    return TaskStore(task_root()).materialize_goal(
-        _project_root(payload),
-        _goal_id(payload),
-    )
-
-
-def list_goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Read dependency state for one registered project goal."""
-    return TaskStore(task_root()).goal_tasks(
-        _project_root(payload),
-        _goal_id(payload),
-    )
 
 
 def handle_goal_preview(
@@ -293,20 +270,6 @@ def handle_goal_create(
 ) -> dict[str, Any]:
     del router
     return _ok(create_goal(payload))
-
-
-def handle_goal_materialize(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    return _ok(materialize_goal_tasks(payload))
-
-
-def handle_goal_tasks(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    return _ok(list_goal_tasks(payload))
 
 
 def _same_worktree(left: str, right: str) -> bool:
