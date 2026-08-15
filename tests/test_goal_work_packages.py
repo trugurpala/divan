@@ -104,8 +104,10 @@ class GoalWorkPackageTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as second_project,
             tempfile.TemporaryDirectory() as state,
         ):
-            first = pathlib.Path(first_project)
-            second = pathlib.Path(second_project)
+            # The goal ID seed includes the inspected project name, so two roots
+            # must share a directory name to collide the way this test requires.
+            first = pathlib.Path(first_project) / "demo"
+            second = pathlib.Path(second_project) / "demo"
             self._git_project(first)
             self._git_project(second)
             first_goal = self._goal(first)
