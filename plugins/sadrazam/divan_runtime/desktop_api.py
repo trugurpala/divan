@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from . import engine, goal_tasks, goals
+from . import engine, goals
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
@@ -267,19 +267,17 @@ def materialize_goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
             "DESKTOP_GOAL_TASK_APPROVAL_REQUIRED",
             "materializing goal work packages requires explicit approval",
         )
-    return goal_tasks.materialize_goal(
+    return TaskStore(task_root()).materialize_goal(
         _project_root(payload),
         _goal_id(payload),
-        TaskStore(task_root()),
     )
 
 
 def list_goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
     """Read dependency state for one registered project goal."""
-    return goal_tasks.goal_tasks(
+    return TaskStore(task_root()).goal_tasks(
         _project_root(payload),
         _goal_id(payload),
-        TaskStore(task_root()),
     )
 
 
