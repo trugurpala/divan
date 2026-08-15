@@ -146,6 +146,7 @@
         "ci_guard",
         "task_model",
         "task_store",
+        "agency_status",
         "execution_recovery",
         "orchestrator"
       ],
@@ -159,6 +160,7 @@
         "ci_failure_circuit_breaker",
         "desktop_task_state",
         "atomic_task_persistence",
+        "agency_project_status",
         "fail_closed_execution_recovery",
         "task_orchestration"
       ],
