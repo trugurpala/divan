@@ -210,12 +210,18 @@ def materialize_goal(
     }
 
 
-def goal_tasks(goal_id: str, store: TaskStore) -> dict[str, Any]:
-    """Return materialized tasks and dependency-ready state for one goal."""
+def goal_tasks(
+    project: Path | str,
+    goal_id: str,
+    store: TaskStore,
+) -> dict[str, Any]:
+    """Return materialized tasks and dependency-ready state for one project goal."""
+    root = str(Path(project).resolve())
     tasks = [
         task
         for task in store.list()
-        if task.metadata.get("goal_id") == goal_id
+        if task.project_root == root
+        and task.metadata.get("goal_id") == goal_id
         and task.metadata.get("source") == "nizam-i-sefer"
     ]
     by_id = {task.task_id: task for task in tasks}
