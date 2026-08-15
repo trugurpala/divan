@@ -5,8 +5,7 @@ from dataclasses import asdict, replace
 from typing import Any
 from uuid import uuid4
 
-from .desktop_api import DesktopApi
-from .desktop_goals import handle_goal_create, handle_goal_preview
+from .desktop_api import DesktopApi, handle_goal_create, handle_goal_preview
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import (
     error_response as _error,
