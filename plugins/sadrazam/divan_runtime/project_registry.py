@@ -59,7 +59,7 @@ class ProjectRegistry:
         )
 
     def register(self, root: str) -> ProjectRecord:
-        canonical = _git_root(root)
+        canonical = resolve_git_root(root)
         now = _now()
         project_id = hashlib.sha256(
             os.path.normcase(str(canonical)).encode("utf-8")
@@ -110,7 +110,8 @@ class ProjectRegistry:
         os.replace(temporary, self.path)
 
 
-def _git_root(value: str) -> Path:
+def resolve_git_root(value: str) -> Path:
+    """Resolve one existing Git repository root, or fail closed."""
     root = Path(value).expanduser().resolve()
     if not root.is_dir():
         raise ValueError("project root must be an existing directory")
