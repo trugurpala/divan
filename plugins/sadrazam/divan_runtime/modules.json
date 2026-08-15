@@ -41,9 +41,7 @@
         "review_snapshot_binding",
         "guarded_fast_forward_merge"
       ],
-      "depends_on": [
-        "kernel"
-      ],
+      "depends_on": ["kernel"],
       "required": true
     },
     {
@@ -74,31 +72,21 @@
         "native_worktree_execution",
         "local_agent_dispatch"
       ],
-      "depends_on": [
-        "kernel",
-        "governance"
-      ],
+      "depends_on": ["kernel", "governance"],
       "required": true
     },
     {
       "id": "evidence",
       "en": "Evidence",
       "tr": "Kanıt",
-      "python_modules": [
-        "receipts",
-        "execution",
-        "evidence"
-      ],
+      "python_modules": ["receipts", "execution", "evidence"],
       "capabilities": [
         "evidence_ledger",
         "receipt_verification",
         "bounded_command_execution",
         "tamper_evident_task_evidence"
       ],
-      "depends_on": [
-        "kernel",
-        "governance"
-      ],
+      "depends_on": ["kernel", "governance"],
       "required": true
     },
     {
@@ -119,12 +107,7 @@
         "verification",
         "desktop_project_registry"
       ],
-      "depends_on": [
-        "kernel",
-        "governance",
-        "council",
-        "evidence"
-      ],
+      "depends_on": ["kernel", "governance", "council", "evidence"],
       "required": true
     },
     {
@@ -134,6 +117,7 @@
       "python_modules": [
         "goals",
         "goal_archive",
+        "goal_tasks",
         "adoption_common",
         "adoption_legacy",
         "adoption_schema2",
@@ -152,6 +136,7 @@
       "capabilities": [
         "goal_state",
         "active_goal",
+        "goal_task_materialization",
         "task_progress",
         "archive",
         "adoption",
@@ -162,23 +147,14 @@
         "fail_closed_execution_recovery",
         "task_orchestration"
       ],
-      "depends_on": [
-        "kernel",
-        "governance",
-        "council",
-        "evidence",
-        "project"
-      ],
+      "depends_on": ["kernel", "governance", "council", "evidence", "project"],
       "required": true
     },
     {
       "id": "providers",
       "en": "Providers",
       "tr": "Sağlayıcılar",
-      "python_modules": [
-        "providers",
-        "project_readiness"
-      ],
+      "python_modules": ["providers", "project_readiness"],
       "capabilities": [
         "local",
         "github",
@@ -188,35 +164,16 @@
         "windows_installed_app_discovery",
         "subscription_auth_detection"
       ],
-      "depends_on": [
-        "kernel",
-        "governance",
-        "evidence",
-        "project",
-        "records"
-      ],
+      "depends_on": ["kernel", "governance", "evidence", "project", "records"],
       "required": true
     },
     {
       "id": "release",
       "en": "Release",
       "tr": "Yayın",
-      "python_modules": [
-        "release"
-      ],
-      "capabilities": [
-        "release_plan",
-        "provider_evidence",
-        "live_readback"
-      ],
-      "depends_on": [
-        "kernel",
-        "governance",
-        "evidence",
-        "project",
-        "records",
-        "providers"
-      ],
+      "python_modules": ["release"],
+      "capabilities": ["release_plan", "provider_evidence", "live_readback"],
+      "depends_on": ["kernel", "governance", "evidence", "project", "records", "providers"],
       "required": true
     },
     {
@@ -248,16 +205,7 @@
         "desktop_goal_planning",
         "desktop_json_protocol"
       ],
-      "depends_on": [
-        "kernel",
-        "governance",
-        "council",
-        "evidence",
-        "project",
-        "records",
-        "providers",
-        "release"
-      ],
+      "depends_on": ["kernel", "governance", "council", "evidence", "project", "records", "providers", "release"],
       "required": true
     }
   ]
