@@ -10,10 +10,12 @@ from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
 from .desktop_protocol_support import required_string as _required_string
+from .desktop_state import task_root
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
 from .project_registry import ProjectRegistry
 from .task_model import DivanTask, TaskState
+from .task_store import TaskStore
 
 
 @dataclass(frozen=True)
@@ -48,6 +50,7 @@ class DesktopApi:
                 "approval-gate",
                 "task-diff",
                 "goal-planning",
+                "goal-work-packages",
             ),
         )
         return asdict(value)
@@ -235,7 +238,7 @@ def preview_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def create_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
-    """Persist goal planning artifacts only after explicit plan-write approval."""
+    """Persist goal artifacts and local work packages after plan-write approval."""
     if payload.get("approve_plan_write") is not True:
         raise ProtocolValidationError(
             "DESKTOP_GOAL_WRITE_APPROVAL_REQUIRED",
@@ -244,17 +247,13 @@ def create_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
     root = _project_root(payload)
     intent = _goal_intent(payload)
     target = _goal_target(payload)
-    result = goals.start_goal(
-        root,
-        intent,
-        target,
-        True,
-        environment={},
-    )
+    result = goals.start_goal(root, intent, target, True, environment={})
     route = _goal_route(root, intent, target)
+    work_packages = TaskStore(task_root()).materialize_goal(root, str(result["goal_id"]))
     return {
         "goal": result,
         "summary": _goal_summary(route),
+        "work_packages": work_packages,
         "execution_authority": "not-granted",
     }
 
