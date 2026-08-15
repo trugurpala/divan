@@ -232,7 +232,6 @@
         "status",
         "local_server",
         "desktop_api",
-        "desktop_goals",
         "desktop_protocol_support",
         "desktop_protocol"
       ],
