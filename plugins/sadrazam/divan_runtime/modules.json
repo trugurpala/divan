@@ -232,6 +232,7 @@
         "status",
         "local_server",
         "desktop_api",
+        "desktop_goals",
         "desktop_protocol_support",
         "desktop_protocol"
       ],
@@ -245,6 +246,7 @@
         "status_snapshot",
         "loopback_status_server",
         "desktop_api",
+        "desktop_goal_planning",
         "desktop_json_protocol"
       ],
       "depends_on": [
