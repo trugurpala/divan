@@ -72,7 +72,11 @@ def _summary(route: Mapping[str, Any]) -> dict[str, Any]:
     tasks = execution.get("tasks")
     workstreams = execution.get("workstreams")
     sefers = execution.get("sefers")
-    if not isinstance(tasks, list) or not isinstance(workstreams, list) or not isinstance(sefers, list):
+    if (
+        not isinstance(tasks, list)
+        or not isinstance(workstreams, list)
+        or not isinstance(sefers, list)
+    ):
         raise ValueError("goal route planning collections are invalid")
     return {
         "route_id": execution.get("route_id"),
