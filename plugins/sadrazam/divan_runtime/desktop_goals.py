@@ -6,8 +6,10 @@ from typing import Any
 
 from . import engine, goals
 from .desktop_protocol_support import ProtocolValidationError
+from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
 from .desktop_protocol_support import required_string as _required_string
+from .execution_router import ExecutionRouter
 from .project_registry import ProjectRegistry
 
 
@@ -134,3 +136,17 @@ def create_goal(payload: Mapping[str, Any]) -> dict[str, Any]:
         "summary": _summary(route),
         "execution_authority": "not-granted",
     }
+
+
+def handle_goal_preview(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(preview_goal(payload))
+
+
+def handle_goal_create(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(create_goal(payload))
