@@ -117,7 +117,6 @@
       "python_modules": [
         "goals",
         "goal_archive",
-        "goal_tasks",
         "adoption_common",
         "adoption_legacy",
         "adoption_schema2",
