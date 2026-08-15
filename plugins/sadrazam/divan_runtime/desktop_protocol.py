@@ -6,6 +6,7 @@ from typing import Any
 from uuid import uuid4
 
 from .desktop_api import DesktopApi
+from .desktop_goals import create_goal, preview_goal
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import (
     error_response as _error,
@@ -115,6 +116,20 @@ def _handle_project_register(
     del router
     root = _required_string(payload, "root", "DESKTOP_PROJECT_ROOT_REQUIRED")
     return _ok(asdict(ProjectRegistry().register(root)))
+
+
+def _handle_goal_preview(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(preview_goal(payload))
+
+
+def _handle_goal_create(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(create_goal(payload))
 
 
 def _handle_task_list(
@@ -346,6 +361,8 @@ _HANDLERS: dict[str, Handler] = {
     "readiness": _handle_readiness,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
+    "goal.preview": _handle_goal_preview,
+    "goal.create": _handle_goal_create,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,
