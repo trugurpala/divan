@@ -13,7 +13,7 @@ PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
-from divan_runtime.desktop_goals import create_goal, preview_goal
+from divan_runtime.desktop_api import create_goal, preview_goal
 from divan_runtime.desktop_protocol_support import ProtocolValidationError
 from divan_runtime.project_registry import ProjectRegistry
 
