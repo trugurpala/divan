@@ -6,7 +6,12 @@ from typing import Any
 from uuid import uuid4
 
 from .desktop_api import DesktopApi
-from .desktop_goals import handle_goal_create, handle_goal_preview
+from .desktop_goals import (
+    handle_goal_create,
+    handle_goal_materialize,
+    handle_goal_preview,
+    handle_goal_tasks,
+)
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import (
     error_response as _error,
@@ -349,6 +354,8 @@ _HANDLERS: dict[str, Handler] = {
     "project.register": _handle_project_register,
     "goal.preview": handle_goal_preview,
     "goal.create": handle_goal_create,
+    "goal.materialize": handle_goal_materialize,
+    "goal.tasks": handle_goal_tasks,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,
