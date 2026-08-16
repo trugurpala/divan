@@ -285,7 +285,8 @@
         "doctor_protocol",
         "desktop_protocol",
         "knowledge_desktop",
-        "knowledge_protocol"
+        "knowledge_protocol",
+        "agencybench"
       ],
       "capabilities": [
         "cli",
@@ -301,7 +302,9 @@
         "desktop_json_protocol",
         "agency_memory_read_model",
         "canonical_capability_health",
-        "honest_blocked_local_state_policy"
+        "honest_blocked_local_state_policy",
+        "agency_pipeline_benchmark",
+        "evidence_backed_turnkey_verdict"
       ],
       "depends_on": [
         "kernel",

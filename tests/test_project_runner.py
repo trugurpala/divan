@@ -18,6 +18,7 @@ RUNTIME = ROOT / "plugins" / "sadrazam" / "divan_runtime"
 CURRENT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 RUNTIME_FILES = (
     "__init__.py",
+    "agencybench.py",
     "adoption.py",
     "adoption_common.py",
     "adoption_legacy.py",
