@@ -1,5 +1,83 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası II — PASS 9 ve 10 (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `df17551`
+
+### PASS 9 — Deep Doctor
+
+Tek kanonik Core sağlık modeli üretildi; CLI ve Desktop aynı modeli okur,
+ikinci bir sağlık gerçeği yoktur. On dört yetenek denetlenir ve binary
+varlığı asla hazırlık sayılmaz: çekirdek kendi sözleşmesini geri okur, spec
+derleyici örnek bir ferman derler, hafıza deposu açılıp analitiğini
+raporlar. Çözümlenen bir çalıştırılabilir `AUTH_NOT_VERIFIED` koduyla
+`DEGRADED` bildirilir, çünkü `codex.exe` bulmak oturumun çalıştığını
+kanıtlamaz.
+
+Her yetenek, sertifikalı değilken sahibin neyi kaybettiğini yazmak
+zorundadır; `CERTIFIED` olmayan her durum neden kodu taşımak zorundadır.
+Çöken bir probe `BLOCKED` bulguya dönüşür ve asla kullanılabilir sayılmaz.
+
+Bu makinedeki AppData capability SID'i tam istendiği gibi raporlanır:
+`BLOCKED`, kod `LOCAL_STATE_DACL_POLICY`, ve yalnız yerel kanıtın son
+doğrulamasını engellediği, geliştirmeyi durdurmadığı açıkça yazılır. ACL'e
+dokunulmadı, kapı zayıflatılmadı.
+
+Panel üç derinlik render eder; Padişah varsayılandır. Test, Padişah
+görünümüne hiçbir neden kodunun veya DACL sözcüğünün ulaşmadığını ve
+engelli bir yeteneğin asla hazır gösterilmediğini doğrular.
+
+Bu iş sırasında üç mimari kural gerçek hatalarımı yakaladı ve üçü de
+çözüldü: bildirilmemiş modüller, sınırsız dinamik import, ve kernel-project
+katman ters çevrimi. Doctor artık ait olduğu `api` katmanındadır.
+
+### PASS 10 — AgencyBench-01
+
+Sonuç: **TURNKEY_BLOCKED**, neden `WORKERS_OFFLINE`.
+
+Divan kendi hattını Ferman'dan iş paketi grafiğine kadar gerçekten yürüttü:
+ürün sözleşmesi, UX kabul sözleşmesi, mimari kararlar ve dört iş paketi
+üretildi, paket başına sınırlı bağlam derlendi. Çalışan atama adımında
+durdu; bu makinede ne Codex ne Claude kurulu.
+
+**Uygulama elle yazılmadı.** Yazılsaydı arkasında ölçüm olmayan bir `READY`
+üretilirdi; bu sınav Divan'ın ne yapabildiğini ölçer. Ücretli bir kodlama
+CLI'ını kurup oturum açmak kimlik işlemidir ve hard gate'tir.
+
+On yedi kabul kapısının tamamı `BLOCKED` ve her biri nedenini taşır.
+`HUMAN_INTERVENTION_COUNT` sıfırdır: koşu yardım isteği yüzünden değil
+makine gerçeği yüzünden durdu.
+
+Kanıt: `.divan/evidence/teftis-20260816-agencybench-01.md`.
+
+### Teslim sonrası ürün zekâsı
+
+Teslim edilmiş uygulama olmadığı için kullanım verisi yoktur ve öyleymiş
+gibi davranılmadı. Altı öneri bu kampanyada fiilen gözlenen kanıta
+dayandırıldı: çalışanların geç fark edilmesi, doğrulama sırasında worktree
+düzenlemenin ürettiği beş sahte hata, yeni modül kaydının tekrarlanan
+sürtünmesi, eksik tarayıcı yeteneği, kalibre edilmemiş token tahmini ve
+yalnız merge yolunda tetiklenen öğrenme.
+
+Kanıt: `.divan/evidence/teftis-20260816-product-intelligence.md`.
+
+### Ölçüm
+
+| | Test | Başarısız | Yeni regresyon |
+|---|---|---|---|
+| `main` | 1020 | 87 | — |
+| PASS 10 head | **1181** | 84 | **0** |
+
+Frontend 20/20 render testi. validate, ruff, mypy, clean-code, naming,
+prose, standards, candidates, hijyen — hepsi yeşil.
+
+### Sıradaki kesin adım
+
+AgencyBench'i `TURNKEY_READY`'ye taşımak için tek engel kurulu ve kimliği
+doğrulanmış bir kodlama çalışanıdır. Bu sahip kararıdır. Çalışan
+sağlandığında benchmark aynı komutla yeniden koşulur ve kapı matrisi gerçek
+sonuçlarla dolar.
+
 ## Agency OS kampanyası II — PASS 6, 7 ve 8 (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `514e15e`
