@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -54,6 +55,8 @@ class ProjectReadiness:
 
 TOOL_SPECS = (
     ToolSpec("git", "Git", ("git",), required=True),
+    ToolSpec("rustc", "Rust", ("rustc",)),
+    ToolSpec("ollama", "Ollama (yerel AI)", ("ollama",)),
     ToolSpec(
         "gh",
         "GitHub CLI",
@@ -75,6 +78,7 @@ TOOL_SPECS = (
         "claude",
         "Claude Code",
         ("claude",),
+        auth_args=("auth", "status"),
         subscription_supported=True,
         api_env=("ANTHROPIC_API_KEY",),
         windows_app_names=("Claude", "Claude Code"),
@@ -216,7 +220,10 @@ def _auth(
     env: Mapping[str, str],
 ) -> AuthResult:
     if any(bool(env.get(name)) for name in spec.api_env):
-        return "connected", "api-key-env"
+        # Presence is not proof that a credential is valid.  Treat it as
+        # configured-only until a future explicit, policy-approved capability
+        # probe can verify it without first creating a worktree.
+        return "unknown", "api-key-configured"
     if not path:
         return "unavailable", None
     if spec.auth_args is None:
@@ -231,7 +238,9 @@ def _auth(
 
 def _specialized_auth(tool_id: str, code: int, text: str) -> AuthResult | None:
     if tool_id == "codex":
-        return _codex_auth(text)
+        return _codex_auth(code, text)
+    if tool_id == "claude":
+        return _claude_auth(code, text)
     if tool_id == "opencode":
         return ("connected", "provider-auth") if code == 0 and text else (
             "not-connected",
@@ -244,10 +253,13 @@ def _specialized_auth(tool_id: str, code: int, text: str) -> AuthResult | None:
     return None
 
 
-def _codex_auth(text: str) -> AuthResult | None:
+def _codex_auth(code: int, text: str) -> AuthResult | None:
     normalized = text.casefold()
+    if "not logged in" in normalized:
+        return "not-connected", "login-required"
+    if code != 0:
+        return "unknown", "probe-failed"
     states = (
-        ("not logged in", ("not-connected", "login-required")),
         ("logged in using chatgpt", ("connected", "chatgpt")),
         ("logged in using an api key", ("connected", "api-key")),
         ("logged in using agent identity", ("connected", "agent-identity")),
@@ -256,6 +268,30 @@ def _codex_auth(text: str) -> AuthResult | None:
         if marker in normalized:
             return result
     return None
+
+
+def _claude_auth(code: int, text: str) -> AuthResult:
+    """Accept only an explicit Claude authentication status as execution proof."""
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        payload = None
+    if isinstance(payload, Mapping) and isinstance(payload.get("loggedIn"), bool):
+        if code != 0 and payload["loggedIn"]:
+            return "unknown", "probe-failed"
+        return (
+            ("connected", "authenticated")
+            if payload["loggedIn"]
+            else ("not-connected", "login-required")
+        )
+    normalized = text.casefold()
+    if "not logged in" in normalized or "loggedin: false" in normalized:
+        return "not-connected", "login-required"
+    if code != 0:
+        return "unknown", "probe-failed"
+    if "logged in" in normalized or "loggedin: true" in normalized:
+        return "connected", "authenticated"
+    return "unknown", "probe-failed"
 
 
 def _status_auth(code: int, detail: str) -> AuthResult:

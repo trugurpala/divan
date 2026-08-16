@@ -79,9 +79,9 @@ def _verify_versions(
 
 def _verify_identity(tauri: Mapping[str, Any]) -> None:
     expected = {
-        "productName": "Divan",
-        "mainBinaryName": "Divan",
-        "identifier": "com.ugurpala.divan",
+        "productName": "Ottoman",
+        "mainBinaryName": "Ottoman",
+        "identifier": "com.ugurpala.ottoman",
     }
     for key, value in expected.items():
         if tauri.get(key) != value:
@@ -109,7 +109,7 @@ def _bundle_contract(
         raise DesktopReleaseError("NSIS installMode must remain currentUser")
     external_bin = bundle.get("externalBin")
     if not isinstance(external_bin, list) or "binaries/divan-core" not in external_bin:
-        raise DesktopReleaseError("Divan Core sidecar is missing from Windows bundle")
+        raise DesktopReleaseError("Ottoman Core sidecar is missing from Windows bundle")
     return bundle, windows_bundle
 
 
@@ -195,8 +195,8 @@ def inspect_desktop(
     return {
         "status": "PASS",
         "version": version,
-        "product": "Divan",
-        "main_binary": "Divan.exe",
+        "product": "Ottoman",
+        "main_binary": "Ottoman.exe",
         "installer": "nsis-current-user",
         "core_sidecar": True,
         "updater_configured": _updater_ready(config, bundle),

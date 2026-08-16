@@ -219,18 +219,18 @@ jobs:
       - name: Verify installed Desktop process restart
         shell: pwsh
         run: |
-          $appExe = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
+          $appExe = Join-Path $env:LOCALAPPDATA "Ottoman/Ottoman.exe"
           if (-not (Test-Path $appExe)) {
-            $candidate = Get-ChildItem $env:LOCALAPPDATA -Filter "Divan.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            $candidate = Get-ChildItem $env:LOCALAPPDATA -Filter "Ottoman.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($candidate) { $appExe = $candidate.FullName }
           }
-          if (-not (Test-Path $appExe)) { throw "Installed Divan.exe was not found" }
+          if (-not (Test-Path $appExe)) { throw "Installed Ottoman.exe was not found" }
 
           foreach ($attempt in 1..2) {
             $app = Start-Process -FilePath $appExe -PassThru
             Start-Sleep -Seconds 5
             if ($app.HasExited) {
-              throw "Installed Divan.exe exited during restart acceptance attempt $attempt with code $($app.ExitCode)"
+              throw "Installed Ottoman.exe exited during restart acceptance attempt $attempt with code $($app.ExitCode)"
             }
             Stop-Process -Id $app.Id -Force
             Start-Sleep -Seconds 1
@@ -267,11 +267,11 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          $installRoot = Join-Path $env:LOCALAPPDATA "Divan"
+          $installRoot = Join-Path $env:LOCALAPPDATA "Ottoman"
           $uninstaller = Get-ChildItem $installRoot -Filter "uninstall*.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($uninstaller) {
             $process = Start-Process -FilePath $uninstaller.FullName -ArgumentList "/S" -Wait -PassThru
             if ($process.ExitCode -ne 0) {
-              Write-Warning "Divan acceptance cleanup returned exit code $($process.ExitCode)"
+              Write-Warning "Ottoman acceptance cleanup returned exit code $($process.ExitCode)"
             }
           }

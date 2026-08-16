@@ -121,7 +121,7 @@ try {
     }
     $signerThumbprintHash = Get-Sha256Text -Value $authenticode.SignerCertificate.Thumbprint
 
-    [IO.File]::WriteAllBytes($updaterProbe, [Text.Encoding]::UTF8.GetBytes("Divan production updater signing readiness probe`n"))
+    [IO.File]::WriteAllBytes($updaterProbe, [Text.Encoding]::UTF8.GetBytes("Ottoman production updater signing readiness probe`n"))
     Push-Location $desktopRoot
     try {
         $signerOutput = & pnpm tauri signer sign $updaterProbe 2>&1
@@ -141,7 +141,7 @@ try {
     $evidence = [ordered]@{
         schema_version = 1
         status = "pass"
-        product = "Divan Desktop"
+        product = "Ottoman Desktop"
         source_commit = $sourceCommit
         source_tree = $sourceTree
         version = $version

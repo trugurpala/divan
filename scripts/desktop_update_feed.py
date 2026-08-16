@@ -183,7 +183,7 @@ def generate(
     artifact_url = feed["platforms"][TARGET]["url"]
     evidence = {
         "schema_version": 1,
-        "product": "Divan",
+        "product": "Ottoman",
         "version": clean_version,
         "target": TARGET,
         "source_commit": clean_commit,
@@ -222,7 +222,7 @@ def generate(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate and validate Divan's source-bound Tauri Windows updater feed."
+        description="Generate and validate Ottoman's source-bound Tauri Windows updater feed."
     )
     parser.add_argument("--installer", type=pathlib.Path, required=True)
     parser.add_argument("--signature", type=pathlib.Path, required=True)

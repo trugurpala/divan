@@ -20,7 +20,7 @@ ENDPOINT = "https://updates.example.com/divan/latest.json"
 
 class DesktopPromotionGuardTests(unittest.TestCase):
     def _candidate(self, root: pathlib.Path) -> tuple[pathlib.Path, pathlib.Path]:
-        installer = root / "Divan_1.3.8_x64-setup.exe"
+        installer = root / "Ottoman_1.3.8_x64-setup.exe"
         installer.write_bytes(b"synthetic signed installer fixture")
         signature = pathlib.Path(f"{installer}.sig")
         signature.write_text("synthetic-updater-signature\n", encoding="utf-8")
@@ -32,7 +32,7 @@ class DesktopPromotionGuardTests(unittest.TestCase):
             source_commit=COMMIT,
             source_tree=TREE,
             output=root / "latest.json",
-            manifest=root / "divan-update-manifest.json",
+            manifest=root / "ottoman-update-manifest.json",
             pub_date="2026-08-07T21:00:00Z",
             notes="fixture",
         )
@@ -81,10 +81,10 @@ class DesktopPromotionGuardTests(unittest.TestCase):
             self.assertEqual(report["source_tree"], TREE)
             self.assertEqual(report["updater_endpoint"], ENDPOINT)
             text = checksums.read_text(encoding="utf-8")
-            self.assertIn("Divan_1.3.8_x64-setup.exe", text)
-            self.assertIn("Divan_1.3.8_x64-setup.exe.sig", text)
+            self.assertIn("Ottoman_1.3.8_x64-setup.exe", text)
+            self.assertIn("Ottoman_1.3.8_x64-setup.exe.sig", text)
             self.assertIn("latest.json", text)
-            self.assertIn("divan-update-manifest.json", text)
+            self.assertIn("ottoman-update-manifest.json", text)
 
     def test_tampered_installer_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temp:

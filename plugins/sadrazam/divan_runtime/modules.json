@@ -147,6 +147,7 @@
         "task_model",
         "task_store",
         "execution_recovery",
+        "ordu",
         "orchestrator"
       ],
       "capabilities": [
@@ -233,7 +234,9 @@
         "local_server",
         "desktop_api",
         "desktop_protocol_support",
-        "desktop_protocol"
+        "desktop_protocol",
+        "prompt_library",
+        "local_ai"
       ],
       "capabilities": [
         "cli",
@@ -245,7 +248,10 @@
         "status_snapshot",
         "loopback_status_server",
         "desktop_api",
-        "desktop_json_protocol"
+        "desktop_json_protocol",
+        "local_prompt_catalog",
+        "local_ai_workbench",
+        "deterministic_task_graph"
       ],
       "depends_on": [
         "kernel",

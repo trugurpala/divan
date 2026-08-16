@@ -91,7 +91,7 @@ def _candidate_files(
     if not signature.is_file():
         raise PromotionError("candidate updater signature paired with the NSIS installer is missing")
     feed = _single(root, "latest.json", "latest.json updater feed")
-    manifest = _single(root, "divan-update-manifest.json", "promotion manifest")
+    manifest = _single(root, "ottoman-update-manifest.json", "promotion manifest")
     return installer, signature, feed, manifest
 
 
@@ -133,7 +133,7 @@ def _validate_manifest_identity(
     source_commit: str,
     source_tree: str,
 ) -> None:
-    if manifest.get("schema_version") != 1 or manifest.get("product") != "Divan":
+    if manifest.get("schema_version") != 1 or manifest.get("product") != "Ottoman":
         raise PromotionError("promotion manifest schema/product is invalid")
     if manifest.get("version") != version or manifest.get("target") != TARGET:
         raise PromotionError("promotion manifest version/target does not match the candidate")
@@ -190,7 +190,7 @@ def _report(
 ) -> dict[str, Any]:
     return {
         "status": "pass",
-        "product": "Divan",
+        "product": "Ottoman",
         "version": version,
         "target": TARGET,
         "source_commit": source_commit,
@@ -268,7 +268,7 @@ def write_checksums(report: Mapping[str, Any], output: pathlib.Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Fail closed before promoting a signed Divan Desktop candidate."
+        description="Fail closed before promoting a signed Ottoman Desktop candidate."
     )
     parser.add_argument("--candidate-dir", type=pathlib.Path, required=True)
     parser.add_argument("--source-commit", required=True)

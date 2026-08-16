@@ -24,12 +24,16 @@ from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
+from . import prompt_library
+from . import local_ai
+from . import ordu
 from .review_gate import CheckResult, ReviewDecision
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
 API_VERSION = 1
 _AGENT_IDS = {"codex", "claude", "opencode", "cursor-agent"}
+_AGENT_PREFERENCE = ("codex", "claude", "opencode", "cursor-agent")
 Handler = Callable[[Mapping[str, Any], ExecutionRouter | None], dict[str, Any]]
 
 
@@ -87,7 +91,9 @@ def _handle_readiness(
     agents = [
         tool["id"]
         for tool in tools
-        if tool["id"] in _AGENT_IDS and tool["available"]
+        if tool["id"] in _AGENT_IDS
+        and tool["available"]
+        and tool["auth"] == "connected"
     ]
     engines = list(router.available_engines()) if router is not None else []
     return _ok(
@@ -167,6 +173,52 @@ def _handle_task_create(
     return _ok(task.to_dict())
 
 
+def _handle_prompt_search(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    query = _optional_string(payload, "query", "DESKTOP_PROMPT_QUERY_INVALID") or ""
+    limit = payload.get("limit", 30)
+    if not isinstance(limit, int):
+        raise ProtocolValidationError("DESKTOP_PROMPT_LIMIT_INVALID", "prompt limit must be a number")
+    return _ok(
+        {
+            "items": prompt_library.search(query, limit=limit),
+            "total": prompt_library.catalogue_size(),
+            "source": prompt_library.provenance(),
+        }
+    )
+
+
+def _handle_prompt_get(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    prompt_id = _required_string(payload, "prompt_id", "DESKTOP_PROMPT_ID_REQUIRED")
+    return _ok(prompt_library.get(prompt_id).detail())
+
+
+def _handle_task_create_from_prompt(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    prompt_id = _required_string(payload, "prompt_id", "DESKTOP_PROMPT_ID_REQUIRED")
+    values = payload.get("variables")
+    if values is not None and not isinstance(values, Mapping):
+        raise ProtocolValidationError("DESKTOP_PROMPT_VARIABLES_INVALID", "variables must be an object")
+    rendered = prompt_library.render(prompt_id, values)
+    task_id = f"OTT-{uuid4().hex[:8].upper()}"
+    task = DivanTask(
+        task_id=task_id,
+        title=str(rendered["title"]),
+        project_root=_resolve_project_root(payload),
+        engine_id=_optional_string(payload, "engine_id", "DESKTOP_ENGINE_ID_INVALID"),
+        metadata={"prompt_library": rendered},
+    )
+    _tasks().save(task)
+    return _ok(task.to_dict())
+
+
 def _handle_task_plan(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -176,7 +228,54 @@ def _handle_task_plan(
     return _ok(_orchestrator(active_router).plan(task, reason).to_dict())
 
 
-def _execution_task(payload: Mapping[str, Any], task: DivanTask) -> DivanTask:
+def _execution_agent(agent: str | None) -> tuple[str, dict[str, object]]:
+    readiness = discover_tools()
+    tools = {tool.id: tool for tool in readiness.tools}
+    if agent is not None:
+        candidates = (agent,)
+    else:
+        candidates = _AGENT_PREFERENCE
+    for candidate in candidates:
+        if candidate not in _AGENT_IDS:
+            raise ProtocolValidationError(
+                "DESKTOP_AGENT_UNSUPPORTED",
+                f"agent is not supported: {candidate}",
+            )
+        tool = tools.get(candidate)
+        if tool is None or not tool.available:
+            if agent is not None:
+                raise ProtocolValidationError(
+                    "DESKTOP_AGENT_UNAVAILABLE",
+                    f"agent is not available: {candidate}",
+                )
+            continue
+        if tool.auth != "connected":
+            if agent is not None:
+                raise ProtocolValidationError(
+                    "DESKTOP_AGENT_NOT_AUTHENTICATED",
+                    f"agent is not authenticated: {candidate}",
+                )
+            continue
+        return candidate, {
+            "agent": candidate,
+            "version": tool.version,
+            "auth": tool.auth,
+            "auth_detail": tool.auth_detail,
+            "api_key_configured": tool.api_key_configured,
+        }
+    raise ProtocolValidationError(
+        "DESKTOP_AGENT_UNAVAILABLE",
+        "no supported authenticated local coding agent is available",
+    )
+
+
+def _execution_task(
+    payload: Mapping[str, Any],
+    task: DivanTask,
+    *,
+    agent: str | None,
+    router: ExecutionRouter,
+) -> tuple[DivanTask, str]:
     if payload.get("approve_execution") is not True:
         raise ProtocolValidationError(
             "DESKTOP_EXECUTION_APPROVAL_REQUIRED",
@@ -188,16 +287,36 @@ def _execution_task(payload: Mapping[str, Any], task: DivanTask) -> DivanTask:
             "task must be planned or retry before execution",
         )
     engine_id = _optional_string(payload, "engine_id", "DESKTOP_ENGINE_ID_INVALID")
+    selected_engine = router.select(engine_id or task.engine_id).engine_id
+    selected_agent, preflight = _execution_agent(agent)
     mandate_id = task.mandate_id or f"mandate-{uuid4().hex}"
-    return replace(task, engine_id=engine_id or task.engine_id, mandate_id=mandate_id)
+    metadata = dict(task.metadata)
+    metadata["execution_preflight"] = {
+        "engine": selected_engine,
+        **preflight,
+    }
+    return (
+        replace(
+            task,
+            engine_id=selected_engine,
+            mandate_id=mandate_id,
+            metadata=metadata,
+        ),
+        selected_agent,
+    )
 
 
 def _handle_task_start(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
-    task = _execution_task(payload, _load_task(payload))
     agent = _optional_string(payload, "agent", "DESKTOP_AGENT_INVALID")
+    task, agent = _execution_task(
+        payload,
+        _load_task(payload),
+        agent=agent,
+        router=active_router,
+    )
     prompt = _optional_string(payload, "prompt", "DESKTOP_TASK_PROMPT_INVALID")
     worktree_name = (
         _optional_string(payload, "worktree_name", "DESKTOP_WORKTREE_NAME_INVALID")
@@ -341,6 +460,29 @@ def _handle_engine_status(
     return _ok(DesktopApi(_require_router(router)).engine_status(engine_id))
 
 
+def _handle_local_ai_status(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del payload, router
+    return _ok(local_ai.status())
+
+
+def _handle_local_ai_draft(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    prompt = _required_string(payload, "prompt", "DESKTOP_LOCAL_AI_PROMPT_REQUIRED")
+    model = _optional_string(payload, "model", "DESKTOP_LOCAL_AI_MODEL_INVALID")
+    return _ok(local_ai.draft(prompt, model=model or local_ai.DEFAULT_MODEL))
+
+
+def _handle_ordu_plan(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(ordu.plan(_required_string(payload, "title", "DESKTOP_ORDU_TITLE_REQUIRED")))
+
+
 _HANDLERS: dict[str, Handler] = {
     "capabilities": _handle_capabilities,
     "readiness": _handle_readiness,
@@ -349,6 +491,9 @@ _HANDLERS: dict[str, Handler] = {
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,
+    "prompt.search": _handle_prompt_search,
+    "prompt.get": _handle_prompt_get,
+    "task.create_from_prompt": _handle_task_create_from_prompt,
     "task.plan": _handle_task_plan,
     "task.start": _handle_task_start,
     "task.recover.interrupted": _handle_task_recover_interrupted,
@@ -360,6 +505,9 @@ _HANDLERS: dict[str, Handler] = {
     "task.release": _handle_task_release,
     "evidence.list": _handle_evidence_list,
     "engine.status": _handle_engine_status,
+    "local_ai.status": _handle_local_ai_status,
+    "local_ai.draft": _handle_local_ai_draft,
+    "ordu.plan": _handle_ordu_plan,
 }
 
 

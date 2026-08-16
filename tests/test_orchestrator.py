@@ -144,6 +144,7 @@ class OrchestratorTests(unittest.TestCase):
                 mandate_id="m-1",
             )
             task = orchestrator.plan(task)
+            self.assertEqual(task.metadata["ordu"]["unit_statuses"]["implement"], "pending")
             task = orchestrator.start(
                 task,
                 worktree_name="fix-login",
@@ -154,12 +155,15 @@ class OrchestratorTests(unittest.TestCase):
             self.assertEqual(task.metadata["execution"]["engine"], "native")
             self.assertEqual(task.metadata["execution"]["attempt"], 1)
             self.assertNotIn("execution_pending", task.metadata)
+            self.assertEqual(task.metadata["ordu"]["unit_statuses"]["implement"], "pass")
 
             task, decision = orchestrator.review_automated(task)
             self.assertEqual(task.state, TaskState.PASSED)
             self.assertEqual(task.metadata["review"]["verdict"], "pass")
             self.assertEqual(task.metadata["automated_review"]["reviewer"], "claude")
             self.assertEqual(decision.verdict.value, "pass")
+            self.assertEqual(task.metadata["ordu"]["unit_statuses"]["verify"], "pass")
+            self.assertEqual(task.metadata["ordu"]["unit_statuses"]["review"], "pass")
             self.assertEqual(reviewer.last_worker_agent, "codex")
             self.assertIn("app.txt", reviewer.last_diff)
 
@@ -180,10 +184,8 @@ class OrchestratorTests(unittest.TestCase):
             self.assertEqual(task.state, TaskState.RELEASED)
 
             evidence = orchestrator.evidence.list("DIV-1")
-            self.assertEqual(
-                [item["kind"] for item in evidence],
-                ["execution", "review", "approval", "release"],
-            )
+            self.assertEqual(sum(item["kind"] == "ordu-unit" for item in evidence), 9)
+            self.assertEqual([item["kind"] for item in evidence if item["kind"] != "ordu-unit"], ["execution", "review", "approval", "release"])
             self.assertNotIn("secret", str(evidence))
 
     def test_retry_uses_fresh_worktree_name_and_preserves_attempt_history(self):

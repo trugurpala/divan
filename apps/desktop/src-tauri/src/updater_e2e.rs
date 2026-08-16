@@ -319,7 +319,10 @@ async fn run(app: AppHandle, mode: String) {
                     &mode,
                     &current,
                     &expected,
-                    &format!("unexpected downgrade/update was offered: {}", update.version),
+                    &format!(
+                        "unexpected downgrade/update was offered: {}",
+                        update.version
+                    ),
                     105,
                 ),
                 Err(error) => finish(

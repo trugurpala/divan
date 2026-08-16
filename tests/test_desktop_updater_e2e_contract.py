@@ -121,7 +121,7 @@ class DesktopUpdaterE2EContractTests(unittest.TestCase):
         self.assertIn("Get-InstalledBinaryVersion -Path $installedApp", binary_block)
         self.assertIn("throw", binary_block)
 
-        self.assertIn('Get-Process -Name "Divan-*-installer"', cleanup_block)
+        self.assertIn('Get-Process -Name "Ottoman-*-installer"', cleanup_block)
         self.assertIn("Stop-Process -Id $installer.Id -Force", cleanup_block)
         self.assertIn("Installer lifetime is not release evidence", cleanup_block)
         self.assertIn("after both the on-disk PE version", cleanup_block)

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping
 
 from .evidence import EvidenceStore, build_evidence
+from . import ordu
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_recovery import (
     complete_execution_attempt,
@@ -74,7 +75,33 @@ class DivanOrchestrator:
         return task
 
     def plan(self, task: DivanTask, reason: str | None = None) -> DivanTask:
-        return self._save(task.transition(TaskState.PLANNED, reason))
+        planned = task.transition(TaskState.PLANNED, reason)
+        work_plan = ordu.plan(planned.title)
+        metadata = dict(planned.metadata)
+        metadata["ordu"] = {
+            "plan": work_plan,
+            "unit_statuses": ordu.initial_unit_statuses(work_plan),
+        }
+        planned = replace(planned, metadata=metadata)
+        for unit in work_plan["units"]:
+            assert isinstance(unit, Mapping)
+            unit_id = str(unit["id"])
+            self.evidence.append(
+                build_evidence(
+                    planned.task_id,
+                    "ordu-unit",
+                    metadata["ordu"]["unit_statuses"][unit_id],
+                    f"Ordu unit {unit_id} planned",
+                    {
+                        "unit_id": unit_id,
+                        "role": str(unit["role"]),
+                        "depends_on": list(unit["depends_on"]),
+                        "phase": "planning",
+                        "mutated": False,
+                    },
+                )
+            )
+        return self._save(planned)
 
     def start(
         self,
@@ -103,6 +130,20 @@ class DivanOrchestrator:
         receipt = self.router.execute(request, pending.running.engine_id)
         self.evidence.append(execution_attempt_evidence(pending, receipt))
         running = complete_execution_attempt(pending, receipt)
+        unit_status = "pass" if receipt.ok else "retry"
+        running = self._set_ordu_unit_status(running, "implement", unit_status)
+        self._record_ordu_unit(
+            running,
+            "implement",
+            unit_status,
+            phase="execution",
+            data={
+                "engine": receipt.engine,
+                "exit_code": receipt.exit_code,
+                "attempt": running.metadata.get("execution", {}).get("attempt"),
+                "mandate_id": receipt.mandate_id,
+            },
+        )
         self.tasks.save(running)
         if receipt.ok:
             return running
@@ -207,7 +248,25 @@ class DivanOrchestrator:
             ),
             automated.check(),
         )
-        return self.review(prepared, checks)
+        updated, decision = self.review(prepared, checks)
+        unit_status = "pass" if decision.verdict is GateVerdict.PASS else "retry"
+        updated = self._set_ordu_unit_status(updated, "verify", unit_status)
+        updated = self._set_ordu_unit_status(updated, "review", unit_status)
+        self._record_ordu_unit(
+            updated,
+            "verify",
+            unit_status,
+            phase="verification",
+            data={"diff_sha256": snapshot.diff_sha256},
+        )
+        self._record_ordu_unit(
+            updated,
+            "review",
+            unit_status,
+            phase="review",
+            data={"reviewer": automated.reviewer, "verdict": automated.verdict},
+        )
+        return self._save(updated), decision
 
     def request_approval(self, task: DivanTask) -> DivanTask:
         return self._save(
@@ -276,6 +335,66 @@ class DivanOrchestrator:
     def _save(self, task: DivanTask) -> DivanTask:
         self.tasks.save(task)
         return task
+
+    def _set_ordu_unit_status(
+        self,
+        task: DivanTask,
+        unit_id: str,
+        status: str,
+    ) -> DivanTask:
+        metadata = dict(task.metadata)
+        ordu_data = metadata.get("ordu")
+        if not isinstance(ordu_data, Mapping):
+            return task
+        statuses = ordu_data.get("unit_statuses")
+        if not isinstance(statuses, Mapping) or unit_id not in statuses:
+            return task
+        next_ordu = dict(ordu_data)
+        next_statuses = dict(statuses)
+        next_statuses[unit_id] = status
+        next_ordu["unit_statuses"] = next_statuses
+        metadata["ordu"] = next_ordu
+        return replace(task, metadata=metadata)
+
+    def _record_ordu_unit(
+        self,
+        task: DivanTask,
+        unit_id: str,
+        status: str,
+        *,
+        phase: str,
+        data: Mapping[str, Any],
+    ) -> None:
+        ordu_data = task.metadata.get("ordu")
+        if not isinstance(ordu_data, Mapping):
+            return
+        plan_value = ordu_data.get("plan")
+        if not isinstance(plan_value, Mapping):
+            return
+        units = plan_value.get("units")
+        if not isinstance(units, list):
+            return
+        unit = next(
+            (item for item in units if isinstance(item, Mapping) and item.get("id") == unit_id),
+            None,
+        )
+        if unit is None:
+            return
+        self.evidence.append(
+            build_evidence(
+                task.task_id,
+                "ordu-unit",
+                status,
+                f"Ordu unit {unit_id} {status}",
+                {
+                    "unit_id": unit_id,
+                    "role": str(unit["role"]),
+                    "depends_on": list(unit["depends_on"]),
+                    "phase": phase,
+                    **dict(data),
+                },
+            )
+        )
 
 
 def _execution_worktree(task: DivanTask) -> str:

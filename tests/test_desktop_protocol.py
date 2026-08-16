@@ -20,6 +20,7 @@ from divan_runtime.desktop_protocol import handle_request
 from divan_runtime.desktop_state import task_root
 from divan_runtime.execution_contract import ExecutionAction, ExecutionReceipt
 from divan_runtime.execution_router import ExecutionRouter
+from divan_runtime.project_readiness import ProjectReadiness, ToolStatus
 from divan_runtime.task_model import DivanTask, TaskState
 from divan_runtime.task_store import TaskStore
 
@@ -61,6 +62,24 @@ class FakeEngine:
         )
 
 
+def _agent_readiness(
+    agent: str = "codex", *, available: bool = True, auth: str = "connected"
+) -> ProjectReadiness:
+    return ProjectReadiness(
+        ready=True,
+        tools=(
+            ToolStatus("git", True, "C:/git.exe", True),
+            ToolStatus(
+                agent,
+                available,
+                f"C:/{agent}.exe" if available else None,
+                False,
+                auth=auth,
+            ),
+        ),
+    )
+
+
 class DesktopProtocolTests(unittest.TestCase):
     def test_capabilities_response_has_envelope(self):
         response = handle_request(
@@ -69,14 +88,42 @@ class DesktopProtocolTests(unittest.TestCase):
         )
         self.assertTrue(response["ok"])
         self.assertEqual(response["api_version"], 1)
-        self.assertEqual(response["result"]["product"], "Divan")
+        self.assertEqual(response["result"]["product"], "Ottoman")
         self.assertIn("task.start", response["result"]["commands"])
         self.assertIn("task.recover.interrupted", response["result"]["commands"])
         self.assertIn("task.diff", response["result"]["commands"])
         self.assertIn("task.review.auto", response["result"]["commands"])
         self.assertIn("interrupted-recovery", response["result"]["features"])
 
-    def test_task_create_plan_start_uses_explicit_approval(self):
+    @patch("divan_runtime.desktop_protocol.local_ai.status")
+    def test_local_ai_status_is_available_without_an_execution_router(self, status):
+        status.return_value = {"available": True, "models": []}
+        response = handle_request({"command": "local_ai.status"})
+        self.assertTrue(response["ok"])
+        self.assertTrue(response["result"]["available"])
+
+    @patch("divan_runtime.desktop_protocol.local_ai.draft")
+    def test_local_ai_draft_stays_nonexecuting_without_an_execution_router(self, draft):
+        draft.return_value = {
+            "model": "qwen3:8b",
+            "draft": "Önce incele, sonra doğrula.",
+            "executed": False,
+        }
+        response = handle_request(
+            {"command": "local_ai.draft", "prompt": "Ayar ekranını geliştir"}
+        )
+        self.assertTrue(response["ok"], response)
+        self.assertFalse(response["result"]["executed"])
+        draft.assert_called_once_with("Ayar ekranını geliştir", model="qwen3:8b")
+
+    def test_ordu_plan_is_read_only_and_bounded(self):
+        response = handle_request({"command": "ordu.plan", "title": "Build a settings panel"})
+        self.assertTrue(response["ok"])
+        self.assertTrue(response["result"]["approval_required_before_mutation"])
+
+    @patch("divan_runtime.desktop_protocol.discover_tools")
+    def test_task_create_plan_start_uses_explicit_approval(self, discover_tools):
+        discover_tools.return_value = _agent_readiness()
         with tempfile.TemporaryDirectory() as directory, patch.dict(
             os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
         ):
@@ -117,10 +164,14 @@ class DesktopProtocolTests(unittest.TestCase):
             self.assertEqual(started["result"]["state"], "running")
             self.assertTrue(started["result"]["mandate_id"].startswith("mandate-"))
             self.assertNotIn("execution_pending", started["result"]["metadata"])
-            self.assertEqual(evidence["result"][0]["kind"], "execution")
-            self.assertNotIn("Fix login", str(evidence["result"][0]["data"]["argv"]))
+            execution_evidence = next(
+                item for item in evidence["result"] if item["kind"] == "execution"
+            )
+            self.assertNotIn("Fix login", str(execution_evidence["data"]["argv"]))
 
-    def test_interrupted_task_requires_explicit_recovery_then_fresh_execution_approval(self):
+    @patch("divan_runtime.desktop_protocol.discover_tools")
+    def test_interrupted_task_requires_explicit_recovery_then_fresh_execution_approval(self, discover_tools):
+        discover_tools.return_value = _agent_readiness()
         with tempfile.TemporaryDirectory() as directory, patch.dict(
             os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
         ):
@@ -185,10 +236,14 @@ class DesktopProtocolTests(unittest.TestCase):
                 {"command": "evidence.list", "task_id": "DIV-REC"},
                 router,
             )
-            self.assertEqual(recovery_evidence["result"][0]["kind"], "recovery")
-            self.assertFalse(recovery_evidence["result"][0]["data"]["resumed"])
+            recovery = next(
+                item for item in recovery_evidence["result"] if item["kind"] == "recovery"
+            )
+            self.assertFalse(recovery["data"]["resumed"])
 
-    def test_task_diff_uses_execution_worktree_without_mutation(self):
+    @patch("divan_runtime.desktop_protocol.discover_tools")
+    def test_task_diff_uses_execution_worktree_without_mutation(self, discover_tools):
+        discover_tools.return_value = _agent_readiness()
         with tempfile.TemporaryDirectory() as directory, patch.dict(
             os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
         ):
@@ -268,6 +323,39 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertFalse(engine.requests[-1].args["staged"])
         self.assertEqual(engine.requests[-1].args["worktree"], "C:/tmp/new-worktree")
 
+    @patch("divan_runtime.desktop_protocol.discover_tools")
+    def test_task_start_rejects_unready_agent_before_creating_an_execution_attempt(
+        self, discover_tools
+    ):
+        discover_tools.return_value = _agent_readiness(available=False, auth="unavailable")
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            engine = FakeEngine()
+            router = ExecutionRouter([engine], default_engine="native")
+            handle_request(
+                {"command": "task.create", "task_id": "DIV-PREFLIGHT", "title": "Preflight me"},
+                router,
+            )
+            handle_request({"command": "task.plan", "task_id": "DIV-PREFLIGHT"}, router)
+
+            rejected = handle_request(
+                {
+                    "command": "task.start",
+                    "task_id": "DIV-PREFLIGHT",
+                    "agent": "codex",
+                    "approve_execution": True,
+                },
+                router,
+            )
+
+            self.assertFalse(rejected["ok"])
+            self.assertEqual(rejected["error"]["code"], "DESKTOP_AGENT_UNAVAILABLE")
+            self.assertEqual(engine.requests, [])
+            persisted = TaskStore(task_root()).load("DIV-PREFLIGHT")
+            self.assertEqual(persisted.state, TaskState.PLANNED)
+            self.assertIsNone(persisted.mandate_id)
+
     def test_task_diff_requires_an_execution_worktree(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(
             os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
@@ -317,6 +405,24 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertFalse(response["ok"])
         self.assertEqual(response["error"]["code"], "DESKTOP_TASK_TITLE_REQUIRED")
 
+    def test_prompt_search_and_task_creation_preserve_the_selected_prompt(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"DIVAN_DATA_DIR": directory}, clear=False
+        ):
+            found = handle_request({"command": "prompt.search", "query": "linux terminal"})
+            self.assertTrue(found["ok"], found)
+            self.assertTrue(found["result"]["items"])
+            self.assertEqual(found["result"]["source"]["license"], "CC0-1.0")
+            prompt_id = found["result"]["items"][0]["id"]
+            created = handle_request(
+                {"command": "task.create_from_prompt", "prompt_id": prompt_id},
+                ExecutionRouter([FakeEngine()], default_engine="native"),
+            )
+            self.assertTrue(created["ok"], created)
+            self.assertEqual(created["result"]["state"], "draft")
+            source = created["result"]["metadata"]["prompt_library"]["source"]
+            self.assertEqual(source["repository"], "https://github.com/f/prompts.chat")
+
     def test_unknown_command_has_stable_error_code(self):
         response = handle_request({"command": "nope"})
         self.assertFalse(response["ok"])
@@ -339,7 +445,7 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertTrue(payload["ok"])
-        self.assertEqual(payload["result"]["product"], "Divan")
+        self.assertEqual(payload["result"]["product"], "Ottoman")
 
     def test_bridge_rejects_invalid_json(self):
         completed = subprocess.run(

@@ -72,7 +72,7 @@ function Wait-Marker {
 }
 
 function Get-ReleaseExecutable {
-    $exact = Join-Path $tauriRoot "target/release/divan-desktop.exe"
+    $exact = Join-Path $tauriRoot "target/release/Ottoman.exe"
     if (Test-Path $exact -PathType Leaf) {
         return $exact
     }
@@ -136,7 +136,7 @@ $config | ConvertTo-Json -Depth 20 | Set-Content -Path $configPath -Encoding utf
 
 $feed = [ordered]@{
     version = $cleanVersion
-    notes = "Divan production updater key-pair verification"
+    notes = "Ottoman production updater key-pair verification"
     pub_date = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
     platforms = [ordered]@{
         "windows-x86_64" = [ordered]@{
@@ -204,7 +204,7 @@ try {
 
     $evidence = [ordered]@{
         schema_version = 1
-        product = "Divan"
+        product = "Ottoman"
         status = "pass"
         verification = "tauri-runtime-download-signature"
         version = $cleanVersion

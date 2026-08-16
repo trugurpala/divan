@@ -56,8 +56,15 @@ def _windows_roots(env: Mapping[str, str]) -> tuple[Path, ...]:
         values.append(Path(appdata) / "npm")
     if local_appdata:
         values.append(Path(local_appdata) / "Microsoft" / "WinGet" / "Links")
+        values.append(Path(local_appdata) / "Programs" / "Ollama")
     if userprofile:
-        values.extend((Path(userprofile) / ".local" / "bin", Path(userprofile) / "bin"))
+        values.extend(
+            (
+                Path(userprofile) / ".local" / "bin",
+                Path(userprofile) / "bin",
+                Path(userprofile) / ".cargo" / "bin",
+            )
+        )
     return tuple(_dedupe(values))
 
 

@@ -33,9 +33,18 @@ class BootstrapRunnerTests(unittest.TestCase):
             ignore=shutil.ignore_patterns(
                 ".git",
                 ".worktrees",
+                ".codex",
                 "__pycache__",
                 "*.pyc",
                 ".coverage",
+                # Build output is deliberately not bootstrap source. Excluding it
+                # keeps this clean-room fixture bounded after a local desktop build.
+                "build",
+                "dist",
+                "target",
+                "binaries",
+                "gen",
+                "node_modules",
             ),
         )
         subprocess.run(["git", "init", "--quiet"], cwd=destination, check=True)

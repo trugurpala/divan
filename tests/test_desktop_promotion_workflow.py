@@ -105,7 +105,7 @@ class DesktopPromotionWorkflowTests(unittest.TestCase):
         )
         self.assertIn("DIVAN_UPDATER_ARTIFACT_BASE_URL.TrimEnd('/')", self.text)
         self.assertIn("--verify-tag", self.text)
-        self.assertIn('title "Divan Desktop v$env:DIVAN_DESKTOP_VERSION"', self.text)
+        self.assertIn('title "Ottoman Desktop v$env:DIVAN_DESKTOP_VERSION"', self.text)
 
     def test_release_is_re_downloaded_digest_checked_attested_and_live_url_checked(self) -> None:
         self.assertIn("gh release download $tag", self.text)

@@ -16,6 +16,7 @@ RUNTIME_DATA_FILES = (
     "roles.json", "workflows.json", "messages.json",
     "version.txt",
     "data/timeout-policy.json", "data/timeout-benchmarks.json",
+    "data/prompts-chat.csv",
     "studio/index.html", "studio/studio.css", "studio/studio.js",
 )
 REQUIRED_MODULE_IDS = (

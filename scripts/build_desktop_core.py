@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import pathlib
+import platform
 import shutil
 import subprocess
 import sys
+import os
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ENTRY = ROOT / "scripts" / "divan-desktop-bridge.py"
@@ -33,7 +35,16 @@ def _run_text(argv: list[str]) -> str:
 
 
 def target_triple() -> str:
-    return _run_text(["rustc", "--print", "host-tuple"])
+    try:
+        return _run_text(["rustc", "--print", "host-tuple"])
+    except FileNotFoundError:
+        if sys.platform == "win32":
+            machine = platform.machine().casefold()
+            if machine in {"amd64", "x86_64"}:
+                return "x86_64-pc-windows-msvc"
+            if machine in {"arm64", "aarch64"}:
+                return "aarch64-pc-windows-msvc"
+        raise
 
 
 def source_provenance() -> tuple[str, str]:
@@ -76,6 +87,8 @@ def main() -> int:
             str(PLUGIN_ROOT),
             "--paths",
             str(BUILD_ROOT),
+            "--add-data",
+            f"{PLUGIN_ROOT / 'divan_runtime' / 'data' / 'prompts-chat.csv'}{os.pathsep}divan_runtime/data",
             "--hidden-import",
             "divan_desktop_build_info",
             "--distpath",

@@ -73,6 +73,8 @@ class NativeExecutionEngine:
     ) -> None:
         self.git_runner = git_runner or _run
         self.agent_runner = agent_runner or _run_in_directory
+        self._which = which
+        self._requires_current_probe = agent_binaries is None
         self.agent_binaries = dict(agent_binaries or _discover_agents(which))
 
     def execute(self, request: ExecutionRequest) -> ExecutionReceipt:
@@ -126,6 +128,17 @@ class NativeExecutionEngine:
         prompt = _required(request.args, "prompt")
         agent = _select_agent(request.args.get("agent"), self.agent_binaries)
         binary = self.agent_binaries[agent]
+        if self._requires_current_probe and _discover_agents(self._which).get(agent) != binary:
+            return _receipt(
+                request,
+                False,
+                3,
+                {"agent": agent},
+                ("<agent-capability-probe>", agent),
+                request.mandate_id,
+                "",
+                "agent capability changed since the engine was initialized",
+            )
         slug = _slug(name)
         branch = f"divan/{slug}"
         destination = worktree_root() / slug

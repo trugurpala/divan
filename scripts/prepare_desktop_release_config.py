@@ -76,7 +76,7 @@ def build_release_overlay(
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Create an ephemeral Tauri overlay for a signed Divan Desktop release."
+        description="Create an ephemeral Tauri overlay for a signed Ottoman Desktop release."
     )
     parser.add_argument("--root", type=pathlib.Path, default=ROOT)
     parser.add_argument("--output", type=pathlib.Path, required=True)

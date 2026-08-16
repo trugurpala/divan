@@ -257,7 +257,7 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         app = APP.read_text(encoding="utf-8")
         self.assertIn('command: "task.recover.interrupted"', app)
         self.assertIn("const interruptedExecution", app)
-        self.assertIn("Divan bu görevi otomatik devam ettirmedi", app)
+        self.assertIn("Ottoman bu görevi otomatik devam ettirmedi", app)
         self.assertIn("Kesintiyi retry'a hazırla", app)
         self.assertIn('selected.state === "running" && !interruptedExecution', app)
         self.assertIn("approve_execution: true", app)
@@ -271,7 +271,15 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("operatorEngine || persistedTaskEngine || readiness?.recommended_engine", app)
         self.assertIn("availableEngines.includes(selected.engine_id)", app)
         self.assertNotIn("setEngine((current) => current || value.recommended_engine", app)
-        self.assertIn("Native ve Orca aynı Divan execution contract", app)
+        self.assertIn("Native ve Orca aynı Ottoman execution contract", app)
+
+    def test_desktop_blocks_execution_until_the_selected_agent_is_authenticated(self) -> None:
+        app = APP.read_text(encoding="utf-8")
+        self.assertIn("const executionAgentReady", app)
+        self.assertIn('selectedAgentTool?.available && selectedAgentTool.auth === "connected"', app)
+        self.assertIn("const executionStartBlocked", app)
+        self.assertIn("disabled={executionStartBlocked}", app)
+        self.assertIn("worktree oluşturulmadı", app)
 
     def test_windows_updater_signature_is_paired_with_the_nsis_installer(self) -> None:
         signed = self.text[self.text.index("  signed-windows-candidate:") :]

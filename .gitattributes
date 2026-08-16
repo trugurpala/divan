@@ -9,3 +9,8 @@
 *.woff binary
 *.woff2 binary
 *.zip binary
+
+# Preserve the audited CC0 prompt dataset byte-for-byte.  Its source contains
+# intentional trailing spaces inside multiline prompt text, so Git's generic
+# whitespace checker must not treat an upstream data byte as a source defect.
+plugins/sadrazam/divan_runtime/data/prompts-chat.csv -whitespace

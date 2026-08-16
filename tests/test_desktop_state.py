@@ -16,8 +16,17 @@ from divan_runtime.desktop_state import WINDOWS_DATA_DIRECTORY, desktop_data_roo
 
 class DesktopStateTests(unittest.TestCase):
     def test_explicit_data_override_remains_authoritative(self) -> None:
-        with patch.dict(os.environ, {"DIVAN_DATA_DIR": "C:/divan-test-state"}, clear=False):
-            self.assertEqual(desktop_data_root(), pathlib.Path("C:/divan-test-state"))
+        with patch.dict(
+            os.environ,
+            {"OTTOMAN_DATA_DIR": "C:/ottoman-test-state", "DIVAN_DATA_DIR": "C:/legacy-state"},
+            clear=False,
+        ):
+            self.assertEqual(desktop_data_root(), pathlib.Path("C:/ottoman-test-state"))
+
+    def test_legacy_data_override_is_kept_only_for_existing_automation(self) -> None:
+        with patch.dict(os.environ, {"DIVAN_DATA_DIR": "C:/legacy-state"}, clear=False):
+            os.environ.pop("OTTOMAN_DATA_DIR", None)
+            self.assertEqual(desktop_data_root(), pathlib.Path("C:/legacy-state"))
 
     def test_windows_local_appdata_state_is_identifier_scoped_not_installer_named(self) -> None:
         with patch.dict(
@@ -25,6 +34,7 @@ class DesktopStateTests(unittest.TestCase):
             {"LOCALAPPDATA": "C:/Users/Test/AppData/Local"},
             clear=False,
         ):
+            os.environ.pop("OTTOMAN_DATA_DIR", None)
             os.environ.pop("DIVAN_DATA_DIR", None)
             root = desktop_data_root()
 
@@ -32,7 +42,7 @@ class DesktopStateTests(unittest.TestCase):
             root,
             pathlib.Path("C:/Users/Test/AppData/Local") / WINDOWS_DATA_DIRECTORY,
         )
-        self.assertNotEqual(root.name.casefold(), "divan")
+        self.assertEqual(root.name, "com.ugurpala.ottoman")
 
 
 if __name__ == "__main__":

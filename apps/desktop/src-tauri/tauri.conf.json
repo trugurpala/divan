@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Divan",
+  "productName": "Ottoman",
   "version": "1.3.8",
-  "mainBinaryName": "Divan",
-  "identifier": "com.ugurpala.divan",
+  "mainBinaryName": "Ottoman",
+  "identifier": "com.ugurpala.ottoman",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
   "app": {
     "windows": [
       {
-        "title": "Divan — AI Yazılım Kumanda Merkezi",
+        "title": "Ottoman — Local AI Command Center",
         "width": 1440,
         "height": 900,
         "minWidth": 1100,
@@ -23,15 +23,34 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": "'self'",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-ancestors": "'none'",
+        "object-src": "'none'",
+        "script-src": "'self'",
+        "style-src": "'self'",
+        "connect-src": "ipc: http://ipc.localhost"
+      },
+      "devCsp": {
+        "default-src": "'self'",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-ancestors": "'none'",
+        "object-src": "'none'",
+        "script-src": "'self' 'unsafe-inline'",
+        "style-src": "'self' 'unsafe-inline'",
+        "connect-src": "ipc: http://ipc.localhost ws://localhost:1420 ws://localhost:1421"
+      }
     }
   },
   "bundle": {
     "active": true,
     "targets": ["nsis"],
     "category": "DeveloperTool",
-    "shortDescription": "AI yazılım ekipleri için masaüstü kontrol merkezi",
-    "longDescription": "Divan; görev, execution engine, kanıt, review ve release kapılarını tek masaüstü uygulamasında yönetir.",
+    "shortDescription": "Yerel AI geliştirme için masaüstü kontrol merkezi",
+    "longDescription": "Ottoman; görev, ajan, kanıt, review ve onay kapılarını tek yerel masaüstü uygulamasında yönetir.",
     "windows": {
       "nsis": {
         "installMode": "currentUser",

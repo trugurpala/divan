@@ -11,7 +11,7 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
-function Invoke-DivanCore {
+function Invoke-OttomanCore {
     param([hashtable]$Request)
 
     $requestJson = $Request | ConvertTo-Json -Compress -Depth 20
@@ -19,14 +19,14 @@ function Invoke-DivanCore {
     $exitCode = $LASTEXITCODE
     $text = ($lines -join "`n").Trim()
     if ($exitCode -ne 0) {
-        throw "Installed Divan Core request failed with exit code ${exitCode}: $text"
+        throw "Installed Ottoman Core request failed with exit code ${exitCode}: $text"
     }
     if (-not $text) {
-        throw "Installed Divan Core returned no JSON"
+        throw "Installed Ottoman Core returned no JSON"
     }
     $response = $text | ConvertFrom-Json
     if (-not $response.ok) {
-        throw "Installed Divan Core returned an error: $text"
+        throw "Installed Ottoman Core returned an error: $text"
     }
     return $response.result
 }
@@ -38,7 +38,7 @@ function Invoke-DesktopRestart {
     try {
         Start-Sleep -Seconds 4
         if ($process.HasExited) {
-            throw "Installed Divan.exe exited during lifecycle restart attempt $Attempt with code $($process.ExitCode)"
+            throw "Installed Ottoman.exe exited during lifecycle restart attempt $Attempt with code $($process.ExitCode)"
         }
     }
     finally {
@@ -89,10 +89,10 @@ function Stop-ProcessTree {
 }
 
 if (-not (Test-Path $AppExe -PathType Leaf)) {
-    throw "Installed Divan.exe does not exist: $AppExe"
+    throw "Installed Ottoman.exe does not exist: $AppExe"
 }
 if (-not (Test-Path $CoreExe -PathType Leaf)) {
-    throw "Installed Divan Core does not exist: $CoreExe"
+    throw "Installed Ottoman Core does not exist: $CoreExe"
 }
 
 $root = Join-Path $env:RUNNER_TEMP "divan-desktop-lifecycle-$PID"
@@ -118,29 +118,29 @@ try {
         throw "Could not create lifecycle Git repository"
     }
     & git -C $projectRoot config user.email "divan-ci@invalid.local"
-    & git -C $projectRoot config user.name "Divan CI"
-    "# Divan lifecycle fixture" | Set-Content -Path (Join-Path $projectRoot "README.md") -Encoding utf8
+    & git -C $projectRoot config user.name "Ottoman CI"
+    "# Ottoman lifecycle fixture" | Set-Content -Path (Join-Path $projectRoot "README.md") -Encoding utf8
     & git -C $projectRoot add README.md
     & git -C $projectRoot commit -m "test: seed lifecycle fixture" | Out-Null
     if ($LASTEXITCODE -ne 0) {
         throw "Could not create lifecycle Git fixture commit"
     }
 
-    $project = Invoke-DivanCore @{ command = "project.register"; root = $projectRoot }
-    $task = Invoke-DivanCore @{
+    $project = Invoke-OttomanCore @{ command = "project.register"; root = $projectRoot }
+    $task = Invoke-OttomanCore @{
         command = "task.create"
         task_id = "DIV-LIFECYCLE"
         title = "Persist Core state across Desktop restart"
         project_id = $project.project_id
     }
-    $planned = Invoke-DivanCore @{ command = "task.plan"; task_id = $task.task_id }
+    $planned = Invoke-OttomanCore @{ command = "task.plan"; task_id = $task.task_id }
     if ($planned.state -ne "planned" -or $null -ne $planned.mandate_id) {
         throw "Lifecycle fixture did not enter authority-neutral planned state"
     }
 
     Invoke-DesktopRestart -Attempt 1
-    $afterFirstTasks = @(Invoke-DivanCore @{ command = "task.list" })
-    $afterFirstProjects = @(Invoke-DivanCore @{ command = "project.list" })
+    $afterFirstTasks = @(Invoke-OttomanCore @{ command = "task.list" })
+    $afterFirstProjects = @(Invoke-OttomanCore @{ command = "project.list" })
     $afterFirst = $afterFirstTasks | Where-Object { $_.task_id -eq "DIV-LIFECYCLE" } | Select-Object -First 1
     if (-not $afterFirst -or $afterFirst.state -ne "planned" -or $null -ne $afterFirst.mandate_id) {
         throw "Core task state did not survive the first Desktop process restart exactly"
@@ -150,14 +150,14 @@ try {
     }
 
     Invoke-DesktopRestart -Attempt 2
-    $afterSecondTasks = @(Invoke-DivanCore @{ command = "task.list" })
+    $afterSecondTasks = @(Invoke-OttomanCore @{ command = "task.list" })
     $afterSecond = $afterSecondTasks | Where-Object { $_.task_id -eq "DIV-LIFECYCLE" } | Select-Object -First 1
     if (-not $afterSecond -or $afterSecond.state -ne "planned" -or $null -ne $afterSecond.mandate_id) {
         throw "Desktop restart reconstructed task authority or lost persisted Core state"
     }
 
     # Prove a real process interruption cannot silently resume mutation. The fake
-    # Codex binary is only a deterministic hanging worker; Divan still owns the
+    # Codex binary is only a deterministic hanging worker; Ottoman still owns the
     # mandate, worktree creation, pending execution record and recovery decision.
     $fakeCodex = Join-Path $fakeBin "codex.cmd"
     $agentMarker = Join-Path $root "fake-codex-started.txt"
@@ -170,14 +170,14 @@ exit /b 0
     $env:DIVAN_FAKE_AGENT_MARKER = $agentMarker
     $env:PATH = "$fakeBin;$previousPath"
 
-    $crashTask = Invoke-DivanCore @{
+    $crashTask = Invoke-OttomanCore @{
         command = "task.create"
         task_id = "DIV-CRASH-RECOVERY"
         title = "Recover interrupted installed Core execution"
         project_id = $project.project_id
         engine_id = "native"
     }
-    $crashPlanned = Invoke-DivanCore @{ command = "task.plan"; task_id = $crashTask.task_id }
+    $crashPlanned = Invoke-OttomanCore @{ command = "task.plan"; task_id = $crashTask.task_id }
     if ($crashPlanned.state -ne "planned") {
         throw "Crash-recovery fixture did not enter planned state"
     }
@@ -217,7 +217,7 @@ exit /b 0
         throw "Fake worker was not invoked before crash injection. stdout=$stdout stderr=$stderr"
     }
 
-    $duringExecution = Invoke-DivanCore @{ command = "task.get"; task_id = $crashTask.task_id }
+    $duringExecution = Invoke-OttomanCore @{ command = "task.get"; task_id = $crashTask.task_id }
     $pendingDuringExecution = Get-OptionalProperty -Object $duringExecution.metadata -Name "execution_pending"
     if ($duringExecution.state -ne "running" -or $null -eq $pendingDuringExecution) {
         throw "Core did not persist execution_pending before invoking the worker"
@@ -230,7 +230,7 @@ exit /b 0
     Stop-ProcessTree -Process $interruptedCore
     $interruptedCore = $null
 
-    $afterCrash = Invoke-DivanCore @{ command = "task.get"; task_id = $crashTask.task_id }
+    $afterCrash = Invoke-OttomanCore @{ command = "task.get"; task_id = $crashTask.task_id }
     $pendingAfterCrash = Get-OptionalProperty -Object $afterCrash.metadata -Name "execution_pending"
     if ($afterCrash.state -ne "running" -or $null -eq $pendingAfterCrash) {
         throw "Interrupted execution was not left in recoverable persisted RUNNING state"
@@ -239,7 +239,7 @@ exit /b 0
         throw "Restart changed Core-owned execution authority"
     }
 
-    $recovered = Invoke-DivanCore @{ command = "task.recover.interrupted"; task_id = $crashTask.task_id }
+    $recovered = Invoke-OttomanCore @{ command = "task.recover.interrupted"; task_id = $crashTask.task_id }
     if ($recovered.state -ne "retry") {
         throw "Interrupted execution did not recover fail-closed to RETRY"
     }
@@ -254,7 +254,7 @@ exit /b 0
         throw "Recovery reconstructed or replaced the persisted mandate"
     }
 
-    $recoveryEvidenceRows = @(Invoke-DivanCore @{ command = "evidence.list"; task_id = $crashTask.task_id })
+    $recoveryEvidenceRows = @(Invoke-OttomanCore @{ command = "evidence.list"; task_id = $crashTask.task_id })
     $recoveryEvidence = $recoveryEvidenceRows | Where-Object { $_.kind -eq "recovery" } | Select-Object -Last 1
     if (-not $recoveryEvidence -or $recoveryEvidence.status -ne "retry" -or $recoveryEvidence.data.resumed -ne $false) {
         throw "Recovery evidence does not prove that mutation remained stopped"
@@ -280,7 +280,7 @@ exit /b 0
     if ($retryExitCode -eq 0 -or $retryResponse.ok -or $retryResponse.error.code -ne "DESKTOP_EXECUTION_APPROVAL_REQUIRED") {
         throw "Recovered RETRY was able to start without a fresh explicit execution approval"
     }
-    $afterRejectedRetry = Invoke-DivanCore @{ command = "task.get"; task_id = $crashTask.task_id }
+    $afterRejectedRetry = Invoke-OttomanCore @{ command = "task.get"; task_id = $crashTask.task_id }
     if ($afterRejectedRetry.state -ne "retry" -or $afterRejectedRetry.mandate_id -ne $crashMandate) {
         throw "Rejected retry mutated persisted Core state or authority"
     }
@@ -314,7 +314,7 @@ exit /b 0
     $env:USERPROFILE = $emptyUserProfile
     $env:PATH = $pathEntries -join ";"
 
-    $absent = Invoke-DivanCore @{ command = "readiness" }
+    $absent = Invoke-OttomanCore @{ command = "readiness" }
     $absentOrca = Get-Tool -Readiness $absent -Id "orca"
     if (-not $absent.ready) {
         throw "Orca-absent first run lost required Git readiness"
@@ -327,17 +327,17 @@ exit /b 0
     "@echo off`r`necho orca-lifecycle-test 1.0.0`r`n" | Set-Content -Path $fakeOrca -Encoding Ascii
     $env:PATH = "$fakeBin;$($env:PATH)"
 
-    $present = Invoke-DivanCore @{ command = "readiness" }
+    $present = Invoke-OttomanCore @{ command = "readiness" }
     $presentOrca = Get-Tool -Readiness $present -Id "orca"
-    $capabilities = Invoke-DivanCore @{ command = "capabilities" }
+    $capabilities = Invoke-OttomanCore @{ command = "capabilities" }
     if (-not $presentOrca.available -or -not (@($present.engines) -contains "orca")) {
         throw "Orca-present first run did not discover the replaceable Orca engine"
     }
-    if ($capabilities.product -ne "Divan") {
+    if ($capabilities.product -ne "Ottoman") {
         throw "Execution engine discovery changed Core product authority"
     }
     if (-not (@($capabilities.features) -contains "mandate-gate") -or -not (@($capabilities.features) -contains "approval-gate")) {
-        throw "Orca-present first run bypassed Divan mandate/approval authority capabilities"
+        throw "Orca-present first run bypassed Ottoman mandate/approval authority capabilities"
     }
 
     $expectedCommit = (& git rev-parse HEAD).Trim()
