@@ -26,6 +26,7 @@ from .evidence import build_evidence
 from .memory_first import recall
 from .plugin_desktop import inspect_plugin_manifest
 from .quality_factory import evaluate as evaluate_gates
+from .worker_certification import AuthState, certify_worker
 from .worker_discovery import WorkerFinding, probe_worker
 
 Which = Callable[[str], str | None]
@@ -228,10 +229,12 @@ def _tool_check(
 
 
 def _worker_check(worker_id: str, display_name: str) -> CapabilityReport:
-    """Report a coding worker with the evidence behind the finding.
+    """Report a coding worker from what it does, with the evidence behind it.
 
     "Not on PATH" and "not installed" are different findings, so an ABSENT
-    result records every location that was actually examined.
+    result records every location examined. A resolved launcher is never
+    certified on presence alone: certification needs a version the launcher
+    reported and an authentication state the CLI reported about itself.
     """
     probe = probe_worker(worker_id)
     affects = "Kod yazan çalışanlardan biri; yoksa uygulama üretilemez."
@@ -245,25 +248,47 @@ def _worker_check(worker_id: str, display_name: str) -> CapabilityReport:
             detail=probe.detail,
             evidence=f"{len(probe.searched)} konum arandı: " + ", ".join(probe.searched),
         )
-    if probe.finding is WorkerFinding.UNUSABLE:
+
+    certificate = certify_worker(worker_id, probe=probe)
+    if certificate.certified:
+        return CapabilityReport(
+            capability_id=worker_id,
+            display_name=display_name,
+            state=CapabilityState.CERTIFIED,
+            affects=affects,
+            evidence=f"{certificate.version}; oturum doğrulandı",
+            version=certificate.version,
+        )
+    if certificate.version is None:
         return CapabilityReport(
             capability_id=worker_id,
             display_name=display_name,
             state=CapabilityState.INCOMPATIBLE,
             affects=affects,
             code="TOOL_UNUSABLE",
-            detail=probe.detail,
-            evidence=probe.executable,
+            detail="çalıştırılabilir sürümünü bildirmedi",
+            evidence=certificate.executable,
         )
-    # Found is not authenticated. Divan never opens a credential file to guess.
+    if certificate.auth is AuthState.NOT_AUTHENTICATED:
+        return CapabilityReport(
+            capability_id=worker_id,
+            display_name=display_name,
+            state=CapabilityState.DEGRADED,
+            affects="Kurulu ama oturum açılmadı; bu çalışanla kod yazılamaz.",
+            code="AUTH_REQUIRED",
+            detail="oturum açılmamış",
+            evidence=certificate.version,
+            version=certificate.version,
+        )
     return CapabilityReport(
         capability_id=worker_id,
         display_name=display_name,
         state=CapabilityState.DEGRADED,
         affects=affects,
         code="AUTH_NOT_VERIFIED",
-        detail="çalıştırılabilir bulundu; oturum doğrulanmadı",
-        evidence=probe.executable,
+        detail="oturum durumu okunamadı",
+        evidence=certificate.version,
+        version=certificate.version,
     )
 
 

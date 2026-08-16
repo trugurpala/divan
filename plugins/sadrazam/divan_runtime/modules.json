@@ -219,7 +219,8 @@
         "plugin_approval",
         "plugin_desktop",
         "plugin_sdk",
-        "worker_discovery"
+        "worker_discovery",
+        "worker_certification"
       ],
       "capabilities": [
         "local",
@@ -235,7 +236,8 @@
         "bounded_plugin_manifest_input",
         "plugin_license_provenance",
         "evidence_backed_worker_discovery",
-        "browser_qa_capability_probe"
+        "browser_qa_capability_probe",
+        "capability_based_worker_certification"
       ],
       "depends_on": [
         "kernel",
