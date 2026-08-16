@@ -18,6 +18,7 @@ from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
 from .desktop_protocol_support import required_string as _required_string
 from .desktop_state import evidence_root, task_root
+from .doctor_protocol import DOCTOR_HANDLERS
 from .execution_router import ExecutionRouter
 from .knowledge_protocol import KNOWLEDGE_HANDLERS
 from .orchestrator import DivanOrchestrator
@@ -350,6 +351,7 @@ def _handle_engine_status(
 _HANDLERS: dict[str, Handler] = {
     "capabilities": _handle_capabilities,
     "readiness": _handle_readiness,
+    **DOCTOR_HANDLERS,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
     "project.agency.status": handle_project_agency_status,

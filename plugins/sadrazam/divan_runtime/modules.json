@@ -270,6 +270,8 @@
       "en": "Command API",
       "tr": "Komut Arayüzü",
       "python_modules": [
+        "doctor_checks",
+        "doctor",
         "compatibility",
         "cli_parser",
         "cli_dispatch",
@@ -280,6 +282,7 @@
         "desktop_api",
         "desktop_protocol_support",
         "plugin_protocol",
+        "doctor_protocol",
         "desktop_protocol",
         "knowledge_desktop",
         "knowledge_protocol"
@@ -296,7 +299,9 @@
         "desktop_api",
         "desktop_goal_planning",
         "desktop_json_protocol",
-        "agency_memory_read_model"
+        "agency_memory_read_model",
+        "canonical_capability_health",
+        "honest_blocked_local_state_policy"
       ],
       "depends_on": [
         "kernel",
