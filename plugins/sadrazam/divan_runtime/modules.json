@@ -62,7 +62,8 @@
         "native_engine",
         "runtime_composition",
         "spec_contract",
-        "spec_compiler"
+        "spec_compiler",
+        "context_compiler"
       ],
       "capabilities": [
         "project_discovery",
@@ -76,7 +77,9 @@
         "native_worktree_execution",
         "local_agent_dispatch",
         "ferman_specification_compiler",
-        "priority_ordered_work_package_dag"
+        "priority_ordered_work_package_dag",
+        "bounded_worker_context",
+        "honest_token_accounting"
       ],
       "depends_on": [
         "kernel",

@@ -34,6 +34,7 @@ RUNTIME_FILES = (
     "attempt_store.py",
     "ci_guard.py",
     "compatibility.py",
+    "context_compiler.py",
     "contract_validation.py",
     "desktop_api.py",
     "desktop_protocol.py",
