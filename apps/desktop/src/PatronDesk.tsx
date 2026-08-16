@@ -31,10 +31,42 @@ type Readiness = {
   recommended_agent: string | null;
 };
 
-type CoreTask = {
-  task_id: string;
-  title: string;
-  state: string;
+type GoalSummary = {
+  route_id: string | null;
+  workflow: string | null;
+  workflows: string[];
+  roles: string[];
+  frameworks: string[];
+  project_types: string[];
+  task_count: number;
+  workstream_count: number;
+  sefer_count: number;
+  lane: string | null;
+  max_parallel_workstreams: number | null;
+  required_evidence: string[];
+};
+
+type GoalPreview = {
+  project_root: string;
+  intent: string;
+  target: string;
+  summary: GoalSummary;
+  writes: string[];
+  execution_authority: string;
+};
+
+type WorkPackageSummary = {
+  task_count: number;
+  ready_task_ids: string[];
+  max_parallel_workstreams: number | null;
+  execution_authority: string;
+};
+
+type CreatedGoal = {
+  goal: { goal_id: string; status: string };
+  summary: GoalSummary;
+  work_packages: WorkPackageSummary;
+  execution_authority: string;
 };
 
 const primaryAgents = ["codex", "claude", "cursor-agent"] as const;
@@ -72,16 +104,24 @@ function friendlyError(value: unknown) {
   return message.startsWith(marker) ? message.slice(marker.length) : message;
 }
 
+function roleLabel(role: string) {
+  return role
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 export default function PatronDesk({ children }: { children: ReactNode }) {
   const [openDesk, setOpenDesk] = useState(false);
   const [projects, setProjects] = useState<ProjectRecord[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [goal, setGoal] = useState("");
+  const [preview, setPreview] = useState<GoalPreview | null>(null);
+  const [createdGoal, setCreatedGoal] = useState<CreatedGoal | null>(null);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createdTask, setCreatedTask] = useState<CoreTask | null>(null);
 
   const loadDesk = async () => {
     setLoading(true);
@@ -133,7 +173,24 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
   );
 
   const availableAgentCount = agentRows.filter((row) => row.tool?.available).length;
-  const canCreate = Boolean(selectedProject && goal.trim().length >= 8 && !busy);
+  const canPreview = Boolean(selectedProject && goal.trim().length >= 8 && !busy);
+  const canSavePlan = Boolean(preview && selectedProject && !busy);
+
+  const resetPlan = () => {
+    setPreview(null);
+    setCreatedGoal(null);
+    setError(null);
+  };
+
+  const changeGoal = (value: string) => {
+    setGoal(value);
+    resetPlan();
+  };
+
+  const changeProject = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    resetPlan();
+  };
 
   const addProject = async () => {
     setError(null);
@@ -151,7 +208,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
       });
       const rows = await coreRequest<ProjectRecord[]>({ command: "project.list" });
       setProjects(rows);
-      setSelectedProjectId(project.project_id);
+      changeProject(project.project_id);
     } catch (value) {
       setError(friendlyError(value));
     } finally {
@@ -159,23 +216,37 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
     }
   };
 
-  const createMandate = async () => {
-    if (!canCreate || !selectedProject) return;
+  const previewPlan = async () => {
+    if (!canPreview || !selectedProject) return;
     setBusy(true);
     setError(null);
-    setCreatedTask(null);
+    setCreatedGoal(null);
     try {
-      const created = await coreRequest<CoreTask>({
-        command: "task.create",
-        title: goal.trim(),
+      const result = await coreRequest<GoalPreview>({
+        command: "goal.preview",
         project_id: selectedProject.project_id,
+        intent: goal.trim(),
       });
-      const planned = await coreRequest<CoreTask>({
-        command: "task.plan",
-        task_id: created.task_id,
-        reason: "Patron Masası: kullanıcı hedefinden plan oluştur",
+      setPreview(result);
+    } catch (value) {
+      setError(friendlyError(value));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const savePlan = async () => {
+    if (!canSavePlan || !selectedProject) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await coreRequest<CreatedGoal>({
+        command: "goal.create",
+        project_id: selectedProject.project_id,
+        intent: goal.trim(),
+        approve_plan_write: true,
       });
-      setCreatedTask(planned);
+      setCreatedGoal(result);
     } catch (value) {
       setError(friendlyError(value));
     } finally {
@@ -216,8 +287,8 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                 <span className="patron-kicker">TEK YERDEN YÖNET</span>
                 <h1 id="patron-desk-title">Ne yapılacağını söyle.</h1>
                 <p>
-                  Divan görevi kaydeder ve planlar. Kaynak koda dokunacak çalışma ise yine ayrı
-                  açık onay ister.
+                  Önce gerçek planı gör. Planı kaydettiğinde Divan iş paketlerini hazırlar;
+                  kaynak kodu değiştirecek çalışma yine ayrı açık onay ister.
                 </p>
               </div>
               <button
@@ -245,7 +316,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                   <div className="patron-project-row">
                     <select
                       value={selectedProjectId}
-                      onChange={(event) => setSelectedProjectId(event.target.value)}
+                      onChange={(event) => changeProject(event.target.value)}
                       aria-label="Çalışılacak proje"
                     >
                       <option value="">Proje seç</option>
@@ -272,7 +343,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                   </div>
                   <textarea
                     value={goal}
-                    onChange={(event) => setGoal(event.target.value)}
+                    onChange={(event) => changeGoal(event.target.value)}
                     placeholder="Örnek: Bu projeyi baştan sona incele. Eksikleri bul, kullanıcı dostu hale getir, testleri geçir ve çalışan teslim adayı hazırla."
                     rows={6}
                     autoFocus
@@ -281,7 +352,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                     <button
                       type="button"
                       onClick={() =>
-                        setGoal(
+                        changeGoal(
                           "Projeyi incele, mevcut mimariyi koru, eksikleri tamamla, kullanıcı deneyimini iyileştir, testleri ve build'i geçir, kanıtlı teslim adayı hazırla.",
                         )
                       }
@@ -291,7 +362,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                     <button
                       type="button"
                       onClick={() =>
-                        setGoal(
+                        changeGoal(
                           "Bu hatayı kök nedenine kadar incele, en küçük güvenli düzeltmeyi uygula, regresyon testi ekle ve doğrulama kanıtını hazırla.",
                         )
                       }
@@ -301,7 +372,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                     <button
                       type="button"
                       onClick={() =>
-                        setGoal(
+                        changeGoal(
                           "Bu özelliği mevcut mimariye uygun şekilde ekle, kullanıcı akışını sade tut, güvenlik ve kalite kapılarını koru, test ederek teslim et.",
                         )
                       }
@@ -311,9 +382,39 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                   </div>
                 </section>
 
+                {preview && (
+                  <section className="patron-block patron-plan" aria-live="polite">
+                    <div className="patron-block-title">
+                      <span>3</span>
+                      <div>
+                        <strong>Plan önizlemesi</strong>
+                        <small>Salt okunur hesaplandı; henüz proje dosyası yazılmadı.</small>
+                      </div>
+                    </div>
+                    <div className="patron-plan-grid">
+                      <article><strong>{preview.summary.task_count}</strong><small>İş paketi</small></article>
+                      <article><strong>{preview.summary.workstream_count}</strong><small>İş akışı</small></article>
+                      <article><strong>{preview.summary.sefer_count}</strong><small>Sefer</small></article>
+                      <article>
+                        <strong>{preview.summary.max_parallel_workstreams ?? 1}</strong>
+                        <small>En fazla paralel</small>
+                      </article>
+                    </div>
+                    <div className="patron-role-row">
+                      {preview.summary.roles.slice(0, 8).map((role) => (
+                        <span key={role}>{roleLabel(role)}</span>
+                      ))}
+                    </div>
+                    <p className="patron-readiness-copy">
+                      {preview.summary.required_evidence.length} kanıt yükümlülüğü · çalışma modeli:{" "}
+                      {preview.summary.lane === "bounded-parallel" ? "kontrollü paralel" : "sıralı"}.
+                    </p>
+                  </section>
+                )}
+
                 <section className="patron-block">
                   <div className="patron-block-title">
-                    <span>3</span>
+                    <span>{preview ? "4" : "3"}</span>
                     <div>
                       <strong>Ajans hazırlığı</strong>
                       <small>Kurulu abonelik/oturumlar kullanılır; kimlik bilgisi kopyalanmaz.</small>
@@ -331,37 +432,45 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                   <p className="patron-readiness-copy">
                     {availableAgentCount > 0
                       ? `${availableAgentCount}/3 ana ajan bulundu. Divan çalışma anında yalnız kullanılabilir ajanı seçer.`
-                      : "Henüz ana ajan bulunamadı. Ferman planlanabilir; execution ajan hazır olana kadar başlatılmaz."}
+                      : "Henüz ana ajan bulunamadı. Plan hazırlanabilir; kod çalışması ajan hazır olana kadar başlatılmaz."}
                   </p>
                 </section>
 
                 {error && <div className="patron-error">{error}</div>}
 
-                {createdTask ? (
+                {createdGoal ? (
                   <section className="patron-success" aria-live="polite">
                     <span>✓</span>
                     <div>
-                      <strong>Ferman planlandı: {createdTask.task_id}</strong>
+                      <strong>
+                        Plan kaydedildi · {createdGoal.work_packages.task_count} iş paketi hazır
+                      </strong>
                       <p>
-                        Henüz kaynak kod değiştirilmedi. Görev ekranında çalışma ayrıntılarını görüp
-                        execution için tek seferlik onay verebilirsin.
+                        {createdGoal.work_packages.ready_task_ids.length} iş paketi başlangıca hazır.
+                        Henüz kaynak kod değiştirilmedi; çalışma için ayrıca açık onay gerekir.
                       </p>
                     </div>
-                    <button type="button" onClick={refreshApp}>Göreve git</button>
+                    <button type="button" onClick={refreshApp}>İş paketlerini aç</button>
                   </section>
                 ) : (
                   <footer className="patron-actions">
                     <div>
                       <strong>{selectedProject ? selectedProject.name : "Proje bekleniyor"}</strong>
                       <small>
-                        {goal.trim().length < 8
-                          ? "Hedefi normal Türkçe ile yaz."
-                          : "Hazır: önce plan oluşturulacak, execution ayrı onay isteyecek."}
+                        {!preview
+                          ? "Önce salt-okunur planı çıkar; hiçbir şey yazılmaz."
+                          : "Planı kaydetmek yalnız plan ve yerel iş paketi durumunu yazar; kod çalıştırmaz."}
                       </small>
                     </div>
-                    <button type="button" onClick={createMandate} disabled={!canCreate}>
-                      {busy ? "Hazırlanıyor…" : "Fermanı hazırla →"}
-                    </button>
+                    {!preview ? (
+                      <button type="button" onClick={previewPlan} disabled={!canPreview}>
+                        {busy ? "Planlanıyor…" : "Planı önizle →"}
+                      </button>
+                    ) : (
+                      <button type="button" onClick={savePlan} disabled={!canSavePlan}>
+                        {busy ? "Kaydediliyor…" : "Planı kaydet →"}
+                      </button>
+                    )}
                   </footer>
                 )}
               </div>

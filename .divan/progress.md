@@ -1,5 +1,33 @@
 # Divan İlerleme Defteri
 
+## Agency OS PASS 1 (2026-08-16)
+
+- Owner mandate artık `DIVAN_AGENCY_OS_MASTER_MANDATE.md`; PR #159 ile
+  geliyor ve henüz `main`de değildir.
+- PR #156 → #157 → #158 yığını güncel `main` (`68e91fd`) üzerindeydi;
+  yeniden yazılmadı, `work/pass1-ferman-pipeline` dalında doğrulandı.
+- Bağımsız teftiş üç P1 kusur buldu ve BLOCK verdi: önizlenen planın
+  kaydedilen plandan farklı olması, `goal.create` komutunun kayıtsız ve
+  Git olmayan klasöre yazması, bağımlılık grafiğinin execution'da
+  zorlanmaması. Üçü de reprodüksiyonla doğrulandı ve düzeltildi.
+- Ulaşılamaz `TaskStore.goal_tasks` artık `goal.tasks` komutu olarak
+  bağlıdır; kaydedilmiş fermanın iş paketleri yeniden başlatma sonrası
+  okunabilir.
+- Regresyon farkı aynı makinede ölçüldü: `main` 1020 test ve 87 başarısız,
+  PASS 1 dalı 1037 test ve 84 başarısız. Yeni regresyon yoktur; üç eski
+  hata düzeldi.
+- Desktop frontend `tsc -b` ve `vite build` geçti; build çıktıları artık
+  ağacı kirletmiyor.
+- Kanonik `scripts/verify.py` bu makinede engellidir. Kalan 84 hata `main`
+  ile birebir aynıdır ve tek kök nedeni `C:\Users\User\AppData` üzerindeki
+  capability SID'in bütün AppData ağacına tam yetki vermesidir;
+  `project_os._windows_private_dacl` bunu fail-closed reddeder. Kod
+  regresyonu değildir ve CI'da görünmez.
+- Kanıt: `.divan/evidence/teftis-20260816-pass1-ferman-pipeline.md`.
+- Sıradaki kesin adım: DACL engeli için sahip kararını almak, sonra bu dalı
+  PR olarak açıp CI kapılarıyla `main`e taşımak, ardından PASS 2 proje
+  yaşam döngüsü projeksiyonlarına geçmek.
+
 ## Hedef Güncellemesi (2026-08-04)
 
 - `v1.3.8` adayı host recovery, typed continuation, host-bağımsız

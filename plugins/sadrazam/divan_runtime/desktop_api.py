@@ -5,7 +5,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from . import engine, goals
+from . import engine, goals, receipts
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
@@ -13,7 +13,7 @@ from .desktop_protocol_support import required_string as _required_string
 from .desktop_state import task_root
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_router import ExecutionRouter
-from .project_registry import ProjectRegistry
+from .project_registry import ProjectRegistry, resolve_git_root
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
@@ -155,15 +155,27 @@ def _project_root(payload: Mapping[str, Any]) -> Path:
             "DESKTOP_PROJECT_REQUIRED",
             "goal planning requires project_id or project_root",
         )
-    return Path(project_root).expanduser().resolve()
+    # Goal planning writes into this directory, so hold an unregistered root to
+    # the same Git gate project.register enforces instead of trusting the caller.
+    try:
+        return resolve_git_root(project_root)
+    except (ValueError, OSError) as error:
+        raise ProtocolValidationError(
+            "DESKTOP_PROJECT_ROOT_INVALID",
+            f"goal planning requires a Git repository root: {error}",
+        ) from error
 
 
 def _goal_intent(payload: Mapping[str, Any]) -> str:
-    return _required_string(
+    raw = _required_string(
         payload,
         "intent",
         "DESKTOP_GOAL_INTENT_REQUIRED",
     )
+    # start_goal plans and persists from the redacted intent. Preview and create
+    # must plan from the same text, or the approved preview would not describe
+    # the plan that actually gets written.
+    return receipts.redact_text(raw.strip())
 
 
 def _goal_target(payload: Mapping[str, Any]) -> str:
@@ -270,6 +282,20 @@ def handle_goal_create(
 ) -> dict[str, Any]:
     del router
     return _ok(create_goal(payload))
+
+
+def goal_tasks(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Return the materialized work packages and ready state for one saved goal."""
+    root = _project_root(payload)
+    goal_id = _required_string(payload, "goal_id", "DESKTOP_GOAL_ID_REQUIRED")
+    return TaskStore(task_root()).goal_tasks(root, goal_id)
+
+
+def handle_goal_tasks(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    return _ok(goal_tasks(payload))
 
 
 def _same_worktree(left: str, right: str) -> bool:
