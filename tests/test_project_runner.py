@@ -26,6 +26,7 @@ RUNTIME_FILES = (
     "adoption_proof_execution.py",
     "adoption_runner.py",
     "adoption_schema2.py",
+    "agency_status.py",
     "cli.py",
     "cli_dispatch.py",
     "cli_parser.py",
