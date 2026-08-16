@@ -5,6 +5,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
@@ -104,15 +105,22 @@ class GoalWorkPackageTests(unittest.TestCase):
             tempfile.TemporaryDirectory() as second_project,
             tempfile.TemporaryDirectory() as state,
         ):
-            # The goal ID seed includes the inspected project name, so two roots
-            # must share a directory name to collide the way this test requires.
             first = pathlib.Path(first_project) / "demo"
             second = pathlib.Path(second_project) / "demo"
             self._git_project(first)
             self._git_project(second)
-            first_goal = self._goal(first)
-            second_goal = self._goal(second)
-            self.assertEqual(first_goal, second_goal)
+
+            # This test owns the collision precondition instead of depending on
+            # incidental inspection/planning identity. The production contract
+            # under test is that the same goal ID in two project roots must
+            # still materialize distinct task IDs.
+            forced_goal_id = "goal-a1b2c3d4e5f6"
+            with patch("divan_runtime.goals.goal_id", return_value=forced_goal_id):
+                first_goal = self._goal(first)
+                second_goal = self._goal(second)
+
+            self.assertEqual(first_goal, forced_goal_id)
+            self.assertEqual(second_goal, forced_goal_id)
             store = TaskStore(pathlib.Path(state) / "tasks")
 
             first_result = store.materialize_goal(first, first_goal)
