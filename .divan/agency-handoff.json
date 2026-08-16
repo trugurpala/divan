@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "purpose": "Shared handoff state for ChatGPT, Claude Code, Codex and maintainers working on Divan Agency OS.",
+  "product": "Divan",
+  "coordination_rule": "Git history, pull requests, CI, evidence and this file are the shared source of handoff truth; chat memory is not authoritative.",
+  "mandate": {
+    "branch": "plan/divan-agency-os-master-mandate",
+    "pull_request": 159,
+    "file": "DIVAN_AGENCY_OS_MASTER_MANDATE.md",
+    "mode": "standing-technical-delegation"
+  },
+  "implementation": {
+    "branch": "feat/agency-project-lifecycle-v1",
+    "pull_request": 160,
+    "base_stack": [156, 157, 158],
+    "current_pass": 2,
+    "current_slice": "project-level Agency OS status read model",
+    "state": "CI_PENDING"
+  },
+  "handoff_protocol": {
+    "before_work": [
+      "Read CLAUDE.md and AGENTS.md.",
+      "Read the master mandate from PR 159 / its branch.",
+      "Read this handoff file.",
+      "Inspect current branch, HEAD, open overlapping PRs and CI before changing code.",
+      "Preserve newer verified work; never reset to an old reference SHA merely to match a plan."
+    ],
+    "after_each_slice": [
+      "Commit only the bounded verified slice.",
+      "Update this file with exact HEAD, current pass, completed slice, next safe action and blockers.",
+      "Record targeted tests and canonical CI as PASS, FAIL, BLOCKED or PENDING; never convert unknown/skipped/timeout into PASS.",
+      "Put durable technical evidence in the repository/PR rather than relying on chat summaries.",
+      "Continue automatically when the next action is safe and inferable."
+    ],
+    "conflict_rule": "If two agents propose overlapping changes, the agent holding the newest verified branch/commit does not overwrite the other blindly. Compare diffs, preserve valid work, and rebase/reconstruct the smallest non-duplicative slice.",
+    "owner_interrupt_rule": "Do not ask the owner routine technical questions. Interrupt only for irreversible external effects, new paid spend, credential/account ownership changes, security/quality gate weakening, destruction of user work, public production/release promotion, or material business ambiguity that evidence cannot resolve."
+  },
+  "current_truth": {
+    "completed": [
+      "PR 156 defines read-only goal preview and explicit plan persistence.",
+      "PR 157 materializes receipt-bound dependency-aware work packages.",
+      "PR 158 connects Patron Masasi to the real Ferman preview/save flow.",
+      "PR 160 adds a project-level read-only Agency OS status projection and Desktop protocol command."
+    ],
+    "next_safe_action": "Wait for PR 160 CI. If green, add the smallest Patron/Taht UI slice that reads project.agency.status and explains the project phase in human language. If CI fails, inspect the failing job, fix only the demonstrated defect, rerun, and update this handoff.",
+    "blockers": [],
+    "owner_decision_required": false
+  },
+  "status_vocabulary": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "PENDING",
+    "UNKNOWN",
+    "NOT_INSTALLED"
+  ]
+}

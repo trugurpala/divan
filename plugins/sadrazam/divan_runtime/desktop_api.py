@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from . import engine, goals, receipts
+from .agency_status import build_project_agency_status
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
@@ -51,6 +52,7 @@ class DesktopApi:
                 "task-diff",
                 "goal-planning",
                 "goal-work-packages",
+                "project-agency-status",
             ),
         )
         return asdict(value)
@@ -137,7 +139,11 @@ class DesktopApi:
         return [task.to_dict() for task in tasks]
 
 
-def _project_root(payload: Mapping[str, Any]) -> Path:
+def _project_root(
+    payload: Mapping[str, Any],
+    *,
+    purpose: str = "goal planning",
+) -> Path:
     project_id = _optional_string(
         payload,
         "project_id",
@@ -153,7 +159,7 @@ def _project_root(payload: Mapping[str, Any]) -> Path:
     if not project_root:
         raise ProtocolValidationError(
             "DESKTOP_PROJECT_REQUIRED",
-            "goal planning requires project_id or project_root",
+            f"{purpose} requires project_id or project_root",
         )
     # Goal planning writes into this directory, so hold an unregistered root to
     # the same Git gate project.register enforces instead of trusting the caller.
@@ -162,7 +168,7 @@ def _project_root(payload: Mapping[str, Any]) -> Path:
     except (ValueError, OSError) as error:
         raise ProtocolValidationError(
             "DESKTOP_PROJECT_ROOT_INVALID",
-            f"goal planning requires a Git repository root: {error}",
+            f"{purpose} requires a Git repository root: {error}",
         ) from error
 
 
@@ -296,6 +302,14 @@ def handle_goal_tasks(
 ) -> dict[str, Any]:
     del router
     return _ok(goal_tasks(payload))
+
+
+def handle_project_agency_status(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    root = _project_root(payload, purpose="agency status")
+    return _ok(build_project_agency_status(root, TaskStore(task_root())))
 
 
 def _same_worktree(left: str, right: str) -> bool:

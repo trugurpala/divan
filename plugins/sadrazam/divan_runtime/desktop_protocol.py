@@ -10,6 +10,7 @@ from .desktop_api import (
     handle_goal_create,
     handle_goal_preview,
     handle_goal_tasks,
+    handle_project_agency_status,
 )
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import error_response as _error
@@ -351,6 +352,7 @@ _HANDLERS: dict[str, Handler] = {
     "readiness": _handle_readiness,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
+    "project.agency.status": handle_project_agency_status,
     "goal.preview": handle_goal_preview,
     "goal.create": handle_goal_create,
     "goal.tasks": handle_goal_tasks,

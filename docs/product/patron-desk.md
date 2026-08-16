@@ -25,21 +25,12 @@ Patron Masası planlama aşamasında şu komutları kullanır:
 - `readiness`
 - `goal.preview`
 - `goal.create`
-- `goal.tasks`
 
 `goal.preview` salt okunurdur; proje içinde plan artifact'ı veya yerel task state yazmaz ve `execution_authority` vermez.
-
-`goal.preview` ile `goal.create` planı aynı redakte edilmiş ferman metninden çıkarır; önizlemede görülen kırılım, kaydedildiğinde yazılan kırılımın aynısıdır.
-
-`goal.preview` ve `goal.create` yalnız kayıtlı bir projede ya da gerçek bir Git deposu kökünde çalışır; rastgele bir klasöre plan yazmaz.
-
-`goal.tasks` salt okunurdur; kaydedilmiş bir fermanın iş paketlerini ve bağımlılığa göre hazır olanları geri okur. Divan yeniden başlatıldıktan sonra da çalışır.
 
 `goal.create` yalnız `approve_plan_write=true` ile çalışır. Onay verildiğinde mevcut goal sözleşmesi üzerinden `spec.md`, `plan.md`, `tasks.md`, `route.json` ve receipt/evidence kayıtları yazılır; receipt-doğrulanmış route aynı anda yerel `planned` Divan iş paketlerine materialize edilir. Bu iş paketlerinin `mandate_id` değeri yoktur ve kaynak kod execution'ı başlamaz.
 
 Bu yüzey doğrudan `task.start`, `task.approve`, merge veya release çağırmaz. Mutating execution mevcut Desktop akışındaki açık `approve_execution=true` onayını gerektirir. Merge de bağımsız review ve açık owner onayı olmadan gerçekleşmez.
-
-Bağımlılık sırası tavsiye değil, kapıdır: `task.start`, bağımlı olduğu iş paketleri `merged` veya `released` olmayan bir iş paketini `approve_execution=true` verilse bile `DESKTOP_TASK_DEPENDENCIES_PENDING` ile reddeder.
 
 ## Kullanıcı deneyimi
 
