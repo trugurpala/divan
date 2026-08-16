@@ -45,6 +45,28 @@ def source_provenance() -> tuple[str, str]:
     return commit.casefold(), tree.casefold()
 
 
+def declared_runtime_modules() -> list[str]:
+    """Every module modules.json declares, so the sidecar ships the runtime it claims.
+
+    PyInstaller only bundles what it can reach from the entry point's imports.
+    A declared module nothing imports at build time is left out silently, and
+    the binary then lacks capabilities the contract says it has. The contract
+    is the authority; the build follows it rather than the import graph.
+    """
+    import json
+
+    contract = json.loads((PLUGIN_ROOT / "divan_runtime" / "modules.json").read_text(encoding="utf-8"))
+    names = sorted({name for entry in contract["modules"] for name in entry["python_modules"]})
+    return [f"divan_runtime.{name}" for name in names]
+
+
+def hidden_import_flags() -> list[str]:
+    flags: list[str] = []
+    for module in declared_runtime_modules():
+        flags.extend(["--hidden-import", module])
+    return flags
+
+
 def write_provenance_module() -> None:
     commit, tree = source_provenance()
     PROVENANCE_MODULE.write_text(
@@ -78,6 +100,7 @@ def main() -> int:
             str(BUILD_ROOT),
             "--hidden-import",
             "divan_desktop_build_info",
+            *hidden_import_flags(),
             "--distpath",
             str(DIST),
             "--workpath",
