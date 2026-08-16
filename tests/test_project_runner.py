@@ -77,6 +77,8 @@ RUNTIME_FILES = (
     "roles.json",
     "runtime_composition.py",
     "seyir_state.py",
+    "spec_compiler.py",
+    "spec_contract.py",
     "status.py",
     "task_model.py",
     "task_store.py",

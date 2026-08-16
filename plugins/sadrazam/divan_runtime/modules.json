@@ -60,7 +60,9 @@
         "orca_engine",
         "orca_adapter",
         "native_engine",
-        "runtime_composition"
+        "runtime_composition",
+        "spec_contract",
+        "spec_compiler"
       ],
       "capabilities": [
         "project_discovery",
@@ -72,7 +74,9 @@
         "execution_engine_routing",
         "orca_sidecar_execution",
         "native_worktree_execution",
-        "local_agent_dispatch"
+        "local_agent_dispatch",
+        "ferman_specification_compiler",
+        "priority_ordered_work_package_dag"
       ],
       "depends_on": [
         "kernel",
