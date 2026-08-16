@@ -1,5 +1,62 @@
 # Divan İlerleme Defteri
 
+## Üretim seferi — Divan gerçek worker çalıştırdı (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ed60b21`
+
+### Kabul edilen kontrat koşusu
+
+Divan, sertifikalı Codex 0.147.0'ı kendi açtığı worktree'de başlattı ve
+sonucu worker'ın beyanından değil worktree'den okudu.
+
+```
+attempt state : completed      changed files : jsoncheck.py, test_jsoncheck.py
+exit code     : 0              diff lines    : 90
+duration      : 162.0 s        produced work : True
+worker'ın yazdığı 3 test, Divan tarafından koşuldu: exit 0, OK
+```
+
+### Kontrat koşusunun ortaya çıkardığı üç kusur
+
+Üçü de "başarılı görünen ama başarılı olmayan attempt" biçimleriydi.
+
+1. **Temiz çıkış tek başına başarı sayılıyordu.** Hiçbir şey değiştirmeyen
+   ilk koşu COMPLETED yazıldı. Artık boş değişiklik kümesiyle temiz çıkış
+   `WORK_REJECTED`.
+2. **Okunamayan iş, iş sayılıyordu.** `git add` çıkış kodu yutuluyordu;
+   sonuç `produced_work: True` ile `diff lines: 0` oldu. Artık reddedilen
+   dosyalar adlandırılıyor, okunamayan çıktı `ENVIRONMENT`.
+3. **Worker'ın yazma yolu yoktu.** Codex öntanımlı olarak read-only.
+   Artık `--sandbox workspace-write` veriliyor: yalnız verilen worktree'ye
+   yazabilir. `danger-full-access` ve onay atlama kullanılmıyor; bir test
+   bunların hiç görünmediğini sabitliyor.
+
+18 yeni test; üç düzeltme geri alınınca 5'i kırmızıya dönüyor.
+
+### Yol boyunca bulunan iki ortam nedeni
+
+İkisi de aynı belirtiyi veriyordu ve ikisi de Divan kusuru değildi.
+
+**Codex kurulu olduğu yerden yazamıyordu.** npm global prefix'i winget
+Node.js paket dizininin içindeydi; Codex'in kendi sandbox helper'ı 270
+karaktere çıkıyordu ve Windows 260 sınırını aşıyordu. Her sandbox açılışı
+`os error 3` ile düşüyor, `apply_patch` reddediliyordu. Codex
+`C:\divan-tools` altına kuruldu (helper yolu 156 karakter) ve kullanıcı
+PATH'inin başına alındı.
+
+**Sonda betiği, sandbox'ın zehirleyebileceği bir worktree yaratıyordu.**
+`tempfile.mkdtemp` dizini kalıtıma karşı korur: yalnız SYSTEM, Administrators
+ve OWNER RIGHTS kalır, kullanıcı ACE'i olmaz. Sandbox'ın yazdığı dosyaların
+sahibi sandbox hesabı olunca kullanıcının hiç hakkı kalmıyordu. Olağan
+biçimde açılan dizin proje ağacından `PALA-EV\User:(F)` devralıyor ve aynı
+koşu geçiyor.
+
+Hiçbir ACL değiştirilmedi, hiçbir güvenlik ayarı gevşetilmedi. Codex'in
+write root'a kendi ACE'lerini eklerken kalıtımı bozmadığı, aynı dizinin
+öncesi/sonrası okunarak doğrulandı.
+
+Kanıt: `.divan/evidence/teftis-20260816-worker-execution.md`.
+
 ## Agency OS kampanyası III — Codex sertifikalı (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ac55893`
