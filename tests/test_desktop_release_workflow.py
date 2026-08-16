@@ -89,7 +89,7 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
             signed.count(
                 "          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}"
             ),
-            1,
+            2,
         )
         self.assertEqual(
             signed.count(
@@ -101,6 +101,12 @@ class DesktopReleaseWorkflowTests(unittest.TestCase):
             signed.count("          DIVAN_UPDATER_PUBKEY: ${{ secrets.DIVAN_UPDATER_PUBKEY }}"),
             2,
         )
+
+        guard_start = signed.index("- name: Enforce stable release gate before build")
+        core_build_start = signed.index("- name: Build self-contained Core sidecar", guard_start)
+        guard = signed[guard_start:core_build_start]
+        self.assertIn("TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}", guard)
+        self.assertNotIn("TAURI_SIGNING_PRIVATE_KEY_PASSWORD", guard)
 
     def test_signed_candidate_removes_ephemeral_release_config_even_on_failure(self) -> None:
         signed = self.text[self.text.index("  signed-windows-candidate:") :]
