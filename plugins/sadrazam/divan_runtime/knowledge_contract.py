@@ -19,9 +19,25 @@ class KnowledgeKind(StrEnum):
 
 
 class KnowledgeStatus(StrEnum):
+    """Lifecycle of one remembered claim.
+
+    Knowledge that contradicts an active claim must never silently overwrite
+    it. The contradiction is made explicit instead: the old claim becomes
+    SUPERSEDED when the new one clearly replaces it, or both are QUARANTINED
+    when evidence cannot settle the conflict and a human has to decide. STALE
+    marks a claim past its freshness horizon that has not been disproven.
+    """
+
     CANDIDATE = "candidate"
     VALIDATED = "validated"
     DEPRECATED = "deprecated"
+    SUPERSEDED = "superseded"
+    QUARANTINED = "quarantined"
+    STALE = "stale"
+
+
+#: Statuses a recall pack may hand to a planner as usable knowledge.
+ACTIVE_STATUSES = frozenset({KnowledgeStatus.CANDIDATE, KnowledgeStatus.VALIDATED})
 
 
 class KnowledgeOrigin(StrEnum):

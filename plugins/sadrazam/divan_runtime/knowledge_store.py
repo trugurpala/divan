@@ -85,6 +85,47 @@ class KnowledgeStore:
                 tuple(values.values()),
             )
 
+    def resolve_contradiction(
+        self,
+        *,
+        existing_id: str,
+        replacement_id: str,
+        settled: bool,
+        observed_at: str,
+    ) -> tuple[KnowledgeItem, KnowledgeItem]:
+        """Record that two claims conflict, without losing either one.
+
+        ``settled`` means evidence clearly favours the replacement, so the old
+        claim becomes SUPERSEDED. When evidence cannot settle it, both claims
+        are QUARANTINED so a planner stops treating either as usable and a
+        human decides. Neither branch deletes or rewrites the other's content.
+        """
+        existing = self.get(existing_id)
+        replacement = self.get(replacement_id)
+        if existing.item_id == replacement.item_id:
+            raise ValueError("a knowledge item cannot contradict itself")
+        if settled:
+            return (
+                self.curate(
+                    existing_id,
+                    status=KnowledgeStatus.SUPERSEDED,
+                    last_verified_at=observed_at,
+                ),
+                replacement,
+            )
+        return (
+            self.curate(
+                existing_id,
+                status=KnowledgeStatus.QUARANTINED,
+                last_verified_at=observed_at,
+            ),
+            self.curate(
+                replacement_id,
+                status=KnowledgeStatus.QUARANTINED,
+                last_verified_at=observed_at,
+            ),
+        )
+
     def curate(
         self,
         item_id: str,

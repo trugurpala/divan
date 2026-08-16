@@ -147,12 +147,14 @@
         "task_model",
         "task_store",
         "execution_recovery",
+        "task_learning",
         "orchestrator",
         "knowledge_contract",
         "knowledge_capture",
         "knowledge_store",
         "knowledge_projection",
-        "knowledge_relevance"
+        "knowledge_relevance",
+        "memory_first"
       ],
       "capabilities": [
         "goal_state",
@@ -169,7 +171,11 @@
         "local_knowledge_fabric",
         "deterministic_failure_lessons",
         "task_close_failure_learning",
-        "project_context_memory_ranking"
+        "project_context_memory_ranking",
+        "generated_knowledge_projection",
+        "cross_project_reuse_analytics",
+        "memory_first_bounded_recall",
+        "explicit_knowledge_contradiction_states"
       ],
       "depends_on": [
         "kernel",

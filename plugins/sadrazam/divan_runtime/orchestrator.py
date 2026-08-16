@@ -20,7 +20,6 @@ from .git_guard import (
     snapshot_from_metadata,
     stage_review_snapshot,
 )
-from .knowledge_capture import lesson_from_failure
 from .knowledge_store import KnowledgeStore
 from .review_gate import (
     CheckResult,
@@ -30,6 +29,7 @@ from .review_gate import (
     require_release_ready,
 )
 from .reviewer_runner import AutomatedReview, AutomatedReviewer, ReviewerUnavailable
+from .task_learning import capture_merge_lesson, failed_reviews
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
@@ -157,7 +157,7 @@ class DivanOrchestrator:
             # is only half a lesson; the merge that finally lands supplies the
             # other half.
             metadata["failed_reviews"] = [
-                *_failed_reviews(reviewing),
+                *failed_reviews(reviewing),
                 {
                     "verdict": decision.verdict.value,
                     "reasons": list(decision.reasons),
@@ -276,77 +276,11 @@ class DivanOrchestrator:
                 },
             )
         )
-        self._capture_merge_lesson(approved_task, merged.diff_sha256)
+        capture_merge_lesson(
+            approved_task, merged.diff_sha256, self.knowledge, self.evidence
+        )
         return self._save(
             approved_task.transition(TaskState.MERGED, "reviewed snapshot fast-forwarded")
-        )
-
-    def _capture_merge_lesson(self, task: DivanTask, diff_sha256: str) -> None:
-        """Record what review rejected and what finally landed, at task close.
-
-        Only tasks that actually failed review carry a lesson: a task that
-        passed first time teaches nothing worth storing. Memory capture is
-        never allowed to fail a merge that already passed every gate, so a
-        broken knowledge store degrades to an honest evidence entry.
-        """
-        failures = _failed_reviews(task)
-        if not failures:
-            return
-        reasons = [
-            reason
-            for failure in failures
-            for reason in failure.get("reasons", [])
-            if isinstance(reason, str)
-        ]
-        checks = sorted(
-            {
-                name
-                for failure in failures
-                for name in failure.get("failed_checks", [])
-                if isinstance(name, str)
-            }
-        )
-        problem = (
-            f"Review rejected {task.title} {len(failures)} time(s). "
-            f"Failing checks: {', '.join(checks) or 'unnamed'}. "
-            f"Reasons: {'; '.join(reasons) or 'not recorded'}"
-        )
-        solution = (
-            f"The change that passed every required check merged as {diff_sha256}."
-        )
-        try:
-            lesson = lesson_from_failure(
-                problem=problem,
-                solution=solution,
-                tags=("review", *checks),
-                source_project=task.project_root,
-                evidence_sha256=diff_sha256,
-            )
-            self.knowledge.upsert(lesson)
-        except Exception as error:  # noqa: BLE001 - memory must not fail a merge
-            self.evidence.append(
-                build_evidence(
-                    task.task_id,
-                    "knowledge",
-                    "fail",
-                    "task-close lesson capture failed",
-                    {"error": type(error).__name__},
-                )
-            )
-            return
-        self.evidence.append(
-            build_evidence(
-                task.task_id,
-                "knowledge",
-                "pass",
-                "task-close lesson captured",
-                {
-                    "item_id": lesson.item_id,
-                    "failed_review_count": len(failures),
-                    "failed_checks": checks,
-                    "evidence_sha256": diff_sha256,
-                },
-            )
         )
 
     def release(self, task: DivanTask) -> DivanTask:
@@ -434,11 +368,3 @@ def _review_from_task(task: DivanTask) -> ReviewDecision:
         else ()
     )
     return ReviewDecision(GateVerdict(verdict_raw), tuple(checks), reasons)
-
-
-def _failed_reviews(task: DivanTask) -> list[dict[str, Any]]:
-    """Return the recorded review rejections for one task."""
-    recorded = task.metadata.get("failed_reviews")
-    if not isinstance(recorded, list):
-        return []
-    return [entry for entry in recorded if isinstance(entry, dict)]
