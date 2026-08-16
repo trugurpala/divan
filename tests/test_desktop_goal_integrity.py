@@ -14,7 +14,7 @@ if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
 
 from divan_runtime.desktop_protocol import handle_request
-from divan_runtime.execution_contract import ExecutionAction, ExecutionReceipt
+from divan_runtime.execution_contract import ExecutionReceipt
 from divan_runtime.execution_router import ExecutionRouter
 from divan_runtime.project_registry import ProjectRegistry
 
