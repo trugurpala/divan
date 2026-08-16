@@ -4,6 +4,7 @@ import hashlib
 from datetime import datetime, timezone
 
 from .knowledge_contract import KnowledgeItem, KnowledgeKind, normalized_terms
+from .receipts import redact_text
 
 
 def lesson_from_failure(
@@ -29,7 +30,7 @@ def lesson_from_failure(
         summary=f"Problem: {problem_text}\nResolution: {solution_text}",
         tags=(*tags, "failure-learning"),
         stack=stack,
-        source_project=source_project,
+        source_project=_redacted_project(source_project),
         problem_signature=problem_signature,
         solution_signature=solution_signature,
         evidence_sha256=evidence_sha256,
@@ -63,7 +64,7 @@ def pattern_from_project(
         summary=description,
         tags=tags,
         stack=normalized_stack,
-        source_project=source_project,
+        source_project=_redacted_project(source_project),
         evidence_sha256=evidence_sha256,
         confidence=0.5,
         created_at=observed_at or _now(),
@@ -75,7 +76,15 @@ def _digest(value: str) -> str:
 
 
 def _bounded(value: str, *, limit: int = 2000) -> str:
-    return " ".join(value.split())[:limit].strip()
+    """Collapse, redact and bound one captured text field.
+
+    Captured text is failure output and operator prose, so it carries home
+    paths and credential assignments. Every other persistence path in the
+    runtime redacts before writing; knowledge capture must too. Redacting
+    before the digest also keeps item_id stable across machines, because a
+    home path no longer leaks into the fingerprint.
+    """
+    return redact_text(" ".join(value.split()))[:limit].strip()
 
 
 def _headline(value: str) -> str:
@@ -84,3 +93,11 @@ def _headline(value: str) -> str:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _redacted_project(value: str | None) -> str | None:
+    """Redact the source project label, which is often a real filesystem path."""
+    if value is None:
+        return None
+    cleaned = redact_text(" ".join(value.split())).strip()
+    return cleaned or None

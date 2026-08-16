@@ -16,6 +16,12 @@ from .knowledge_contract import (
     validate_optional_sha256,
 )
 
+# Columns an upsert must never overwrite: identity, first-seen history and the
+# curation a human or a later verification pass applied.
+_CURATION_COLUMNS = frozenset(
+    {"item_id", "created_at", "status", "confidence", "last_verified_at"}
+)
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS knowledge_items (
     item_id TEXT PRIMARY KEY,
@@ -63,8 +69,14 @@ class KnowledgeStore:
         values = _item_values(item)
         placeholders = ", ".join("?" for _ in values)
         columns = ", ".join(values)
+        # Re-capturing a known failure must refresh its content without undoing
+        # curation. Capture always emits status=candidate, confidence=0.5 and a
+        # fresh created_at, so overwriting these would demote a validated item
+        # and destroy its first-seen history.
         updates = ", ".join(
-            f"{column}=excluded.{column}" for column in values if column != "item_id"
+            f"{column}=excluded.{column}"
+            for column in values
+            if column not in _CURATION_COLUMNS
         )
         with self._connect() as connection:
             connection.execute(
@@ -72,6 +84,39 @@ class KnowledgeStore:
                 f"ON CONFLICT(item_id) DO UPDATE SET {updates}",
                 tuple(values.values()),
             )
+
+    def curate(
+        self,
+        item_id: str,
+        *,
+        status: KnowledgeStatus | None = None,
+        confidence: float | None = None,
+        last_verified_at: str | None = None,
+    ) -> KnowledgeItem:
+        """Change the curation upsert deliberately refuses to touch.
+
+        Capture and curation are separate authorities: ``upsert`` refreshes
+        what a record says, this changes how much the agency trusts it.
+        """
+        self.get(item_id)
+        changes: dict[str, Any] = {}
+        if status is not None:
+            changes["status"] = status.value
+        if confidence is not None:
+            if not 0.0 <= confidence <= 1.0:
+                raise ValueError("knowledge confidence must be between 0 and 1")
+            changes["confidence"] = confidence
+        if last_verified_at is not None:
+            changes["last_verified_at"] = last_verified_at
+        if not changes:
+            return self.get(item_id)
+        assignments = ", ".join(f"{column}=?" for column in changes)
+        with self._connect() as connection:
+            connection.execute(
+                f"UPDATE knowledge_items SET {assignments} WHERE item_id=?",
+                (*changes.values(), item_id),
+            )
+        return self.get(item_id)
 
     def get(self, item_id: str) -> KnowledgeItem:
         with self._connect() as connection:
