@@ -34,7 +34,8 @@ class MeclisTesti(unittest.TestCase):
         adaylar = veri["candidates"]
         beklenen = {
             "agentskills-agentskills": ("ADOPT", "38a2ff82958afee88dadf4831509e6f7e9d8ef4e"),
-            "github-spec-kit": ("ADAPT", "cf0abe28f7ee875448f9e4dbd8cd2b533797a1cb"),
+            # v0.16.4, re-reviewed on 2026-08-16 in an isolated one-shot spike.
+            "github-spec-kit": ("ADAPT", "d1f50fcbe684a4222059c4ba7f2d7eabcca87402"),
             "fission-openspec": ("ADAPT", "a874d1d6715886db9210c527b1fc3799d9688a76"),
             "maxmiksa-auto-company": ("REFERENCE", "ebfab9b4bd5f0ab5ad452a1ff85285b3c141acdd"),
             "googlechrome-lighthouse-ci": ("ADOPT", "ebee453dad3f8acacd657a62ccc65e3296afb7d0"),
@@ -58,8 +59,10 @@ class MeclisTesti(unittest.TestCase):
                 if aday["decision"] in {"ADOPT", "ADAPT"}:
                     self.assertNotEqual(aday["license"]["spdx"], "UNKNOWN")
                 self.assertIn(aday["license"]["evidence_url"], aday["evidence"])
-                self.assertRegex(aday["observed_at"], r"^2026-07-(23|31)$")
-                self.assertRegex(aday["next_review"], r"^2026-10-(23|31)$")
+                # Observation dates are pinned so a candidate cannot drift
+                # silently; a re-review adds its date here deliberately.
+                self.assertRegex(aday["observed_at"], r"^2026-(07-(23|31)|08-16)$")
+                self.assertRegex(aday["next_review"], r"^2026-(10-(23|31)|11-16)$")
 
     def test_vibe_ux_adaylari_pinli_ve_lisans_kararli(self):
         adaylar = {aday["id"]: aday for aday in MECLIS.oku(KOK)["candidates"]}
