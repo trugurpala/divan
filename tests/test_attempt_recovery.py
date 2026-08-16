@@ -155,6 +155,51 @@ class RecoveryDecisionTests(unittest.TestCase):
         action, _ = recovery_decision(lost, prior_attempts=1, resume_supported=True)
         self.assertEqual(action, "replace")
 
+    def test_an_orphan_is_recoverable_without_anyone_naming_the_failure(self) -> None:
+        # A supervisor that finds a dead process knows the state, not a class.
+        # Leaving the failure unnamed made recovery read it as unknown and
+        # refuse to retry the one case the contract calls safe to replace.
+        running = attempt()
+        orphaned = running.transition(
+            AttemptState.ORPHANED, "the process is gone", at=NOW.isoformat()
+        )
+
+        self.assertIs(orphaned.failure_class, FailureClass.WORKER_LOST)
+        action, _ = recovery_decision(
+            orphaned, prior_attempts=1, resume_supported=False
+        )
+        self.assertEqual(action, "replace")
+
+    def test_the_named_failure_survives_the_move_into_recovery(self) -> None:
+        orphaned = attempt().transition(
+            AttemptState.ORPHANED, "the process is gone", at=NOW.isoformat()
+        )
+        pending = orphaned.transition(
+            AttemptState.RECOVERY_PENDING, "Divan owns the wreckage", at=NOW.isoformat()
+        )
+
+        self.assertIs(pending.failure_class, FailureClass.WORKER_LOST)
+        action, _ = recovery_decision(pending, prior_attempts=1, resume_supported=False)
+        self.assertEqual(action, "replace")
+
+    def test_a_stall_names_itself_too(self) -> None:
+        stalled = attempt().transition(
+            AttemptState.SUSPECTED_STALLED, "it went quiet", at=NOW.isoformat()
+        )
+
+        self.assertIs(stalled.failure_class, FailureClass.WORKER_STALLED)
+
+    def test_an_explicit_failure_class_still_wins(self) -> None:
+        # The state implies a default; it does not overrule a caller who knows.
+        orphaned = attempt().transition(
+            AttemptState.ORPHANED,
+            "the provider went away",
+            at=NOW.isoformat(),
+            failure_class=FailureClass.PROVIDER_UNAVAILABLE,
+        )
+
+        self.assertIs(orphaned.failure_class, FailureClass.PROVIDER_UNAVAILABLE)
+
     def test_rejected_work_is_never_blindly_retried(self) -> None:
         rejected = attempt(failure_class=FailureClass.WORK_REJECTED)
         action, reason = recovery_decision(

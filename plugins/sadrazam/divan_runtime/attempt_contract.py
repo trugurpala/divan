@@ -108,6 +108,17 @@ RETRYABLE_CLASSES = frozenset(
     }
 )
 
+#: What reaching a state already tells us about why the attempt ended.
+#:
+#: Deciding an attempt is orphaned *is* learning the worker vanished, and
+#: deciding it is suspected-stalled *is* learning it stopped reporting. Leaving
+#: the failure unnamed made recovery read it as UNKNOWN and refuse to retry the
+#: very case the contract calls safe to replace, so the state names it.
+_IMPLIED_FAILURE: Mapping[AttemptState, FailureClass] = {
+    AttemptState.ORPHANED: FailureClass.WORKER_LOST,
+    AttemptState.SUSPECTED_STALLED: FailureClass.WORKER_STALLED,
+}
+
 
 class AttemptTransitionError(ValueError):
     """Raised when an attempt is moved somewhere its lifecycle forbids."""
@@ -174,12 +185,13 @@ class AttemptRecord:
             "at": at,
             "reason": reason,
         }
-        if failure_class is not None:
-            entry["failure_class"] = failure_class.value
+        named = failure_class or _IMPLIED_FAILURE.get(state)
+        if named is not None:
+            entry["failure_class"] = named.value
         return replace(
             self,
             state=state,
-            failure_class=failure_class or self.failure_class,
+            failure_class=named or self.failure_class,
             exit_code=self.exit_code if exit_code is None else exit_code,
             result_commit=self.result_commit if result_commit is None else result_commit,
             finished_at=at if state in TERMINAL_STATES else self.finished_at,
