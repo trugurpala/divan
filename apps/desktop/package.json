@@ -10,7 +10,9 @@
     "desktop:check": "python ../../scripts/desktop_release_guard.py",
     "tauri": "tauri",
     "desktop:dev": "pnpm core:build && tauri dev --config src-tauri/tauri.windows.conf.json",
-    "desktop:build": "pnpm desktop:check && pnpm core:build && tauri build --bundles nsis --config src-tauri/tauri.windows.conf.json"
+    "desktop:build": "pnpm desktop:check && pnpm core:build && tauri build --bundles nsis --config src-tauri/tauri.windows.conf.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
@@ -20,10 +22,14 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.0",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.2",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "jsdom": "27.0.0",
     "typescript": "^5.9.0",
-    "vite": "^8.0.0"
+    "vite": "^8.0.0",
+    "vitest": "4.1.10"
   }
 }
