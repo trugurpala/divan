@@ -4,7 +4,6 @@ import json
 import pathlib
 import unittest
 
-
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "apps" / "desktop" / "src-tauri" / "tauri.conf.json"
 

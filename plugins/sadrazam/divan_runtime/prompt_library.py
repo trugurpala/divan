@@ -15,7 +15,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Mapping
 
-
 SOURCE_REPOSITORY = "https://github.com/f/prompts.chat"
 SOURCE_COMMIT = "f1c515686725fcd84a90d361b9eeb11eb15edb17"
 SOURCE_LICENSE = "CC0-1.0"

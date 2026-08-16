@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
 import pathlib
 import platform
 import shutil
 import subprocess
 import sys
-import os
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ENTRY = ROOT / "scripts" / "divan-desktop-bridge.py"

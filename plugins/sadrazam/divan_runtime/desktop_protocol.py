@@ -5,6 +5,7 @@ from dataclasses import asdict, replace
 from typing import Any
 from uuid import uuid4
 
+from . import local_ai, ordu, prompt_library
 from .desktop_api import DesktopApi
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import (
@@ -24,9 +25,6 @@ from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
-from . import prompt_library
-from . import local_ai
-from . import ordu
 from .review_gate import CheckResult, ReviewDecision
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
