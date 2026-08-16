@@ -1,5 +1,41 @@
 # Divan İlerleme Defteri
 
+## Agency OS: Agency Memory portu (2026-08-16)
+
+- PR #121 ve #123 main'den 20 commit geride kalmıştı. #123, #121'in üst
+  kümesi olduğu için ikisi tek tutarlı değişiklik olarak current main'e
+  port edildi; bayat yığın merge edilmedi. Port çakışmasız uygulandı.
+- Portlanan kod Windows'ta çalışmıyordu. `KnowledgeStore._connect`
+  bağlantıyı hiç kapatmıyordu; `sqlite3.Connection.__exit__` yalnız
+  transaction'ı bitirir. 13 knowledge testinden 12'si `WinError 32` ile
+  düşüyordu. POSIX açık dosyayı silebildiği için Linux CI'da görünmüyordu.
+- Bağımsız teftiş üç P1 buldu ve BLOCK verdi. İkisi kapatıldı:
+  - yakalanan metin redaksiyondan geçmiyordu; `OPENAI_API_KEY=...` ve tam
+    ev yolu deftere ham giriyordu. Artık `receipts.redact_text` uygulanıyor
+    ve redaksiyon digest'ten önce olduğu için `item_id` makineden bağımsız.
+  - `upsert` küratörlüğü siliyordu; aynı hatayı tekrar yakalamak
+    `validated`/0.95 kaydını `candidate`/0.5'e düşürüyor ve `created_at`
+    ilk-görülme geçmişini yok ediyordu. Artık kimlik, ilk-görülme ve
+    küratörlük sütunlarına dokunmuyor; terfi için ayrı `curate()` var.
+- Açık kalan P1: yakalama yolunun test dışı çağıranı yok. Üretimde defter
+  boş kalır, buna karşın `modules.json` `local_knowledge_fabric` ve üç
+  ilgili yeteneği ilan eder. Bu yama değil bağlama işidir; PASS 3'ün asıl
+  işi olarak açık bırakıldı.
+- Regresyon farkı: main 1020 test / 87 başarısız, bu dal 1035 test / 87
+  başarısız. Yeni regresyon yok.
+
+## Agency OS: Plugin SDK portu (2026-08-16)
+
+- PR #119 main'den 22 commit geride kalmıştı; current main'e çakışmasız
+  port edildi. `App.tsx` iki hattın da dokunduğu tek dosya olduğu için
+  sonuç doğrulandı: `main.tsx` App'i hâlâ PatronDesk ile sarıyor, App
+  hâlâ PluginTrustCenter render ediyor; iki yüzey birlikte yaşıyor.
+- Plugin SDK, desktop protokol, Trust Center UI ve reflow testleri geçti;
+  frontend iki yüzeyle birlikte derlendi (23 modül).
+- Regresyon farkı: 1044 test / 87 başarısız; yeni regresyon yok.
+- Bu port henüz bağımsız teftişten geçmedi; "hazır" değil, "portlandı ve
+  derleniyor" olarak kayıtlıdır.
+
 ## Hedef Güncellemesi (2026-08-04)
 
 - `v1.3.8` adayı host recovery, typed continuation, host-bağımsız
