@@ -10,6 +10,28 @@ from .executable_locator import locate_executable
 from .plugin_contract import ManifestValidation, PluginIssue
 from .plugin_manifest_validation import validate_manifest_payload
 
+#: A plugin manifest is a small static declaration. Anything larger is not a
+#: manifest, and reading it unbounded lets a crafted file wedge the client.
+MAX_MANIFEST_BYTES = 64 * 1024
+
+
+class _DuplicateKey(ValueError):
+    """Raised when a manifest object declares the same key twice."""
+
+
+def _reject_duplicate_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Fail closed on duplicate keys instead of silently keeping the last one.
+
+    The manifest hash attests the bytes. If a duplicate key were accepted,
+    the attested bytes would say something the owner never saw on screen.
+    """
+    seen: dict[str, object] = {}
+    for key, value in pairs:
+        if key in seen:
+            raise _DuplicateKey(key)
+        seen[key] = value
+    return seen
+
 
 @dataclass(frozen=True)
 class PluginCandidate:
@@ -57,6 +79,23 @@ def load_plugin_candidate(
         return PluginCandidate(str(path), "", validation, None, None)
 
     try:
+        size = path.stat().st_size
+    except OSError:
+        size = None
+    if size is not None and size > MAX_MANIFEST_BYTES:
+        validation = ManifestValidation(
+            None,
+            (
+                PluginIssue(
+                    "PLUGIN_MANIFEST_TOO_LARGE",
+                    "$",
+                    f"plugin manifest must be at most {MAX_MANIFEST_BYTES} bytes",
+                ),
+            ),
+        )
+        return PluginCandidate(str(path), "", validation, None, None)
+
+    try:
         raw = path.read_bytes()
     except OSError as error:
         validation = ManifestValidation(
@@ -73,7 +112,21 @@ def load_plugin_candidate(
 
     manifest_sha256 = hashlib.sha256(raw).hexdigest()
     try:
-        payload = json.loads(raw.decode("utf-8"))
+        payload = json.loads(
+            raw.decode("utf-8"), object_pairs_hook=_reject_duplicate_keys
+        )
+    except _DuplicateKey as duplicate:
+        validation = ManifestValidation(
+            None,
+            (
+                PluginIssue(
+                    "PLUGIN_MANIFEST_DUPLICATE_KEY",
+                    f"$.{duplicate.args[0]}",
+                    "plugin manifest declares the same key twice",
+                ),
+            ),
+        )
+        return PluginCandidate(str(path), manifest_sha256, validation, None, None)
     except (UnicodeDecodeError, json.JSONDecodeError):
         validation = ManifestValidation(
             None,

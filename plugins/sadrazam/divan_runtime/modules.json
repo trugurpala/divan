@@ -180,6 +180,7 @@
         "project_readiness",
         "plugin_contract",
         "plugin_manifest_validation",
+        "plugin_provenance",
         "plugin_discovery",
         "plugin_approval",
         "plugin_desktop",
@@ -195,7 +196,9 @@
         "subscription_auth_detection",
         "plugin_manifest_validation",
         "privacy_bounded_plugin_inspection",
-        "sidecar_plugin_sdk"
+        "sidecar_plugin_sdk",
+        "bounded_plugin_manifest_input",
+        "plugin_license_provenance"
       ],
       "depends_on": [
         "kernel",

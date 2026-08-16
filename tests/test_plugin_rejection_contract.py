@@ -212,3 +212,83 @@ class PluginDiscoveryRejectionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PluginBoundedInputTests(unittest.TestCase):
+    """A crafted manifest must not be able to wedge the client that renders it."""
+
+    def _write(self, root: pathlib.Path, name: str, text: str) -> pathlib.Path:
+        path = root / name
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def test_an_oversized_manifest_is_rejected_without_being_read(self) -> None:
+        from divan_runtime.plugin_discovery import MAX_MANIFEST_BYTES
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            padded = valid_manifest(display_name="x" * (MAX_MANIFEST_BYTES + 1024))
+            path = self._write(root, "big.json", json.dumps(padded))
+            self.assertGreater(path.stat().st_size, MAX_MANIFEST_BYTES)
+
+            candidate = load_plugin_candidate(path)
+
+            self.assertIsNone(candidate.validation.manifest)
+            self.assertIn(
+                "PLUGIN_MANIFEST_TOO_LARGE",
+                {issue.code for issue in candidate.validation.errors},
+            )
+            # Nothing was hashed, because nothing was read.
+            self.assertEqual(candidate.manifest_sha256, "")
+
+    def test_a_duplicate_key_is_rejected_instead_of_last_value_winning(self) -> None:
+        # The hash attests the bytes. Accepting a duplicate would mean the
+        # attested bytes say something the owner never saw.
+        raw = (
+            '{"schema_version": 1, "id": "demo-plugin", "display_name": "Demo",'
+            ' "version": "1.0.0", "api_version": 1, "kind": "evidence",'
+            ' "transport": "sidecar-json-v1", "executable": "demo",'
+            ' "capabilities": ["project.mutate"],'
+            ' "capabilities": ["project.read"],'
+            ' "source": {"url": "https://example.invalid/r"},'
+            ' "license": {"spdx_expression": "MIT",'
+            ' "evidence": "https://example.invalid/l"},'
+            ' "requires_mandate": false}'
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = self._write(pathlib.Path(directory), "dup.json", raw)
+
+            candidate = load_plugin_candidate(path)
+
+            self.assertIsNone(candidate.validation.manifest)
+            codes = {issue.code for issue in candidate.validation.errors}
+            self.assertIn("PLUGIN_MANIFEST_DUPLICATE_KEY", codes)
+
+    def test_capability_count_and_issue_list_are_bounded(self) -> None:
+        from divan_runtime.plugin_manifest_validation import (
+            MAX_CAPABILITIES,
+            MAX_ISSUES,
+        )
+
+        flood = plugin_sdk.validate_manifest_payload(
+            valid_manifest(capabilities=["project.read"] * 50_000)
+        )
+        self.assertFalse(flood.ok)
+        self.assertIn(
+            "PLUGIN_CAPABILITIES_TOO_MANY", {i.code for i in flood.errors}
+        )
+        # One issue per element would be 50 000 list rows in the renderer.
+        self.assertLessEqual(len(flood.errors), MAX_ISSUES + 1)
+        self.assertLess(MAX_CAPABILITIES, 50_000)
+
+    def test_issue_truncation_is_reported_rather_than_silent(self) -> None:
+        from divan_runtime.plugin_manifest_validation import MAX_ISSUES
+
+        unknown_fields = {f"extra_{index}": 1 for index in range(MAX_ISSUES + 20)}
+        result = plugin_sdk.validate_manifest_payload(
+            valid_manifest(**unknown_fields)
+        )
+
+        self.assertFalse(result.ok)
+        self.assertLessEqual(len(result.errors), MAX_ISSUES + 1)
+        self.assertIn("PLUGIN_ISSUES_TRUNCATED", {i.code for i in result.errors})

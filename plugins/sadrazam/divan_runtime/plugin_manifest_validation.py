@@ -16,6 +16,7 @@ from .plugin_contract import (
     PluginManifest,
     PluginTransport,
 )
+from .plugin_provenance import validate_license, validate_source_url
 
 _ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _EXECUTABLE_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -24,8 +25,10 @@ _RESERVED_EXECUTABLES = frozenset(
     {".", "..", "con", "prn", "aux", "nul"}
     | {f"{stem}{index}" for stem in ("com", "lpt") for index in range(1, 10)}
 )
-_HTTPS_RE = re.compile(r"^https://\S+$")
-_SPDX_RE = re.compile(r"^[A-Za-z0-9.+() -]+$")
+# A real manifest declares a handful of capabilities. Anything beyond this is
+# not a declaration, and rendering one issue per entry would wedge the client.
+MAX_CAPABILITIES = 32
+MAX_ISSUES = 50
 _READ_ONLY_KINDS = frozenset(
     {PluginKind.REVIEWER, PluginKind.PROVIDER, PluginKind.EVIDENCE}
 )
@@ -69,13 +72,13 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
         payload, errors
     )
     _validate_capability_policy(kind, capabilities, requires_mandate, errors)
-    source_url = _object_url(
-        payload.get("source"), "PLUGIN_SOURCE_INVALID", "PLUGIN_SOURCE_URL_INVALID", errors
+    source_url = validate_source_url(payload.get("source"), errors)
+    license_expression, license_evidence = validate_license(
+        payload.get("license"), errors
     )
-    license_expression, license_evidence = _license(payload.get("license"), errors)
 
     if errors:
-        return ManifestValidation(None, tuple(errors))
+        return ManifestValidation(None, _bounded_issues(errors))
 
     assert plugin_id is not None
     assert display_name is not None
@@ -101,6 +104,21 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
             requires_mandate=requires_mandate,
         ),
         (),
+    )
+
+
+def _bounded_issues(errors: list[PluginIssue]) -> tuple[PluginIssue, ...]:
+    """Cap the reported issues so a crafted manifest cannot flood a client."""
+    if len(errors) <= MAX_ISSUES:
+        return tuple(errors)
+    hidden = len(errors) - MAX_ISSUES
+    return (
+        *errors[:MAX_ISSUES],
+        PluginIssue(
+            "PLUGIN_ISSUES_TRUNCATED",
+            "$",
+            f"{hidden} further issues were not reported",
+        ),
     )
 
 
@@ -264,6 +282,16 @@ def _validate_capabilities(
         )
         return ()
 
+    if len(value) > MAX_CAPABILITIES:
+        errors.append(
+            PluginIssue(
+                "PLUGIN_CAPABILITIES_TOO_MANY",
+                "$.capabilities",
+                f"at most {MAX_CAPABILITIES} capabilities are allowed",
+            )
+        )
+        return ()
+
     parsed: list[str] = []
     seen: set[str] = set()
     for index, capability in enumerate(value):
@@ -312,72 +340,6 @@ def _validate_capability(
                 f"unsupported capability: {capability}",
             )
         )
-
-
-def _object_url(
-    value: Any, invalid_code: str, url_invalid_code: str, errors: list[PluginIssue]
-) -> str | None:
-    """Validate one ``{"url": ...}`` object; codes are literals so they grep."""
-    if not isinstance(value, Mapping) or set(value) != {"url"}:
-        errors.append(
-            PluginIssue(
-                invalid_code,
-                "$.source",
-                "source must contain only url",
-            )
-        )
-        return None
-    url = value.get("url")
-    if not isinstance(url, str) or not _HTTPS_RE.fullmatch(url):
-        errors.append(
-            PluginIssue(
-                url_invalid_code,
-                "$.source.url",
-                "URL must be absolute HTTPS",
-            )
-        )
-        return None
-    return url
-
-
-def _license(
-    value: Any, errors: list[PluginIssue]
-) -> tuple[str | None, str | None]:
-    required = {"spdx_expression", "evidence"}
-    if not isinstance(value, Mapping) or set(value) != required:
-        errors.append(
-            PluginIssue(
-                "PLUGIN_LICENSE_INVALID",
-                "$.license",
-                "license must contain SPDX expression and evidence",
-            )
-        )
-        return None, None
-    expression = value.get("spdx_expression")
-    evidence = value.get("evidence")
-    if (
-        not isinstance(expression, str)
-        or not expression.strip()
-        or not _SPDX_RE.fullmatch(expression)
-    ):
-        errors.append(
-            PluginIssue(
-                "PLUGIN_LICENSE_EXPRESSION_INVALID",
-                "$.license.spdx_expression",
-                "invalid SPDX expression",
-            )
-        )
-        expression = None
-    if not isinstance(evidence, str) or not _HTTPS_RE.fullmatch(evidence):
-        errors.append(
-            PluginIssue(
-                "PLUGIN_LICENSE_EVIDENCE_INVALID",
-                "$.license.evidence",
-                "license evidence must be HTTPS",
-            )
-        )
-        evidence = None
-    return expression, evidence
 
 
 def _parse_enum(
