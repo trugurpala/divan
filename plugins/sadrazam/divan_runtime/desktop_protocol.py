@@ -12,18 +12,10 @@ from .desktop_api import (
     handle_goal_tasks,
 )
 from .desktop_protocol_support import ProtocolValidationError
-from .desktop_protocol_support import (
-    error_response as _error,
-)
-from .desktop_protocol_support import (
-    ok_response as _ok,
-)
-from .desktop_protocol_support import (
-    optional_string as _optional_string,
-)
-from .desktop_protocol_support import (
-    required_string as _required_string,
-)
+from .desktop_protocol_support import error_response as _error
+from .desktop_protocol_support import ok_response as _ok
+from .desktop_protocol_support import optional_string as _optional_string
+from .desktop_protocol_support import required_string as _required_string
 from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
