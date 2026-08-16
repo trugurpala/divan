@@ -60,6 +60,7 @@
         "orca_engine",
         "orca_adapter",
         "native_engine",
+        "native_engine_preflight",
         "runtime_composition"
       ],
       "capabilities": [
@@ -148,6 +149,7 @@
         "task_store",
         "execution_recovery",
         "ordu",
+        "ordu_orchestration",
         "orchestrator"
       ],
       "capabilities": [
@@ -235,6 +237,8 @@
         "desktop_api",
         "desktop_protocol_support",
         "desktop_protocol",
+        "desktop_protocol_extensions",
+        "desktop_protocol_review",
         "prompt_library",
         "local_ai"
       ],

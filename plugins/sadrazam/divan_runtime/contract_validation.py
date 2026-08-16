@@ -238,7 +238,6 @@ def _validate_dependencies(modules: list[dict[str, Any]]) -> None:
             visit(dependency)
         visiting.remove(identifier)
         visited.add(identifier)
-
     for identifier in sorted(graph):
         visit(identifier)
 

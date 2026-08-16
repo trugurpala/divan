@@ -95,14 +95,14 @@ class DesktopProtocolTests(unittest.TestCase):
         self.assertIn("task.review.auto", response["result"]["commands"])
         self.assertIn("interrupted-recovery", response["result"]["features"])
 
-    @patch("divan_runtime.desktop_protocol.local_ai.status")
+    @patch("divan_runtime.desktop_protocol_extensions.local_ai.status")
     def test_local_ai_status_is_available_without_an_execution_router(self, status):
         status.return_value = {"available": True, "models": []}
         response = handle_request({"command": "local_ai.status"})
         self.assertTrue(response["ok"])
         self.assertTrue(response["result"]["available"])
 
-    @patch("divan_runtime.desktop_protocol.local_ai.draft")
+    @patch("divan_runtime.desktop_protocol_extensions.local_ai.draft")
     def test_local_ai_draft_stays_nonexecuting_without_an_execution_router(self, draft):
         draft.return_value = {
             "model": "qwen3:8b",
