@@ -21,6 +21,7 @@ from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
 from .knowledge_protocol import KNOWLEDGE_HANDLERS
 from .orchestrator import DivanOrchestrator
+from .plugin_protocol import PLUGIN_HANDLERS
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
 from .review_gate import CheckResult, ReviewDecision
@@ -125,8 +126,6 @@ def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
         "project_root",
         "DESKTOP_PROJECT_ROOT_INVALID",
     )
-
-
 def _handle_task_list(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -358,6 +357,7 @@ _HANDLERS: dict[str, Handler] = {
     "goal.create": handle_goal_create,
     "goal.tasks": handle_goal_tasks,
     **KNOWLEDGE_HANDLERS,
+    **PLUGIN_HANDLERS,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,

@@ -108,6 +108,36 @@ prose ve standards ayrı quality-gate adımlarıdır ve her PASS'ta ayrıca
 - Regresyon farkı: 1044 test / 87 başarısız; yeni regresyon yok.
 - Bu port henüz bağımsız teftişten geçmedi; "hazır" değil, "portlandı ve
   derleniyor" olarak kayıtlıdır.
+## Agency OS: Plugin SDK portu ve teftişi (2026-08-16)
+
+- PR #119 main'den 22 commit geride kalmıştı; current main'e çakışmasız port
+  edildi. `App.tsx` iki hattın da dokunduğu tek dosyaydı, sonuç doğrulandı:
+  `main.tsx` App'i hâlâ PatronDesk ile sarıyor, App hâlâ PluginTrustCenter
+  render ediyor.
+- Bağımsız teftiş BLOCK verdi, P0 yok. Güvenlik çekirdeği sağlam çıktı:
+  eklenti kodu hiçbir zaman import edilmiyor veya çalıştırılmıyor, hiçbir
+  şey aktive edilemiyor, ve teftişin kurduğu hiçbir manifest doğrulamadan
+  kaçamadı.
+- P1 kapsam boşluğuydu: 32 ret nedeninden 24'ünün testi yoktu; kaçışı
+  önleyen iki kontrolün ikisi de kapsamsızdı. Artık her ret nedeninin
+  negatif testi var.
+- Üç kontrol fazla kabul ediyordu ve üçü de düzeltilmeden önce koşularak
+  doğrulandı: yalnız boşluktan oluşan SPDX ifadesi geçerli lisans olarak
+  gösteriliyordu; `schema_version` ve `api_version` `True` kabul ediyordu
+  (`bool`, `int` alt sınıfı); executable deseni `.`, `..` ve `CON`, `COM1`
+  gibi Windows aygıt adlarını kabul ediyordu.
+- İki ret kodu f-string ile üretiliyordu, bu yüzden grep'lenemiyordu ve
+  teftişin ilk kapsam sayımından da bu yüzden kaçmışlardı; literal oldular.
+- `modules.json` `bounded_plugin_discovery` ve `hash_bound_plugin_approval`
+  yeteneklerini ilan ediyordu ama `approve_candidate`, `validate_activation`
+  ve `discover_plugins` üretimde çağrılmıyor; tek canlı giriş
+  `plugin.inspect`. İddialar kaldırıldı, modüller korundu.
+- Regresyon farkı: main 1020 test / 87 başarısız, bu dal 1059 test / 87
+  başarısız. Yeni regresyon yok.
+- Açık kalan: reflow işi bu porta yapışmış durumda ve kendi değişikliğine
+  ait; Trust Center UI testleri render yerine kaynak metni arıyor; manifest
+  okuması ve hata listesi sınırsız; yinelenen JSON anahtarları sessizce son
+  değeri alıyor.
 
 ## Hedef Güncellemesi (2026-08-04)
 

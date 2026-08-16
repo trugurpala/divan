@@ -71,6 +71,14 @@ RUNTIME_FILES = (
     "orchestrator.py",
     "planning.py",
     "planning_policy.py",
+    "plugin_approval.py",
+    "plugin_contract.py",
+    "plugin_desktop.py",
+    "plugin_discovery.py",
+    "plugin_manifest_validation.py",
+    "plugin_protocol.py",
+    "plugin_provenance.py",
+    "plugin_sdk.py",
     "project_lifecycle.py",
     "project_os.py",
     "project_readiness.py",
@@ -340,20 +348,20 @@ class ProjectRunnerTests(unittest.TestCase):
             result = self._build(repository, output, source_commit)
             self.assertEqual(result.returncode, 0, result.stderr)
             project = base / "site"
-            state_path = pathlib.Path(tempfile.mkdtemp(
-                prefix="divan-pyz-state-",
-                dir=(
-                    os.environ.get("LOCALAPPDATA")
-                    if os.name == "nt"
-                    else temporary
-                ),
-            ))
+            state_path = pathlib.Path(
+                tempfile.mkdtemp(
+                    prefix="divan-pyz-state-",
+                    dir=(
+                        os.environ.get("LOCALAPPDATA")
+                        if os.name == "nt"
+                        else temporary
+                    ),
+                )
+            )
             if os.name == "nt":
                 state_path.rmdir()
             self.addCleanup(
-                lambda: shutil.rmtree(state_path)
-                if state_path.exists()
-                else None
+                lambda: shutil.rmtree(state_path) if state_path.exists() else None
             )
             environment = os.environ.copy()
             environment["DIVAN_STATE_HOME"] = str(state_path)
@@ -404,9 +412,7 @@ class ProjectRunnerTests(unittest.TestCase):
                 env=environment,
                 check=False,
             )
-            self.assertEqual(
-                applied.returncode, 0, applied.stderr + applied.stdout
-            )
+            self.assertEqual(applied.returncode, 0, applied.stderr + applied.stdout)
             self.assertEqual(json.loads(applied.stdout)["status"], "applied")
             expected_status = {
                 "audit": {"PASS"},
