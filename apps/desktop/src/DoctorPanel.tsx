@@ -17,6 +17,12 @@ export type Capability = {
   evidence: string | null;
   version: string | null;
   usable: boolean;
+  /**
+   * One plain-language owner action the Core may attach to a capability that
+   * is not certified (for example "Codex'te oturum açın"). The Core does not
+   * send it yet; the renderer shows it only when present and never writes one.
+   */
+  action_hint?: string | null;
 };
 
 export type DoctorPayload = {
@@ -29,7 +35,7 @@ export type DoctorPayload = {
   human_summary: string[];
 };
 
-type Depth = "padisah" | "divan" | "teknik";
+export type Depth = "padisah" | "divan" | "teknik";
 
 const STATE_LABEL: Record<CapabilityState, string> = {
   CERTIFIED: "hazır",
@@ -44,15 +50,27 @@ const STATE_LABEL: Record<CapabilityState, string> = {
  *
  * Every claim comes from the Core doctor payload. The renderer derives no
  * health of its own, so the CLI and this panel can never disagree.
+ *
+ * The depth is owned locally unless the shell passes `depth`, in which case
+ * the shell-level "Ayrıntı düzeyi" control drives this panel too.
  */
 export default function DoctorPanel({
   payload,
   onCheck,
+  depth: controlledDepth,
+  onDepthChange,
 }: {
   payload: DoctorPayload | null;
   onCheck: () => void;
+  depth?: Depth;
+  onDepthChange?: (depth: Depth) => void;
 }) {
-  const [depth, setDepth] = useState<Depth>("padisah");
+  const [localDepth, setLocalDepth] = useState<Depth>("padisah");
+  const depth = controlledDepth ?? localDepth;
+  const setDepth = (value: Depth) => {
+    setLocalDepth(value);
+    onDepthChange?.(value);
+  };
 
   return (
     <section className="doctor-panel" aria-labelledby="doctor-title">

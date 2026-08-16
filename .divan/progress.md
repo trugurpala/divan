@@ -1,5 +1,52 @@
 # Divan İlerleme Defteri
 
+## Desktop: ilk açılış sihirbazı ve Patron gezintisi (2026-08-17)
+
+Dal: `feat/agency-os-turnkey-v1` üzerine yerel çalışma · push edilmedi
+
+### Ne değişti
+
+- `FirstRunWizard.tsx`: dokuz adım, her biri bir Doctor `capability_id`'sine
+  bağlı (`divan-core`, `git`, `codex`, `claude`, `browser-qa`,
+  `memory-store`+`memory-recall`, `quality-factory`+`evidence`,
+  `local-state-security`, çalışma klasörü). Satırlar yalnız Core `state` ve
+  `code` alanından çevrilir; kod ve yol "Teknik ayrıntı" arkasında kalır.
+  Klasör seçimi kabuğa `onComplete(path)` ile bildirilir; "ilk açılış tamam"
+  bilgisini kabuk saklar.
+- `App.tsx`: yedi durak (TAHT, DİVAN, EKİP, TEFTİŞ, ARŞİV, CEPHANELİK,
+  SİSTEM), kabuk düzeyinde Patron/Divan/Teknik seçici. Diff ve Sürümler
+  ekranları kaldırılmadı; DİVAN ve SİSTEM gruplarının içinden erişilir.
+  Doctor artık `doctor` komutuyla kabuğa bağlı; ARŞİV yalnız iki hafıza
+  yeteneğinin Doctor satırını gösterir.
+- `PatronDesk.tsx`: gövde `PatronDeskPanel` olarak ayrıldı; TAHT ekranı ve
+  Ctrl+K diyaloğu aynı paneli kullanır.
+- `humanStatus.ts`: `patronSummary()` yalnız `project.agency.status`
+  yanıtında bulunan alanları sıralar; `phaseLabel()` eklendi.
+
+### Core'un henüz göndermediği Patron alanları
+
+`project.agency.status` yanıtında şu alanlar yok; arayüz bunları
+hesaplamaz, ancak Core gönderirse (`agents_working`, `critical_problems`,
+`divan_resolving`, `last_event`) gösterir:
+
+- çalışan ajan sayısı (şimdilik yalnız çalışan iş paketi sayısı var);
+- kritik sorun sayısı (yalnız durmuş iş paketi sayısı var);
+- "Divan çözüyor" sayısı;
+- son olay cümlesi.
+
+Doctor yanıtında `action_hint` alanı da yok; sihirbaz o zaman "Divan bunu
+kendisi hazırlamayı deneyecek." der.
+
+### Doğrulama
+
+| Ölçüm | Sonuç |
+|---|---|
+| arayüz (vitest) | 20 → 45 test, geçti |
+| `tsc --noEmit` | temiz |
+| `vite build` | 27 modül, temiz |
+| App.tsx'i okuyan Python testleri | 32 test, geçti |
+| prose, naming, handoff | temiz |
+
 ## Bağımsız denetim ve yürütme zinciri (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `5eb7d37`

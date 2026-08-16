@@ -28,11 +28,21 @@ export type TechnicalDetail = {
 export default function ProjectStatusCard({
   status,
   technical,
+  depth: controlledDepth,
+  onDepthChange,
 }: {
   status: AgencyStatus;
   technical?: TechnicalDetail;
+  /** When the shell owns the depth, the card follows it instead of its own. */
+  depth?: Depth;
+  onDepthChange?: (depth: Depth) => void;
 }) {
-  const [depth, setDepth] = useState<Depth>("padisah");
+  const [localDepth, setLocalDepth] = useState<Depth>("padisah");
+  const depth = controlledDepth ?? localDepth;
+  const setDepth = (value: Depth) => {
+    setLocalDepth(value);
+    onDepthChange?.(value);
+  };
   const human = presentAgencyStatus(status);
   const packages = status.work_packages;
 

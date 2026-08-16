@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
+import type { Depth } from "./DoctorPanel";
+
 type CoreEnvelope<T> = {
   api_version: number;
   ok: boolean;
@@ -111,8 +113,26 @@ function roleLabel(role: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-export default function PatronDesk({ children }: { children: ReactNode }) {
-  const [openDesk, setOpenDesk] = useState(false);
+/**
+ * The Patron Masası body: project, ferman, plan preview, agency readiness.
+ *
+ * Rendered inline as the TAHT screen and inside the Ctrl+K dialog alike, so
+ * there is one desk and not two. Everything shown comes from Core commands
+ * (`project.list`, `readiness`, `goal.preview`, `goal.create`); the panel
+ * computes no plan and grants no execution authority of its own.
+ */
+export function PatronDeskPanel({
+  depth = "padisah",
+  projectId,
+  onOpenWorkPackages,
+}: {
+  /** Padişah hides file paths; Divan and Teknik show them. */
+  depth?: Depth;
+  /** The shell's selected project, so the desk and the sidebar agree. */
+  projectId?: string | null;
+  /** Where "İş paketlerini aç" goes; defaults to a full reload. */
+  onOpenWorkPackages?: () => void;
+}) {
   const [projects, setProjects] = useState<ProjectRecord[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [readiness, setReadiness] = useState<Readiness | null>(null);
@@ -133,7 +153,9 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
       ]);
       setProjects(projectRows);
       setReadiness(ready);
-      setSelectedProjectId((current) => current || projectRows[0]?.project_id || "");
+      setSelectedProjectId(
+        (current) => current || projectId || projectRows[0]?.project_id || "",
+      );
     } catch (value) {
       setError(friendlyError(value));
     } finally {
@@ -142,21 +164,12 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const commandKey = event.ctrlKey || event.metaKey;
-      if (commandKey && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setOpenDesk(true);
-      }
-      if (event.key === "Escape") setOpenDesk(false);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    void loadDesk();
   }, []);
 
   useEffect(() => {
-    if (openDesk) void loadDesk();
-  }, [openDesk]);
+    if (projectId) setSelectedProjectId(projectId);
+  }, [projectId]);
 
   const selectedProject = useMemo(
     () => projects.find((project) => project.project_id === selectedProjectId) ?? null,
@@ -254,7 +267,213 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshApp = () => window.location.reload();
+  const openWorkPackages = onOpenWorkPackages ?? (() => window.location.reload());
+
+  if (loading) {
+    return <div className="patron-loading">Ajans durumu okunuyor…</div>;
+  }
+
+  return (
+    <div className="patron-body">
+      <section className="patron-block">
+        <div className="patron-block-title">
+          <span>1</span>
+          <div>
+            <strong>Proje</strong>
+            <small>Divan yalnız seçtiğin Git klasöründe çalışır.</small>
+          </div>
+        </div>
+        <div className="patron-project-row">
+          <select
+            value={selectedProjectId}
+            onChange={(event) => changeProject(event.target.value)}
+            aria-label="Çalışılacak proje"
+          >
+            <option value="">Proje seç</option>
+            {projects.map((project) => (
+              <option value={project.project_id} key={project.project_id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+          <button type="button" onClick={addProject} disabled={busy}>
+            + Klasör ekle
+          </button>
+        </div>
+        {selectedProject && depth !== "padisah" && (
+          <code className="patron-path">{selectedProject.root}</code>
+        )}
+      </section>
+
+      <section className="patron-block">
+        <div className="patron-block-title">
+          <span>2</span>
+          <div>
+            <strong>Ferman</strong>
+            <small>Teknik ayrıntı yazmak zorunda değilsin; sonucu tarif et.</small>
+          </div>
+        </div>
+        <textarea
+          value={goal}
+          onChange={(event) => changeGoal(event.target.value)}
+          placeholder="Örnek: Bu projeyi baştan sona incele. Eksikleri bul, kullanıcı dostu hale getir, testleri geçir ve çalışan teslim adayı hazırla."
+          rows={6}
+          autoFocus
+        />
+        <div className="patron-hints">
+          <button
+            type="button"
+            onClick={() =>
+              changeGoal(
+                "Projeyi incele, mevcut mimariyi koru, eksikleri tamamla, kullanıcı deneyimini iyileştir, testleri ve build'i geçir, kanıtlı teslim adayı hazırla.",
+              )
+            }
+          >
+            Anahtar teslim
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              changeGoal(
+                "Bu hatayı kök nedenine kadar incele, en küçük güvenli düzeltmeyi uygula, regresyon testi ekle ve doğrulama kanıtını hazırla.",
+              )
+            }
+          >
+            Hata çöz
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              changeGoal(
+                "Bu özelliği mevcut mimariye uygun şekilde ekle, kullanıcı akışını sade tut, güvenlik ve kalite kapılarını koru, test ederek teslim et.",
+              )
+            }
+          >
+            Özellik ekle
+          </button>
+        </div>
+      </section>
+
+      {preview && (
+        <section className="patron-block patron-plan" aria-live="polite">
+          <div className="patron-block-title">
+            <span>3</span>
+            <div>
+              <strong>Plan önizlemesi</strong>
+              <small>Salt okunur hesaplandı; henüz proje dosyası yazılmadı.</small>
+            </div>
+          </div>
+          <div className="patron-plan-grid">
+            <article><strong>{preview.summary.task_count}</strong><small>İş paketi</small></article>
+            <article><strong>{preview.summary.workstream_count}</strong><small>İş akışı</small></article>
+            <article><strong>{preview.summary.sefer_count}</strong><small>Sefer</small></article>
+            <article>
+              <strong>{preview.summary.max_parallel_workstreams ?? 1}</strong>
+              <small>En fazla paralel</small>
+            </article>
+          </div>
+          <div className="patron-role-row">
+            {preview.summary.roles.slice(0, 8).map((role) => (
+              <span key={role}>{roleLabel(role)}</span>
+            ))}
+          </div>
+          <p className="patron-readiness-copy">
+            {preview.summary.required_evidence.length} kanıt yükümlülüğü · çalışma modeli:{" "}
+            {preview.summary.lane === "bounded-parallel" ? "kontrollü paralel" : "sıralı"}.
+          </p>
+        </section>
+      )}
+
+      <section className="patron-block">
+        <div className="patron-block-title">
+          <span>{preview ? "4" : "3"}</span>
+          <div>
+            <strong>Ajans hazırlığı</strong>
+            <small>Kurulu abonelik/oturumlar kullanılır; kimlik bilgisi kopyalanmaz.</small>
+          </div>
+        </div>
+        <div className="patron-agents">
+          {agentRows.map(({ id, tool }) => (
+            <article key={id} className={tool?.available ? "ready" : "missing"}>
+              <div className="patron-agent-dot" />
+              <strong>{tool?.display_name || toolLabel(id)}</strong>
+              <small>{connectionLabel(tool)}</small>
+            </article>
+          ))}
+        </div>
+        <p className="patron-readiness-copy">
+          {availableAgentCount > 0
+            ? `${availableAgentCount}/3 ana ajan bulundu. Divan çalışma anında yalnız kullanılabilir ajanı seçer.`
+            : "Henüz ana ajan bulunamadı. Plan hazırlanabilir; kod çalışması ajan hazır olana kadar başlatılmaz."}
+        </p>
+      </section>
+
+      {error && <div className="patron-error">{error}</div>}
+
+      {createdGoal ? (
+        <section className="patron-success" aria-live="polite">
+          <span>✓</span>
+          <div>
+            <strong>
+              Plan kaydedildi · {createdGoal.work_packages.task_count} iş paketi hazır
+            </strong>
+            <p>
+              {createdGoal.work_packages.ready_task_ids.length} iş paketi başlangıca hazır.
+              Henüz kaynak kod değiştirilmedi; çalışma için ayrıca açık onay gerekir.
+            </p>
+          </div>
+          <button type="button" onClick={openWorkPackages}>İş paketlerini aç</button>
+        </section>
+      ) : (
+        <footer className="patron-actions">
+          <div>
+            <strong>{selectedProject ? selectedProject.name : "Proje bekleniyor"}</strong>
+            <small>
+              {!preview
+                ? "Önce salt-okunur planı çıkar; hiçbir şey yazılmaz."
+                : "Planı kaydetmek yalnız plan ve yerel iş paketi durumunu yazar; kod çalıştırmaz."}
+            </small>
+          </div>
+          {!preview ? (
+            <button type="button" onClick={previewPlan} disabled={!canPreview}>
+              {busy ? "Planlanıyor…" : "Planı önizle →"}
+            </button>
+          ) : (
+            <button type="button" onClick={savePlan} disabled={!canSavePlan}>
+              {busy ? "Kaydediliyor…" : "Planı kaydet →"}
+            </button>
+          )}
+        </footer>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The Ctrl+K quick desk. It wraps the same panel the TAHT screen shows, so
+ * the dialog is a shortcut to the desk and never a second desk.
+ */
+export default function PatronDesk({
+  children = null,
+  depth = "padisah",
+}: {
+  children?: ReactNode;
+  depth?: Depth;
+}) {
+  const [openDesk, setOpenDesk] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const commandKey = event.ctrlKey || event.metaKey;
+      if (commandKey && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setOpenDesk(true);
+      }
+      if (event.key === "Escape") setOpenDesk(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <>
@@ -300,181 +519,7 @@ export default function PatronDesk({ children }: { children: ReactNode }) {
                 ×
               </button>
             </header>
-
-            {loading ? (
-              <div className="patron-loading">Ajans durumu okunuyor…</div>
-            ) : (
-              <div className="patron-body">
-                <section className="patron-block">
-                  <div className="patron-block-title">
-                    <span>1</span>
-                    <div>
-                      <strong>Proje</strong>
-                      <small>Divan yalnız seçtiğin Git klasöründe çalışır.</small>
-                    </div>
-                  </div>
-                  <div className="patron-project-row">
-                    <select
-                      value={selectedProjectId}
-                      onChange={(event) => changeProject(event.target.value)}
-                      aria-label="Çalışılacak proje"
-                    >
-                      <option value="">Proje seç</option>
-                      {projects.map((project) => (
-                        <option value={project.project_id} key={project.project_id}>
-                          {project.name}
-                        </option>
-                      ))}
-                    </select>
-                    <button type="button" onClick={addProject} disabled={busy}>
-                      + Klasör ekle
-                    </button>
-                  </div>
-                  {selectedProject && <code className="patron-path">{selectedProject.root}</code>}
-                </section>
-
-                <section className="patron-block">
-                  <div className="patron-block-title">
-                    <span>2</span>
-                    <div>
-                      <strong>Ferman</strong>
-                      <small>Teknik ayrıntı yazmak zorunda değilsin; sonucu tarif et.</small>
-                    </div>
-                  </div>
-                  <textarea
-                    value={goal}
-                    onChange={(event) => changeGoal(event.target.value)}
-                    placeholder="Örnek: Bu projeyi baştan sona incele. Eksikleri bul, kullanıcı dostu hale getir, testleri geçir ve çalışan teslim adayı hazırla."
-                    rows={6}
-                    autoFocus
-                  />
-                  <div className="patron-hints">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        changeGoal(
-                          "Projeyi incele, mevcut mimariyi koru, eksikleri tamamla, kullanıcı deneyimini iyileştir, testleri ve build'i geçir, kanıtlı teslim adayı hazırla.",
-                        )
-                      }
-                    >
-                      Anahtar teslim
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        changeGoal(
-                          "Bu hatayı kök nedenine kadar incele, en küçük güvenli düzeltmeyi uygula, regresyon testi ekle ve doğrulama kanıtını hazırla.",
-                        )
-                      }
-                    >
-                      Hata çöz
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        changeGoal(
-                          "Bu özelliği mevcut mimariye uygun şekilde ekle, kullanıcı akışını sade tut, güvenlik ve kalite kapılarını koru, test ederek teslim et.",
-                        )
-                      }
-                    >
-                      Özellik ekle
-                    </button>
-                  </div>
-                </section>
-
-                {preview && (
-                  <section className="patron-block patron-plan" aria-live="polite">
-                    <div className="patron-block-title">
-                      <span>3</span>
-                      <div>
-                        <strong>Plan önizlemesi</strong>
-                        <small>Salt okunur hesaplandı; henüz proje dosyası yazılmadı.</small>
-                      </div>
-                    </div>
-                    <div className="patron-plan-grid">
-                      <article><strong>{preview.summary.task_count}</strong><small>İş paketi</small></article>
-                      <article><strong>{preview.summary.workstream_count}</strong><small>İş akışı</small></article>
-                      <article><strong>{preview.summary.sefer_count}</strong><small>Sefer</small></article>
-                      <article>
-                        <strong>{preview.summary.max_parallel_workstreams ?? 1}</strong>
-                        <small>En fazla paralel</small>
-                      </article>
-                    </div>
-                    <div className="patron-role-row">
-                      {preview.summary.roles.slice(0, 8).map((role) => (
-                        <span key={role}>{roleLabel(role)}</span>
-                      ))}
-                    </div>
-                    <p className="patron-readiness-copy">
-                      {preview.summary.required_evidence.length} kanıt yükümlülüğü · çalışma modeli:{" "}
-                      {preview.summary.lane === "bounded-parallel" ? "kontrollü paralel" : "sıralı"}.
-                    </p>
-                  </section>
-                )}
-
-                <section className="patron-block">
-                  <div className="patron-block-title">
-                    <span>{preview ? "4" : "3"}</span>
-                    <div>
-                      <strong>Ajans hazırlığı</strong>
-                      <small>Kurulu abonelik/oturumlar kullanılır; kimlik bilgisi kopyalanmaz.</small>
-                    </div>
-                  </div>
-                  <div className="patron-agents">
-                    {agentRows.map(({ id, tool }) => (
-                      <article key={id} className={tool?.available ? "ready" : "missing"}>
-                        <div className="patron-agent-dot" />
-                        <strong>{tool?.display_name || toolLabel(id)}</strong>
-                        <small>{connectionLabel(tool)}</small>
-                      </article>
-                    ))}
-                  </div>
-                  <p className="patron-readiness-copy">
-                    {availableAgentCount > 0
-                      ? `${availableAgentCount}/3 ana ajan bulundu. Divan çalışma anında yalnız kullanılabilir ajanı seçer.`
-                      : "Henüz ana ajan bulunamadı. Plan hazırlanabilir; kod çalışması ajan hazır olana kadar başlatılmaz."}
-                  </p>
-                </section>
-
-                {error && <div className="patron-error">{error}</div>}
-
-                {createdGoal ? (
-                  <section className="patron-success" aria-live="polite">
-                    <span>✓</span>
-                    <div>
-                      <strong>
-                        Plan kaydedildi · {createdGoal.work_packages.task_count} iş paketi hazır
-                      </strong>
-                      <p>
-                        {createdGoal.work_packages.ready_task_ids.length} iş paketi başlangıca hazır.
-                        Henüz kaynak kod değiştirilmedi; çalışma için ayrıca açık onay gerekir.
-                      </p>
-                    </div>
-                    <button type="button" onClick={refreshApp}>İş paketlerini aç</button>
-                  </section>
-                ) : (
-                  <footer className="patron-actions">
-                    <div>
-                      <strong>{selectedProject ? selectedProject.name : "Proje bekleniyor"}</strong>
-                      <small>
-                        {!preview
-                          ? "Önce salt-okunur planı çıkar; hiçbir şey yazılmaz."
-                          : "Planı kaydetmek yalnız plan ve yerel iş paketi durumunu yazar; kod çalıştırmaz."}
-                      </small>
-                    </div>
-                    {!preview ? (
-                      <button type="button" onClick={previewPlan} disabled={!canPreview}>
-                        {busy ? "Planlanıyor…" : "Planı önizle →"}
-                      </button>
-                    ) : (
-                      <button type="button" onClick={savePlan} disabled={!canSavePlan}>
-                        {busy ? "Kaydediliyor…" : "Planı kaydet →"}
-                      </button>
-                    )}
-                  </footer>
-                )}
-              </div>
-            )}
+            <PatronDeskPanel depth={depth} />
           </section>
         </div>
       )}

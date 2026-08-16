@@ -51,6 +51,15 @@ export type AgencyStatus = {
   work_packages: WorkPackages;
   state_health: string;
   state_problem?: string | null;
+  /**
+   * Fields the Patron screen wants but `project.agency.status` does not send
+   * yet. They are optional so the renderer shows them only when the Core
+   * provides them; nothing here is ever computed on the client.
+   */
+  agents_working?: number | null;
+  critical_problems?: number | null;
+  divan_resolving?: number | null;
+  last_event?: string | null;
 };
 
 /**
@@ -193,4 +202,51 @@ const READINESS_LABEL: Record<Readiness, string> = {
 
 export function readinessLabel(readiness: Readiness): string {
   return READINESS_LABEL[readiness];
+}
+
+/** The plain-language name of a Core phase; unknown phases stay generic. */
+export function phaseLabel(phase: AgencyPhase | string): string {
+  return PHASE_DOING[String(phase)] ?? "Çalışma sürüyor";
+}
+
+export type PatronField = {
+  id: string;
+  label: string;
+  value: string;
+};
+
+function countValue(value: number | null | undefined): string | null {
+  return typeof value === "number" && Number.isFinite(value) ? String(value) : null;
+}
+
+/**
+ * The Patron screen as an ordered list of label/value pairs.
+ *
+ * Only fields the Core payload actually carries are returned. Optional fields
+ * (`agents_working`, `critical_problems`, `divan_resolving`, `last_event`) are
+ * omitted when absent instead of being estimated from other numbers, so the
+ * screen never shows a figure the Core did not compute.
+ */
+export function patronSummary(status: AgencyStatus): PatronField[] {
+  const human = presentAgencyStatus(status);
+  const packages = status.work_packages;
+  const fields: Array<PatronField | null> = [
+    { id: "project", label: "Proje", value: status.project },
+    { id: "phase", label: "Aşama", value: phaseLabel(status.phase) },
+    { id: "progress", label: "İlerleme", value: human.progress },
+    { id: "activity", label: "Şu an", value: human.divanAction },
+    { id: "active", label: "Çalışan iş paketi", value: String(packages.active) },
+    optional("agents_working", "Çalışan ajan", countValue(status.agents_working)),
+    { id: "blocked", label: "Durmuş iş", value: String(packages.blocked) },
+    optional("critical_problems", "Kritik sorun", countValue(status.critical_problems)),
+    optional("divan_resolving", "Divan çözüyor", countValue(status.divan_resolving)),
+    { id: "awaiting_owner", label: "Sizi bekleyen", value: String(packages.awaiting_owner) },
+    optional("last_event", "Son olay", status.last_event?.trim() || null),
+    { id: "next_step", label: "Sıradaki adım", value: human.nextStep },
+  ];
+  return fields.filter((field): field is PatronField => field !== null);
+}
+
+function optional(id: string, label: string, value: string | null): PatronField | null {
+  return value === null ? null : { id, label, value };
 }

@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import DoctorPanel, { type Depth, type DoctorPayload } from "./DoctorPanel";
+import FirstRunWizard, { capabilityLine, pendingLine } from "./FirstRunWizard";
+import PatronDesk, { PatronDeskPanel } from "./PatronDesk";
 import {
   PluginInspectorRail,
   PluginTrustCenter,
   type PluginInspection,
 } from "./PluginTrustCenter";
+import ProjectStatusCard from "./ProjectStatusCard";
+import { type AgencyStatus, patronSummary } from "./humanStatus";
 
 type CoreEnvelope<T> = {
   api_version: number;
@@ -112,7 +117,55 @@ type ReviewResult = {
 };
 
 type UiState = "PLAN" | "WORKING" | "REVIEW" | "PASS" | "APPROVAL";
-type ActiveTab = "summary" | "evidence" | "diff" | "releases" | "settings" | "plugins";
+type ActiveTab =
+  | "taht"
+  | "summary"
+  | "evidence"
+  | "diff"
+  | "releases"
+  | "settings"
+  | "plugins"
+  | "archive"
+  | "system";
+
+/**
+ * The seven Patron destinations, in the order the sidebar shows them. A tab
+ * that has no destination of its own (diff, releases) lights up its group.
+ */
+type NavItem = { label: string; tab: ActiveTab; group: readonly ActiveTab[] };
+const NAV_ITEMS: readonly NavItem[] = [
+  { label: "👑 TAHT", tab: "taht", group: ["taht"] },
+  { label: "🏛 DİVAN", tab: "summary", group: ["summary", "diff"] },
+  { label: "⚔ EKİP", tab: "settings", group: ["settings"] },
+  { label: "🕵 TEFTİŞ", tab: "evidence", group: ["evidence"] },
+  { label: "🧠 ARŞİV", tab: "archive", group: ["archive"] },
+  { label: "🧰 CEPHANELİK", tab: "plugins", group: ["plugins"] },
+  { label: "🩺 SİSTEM", tab: "system", group: ["system", "releases"] },
+];
+
+const DEPTH_OPTIONS: ReadonlyArray<[Depth, string]> = [
+  ["padisah", "Patron"],
+  ["divan", "Divan"],
+  ["teknik", "Teknik"],
+];
+
+const FIRST_RUN_KEY = "divan.firstRunDone";
+
+function readFirstRunDone(): boolean {
+  try {
+    return window.localStorage.getItem(FIRST_RUN_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeFirstRunDone(): void {
+  try {
+    window.localStorage.setItem(FIRST_RUN_KEY, "1");
+  } catch {
+    // Storage may be unavailable; the wizard simply shows again next start.
+  }
+}
 
 const stateMap: Record<string, UiState> = {
   draft: "PLAN",
@@ -159,7 +212,13 @@ function App() {
   const [pluginInspection, setPluginInspection] = useState<PluginInspection | null>(null);
   const [agent, setAgent] = useState<string>("");
   const [engine, setEngine] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<ActiveTab>("summary");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("taht");
+  const [arsenalView, setArsenalView] = useState<"plugins" | "tools">("plugins");
+  const [depth, setDepth] = useState<Depth>("padisah");
+  const [doctor, setDoctor] = useState<DoctorPayload | null>(null);
+  const [agencyStatus, setAgencyStatus] = useState<AgencyStatus | null>(null);
+  const [firstRunDone, setFirstRunDone] = useState<boolean>(readFirstRunDone);
+  const [firstRunError, setFirstRunError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -167,6 +226,11 @@ function App() {
     const value = await coreRequest<Readiness>({ command: "readiness" });
     setReadiness(value);
     setAgent((current) => current || value.recommended_agent || "");
+  };
+
+  const refreshDoctor = async () => {
+    const value = await coreRequest<DoctorPayload>({ command: "doctor" });
+    setDoctor(value);
   };
 
   const refreshProjects = async () => {
@@ -194,6 +258,9 @@ function App() {
         setShellCaps(shellCapabilities);
       })
       .catch((value: unknown) => setError(String(value)));
+    // The doctor probes tools out of process and may take a while; it must
+    // not hold the rest of the shell hostage.
+    refreshDoctor().catch(() => setDoctor(null));
   }, []);
 
   const selected = useMemo(
@@ -224,8 +291,22 @@ function App() {
   const interruptedExecution = Boolean(
     selected?.state === "running" && !hasExecutionReceipt,
   );
-  const navItemClass = (tab: ActiveTab) =>
-    activeTab === tab ? "nav-item active" : "nav-item";
+  const navItemClass = (item: NavItem) =>
+    item.group.includes(activeTab) ? "nav-item active" : "nav-item";
+  const patronDepth = depth === "padisah";
+
+  useEffect(() => {
+    if (!selectedProject) {
+      setAgencyStatus(null);
+      return;
+    }
+    coreRequest<AgencyStatus>({
+      command: "project.agency.status",
+      project_id: selectedProject.project_id,
+    })
+      .then(setAgencyStatus)
+      .catch(() => setAgencyStatus(null));
+  }, [selectedProject?.project_id, tasks]);
 
   useEffect(() => {
     if (!selected) {
@@ -273,6 +354,26 @@ function App() {
       });
       await refreshProjects();
       setSelectedProjectId(project.project_id);
+    });
+
+  const completeFirstRun = (workspacePath: string) =>
+    run("first-run", async () => {
+      setFirstRunError(null);
+      try {
+        const project = await coreRequest<ProjectRecord>({
+          command: "project.register",
+          root: workspacePath,
+        });
+        await refreshProjects();
+        setSelectedProjectId(project.project_id);
+      } catch (value) {
+        setFirstRunError(String(value));
+        return;
+      }
+      // "First run done" is persisted by the shell, never by the wizard.
+      writeFirstRunDone();
+      setFirstRunDone(true);
+      setActiveTab("taht");
     });
 
   const inspectPlugin = () =>
@@ -443,6 +544,25 @@ function App() {
 
   const apiVersion = caps?.api_version ?? caps?.apiVersion ?? 1;
 
+  if (!firstRunDone) {
+    return (
+      <main className="app-shell first-run-shell">
+        <FirstRunWizard
+          doctor={doctor}
+          onCheck={() => run("doctor", refreshDoctor)}
+          onComplete={completeFirstRun}
+          notice={
+            firstRunError
+              ? "Bu klasör kaydedilemedi. Divan yalnız bir Git deposu kökünü kabul eder; başka bir klasör seçin."
+              : error
+                ? "Divan Core'a şu an ulaşılamıyor; kontrol sonuçları gelmeyebilir."
+                : null
+          }
+        />
+      </main>
+    );
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -450,7 +570,26 @@ function App() {
           <span className="seal">D</span>
           <strong>DİVAN</strong>
         </div>
-        <div className="project-pill">{selectedProject?.root ?? "Proje seçilmedi"}</div>
+        <div className="project-pill">
+          {selectedProject
+            ? patronDepth
+              ? selectedProject.name
+              : selectedProject.root
+            : "Proje seçilmedi"}
+        </div>
+        <div className="depth-switch" role="group" aria-label="Ayrıntı düzeyi">
+          {DEPTH_OPTIONS.map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className={depth === value ? "depth-option active" : "depth-option"}
+              aria-pressed={depth === value}
+              onClick={() => setDepth(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
         <div className="engine-pill">
           <span className="dot" />
           {selectedEngine ? `${selectedEngine} hazır` : "motor aranıyor"}
@@ -459,20 +598,16 @@ function App() {
 
       <aside className="sidebar">
         <div>
-          <nav>
-            <button className="nav-item" onClick={addProject}>Projeler</button>
-            <button className={navItemClass("summary")} onClick={() => setActiveTab("summary")}>Görevler</button>
-            <button className={navItemClass("settings")} onClick={() => setActiveTab("settings")}>Ajanlar & Motorlar</button>
-            <button className={navItemClass("plugins")} onClick={() => setActiveTab("plugins")}>Eklentiler</button>
-            <button className={navItemClass("evidence")} onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
-            <button
-              className={navItemClass("diff")}
-              disabled={!canReadDiff || interruptedExecution}
-              onClick={() => setActiveTab("diff")}
-            >
-              Değişiklikler
-            </button>
-            <button className={navItemClass("releases")} onClick={() => setActiveTab("releases")}>Sürümler</button>
+          <nav aria-label="Ana gezinti">
+            {NAV_ITEMS.map((item) => (
+              <button
+                key={item.tab}
+                className={navItemClass(item)}
+                onClick={() => setActiveTab(item.tab)}
+              >
+                {item.label}
+              </button>
+            ))}
           </nav>
 
           <section className="project-list">
@@ -488,7 +623,7 @@ function App() {
                 onClick={() => setSelectedProjectId(project.project_id)}
               >
                 <strong>{project.name}</strong>
-                <small>{project.root}</small>
+                {!patronDepth && <small>{project.root}</small>}
               </button>
             ))}
             <button className="secondary compact" onClick={addProject} disabled={busy !== null}>
@@ -518,12 +653,61 @@ function App() {
       </aside>
 
       <section className="workspace">
-        {activeTab === "plugins" ? (
-          <PluginTrustCenter
-            inspection={pluginInspection}
-            busy={busy === "plugin-inspect"}
-            onInspect={inspectPlugin}
+        {activeTab === "taht" ? (
+          <TahtView
+            status={agencyStatus}
+            projectId={selectedProject?.project_id ?? null}
+            depth={depth}
+            onDepthChange={setDepth}
+            onOpenWorkPackages={() => {
+              void refreshTasks();
+              setActiveTab("summary");
+            }}
           />
+        ) : activeTab === "archive" ? (
+          <ArchiveView doctor={doctor} depth={depth} onCheck={() => run("doctor", refreshDoctor)} />
+        ) : activeTab === "system" ? (
+          <section>
+            <div className="section-heading">
+              <div>
+                <span className="eyebrow">SİSTEM</span>
+                <h1>Bilgisayarın sağlığı</h1>
+              </div>
+              <button className="secondary" onClick={() => setActiveTab("releases")}>
+                Sürümler ve güncelleme
+              </button>
+            </div>
+            <DoctorPanel
+              payload={doctor}
+              onCheck={() => run("doctor", refreshDoctor)}
+              depth={depth}
+              onDepthChange={setDepth}
+            />
+          </section>
+        ) : activeTab === "plugins" ? (
+          <section>
+            <div className="tabs">
+              <button
+                className={arsenalView === "plugins" ? "active-tab" : undefined}
+                onClick={() => setArsenalView("plugins")}
+              >Eklentiler</button>
+              <button
+                className={arsenalView === "tools" ? "active-tab" : undefined}
+                onClick={() => setArsenalView("tools")}
+              >
+                Yönetilen araçlar
+              </button>
+            </div>
+            {arsenalView === "plugins" ? (
+              <PluginTrustCenter
+                inspection={pluginInspection}
+                busy={busy === "plugin-inspect"}
+                onInspect={inspectPlugin}
+              />
+            ) : (
+              <ManagedToolsView readiness={readiness} depth={depth} />
+            )}
+          </section>
         ) : activeTab === "settings" ? (
           <Settings
             readiness={readiness}
@@ -543,7 +727,7 @@ function App() {
             onInstall={installUpdate}
           />
         ) : activeTab === "evidence" ? (
-          <EvidenceView task={selected} evidence={evidence} />
+          <EvidenceView task={selected} evidence={evidence} depth={depth} />
         ) : activeTab === "diff" ? (
           <DiffView
             task={selected}
@@ -651,14 +835,18 @@ function App() {
                       <span className="eyebrow">AJAN</span>
                       <strong>{agent || readiness?.recommended_agent || "otomatik"}</strong>
                     </div>
-                    <div>
-                      <span className="eyebrow">CORE STATE</span>
-                      <strong>{selected.state}</strong>
-                    </div>
-                    <div>
-                      <span className="eyebrow">DIVAN CORE</span>
-                      <strong>API v{apiVersion}</strong>
-                    </div>
+                    {!patronDepth && (
+                      <>
+                        <div>
+                          <span className="eyebrow">CORE STATE</span>
+                          <strong>{selected.state}</strong>
+                        </div>
+                        <div>
+                          <span className="eyebrow">DIVAN CORE</span>
+                          <strong>API v{apiVersion}</strong>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="action-row">
                     {selected.state === "draft" && (
@@ -721,7 +909,20 @@ function App() {
               "Bir görev oluşturduğunda burada gerçek Core durumu ve kanıtları görünecek."}
           </p>
           <dl>
-            <div><dt>Durum</dt><dd>{interruptedExecution ? "running / interrupted" : selected?.state ?? "—"}</dd></div>
+            <div>
+              <dt>Durum</dt>
+              <dd>
+                {!selected
+                  ? "—"
+                  : patronDepth
+                    ? interruptedExecution
+                      ? "Kesintiye uğradı"
+                      : selectedState
+                    : interruptedExecution
+                      ? "running / interrupted"
+                      : selected.state}
+              </dd>
+            </div>
             <div><dt>Engine</dt><dd>{selectedEngine || "—"}</dd></div>
             <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
             <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
@@ -750,6 +951,8 @@ function App() {
           </small>
         </aside>
       )}
+      {/* The Ctrl+K quick desk: a shortcut to TAHT, following the shell depth. */}
+      <PatronDesk depth={depth} />
     </main>
   );
 }
@@ -930,19 +1133,178 @@ function Settings({
   );
 }
 
+/**
+ * TAHT: the Patron's default screen. One desk (the same PatronDeskPanel the
+ * Ctrl+K dialog shows) and one status card read from `project.agency.status`.
+ * Nothing here is computed on the client; the summary lists only fields the
+ * Core payload carries.
+ */
+function TahtView({
+  status,
+  projectId,
+  depth,
+  onDepthChange,
+  onOpenWorkPackages,
+}: {
+  status: AgencyStatus | null;
+  projectId: string | null;
+  depth: Depth;
+  onDepthChange: (depth: Depth) => void;
+  onOpenWorkPackages: () => void;
+}) {
+  return (
+    <section className="taht">
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">TAHT</span>
+          <h1>Patron Masası</h1>
+        </div>
+      </div>
+
+      {status ? (
+        <>
+          <section className="patron-summary" aria-label="Proje özeti">
+            <dl>
+              {patronSummary(status).map((field) => (
+                <div key={field.id} data-field={field.id}>
+                  <dt>{field.label}</dt>
+                  <dd>{field.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <ProjectStatusCard status={status} depth={depth} onDepthChange={onDepthChange} />
+        </>
+      ) : projectId ? (
+        <section className="notice-card">
+          <strong>Proje durumu okunuyor…</strong>
+          <p>Divan bu projenin gerçek durumunu Core'dan okumadan hiçbir özet göstermez.</p>
+        </section>
+      ) : null}
+
+      <PatronDeskPanel
+        depth={depth}
+        projectId={projectId}
+        onOpenWorkPackages={onOpenWorkPackages}
+      />
+    </section>
+  );
+}
+
+const ARCHIVE_CAPABILITIES: ReadonlyArray<[string, string]> = [
+  ["memory-store", "Hafıza deposu"],
+  ["memory-recall", "Hafıza geri çağırma"],
+];
+
+/**
+ * ARŞİV: there is no memory browsing screen yet, so this shows only what the
+ * Core doctor says about the memory capabilities. No sample data, no counts
+ * the Core did not report.
+ */
+function ArchiveView({
+  doctor,
+  depth,
+  onCheck,
+}: {
+  doctor: DoctorPayload | null;
+  depth: Depth;
+  onCheck: () => void;
+}) {
+  return (
+    <section>
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">ARŞİV</span>
+          <h1>Divan'ın hafızası</h1>
+        </div>
+        <button className="secondary" onClick={onCheck}>Yeniden kontrol et</button>
+      </div>
+      <section className="notice-card">
+        <strong>Hafıza görüntüleme ekranı henüz yok.</strong>
+        <p>
+          Burada yalnız Core'un hafıza yetenekleri hakkında söylediği görünür; kayıtlar
+          listelenmez ve sayı uydurulmaz.
+        </p>
+      </section>
+      <ul className="archive-lines">
+        {ARCHIVE_CAPABILITIES.map(([id, title]) => {
+          const capability = doctor?.capabilities.find((item) => item.capability_id === id);
+          const line = capability ? capabilityLine(capability) : pendingLine(title);
+          return (
+            <li key={id} data-tone={line.tone}>
+              <span className="wizard-line" data-tone={line.tone}>
+                {`${line.glyph} ${line.sentence}`}
+              </span>
+              {depth === "teknik" && capability && (
+                <small>
+                  {[capability.state, capability.code, capability.detail, capability.evidence]
+                    .filter((part): part is string => Boolean(part))
+                    .join(" · ")}
+                </small>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** CEPHANELİK, second tab: the tools Divan found, without paths at the Patron. */
+function ManagedToolsView({
+  readiness,
+  depth,
+}: {
+  readiness: Readiness | null;
+  depth: Depth;
+}) {
+  return (
+    <section>
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">YÖNETİLEN ARAÇLAR</span>
+          <h1>Bilgisayarda bulunan araçlar</h1>
+        </div>
+      </div>
+      {!readiness ? (
+        <section className="notice-card">
+          <strong>Araçlar henüz taranmadı.</strong>
+        </section>
+      ) : (
+        <div className="settings-grid">
+          {readiness.tools.map((tool) => (
+            <article className="settings-card" key={tool.id}>
+              <div className="settings-title">
+                <strong>{tool.display_name || tool.id}</strong>
+                <span className={tool.available ? "ok-text" : "muted"}>
+                  {tool.available ? "Bulundu" : "Bulunamadı"}
+                </span>
+              </div>
+              <small>{tool.version ?? tool.app_version ?? "Sürüm bilgisi yok"}</small>
+              {depth === "teknik" && tool.path && <code>{tool.path}</code>}
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function EvidenceView({
   task,
   evidence,
+  depth,
 }: {
   task: CoreTask | null;
   evidence: EvidenceRecord[];
+  depth: Depth;
 }) {
   return (
     <section>
       <div className="section-heading">
         <div>
           <span className="eyebrow">KANIT DEFTERİ</span>
-          <h1>{task?.task_id ?? "Görev seçilmedi"}</h1>
+          <h1>{task ? (depth === "padisah" ? task.title : task.task_id) : "Görev seçilmedi"}</h1>
         </div>
       </div>
       {evidence.length === 0 ? (
@@ -962,7 +1324,7 @@ function EvidenceView({
                 {item.status}
               </span>
               <small>{new Date(item.at).toLocaleString()}</small>
-              <code>{item.sha256.slice(0, 16)}…</code>
+              {depth !== "padisah" && <code>{item.sha256.slice(0, 16)}…</code>}
             </article>
           ))}
         </div>

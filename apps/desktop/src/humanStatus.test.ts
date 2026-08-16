@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   type AgencyStatus,
+  patronSummary,
+  phaseLabel,
   presentAgencyStatus,
   readinessLabel,
 } from "./humanStatus";
@@ -116,5 +118,59 @@ describe("presentAgencyStatus", () => {
 
     expect(human.progress).toBe("Henüz iş paketi çıkarılmadı.");
     expect(human.readiness).toBe("planning");
+  });
+});
+
+describe("patronSummary", () => {
+  it("lists only what the Core payload carries, in Patron order", () => {
+    const fields = patronSummary(status({ work_packages: { ...status().work_packages, awaiting_owner: 1 } }));
+
+    expect(fields.map((field) => field.id)).toEqual([
+      "project",
+      "phase",
+      "progress",
+      "activity",
+      "active",
+      "blocked",
+      "awaiting_owner",
+      "next_step",
+    ]);
+    expect(fields.find((field) => field.id === "project")?.value).toBe("demo");
+    expect(fields.find((field) => field.id === "phase")?.value).toBe("Geliştirme sürüyor");
+    expect(fields.find((field) => field.id === "progress")?.value).toBe(
+      "8 işin 5 tanesi tamamlandı.",
+    );
+    expect(fields.find((field) => field.id === "awaiting_owner")?.value).toBe("1");
+  });
+
+  it("does not invent agent, problem, resolving or last-event figures", () => {
+    const ids = patronSummary(status()).map((field) => field.id);
+
+    expect(ids).not.toContain("agents_working");
+    expect(ids).not.toContain("critical_problems");
+    expect(ids).not.toContain("divan_resolving");
+    expect(ids).not.toContain("last_event");
+  });
+
+  it("shows the optional figures once the Core sends them", () => {
+    const fields = patronSummary(
+      status({
+        agents_working: 2,
+        critical_problems: 0,
+        divan_resolving: 1,
+        last_event: "Codex ikinci iş paketini bitirdi.",
+      }),
+    );
+    const byId = Object.fromEntries(fields.map((field) => [field.id, field.value]));
+
+    expect(byId.agents_working).toBe("2");
+    expect(byId.critical_problems).toBe("0");
+    expect(byId.divan_resolving).toBe("1");
+    expect(byId.last_event).toBe("Codex ikinci iş paketini bitirdi.");
+  });
+
+  it("names phases in plain language and stays generic for unknown ones", () => {
+    expect(phaseLabel("OWNER_DECISION")).toBe("Sizin kararınız bekleniyor");
+    expect(phaseLabel("SOMETHING_NEW")).toBe("Çalışma sürüyor");
   });
 });
