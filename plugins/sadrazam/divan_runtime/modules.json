@@ -151,6 +151,8 @@
         "task_model",
         "task_store",
         "agency_status",
+        "attempt_contract",
+        "attempt_store",
         "execution_recovery",
         "orchestrator",
         "task_learning",
@@ -181,7 +183,11 @@
         "generated_knowledge_projection",
         "cross_project_reuse_analytics",
         "memory_first_bounded_recall",
-        "explicit_knowledge_contradiction_states"
+        "explicit_knowledge_contradiction_states",
+        "first_class_execution_attempt",
+        "pid_reuse_safe_worker_liveness",
+        "bounded_stall_and_orphan_detection",
+        "attempt_replacement_with_preserved_history"
       ],
       "depends_on": [
         "kernel",

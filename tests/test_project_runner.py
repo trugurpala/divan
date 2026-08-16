@@ -30,6 +30,8 @@ RUNTIME_FILES = (
     "cli.py",
     "cli_dispatch.py",
     "cli_parser.py",
+    "attempt_contract.py",
+    "attempt_store.py",
     "ci_guard.py",
     "compatibility.py",
     "contract_validation.py",
