@@ -22,6 +22,7 @@ from .desktop_protocol_support import (
 from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
+from .plugin_desktop import inspect_plugin_manifest
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
 from .review_gate import CheckResult, ReviewDecision
@@ -115,6 +116,18 @@ def _handle_project_register(
     del router
     root = _required_string(payload, "root", "DESKTOP_PROJECT_ROOT_REQUIRED")
     return _ok(asdict(ProjectRegistry().register(root)))
+
+
+def _handle_plugin_inspect(
+    payload: Mapping[str, Any], router: ExecutionRouter | None
+) -> dict[str, Any]:
+    del router
+    manifest_path = _required_string(
+        payload,
+        "manifest_path",
+        "DESKTOP_PLUGIN_MANIFEST_PATH_REQUIRED",
+    )
+    return _ok(inspect_plugin_manifest(manifest_path))
 
 
 def _handle_task_list(
@@ -346,6 +359,7 @@ _HANDLERS: dict[str, Handler] = {
     "readiness": _handle_readiness,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
+    "plugin.inspect": _handle_plugin_inspect,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,

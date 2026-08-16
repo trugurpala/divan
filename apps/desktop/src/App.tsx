@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
+import {
+  PluginInspectorRail,
+  PluginTrustCenter,
+  type PluginInspection,
+} from "./PluginTrustCenter";
 
 type CoreEnvelope<T> = {
   api_version: number;
@@ -107,7 +112,7 @@ type ReviewResult = {
 };
 
 type UiState = "PLAN" | "WORKING" | "REVIEW" | "PASS" | "APPROVAL";
-type ActiveTab = "summary" | "evidence" | "diff" | "releases" | "settings";
+type ActiveTab = "summary" | "evidence" | "diff" | "releases" | "settings" | "plugins";
 
 const stateMap: Record<string, UiState> = {
   draft: "PLAN",
@@ -151,6 +156,7 @@ function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [evidence, setEvidence] = useState<EvidenceRecord[]>([]);
   const [taskDiff, setTaskDiff] = useState<TaskDiff | null>(null);
+  const [pluginInspection, setPluginInspection] = useState<PluginInspection | null>(null);
   const [agent, setAgent] = useState<string>("");
   const [engine, setEngine] = useState<string>("");
   const [activeTab, setActiveTab] = useState<ActiveTab>("summary");
@@ -218,6 +224,8 @@ function App() {
   const interruptedExecution = Boolean(
     selected?.state === "running" && !hasExecutionReceipt,
   );
+  const navItemClass = (tab: ActiveTab) =>
+    activeTab === tab ? "nav-item active" : "nav-item";
 
   useEffect(() => {
     if (!selected) {
@@ -265,6 +273,23 @@ function App() {
       });
       await refreshProjects();
       setSelectedProjectId(project.project_id);
+    });
+
+  const inspectPlugin = () =>
+    run("plugin-inspect", async () => {
+      const selectedManifest = await open({
+        directory: false,
+        multiple: false,
+        title: "Divan plugin manifestini seç",
+        filters: [{ name: "Divan Plugin Manifest", extensions: ["json"] }],
+      });
+      if (typeof selectedManifest !== "string" || !selectedManifest.trim()) return;
+      const inspection = await coreRequest<PluginInspection>({
+        command: "plugin.inspect",
+        manifest_path: selectedManifest.trim(),
+      });
+      setPluginInspection(inspection);
+      setActiveTab("plugins");
     });
 
   const createTask = () =>
@@ -436,18 +461,18 @@ function App() {
         <div>
           <nav>
             <button className="nav-item" onClick={addProject}>Projeler</button>
-            <button className="nav-item active" onClick={() => setActiveTab("summary")}>Görevler</button>
-            <button className="nav-item" onClick={() => setActiveTab("settings")}>Ajanlar</button>
-            <button className="nav-item" onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
+            <button className={navItemClass("summary")} onClick={() => setActiveTab("summary")}>Görevler</button>
+            <button className={navItemClass("settings")} onClick={() => setActiveTab("settings")}>Ajanlar & Motorlar</button>
+            <button className={navItemClass("plugins")} onClick={() => setActiveTab("plugins")}>Eklentiler</button>
+            <button className={navItemClass("evidence")} onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
             <button
-              className="nav-item"
+              className={navItemClass("diff")}
               disabled={!canReadDiff || interruptedExecution}
               onClick={() => setActiveTab("diff")}
             >
               Değişiklikler
             </button>
-            <button className="nav-item" onClick={() => setActiveTab("releases")}>Sürümler</button>
-            <button className="nav-item" onClick={() => setActiveTab("settings")}>Ayarlar</button>
+            <button className={navItemClass("releases")} onClick={() => setActiveTab("releases")}>Sürümler</button>
           </nav>
 
           <section className="project-list">
@@ -493,7 +518,13 @@ function App() {
       </aside>
 
       <section className="workspace">
-        {activeTab === "settings" ? (
+        {activeTab === "plugins" ? (
+          <PluginTrustCenter
+            inspection={pluginInspection}
+            busy={busy === "plugin-inspect"}
+            onInspect={inspectPlugin}
+          />
+        ) : activeTab === "settings" ? (
           <Settings
             readiness={readiness}
             agent={agent}
@@ -675,42 +706,50 @@ function App() {
         {error && <p className="error">Runtime hatası: {error}</p>}
       </section>
 
-      <aside className="inspector">
-        <span className="eyebrow">ONAY KAPISI</span>
-        <h2>{selected?.task_id ?? "Görev seçilmedi"}</h2>
-        <p>
-          {selected?.title ??
-            "Bir görev oluşturduğunda burada gerçek Core durumu ve kanıtları görünecek."}
-        </p>
-        <dl>
-          <div><dt>Durum</dt><dd>{interruptedExecution ? "running / interrupted" : selected?.state ?? "—"}</dd></div>
-          <div><dt>Engine</dt><dd>{selectedEngine || "—"}</dd></div>
-          <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
-          <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
-          <div><dt>Mandate</dt><dd>{selected?.mandate_id ? "Var" : "Gerekli"}</dd></div>
-        </dl>
-        <button
-          className="secondary"
-          disabled={!canReadDiff || interruptedExecution}
-          onClick={() => setActiveTab("diff")}
-        >
-          Değişiklikleri incele
-        </button>
-        <button className="secondary" disabled={!selected} onClick={() => setActiveTab("evidence")}>
-          Kanıtları incele
-        </button>
-        <button
-          className="approve"
-          disabled={selected?.state !== "approval" || busy !== null}
-          onClick={approveMerge}
-        >
-          Bir kez onayla
-        </button>
-        <small>
-          API anahtarı zorunlu değildir. Kurulu ajan kendi abonelik/oturumuyla çalışabiliyorsa
-          Divan o hesabı kullanır; kimlik bilgisini kopyalamaz.
-        </small>
-      </aside>
+      {activeTab === "plugins" ? (
+        <PluginInspectorRail
+          inspection={pluginInspection}
+          busy={busy === "plugin-inspect"}
+          onInspect={inspectPlugin}
+        />
+      ) : (
+        <aside className="inspector">
+          <span className="eyebrow">ONAY KAPISI</span>
+          <h2>{selected?.task_id ?? "Görev seçilmedi"}</h2>
+          <p>
+            {selected?.title ??
+              "Bir görev oluşturduğunda burada gerçek Core durumu ve kanıtları görünecek."}
+          </p>
+          <dl>
+            <div><dt>Durum</dt><dd>{interruptedExecution ? "running / interrupted" : selected?.state ?? "—"}</dd></div>
+            <div><dt>Engine</dt><dd>{selectedEngine || "—"}</dd></div>
+            <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
+            <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
+            <div><dt>Mandate</dt><dd>{selected?.mandate_id ? "Var" : "Gerekli"}</dd></div>
+          </dl>
+          <button
+            className="secondary"
+            disabled={!canReadDiff || interruptedExecution}
+            onClick={() => setActiveTab("diff")}
+          >
+            Değişiklikleri incele
+          </button>
+          <button className="secondary" disabled={!selected} onClick={() => setActiveTab("evidence")}>
+            Kanıtları incele
+          </button>
+          <button
+            className="approve"
+            disabled={selected?.state !== "approval" || busy !== null}
+            onClick={approveMerge}
+          >
+            Bir kez onayla
+          </button>
+          <small>
+            API anahtarı zorunlu değildir. Kurulu ajan kendi abonelik/oturumuyla çalışabiliyorsa
+            Divan o hesabı kullanır; kimlik bilgisini kopyalamaz.
+          </small>
+        </aside>
+      )}
     </main>
   );
 }
