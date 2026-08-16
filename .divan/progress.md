@@ -1,5 +1,53 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası III — Codex sertifikalı (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ac55893`
+
+### Doctor yanlış negatifi kapandı
+
+Doctor, Codex'i `DEGRADED / AUTH_NOT_VERIFIED` gösteriyordu; oysa sınırlı
+headless `codex exec` onun kimliği doğrulanmış ve çağrılabilir olduğunu
+zaten kanıtlamıştı. Kontrol yalnız çalıştırılabiliri çözüyor ve oturum
+hakkında hiçbir şey söyleyemeyeceğini varsayıyordu.
+
+`worker_certification` her CLI'a iki sınırlı ve etkileşimsiz soru sorar:
+kendi sürümü ve kendini oturum açmış sayıp saymadığı. Kimlik dosyası
+açılmaz, giriş akışı başlatılmaz, her yoklama zaman aşımı korumalıdır.
+
+Oturum-kapalı ifadesi her zaman kazanır; konuşmayan CLI `UNKNOWN` olur,
+oturum açmış sayılmaz. Sertifika hem bildirilmiş sürüm hem bildirilmiş
+oturum ister, yani varlık tek başına hâlâ sertifikalamaz.
+
+### Bu makinede güncel durum
+
+| Yetenek | Durum |
+|---|---|
+| divan-core | CERTIFIED |
+| **codex** | **CERTIFIED** (0.147.0, oturum doğrulandı) |
+| claude | DEGRADED / `AUTH_REQUIRED` |
+| browser-qa | CERTIFIED (playwright 1.61.0 + chromium) |
+| spec-compiler, memory, plugin-trust, context-compiler, attempt-recovery, quality-factory, evidence, agency-status | CERTIFIED |
+| local-state-security | BLOCKED / `LOCAL_STATE_DACL_POLICY` |
+
+Claude için kod artık `AUTH_NOT_VERIFIED` değil `AUTH_REQUIRED`: CLI
+kendini açıkça oturum-kapalı bildiriyor, sessiz kalmıyor.
+
+### Açık borç
+
+`CLAUDE_CROSS_PROVIDER_REVIEW_UNAVAILABLE`. Codex tek başına writer olarak
+çalışabilir; bağımsız hakem için ayrı ve yazma yetkisiz ikinci bir Codex
+süreci kullanılacaktır (`provider_independence: unavailable`,
+`process_independence: proven`). Claude oturumu açılırsa aynı diff için
+cross-provider yeniden inceleme eklenecektir.
+
+### Sıradaki kesin adım
+
+1. Worker execution adapter: Divan'ın kendi başlattığı Codex Attempt'ı —
+   fresh worktree, sınırlı bağlam, TaskContract, attempt kaydı, diff.
+2. Ayrı ve yazma yetkisiz ikinci Codex süreciyle bağımsız hakem.
+3. AgencyBench-02'yi gerçek Attempt'larla koş.
+
 ## Agency OS kampanyası III — worker'lar sahaya indi (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `bd9ae2f`
