@@ -9,6 +9,7 @@ from .desktop_api import (
     DesktopApi,
     handle_goal_create,
     handle_goal_preview,
+    handle_goal_tasks,
     handle_project_agency_status,
 )
 from .desktop_protocol_support import ProtocolValidationError
@@ -184,6 +185,14 @@ def _execution_task(payload: Mapping[str, Any], task: DivanTask) -> DivanTask:
             "DESKTOP_TASK_STATE_INVALID",
             "task must be planned or retry before execution",
         )
+    # Materialized work packages carry a dependency graph; refuse to start one
+    # before the packages it depends on are merged or released.
+    blocking = _tasks().blocking_dependencies(task)
+    if blocking:
+        raise ProtocolValidationError(
+            "DESKTOP_TASK_DEPENDENCIES_PENDING",
+            "task dependencies are not merged yet: " + ", ".join(blocking),
+        )
     engine_id = _optional_string(payload, "engine_id", "DESKTOP_ENGINE_ID_INVALID")
     mandate_id = task.mandate_id or f"mandate-{uuid4().hex}"
     return replace(task, engine_id=engine_id or task.engine_id, mandate_id=mandate_id)
@@ -346,6 +355,7 @@ _HANDLERS: dict[str, Handler] = {
     "project.agency.status": handle_project_agency_status,
     "goal.preview": handle_goal_preview,
     "goal.create": handle_goal_create,
+    "goal.tasks": handle_goal_tasks,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,

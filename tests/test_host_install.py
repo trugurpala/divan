@@ -571,7 +571,7 @@ class HostInstallTests(unittest.TestCase):
     def test_host_probe_classifies_access_denied_without_crashing(self) -> None:
         denied = PermissionError(errno.EACCES, "Access is denied")
         with (
-            mock.patch.object(HOST_PROBE.shutil, "which", return_value="codex.exe"),
+            mock.patch.object(HOST_PROBE, "resolve_executable", return_value="codex.exe"),
             mock.patch.object(HOST_PROBE.subprocess, "run", side_effect=denied),
         ):
             result = HOST_PROBE.run(["codex", "plugin", "list", "--json"])
@@ -582,7 +582,7 @@ class HostInstallTests(unittest.TestCase):
     def test_host_probe_classifies_invalid_executable_without_crashing(self) -> None:
         invalid = OSError(errno.ENOEXEC, "Exec format error")
         with (
-            mock.patch.object(HOST_PROBE.shutil, "which", return_value="codex"),
+            mock.patch.object(HOST_PROBE, "resolve_executable", return_value="codex"),
             mock.patch.object(HOST_PROBE.subprocess, "run", side_effect=invalid),
         ):
             result = HOST_PROBE.run(["codex", "plugin", "list", "--json"])
@@ -593,7 +593,7 @@ class HostInstallTests(unittest.TestCase):
     def test_host_probe_keeps_successful_utf8_process_output(self) -> None:
         completed = subprocess.CompletedProcess(["codex"], 0, "Türkçe\n", "")
         with (
-            mock.patch.object(HOST_PROBE.shutil, "which", return_value="codex"),
+            mock.patch.object(HOST_PROBE, "resolve_executable", return_value="codex"),
             mock.patch.object(HOST_PROBE.subprocess, "run", return_value=completed) as run,
         ):
             result = HOST_PROBE.run(["codex", "--version"])

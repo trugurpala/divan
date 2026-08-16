@@ -146,6 +146,28 @@ class TaskStore:
             "tasks": [task.to_dict() for task in tasks],
         }
 
+    def blocking_dependencies(self, task: DivanTask) -> tuple[str, ...]:
+        """Return this task's dependency ids that are not merged or released yet.
+
+        Returns a tuple because ``TaskStore.list`` shadows the ``list`` builtin
+        inside this class body, and to match the store's other read accessor.
+        """
+        dependencies = task.metadata.get("depends_on", [])
+        if not isinstance(dependencies, list):
+            return ()
+        blocking: list[str] = []
+        for dependency in dependencies:
+            if not isinstance(dependency, str) or not dependency.strip():
+                continue
+            try:
+                other = self.load(dependency)
+            except (FileNotFoundError, ValueError):
+                blocking.append(dependency)
+                continue
+            if other.state not in _COMPLETE_DEPENDENCY_STATES:
+                blocking.append(dependency)
+        return tuple(sorted(set(blocking)))
+
 
 def _verified_execution_plan(root: Path, goal_id: str) -> dict[str, Any]:
     verification = goals.goal_status(root, goal_id)
