@@ -82,7 +82,8 @@ against inheritance: SYSTEM, Administrators and OWNER RIGHTS only, with no ACE
 for the user. Files the sandboxed worker created were owned by the sandbox
 account, so the user had no access to them at all and `git add` failed with
 permission denied. A directory created the ordinary way inherits
-`PALA-EV\User:(F)` from the project tree and the same run succeeds.
+the owner account's full-control entry from the project tree, and the same run
+succeeds.
 
 No ACL was modified and no security setting was changed to reach this result.
 Codex adds its own sandbox ACEs to the write root but leaves inheritance intact,

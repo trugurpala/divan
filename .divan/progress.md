@@ -48,8 +48,8 @@ PATH'inin başına alındı.
 `tempfile.mkdtemp` dizini kalıtıma karşı korur: yalnız SYSTEM, Administrators
 ve OWNER RIGHTS kalır, kullanıcı ACE'i olmaz. Sandbox'ın yazdığı dosyaların
 sahibi sandbox hesabı olunca kullanıcının hiç hakkı kalmıyordu. Olağan
-biçimde açılan dizin proje ağacından `PALA-EV\User:(F)` devralıyor ve aynı
-koşu geçiyor.
+biçimde açılan dizin proje ağacından sahip hesabın tam yetki girdisini
+devralıyor ve aynı koşu geçiyor.
 
 Hiçbir ACL değiştirilmedi, hiçbir güvenlik ayarı gevşetilmedi. Codex'in
 write root'a kendi ACE'lerini eklerken kalıtımı bozmadığı, aynı dizinin
