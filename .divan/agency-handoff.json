@@ -2,15 +2,20 @@
   "schema_version": 1,
   "campaign": "divan-final-delivery",
   "branch": "feat/agency-os-turnkey-v1",
-  "head": "5eb7d37c054f0a1bef09fe05f57fde657b2665a3",
+  "head": "54b147c",
   "pr": 165,
   "clean_tree": true,
-  "phase": "AGENCYBENCH-02 execution, P1 vertical slice",
+  "phase": "AGENCYBENCH-02 acceptance gates",
   "completed": [
     "PHASE A: exact-head quality gate restored; the two worker_discovery portability regressions were closed by stating the platform instead of inferring it from os.name; verified green at 3d93f26 with 0 failing checks",
     "PHASE B: real Divan-to-Codex execution; prompt on stdin, observed heartbeat and progress, bounded run, accepted work bound to an immutable commit",
     "PHASE C: independent read-only review by a fresh Codex process; seven findings, all real, all closed with RED proof",
-    "AGENCYBENCH-02 planning: a real Codex attempt wrote the specification and the compiler accepted it on the second attempt; the first was refused and its exact reasons were fed back to a fresh attempt"
+    "AGENCYBENCH-02 planning: a real Codex attempt wrote the specification and the compiler accepted it on the second attempt; the first was refused and its exact reasons were fed back to a fresh attempt",
+    "AGENCYBENCH-02 execution: 12 of 12 work packages accepted, all first attempt, no application code written by hand",
+    "AGENCYBENCH-02 ledger and correction correctness: 16 of 16, including one real defect found and repaired through a real Codex attempt",
+    "AGENCYBENCH-02 backup and restore: 14 of 14, proved by destroying the disposable store and bringing it back with a matching digest",
+    "AGENCYBENCH-02 browser and security: 10 of 10 and 11 of 11, re-run on the repaired tree",
+    "A second Divan defect found by real worker fault injection: an orphaned attempt named no failure class, so recovery refused to retry the one case the contract calls safe to replace"
   ],
   "blocked": [
     {
@@ -34,7 +39,13 @@
     "red_proof": "7 of 7 findings turn red without their fix",
     "invariants": "8 of 8 held by named tests",
     "regression_differential": "clean commit vs clean commit, 0 new failures (84 at 5eb7d37 vs 85 at 6537f7b)",
-    "known_local_failures": "environment only: the machine access control policy above, plus one order-dependent flake in test_reviewer_runner that passes five of five in isolation"
+    "known_local_failures": "environment only: the machine access control policy above, plus one order-dependent flake in test_reviewer_runner that passes five of five in isolation",
+    "benchmark_project": "22 tests, all pass on a pristine copy of the final tree",
+    "ledger_acceptance": "16 of 16",
+    "backup_restore_acceptance": "14 of 14",
+    "browser_acceptance": "10 of 10 in real Chromium",
+    "security_acceptance": "11 of 11",
+    "worker_recovery": "kill, orphan, replace and complete on the real project"
   },
   "gates": {
     "ruff": "clean",
@@ -58,7 +69,7 @@
   ],
   "agencybench_02": {
     "project_location": "a disposable project outside the Divan repository, under the owner's projects directory",
-    "stage": "execution",
+    "stage": "acceptance",
     "planning_contract": "a real Codex attempt writes specification.json; spec_compiler accepts or refuses it; refusal reasons feed a fresh attempt, budget of three",
     "first_planning_run": "produced a 12 story plan that the compiler refused; the brief had named fields the contract does not use, so the brief is now generated from the compiler's own constants",
     "app_code_rule": "no application code is written by hand; it comes only through Divan, a TaskContract, an Attempt and a real Codex execution",
@@ -75,9 +86,16 @@
       "WP-P1-S5 work attempts",
       "WP-P1-S6 append-only ledger"
     ],
-    "parallelism_note": "the compiler treats one priority band as independent, but these six share models, schema and auth in one worktree, so they run in sequence rather than in parallel"
+    "parallelism_note": "the compiler treats one priority band as independent, but these six share models, schema and auth in one worktree, so they run in sequence rather than in parallel",
+    "application": "Node.js 22, built-in test runner and built-in SQLite, no dependencies, one command to run",
+    "size": "about 1155 lines across 19 tracked files",
+    "defect_found_and_repaired": "the same commission event sent twice produced two economic effects; closed with an operation identity and a UNIQUE(tenant_id, operation_id) constraint",
+    "outstanding_gaps_noticed": [
+      "the application had no sign-out until the recovery experiment asked for one",
+      "the ledger tests cover appending and refusing edits but not detecting a tampered row"
+    ]
   },
-  "next_exact_action": "Finish the P1 vertical slice, then run the acceptance gates that can be proven locally before starting the P2 band.",
+  "next_exact_action": "Finish the sign-out recovery run, re-extract the final tree, run every gate against it writing evidence files, build the evidence manifest and metrics, then take the independent review of the benchmark application before deciding the TURNKEY verdict.",
   "merge_allowed": false,
   "release_allowed": false,
   "tag_allowed": false,
