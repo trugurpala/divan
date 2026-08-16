@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.util
+import io
 import json
 import os
 import pathlib
@@ -11,6 +13,7 @@ from dataclasses import replace
 from unittest.mock import patch
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+BRIDGE = ROOT / "scripts" / "divan-desktop-bridge.py"
 PLUGIN_ROOT = ROOT / "plugins" / "sadrazam"
 if str(PLUGIN_ROOT) not in sys.path:
     sys.path.insert(0, str(PLUGIN_ROOT))
@@ -433,7 +436,7 @@ class DesktopProtocolTests(unittest.TestCase):
             env = dict(os.environ)
             env["DIVAN_DATA_DIR"] = directory
             completed = subprocess.run(
-                [sys.executable, str(ROOT / "scripts" / "divan-desktop-bridge.py")],
+                [sys.executable, str(BRIDGE)],
                 cwd=ROOT,
                 env=env,
                 input=json.dumps({"command": "capabilities"}) + "\n",
@@ -446,6 +449,22 @@ class DesktopProtocolTests(unittest.TestCase):
         payload = json.loads(completed.stdout)
         self.assertTrue(payload["ok"])
         self.assertEqual(payload["result"]["product"], "Ottoman")
+
+    def test_bridge_forces_utf8_when_stdout_starts_with_a_windows_legacy_code_page(self):
+        spec = importlib.util.spec_from_file_location("desktop_bridge_test", BRIDGE)
+        self.assertIsNotNone(spec)
+        assert spec and spec.loader
+        bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(bridge)
+        raw_stdout = io.BytesIO()
+        stdout = io.TextIOWrapper(raw_stdout, encoding="cp1252")
+        with patch.object(bridge.sys, "stdin", io.StringIO('{"command":"capabilities"}\n')), patch.object(
+            bridge.sys, "stdout", stdout
+        ):
+            self.assertEqual(bridge.main(), 0)
+            stdout.flush()
+        payload = json.loads(raw_stdout.getvalue().decode("utf-8"))
+        self.assertTrue(payload["ok"])
 
     def test_bridge_rejects_invalid_json(self):
         completed = subprocess.run(

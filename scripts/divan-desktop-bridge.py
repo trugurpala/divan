@@ -16,6 +16,12 @@ from divan_runtime.desktop_protocol import handle_request
 from divan_runtime.runtime_composition import build_execution_router
 
 
+def _configure_utf8_stdout() -> None:
+    """Keep the JSON protocol UTF-8 when Windows inherits a legacy code page."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+
+
 def _build_provenance() -> dict[str, str]:
     try:
         module = importlib.import_module("divan_desktop_build_info")
@@ -36,6 +42,7 @@ def _attach_build_provenance(payload: dict[str, Any], response: dict[str, Any]) 
 
 
 def main() -> int:
+    _configure_utf8_stdout()
     raw = sys.stdin.readline()
     if not raw:
         print(
