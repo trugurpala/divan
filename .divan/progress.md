@@ -1,5 +1,68 @@
 # Divan İlerleme Defteri
 
+## Bağımsız denetim ve yürütme zinciri (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `5eb7d37`
+
+### Bağımsız hakem yedi kusur buldu
+
+Yazan oturumun geçmişini taşımayan, yazma yetkisi olmayan ikinci bir Codex
+süreci yürütme zincirini okudu. Bağımsızlık iddia edilmedi, ölçüldü: hakemin
+pid'i kaydedildi ve worktree öncesi/sonrası parmak izi alındı, böylece bir şey
+değiştiren hakem "salt okunur" diye anılamaz. Sağlayıcı bağımsızlığı
+`unavailable` olarak dürüstçe kaydedildi; bu makinede kimliği doğrulanmış tek
+sağlayıcı Codex.
+
+Yedi bulgunun yedisi de gerçekti. En ağırı şuydu: stage işlemi worker
+çıktıktan sonra yapıldığı için, aynı worktree'de hiçbir şey değiştirmeyen bir
+tekrar denemesi, önceki denemenin reddedilmiş dosyalarını kendi işi sanıp
+COMPLETED yazılabiliyordu. Artık ağaç deneme öncesi ve sonrası parmaklanıyor;
+yalnız deneme sırasında değişen şey o denemenin işi sayılıyor.
+
+Diğerleri: süre sınırı ancak tam bir yoklama turu sonrası kontrol ediliyordu;
+talimat ana iş parçacığında korumasız yazılıyordu; zaman aşımında yalnız
+başlatılan süreç öldürülüyor, onun başlattığı derleyici veya test koşucusu
+worktree'ye yazmaya devam edebiliyordu; ilerleme sinyali okununca siliniyor ve
+o aralıkta gelen çıktı sayılmıyordu. Hakem modülünde de çöken veya süresi dolan
+bir hakem yine "denetim yaptı" sayılıyor, okunamayan ağaç ise "değişmemiş"
+ağaçla aynı görünüyordu.
+
+Her düzeltme tek tek geri alındı ve kendi testi tekrar koşuldu. **Yedide yedi**
+düzeltmesiz halde kırmızıya dönüyor.
+
+### Sekiz yürütme değişmezi adlı testlere bağlandı
+
+Reddedilen denemenin bıraktığı iş sonrakinin başarısı sayılamaz · hiçbir şey
+değiştirmeyen koşu COMPLETED sayılamaz · okunamayan veya stage edilemeyen çıktı
+üretilmiş iş sayılamaz · prompt komut satırına sızmaz, stdin taşır · konuşkan
+çıktı kilitlenme yaratamaz · heartbeat ilerleme değildir · kabul edilen sonuç
+değişmez bir commit'e bağlanır · yazan kendi hakemi değildir.
+
+Komut satırı değişmezi artık `build_argv`'nin gerçekten ürettiği argv üzerinde
+sınanıyor; hem worker hem hakem yolu aynı kurucuyu kullanıyor.
+
+### Sınırı gevşetmek yerine dosya bölündü
+
+`worker_execution` 400 satır tavanına karşı 426'ya çıktı. Tavan yükseltilmedi;
+worktree soruları `worktree_reading`'e taşındı: ne değişti, bu host okuyabilir
+mi, kabul edilen işin adı ne. Süreç başlatmak ile diff yargılamak farklı işler.
+
+### Doğrulama
+
+| Ölçüm | Sonuç |
+|---|---|
+| worker süitleri (execution, process, review, discovery) | 65 test, geçti |
+| yedi bulgunun RED kanıtı | 7/7 düzeltmesiz kırmızı |
+| temiz-commit regresyon farkı | **0 yeni hata** (84 / 85) |
+| ruff, mypy, temiz-kod, isimlendirme, metin, standartlar, wiki, adaylar | temiz |
+| arayüz (vitest) | 20 test, geçti |
+
+Fark analizinde bir hata *kayboldu*
+(`test_missing_reviewer_is_explicit_failure`). Bu bir düzeltme değil: test
+izole olarak beş kez geçiyor, tam süitte sıraya bağlı kararsız davranıyor.
+
+Kanıt: `.divan/evidence/teftis-20260816-independent-review.md`.
+
 ## Üretim seferi — Divan gerçek worker çalıştırdı (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ed60b21`
