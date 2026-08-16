@@ -2,10 +2,10 @@
   "schema_version": 1,
   "campaign": "divan-final-delivery",
   "branch": "feat/agency-os-turnkey-v1",
-  "head": "54b147c",
+  "head": "487077c",
   "pr": 165,
   "clean_tree": true,
-  "phase": "AGENCYBENCH-02 acceptance gates",
+  "phase": "AGENCYBENCH-02 verdict reached; Divan product phases not started",
   "completed": [
     "PHASE A: exact-head quality gate restored; the two worker_discovery portability regressions were closed by stating the platform instead of inferring it from os.name; verified green at 3d93f26 with 0 failing checks",
     "PHASE B: real Divan-to-Codex execution; prompt on stdin, observed heartbeat and progress, bounded run, accepted work bound to an immutable commit",
@@ -69,7 +69,7 @@
   ],
   "agencybench_02": {
     "project_location": "a disposable project outside the Divan repository, under the owner's projects directory",
-    "stage": "acceptance",
+    "stage": "verdict",
     "planning_contract": "a real Codex attempt writes specification.json; spec_compiler accepts or refuses it; refusal reasons feed a fresh attempt, budget of three",
     "first_planning_run": "produced a 12 story plan that the compiler refused; the brief had named fields the contract does not use, so the brief is now generated from the compiler's own constants",
     "app_code_rule": "no application code is written by hand; it comes only through Divan, a TaskContract, an Attempt and a real Codex execution",
@@ -93,9 +93,33 @@
     "outstanding_gaps_noticed": [
       "the application had no sign-out until the recovery experiment asked for one",
       "the ledger tests cover appending and refusing edits but not detecting a tampered row"
-    ]
+    ],
+    "verdict": "TURNKEY_BLOCKED",
+    "application_head": "9fc2d67",
+    "application_size": "2365 lines, 15 test files, 57 tests all passing",
+    "gates_passing": [
+      "clean-start 3/3",
+      "database-init 3/3",
+      "restart-persistence 3/3",
+      "ledger and commission 23/23",
+      "browser 11/11",
+      "security 15/15",
+      "backup and restore 14/14",
+      "worker kill and recovery 12/12"
+    ],
+    "gate_failing": "independent-review 4/5, blocking findings remain",
+    "blocking_reasons": [
+      "P0 the ledger can be forged by anyone who can write the database file; an unkeyed hash chain with its anchor in the same database cannot stop a rewrite, and a local offline application has nowhere to hold a key. The limit is documented; documenting it does not close it.",
+      "P1 two leases expiring in one recovery request make verification report tampering when none occurred; a regression from the fourth repair round",
+      "P1 an expired lease still grants authority until another worker claims",
+      "P1 restore rewrites document paths after verifying, leaving an invalid manifest",
+      "P1 attempts and document uploads have no request identity, so a retry duplicates them"
+    ],
+    "repair_rounds": 4,
+    "repair_attempts": 10,
+    "why_stopped": "rounds one to three converged; round four closed four P0 findings and introduced at least two new P1s, so the loop was no longer converging and the budget is finite"
   },
-  "next_exact_action": "Finish the sign-out recovery run, re-extract the final tree, run every gate against it writing evidence files, build the evidence manifest and metrics, then take the independent review of the benchmark application before deciding the TURNKEY verdict.",
+  "next_exact_action": "Decide whether the ledger requirement is read absolutely, which keeps AgencyBench-02 blocked, or as the Ferman's 'immutable-ledger-like record', which would make the remaining four P1 regressions the only work left. Then close those four and re-review. Divan's own product phases, installer and first-run, Patron UX, and the update governor, have not been started.",
   "merge_allowed": false,
   "release_allowed": false,
   "tag_allowed": false,
