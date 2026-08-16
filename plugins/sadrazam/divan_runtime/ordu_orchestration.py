@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from pathlib import Path
 from typing import Any, Callable, Mapping
 
 from . import ordu
-from .evidence import build_evidence
+from .evidence import EvidenceRecord, build_evidence
 from .task_model import DivanTask
 
-EvidenceAppender = Callable[[object], object]
+EvidenceAppender = Callable[[EvidenceRecord], Path]
 
 
 def plan_ordu(task: DivanTask, append_evidence: EvidenceAppender) -> DivanTask:

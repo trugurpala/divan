@@ -174,6 +174,7 @@ def _handle_task_plan(
 def _execution_agent(agent: str | None) -> tuple[str, dict[str, object]]:
     readiness = discover_tools()
     tools = {tool.id: tool for tool in readiness.tools}
+    candidates: tuple[str, ...]
     if agent is not None:
         candidates = (agent,)
     else:
