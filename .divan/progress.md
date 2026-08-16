@@ -1,5 +1,97 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası II — PASS 6, 7 ve 8 (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `514e15e`
+
+PR #165 CI'ı bu oturuma girerken temizdi: 0 hata, 11 başarılı.
+
+### PASS 6 — Worker güvenilirliği
+
+`AttemptRecord` artık first-class. Task ile Attempt kesin ayrıdır: Task
+ajansın verdiği söz, Attempt bir çalışanın o söze tek denemesidir. Mevcut
+retry/recovery kodu yeniden yazılmadı, üzerine inşa edildi.
+
+Canlılık ile ilerleme ayrı sinyaldir. Bir süreç canlı olup takılabilir, bu
+yüzden atmaya devam eden ama hiçbir şey ilerletmeyen bir heartbeat yine
+stall sayılır. PID de sağlık değildir: kayıtlı process start token, PID
+yeniden kullanımına karşı korur.
+
+Stall politikası sıralıdır ve yavaş çalışan asla ölü sanılmaz. Ölü süreç
+zamanlayıcıdan bağımsız `ORPHANED`; canlı ama sessiz olan önce
+`SUSPECTED_STALLED`, ancak stall sınırını aşınca `RECOVERY_PENDING` olur.
+
+Kurtarma önce sınıflandırır. Esasen reddedilmiş iş körlemesine tekrar
+denenmez; checkpoint'i olan kayıp çalışan resume, olmayan replace edilir;
+attempt bütçesi sonsuz döngüyü keser.
+
+**Fault injection gerçek**: test tek kullanımlık bir alt süreç başlatır,
+çalışırken öldürür ve zinciri kanıtlar — attempt gerçekten çalışıyordu,
+kill "sessizlik" değil "süreç yok" olarak algılandı, `ORPHANED` →
+`RECOVERY_PENDING`, aynı task altında farklı sağlayıcıyla yeni attempt, ve
+öldürülen attempt evidence/failure class/history'sini korudu. Canlılık
+kontrolü devre dışı bırakılınca iki fault injection testi de kırmızıya
+döner, yani totolojik değildir.
+
+### PASS 7 — Context Compiler
+
+Bütün repo ve bütün hafıza gönderilmiyor. Paket öncelik sırasıyla dolar:
+önce task contract, kabul ölçütleri, güncel hata ve diff; sonra ürün/UX
+sözleşmesi, mimari kararlar, hafıza, olaylar, testler ve kaynak sembolleri.
+
+**Hiçbir şey sessizce düşmez**: her aday ya pakette ya da gerekçesi ve
+tahmini maliyetiyle omission listesinde; testler iki kümenin adayları tam
+olarak böldüğünü doğrular. Hiçbir şeyin sığmadığı bütçe yarım paket
+göndermek yerine `budget_exceeded` olarak bildirilir.
+
+Token sayısı güveniyle taşınır: tahmin `estimated`, ölçüm `exact`, kullanım
+bildirmeyen sağlayıcı `unknown`. Uydurma sayı yok.
+
+Dış bağımlılık eklenmedi. Mevcut project inspector, Agency Memory ve Spec
+Compiler tüm girdileri sağladığı için Serena/Repomix spike'ı çalıştırılmadı
+ve yapılmamış bir inceleme aday defterine yazılmadı.
+
+### PASS 8 — Teftiş Factory
+
+`QualityProfile` first-class. Altı profil modellendi, hepsi baseline
+kapıları devralır ve profil yalnız yükümlülük ekleyebilir.
+
+**Çalışmayan kapı asla geçmiş sayılmaz**: `SKIPPED`, `TIMEOUT`, `UNKNOWN`,
+`NOT_INSTALLED` ve `BLOCKED` fail-closed'dır; hiç raporlanmamış kapı
+"eksik" sayılır, "geçti" değil. İki kez raporlanan kapı en kötü sonucunu
+korur. `PASS`/`FAIL` dışındaki her durum nedenini kaydetmek zorundadır.
+
+`EvidenceManifest` sonucu yeniden kurulabilir kılar: proje, ferman, task,
+attempt, çalışan, sağlayıcı, base/result commit, worktree, değişen
+dosyalar, diff digest, komutlar ve çıkış kodları, kapı sonuçları, hakem ve
+kararı, raporlar, politika kararları, hafıza gözlemleri, zaman damgaları ve
+güveniyle token kullanımı. `delivery_state` kapı kararından türer, yani
+çalışanın kendine "başarılı" demesi tek başına asla `READY` üretemez.
+
+### Ölçüm
+
+| | Test | Başarısız | Yeni regresyon |
+|---|---|---|---|
+| `main` | 1020 | 87 | — |
+| PASS 6+7+8 head | **1164** | 84 | **0** |
+
+Yerel quality-gate adımlarının tamamı yeşil: validate, ruff, mypy,
+clean-code, naming, prose, standards, candidates, hijyen. Frontend 14/14.
+
+### Süreç dersi
+
+Bir doğrulama koşarken aynı worktree düzenlenmemeli. Deterministik runner
+testi fixture ağacını canlı çalışma ağacından kopyaladığı için, koşu
+sırasında yapılan düzenleme 5 sahte hata üretti. Temiz commit üzerinde
+yeniden koşulunca sıfır regresyon çıktı.
+
+### Sıradaki kesin adım
+
+PASS 9 (Deep Doctor) ve PASS 10 (AgencyBench-01) yapılmadı. Deep Doctor
+tek Core read modelini CLI ve UI'a vermeli; bu makinedeki AppData DACL
+sorunu `BLOCKED` / `LOCAL_STATE_DACL_POLICY` olarak dürüst gösterilmeli ve
+ACL değiştirilmemelidir.
+
 ## Agency OS kampanyası II — integration head (2026-08-16)
 
 ### Tek integration head
