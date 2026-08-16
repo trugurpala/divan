@@ -110,6 +110,7 @@ RUNTIME_FILES = (
     "task_store.py",
     "worker_certification.py",
     "worker_execution.py",
+    "worker_process.py",
     "worker_discovery.py",
     "timeouts.py",
     "data/timeout-benchmarks.json",

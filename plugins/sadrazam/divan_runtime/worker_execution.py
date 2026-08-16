@@ -11,13 +11,19 @@ from __future__ import annotations
 
 import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 from .attempt_contract import AttemptRecord, AttemptState, FailureClass
-from .attempt_store import AttemptStore, process_start_token, utc_now
+from .attempt_store import (
+    AttemptStore,
+    next_attempt_id,
+    process_start_token,
+    utc_now,
+)
 from .worker_certification import certify_worker
+from .worker_process import run_bounded
 
 EXECUTION_SCHEMA_VERSION = 1
 
@@ -33,6 +39,11 @@ class WorkerCommand:
     argv_prefix: tuple[str, ...]
     #: Passed so the worker does not refuse a fresh worktree.
     extra_args: tuple[str, ...] = ()
+    #: The argument that tells this worker to read its instructions from stdin.
+    #: The prompt never travels in argv: a command line is readable by every
+    #: other process on the machine, and it has a length limit that real task
+    #: context will exceed.
+    stdin_marker: str = "-"
 
 
 #: Non-interactive invocation for each certified worker.
@@ -75,6 +86,8 @@ class ExecutionResult:
     duration_seconds: float
     timed_out: bool = False
     unreadable_files: tuple[str, ...] = ()
+    #: Immutable name for accepted work, so a result can be pointed at later.
+    result_commit: str | None = None
     notes: tuple[str, ...] = field(default_factory=tuple)
 
     @property
@@ -89,6 +102,7 @@ class ExecutionResult:
             "exit_code": self.exit_code,
             "changed_files": list(self.changed_files),
             "unreadable_files": list(self.unreadable_files),
+            "result_commit": self.result_commit,
             "diff_lines": len(self.diff.splitlines()),
             "duration_seconds": round(self.duration_seconds, 3),
             "timed_out": self.timed_out,
@@ -181,6 +195,85 @@ def _classify(
     return None
 
 
+class _AttemptTracker:
+    """Keeps the stored attempt current while its worker is still running.
+
+    Liveness and progress are recorded separately because the contract treats
+    them separately: a process can be alive and stuck, and only the second
+    signal distinguishes a slow worker from a hung one.
+    """
+
+    def __init__(self, store: AttemptStore, attempt: AttemptRecord) -> None:
+        self._store = store
+        self.attempt = attempt
+
+    def alive(self) -> None:
+        self._record(replace(self.attempt, heartbeat_at=utc_now()))
+
+    def progress(self) -> None:
+        moment = utc_now()
+        self._record(
+            replace(self.attempt, heartbeat_at=moment, last_progress_at=moment)
+        )
+
+    def _record(self, attempt: AttemptRecord) -> None:
+        self.attempt = attempt
+        self._store.save(attempt)
+
+
+def _resolve_launcher(worker_id: str) -> tuple[WorkerCommand, str]:
+    command = WORKER_COMMANDS.get(worker_id)
+    if command is None:
+        raise ValueError(f"no headless invocation is defined for {worker_id}")
+    certificate = certify_worker(worker_id)
+    if not certificate.certified or not certificate.executable:
+        raise ValueError(f"{worker_id} is not certified for execution")
+    return command, certificate.executable
+
+
+#: Divan commits attempt results under its own name. The work was produced by
+#: a worker under Divan's control, not typed by the owner, and a disposable
+#: project may have no identity configured at all.
+COMMITTER_NAME = "Divan"
+COMMITTER_EMAIL = "attempt@divan.invalid"
+
+
+def _commit_result(worktree: Path, attempt_id: str) -> str | None:
+    """Give the accepted work an immutable name, or admit it has none."""
+    committed = _git(
+        worktree,
+        "-c",
+        f"user.name={COMMITTER_NAME}",
+        "-c",
+        f"user.email={COMMITTER_EMAIL}",
+        "commit",
+        "-m",
+        f"attempt {attempt_id}",
+    )
+    if committed.returncode != 0:
+        return None
+    head = _git(worktree, "rev-parse", "HEAD")
+    return head.stdout.strip() or None
+
+
+def _notes_for(
+    reading: WorktreeReading, result_commit: str | None, *, accepted: bool
+) -> tuple[str, ...]:
+    notes: list[str] = []
+    if reading.unreadable:
+        notes.append(
+            "the worker wrote files this host may not read: "
+            + ", ".join(reading.unreadable)
+        )
+    if reading.read_error:
+        notes.append(reading.read_error)
+    # Only meaningful when a commit was actually attempted; a rejected attempt
+    # is not missing a result name, it never earned one.
+    if accepted and result_commit is None:
+        notes.append("the accepted work could not be committed in the worktree")
+    return tuple(notes)
+
+
 def run_worker_attempt(
     *,
     task_id: str,
@@ -192,94 +285,90 @@ def run_worker_attempt(
     base_commit: str | None = None,
 ) -> ExecutionResult:
     """Start one real worker attempt and read its result from the worktree."""
-    command = WORKER_COMMANDS.get(worker_id)
-    if command is None:
-        raise ValueError(f"no headless invocation is defined for {worker_id}")
-
-    certificate = certify_worker(worker_id)
-    if not certificate.certified or not certificate.executable:
-        raise ValueError(f"{worker_id} is not certified for execution")
-
-    attempt_id = f"{task_id}-A{len(store.for_task(task_id)) + 1:03d}"
+    command, executable = _resolve_launcher(worker_id)
+    attempt_id = next_attempt_id(task_id, store.for_task(task_id))
     argv = [
-        certificate.executable,
+        executable,
         *command.argv_prefix,
         *command.extra_args,
-        prompt,
+        command.stdin_marker,
     ]
 
-    started = time.monotonic()
-    process = subprocess.Popen(
-        argv,
-        cwd=str(worktree),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    attempt = AttemptRecord(
-        attempt_id=attempt_id,
-        task_id=task_id,
-        worker_id=worker_id,
-        provider=worker_id,
-        agent=worker_id,
-        started_at=utc_now(),
-        heartbeat_at=utc_now(),
-        worktree=str(worktree),
-        base_commit=base_commit,
-        pid=process.pid,
-        process_start_token=process_start_token(process.pid),
-    )
-    store.save(attempt)
+    tracker: _AttemptTracker | None = None
 
-    timed_out = False
-    try:
-        stdout, stderr = process.communicate(timeout=timeout_seconds)
-    except subprocess.TimeoutExpired:
-        timed_out = True
-        process.kill()
-        stdout, stderr = process.communicate()
+    def _started(process: subprocess.Popen[str]) -> None:
+        nonlocal tracker
+        moment = utc_now()
+        record = AttemptRecord(
+            attempt_id=attempt_id,
+            task_id=task_id,
+            worker_id=worker_id,
+            provider=worker_id,
+            agent=worker_id,
+            started_at=moment,
+            heartbeat_at=moment,
+            worktree=str(worktree),
+            base_commit=base_commit,
+            pid=process.pid,
+            process_start_token=process_start_token(process.pid),
+        )
+        store.save(record)
+        tracker = _AttemptTracker(store, record)
+
+    def _alive() -> None:
+        if tracker is not None:
+            tracker.alive()
+
+    def _progress() -> None:
+        if tracker is not None:
+            tracker.progress()
+
+    started = time.monotonic()
+    outcome = run_bounded(
+        argv,
+        cwd=worktree,
+        stdin_text=prompt,
+        timeout_seconds=timeout_seconds,
+        on_start=_started,
+        on_alive=_alive,
+        on_progress=_progress,
+    )
     duration = time.monotonic() - started
+    if tracker is None:
+        raise RuntimeError("the worker process never started")
 
     reading = worktree_changes(worktree)
-    failure = _classify(process.returncode, timed_out, reading)
+    failure = _classify(outcome.exit_code, outcome.timed_out, reading)
+    result_commit = _commit_result(worktree, attempt_id) if failure is None else None
     finished = utc_now()
     if failure is None:
-        attempt = attempt.transition(
+        attempt = tracker.attempt.transition(
             AttemptState.COMPLETED,
             "worker finished and changed the worktree",
             at=finished,
-            exit_code=process.returncode,
+            exit_code=outcome.exit_code,
+            result_commit=result_commit,
         )
     else:
-        attempt = attempt.transition(
+        attempt = tracker.attempt.transition(
             AttemptState.FAILED,
             "worker did not produce an accepted result",
             at=finished,
             failure_class=failure,
-            exit_code=process.returncode,
+            exit_code=outcome.exit_code,
         )
     store.save(attempt)
 
-    notes: list[str] = []
-    if reading.unreadable:
-        notes.append(
-            "the worker wrote files this host may not read: "
-            + ", ".join(reading.unreadable)
-        )
-    if reading.read_error:
-        notes.append(reading.read_error)
-
     return ExecutionResult(
         attempt=attempt,
-        exit_code=process.returncode,
-        stdout=stdout or "",
-        stderr=stderr or "",
+        exit_code=outcome.exit_code,
+        stdout=outcome.stdout,
+        stderr=outcome.stderr,
         changed_files=reading.changed,
         diff=reading.diff,
         duration_seconds=duration,
-        timed_out=timed_out,
+        timed_out=outcome.timed_out,
         unreadable_files=reading.unreadable,
-        notes=tuple(notes),
+        result_commit=result_commit,
+        notes=_notes_for(reading, result_commit, accepted=failure is None),
     )

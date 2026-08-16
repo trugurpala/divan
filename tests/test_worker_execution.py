@@ -18,6 +18,8 @@ from divan_runtime.worker_execution import (  # noqa: E402
     ExecutionResult,
     WorktreeReading,
     _classify,
+    _commit_result,
+    _notes_for,
     _unreadable_paths,
     worktree_changes,
 )
@@ -117,6 +119,59 @@ class WorktreeReadingTests(unittest.TestCase):
             )
 
 
+class ResultCommitTests(unittest.TestCase):
+    def test_accepted_work_is_committed_without_borrowing_an_identity(self):
+        # A disposable project may have no git identity configured at all, and
+        # the work was produced by a worker rather than typed by the owner.
+        with tempfile.TemporaryDirectory() as raw:
+            worktree = Path(raw)
+            subprocess.run(
+                ["git", "-C", str(worktree), "init", "-q"],
+                check=True,
+                capture_output=True,
+            )
+            (worktree / "made.py").write_text("value = 1\n", encoding="utf-8")
+            worktree_changes(worktree)
+
+            sha = _commit_result(worktree, "T-A001")
+
+            self.assertIsNotNone(sha)
+            described = subprocess.run(
+                ["git", "-C", str(worktree), "log", "-1", "--format=%an|%s"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+            self.assertIn("Divan", described)
+            self.assertIn("T-A001", described)
+
+    def test_nothing_to_commit_yields_no_result_name(self):
+        with tempfile.TemporaryDirectory() as raw:
+            worktree = Path(raw)
+            subprocess.run(
+                ["git", "-C", str(worktree), "init", "-q"],
+                check=True,
+                capture_output=True,
+            )
+
+            self.assertIsNone(_commit_result(worktree, "T-A001"))
+
+
+class NoteTests(unittest.TestCase):
+    def test_a_rejected_attempt_is_not_accused_of_failing_to_commit(self):
+        # No commit was attempted, so there is nothing to report as missing.
+        notes = _notes_for(_reading(), None, accepted=False)
+        self.assertEqual(notes, ())
+
+    def test_an_accepted_attempt_without_a_commit_says_so(self):
+        notes = _notes_for(_reading(), None, accepted=True)
+        self.assertIn("could not be committed", " ".join(notes))
+
+    def test_unreadable_files_are_named(self):
+        notes = _notes_for(_reading(unreadable=("a.py",)), None, accepted=False)
+        self.assertIn("a.py", " ".join(notes))
+
+
 class ProducedWorkTests(unittest.TestCase):
     def test_unreadable_files_do_not_count_as_produced_work(self):
         result = self._result(changed=("a.py",), unreadable=("a.py",))
@@ -164,6 +219,15 @@ class InvocationTests(unittest.TestCase):
         joined = " ".join(WORKER_COMMANDS["codex"].extra_args)
         self.assertNotIn("danger-full-access", joined)
         self.assertNotIn("bypass-approvals", joined)
+
+    def test_every_worker_takes_its_instructions_from_stdin(self):
+        # A command line is readable by every other process on the machine and
+        # has a length limit real task context will exceed, so the prompt is
+        # never an argument.
+        for worker_id, command in WORKER_COMMANDS.items():
+            with self.subTest(worker=worker_id):
+                self.assertTrue(command.stdin_marker)
+                self.assertNotIn(command.stdin_marker, command.extra_args)
 
 
 if __name__ == "__main__":

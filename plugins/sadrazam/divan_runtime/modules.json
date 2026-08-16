@@ -221,6 +221,7 @@
         "plugin_sdk",
         "worker_discovery",
         "worker_certification",
+        "worker_process",
         "worker_execution"
       ],
       "capabilities": [
@@ -240,7 +241,9 @@
         "browser_qa_capability_probe",
         "capability_based_worker_certification",
         "divan_started_worker_execution",
-        "host_readable_result_enforcement"
+        "host_readable_result_enforcement",
+        "bounded_worker_process_io",
+        "observed_worker_progress"
       ],
       "depends_on": [
         "kernel",

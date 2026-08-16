@@ -159,6 +159,8 @@ class AttemptRecord:
         at: str,
         failure_class: FailureClass | None = None,
         exit_code: int | None = None,
+        #: The commit that now holds the accepted work, when there is one.
+        result_commit: str | None = None,
     ) -> AttemptRecord:
         """Move to a new lifecycle state, refusing anything the contract forbids."""
         allowed = _TRANSITIONS[self.state]
@@ -179,6 +181,7 @@ class AttemptRecord:
             state=state,
             failure_class=failure_class or self.failure_class,
             exit_code=self.exit_code if exit_code is None else exit_code,
+            result_commit=self.result_commit if result_commit is None else result_commit,
             finished_at=at if state in TERMINAL_STATES else self.finished_at,
             history=(*self.history, entry),
         )
