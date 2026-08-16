@@ -194,8 +194,6 @@
         "windows_installed_app_discovery",
         "subscription_auth_detection",
         "plugin_manifest_validation",
-        "bounded_plugin_discovery",
-        "hash_bound_plugin_approval",
         "privacy_bounded_plugin_inspection",
         "sidecar_plugin_sdk"
       ],

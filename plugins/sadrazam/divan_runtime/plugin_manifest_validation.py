@@ -19,6 +19,11 @@ from .plugin_contract import (
 
 _ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 _EXECUTABLE_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+# Directory references and Windows device names are not commands.
+_RESERVED_EXECUTABLES = frozenset(
+    {".", "..", "con", "prn", "aux", "nul"}
+    | {f"{stem}{index}" for stem in ("com", "lpt") for index in range(1, 10)}
+)
 _HTTPS_RE = re.compile(r"^https://\S+$")
 _SPDX_RE = re.compile(r"^[A-Za-z0-9.+() -]+$")
 _READ_ONLY_KINDS = frozenset(
@@ -64,7 +69,9 @@ def validate_manifest_payload(payload: Any) -> ManifestValidation:
         payload, errors
     )
     _validate_capability_policy(kind, capabilities, requires_mandate, errors)
-    source_url = _object_url(payload.get("source"), "source", errors)
+    source_url = _object_url(
+        payload.get("source"), "PLUGIN_SOURCE_INVALID", "PLUGIN_SOURCE_URL_INVALID", errors
+    )
     license_expression, license_evidence = _license(payload.get("license"), errors)
 
     if errors:
@@ -110,10 +117,15 @@ def _validate_root_fields(
         )
 
 
+def _exact_int(value: Any, expected: int) -> bool:
+    """Accept only a real int; ``bool`` is an int subclass, so True == 1."""
+    return type(value) is int and value == expected
+
+
 def _validate_versions(
     payload: Mapping[Any, Any], errors: list[PluginIssue]
 ) -> None:
-    if payload.get("schema_version") != PLUGIN_SCHEMA_VERSION:
+    if not _exact_int(payload.get("schema_version"), PLUGIN_SCHEMA_VERSION):
         errors.append(
             PluginIssue(
                 "PLUGIN_SCHEMA_VERSION_INVALID",
@@ -121,7 +133,7 @@ def _validate_versions(
                 f"schema_version must be {PLUGIN_SCHEMA_VERSION}",
             )
         )
-    if payload.get("api_version") != PLUGIN_API_VERSION:
+    if not _exact_int(payload.get("api_version"), PLUGIN_API_VERSION):
         errors.append(
             PluginIssue(
                 "PLUGIN_API_VERSION_INCOMPATIBLE",
@@ -185,7 +197,11 @@ def _validate_runtime_fields(
     payload: Mapping[Any, Any], errors: list[PluginIssue]
 ) -> tuple[str | None, tuple[str, ...], bool]:
     executable = payload.get("executable")
-    if not isinstance(executable, str) or not _EXECUTABLE_RE.fullmatch(executable):
+    if (
+        not isinstance(executable, str)
+        or not _EXECUTABLE_RE.fullmatch(executable)
+        or executable.casefold() in _RESERVED_EXECUTABLES
+    ):
         errors.append(
             PluginIssue(
                 "PLUGIN_EXECUTABLE_INVALID",
@@ -299,14 +315,15 @@ def _validate_capability(
 
 
 def _object_url(
-    value: Any, name: str, errors: list[PluginIssue]
+    value: Any, invalid_code: str, url_invalid_code: str, errors: list[PluginIssue]
 ) -> str | None:
+    """Validate one ``{"url": ...}`` object; codes are literals so they grep."""
     if not isinstance(value, Mapping) or set(value) != {"url"}:
         errors.append(
             PluginIssue(
-                f"PLUGIN_{name.upper()}_INVALID",
-                f"$.{name}",
-                f"{name} must contain only url",
+                invalid_code,
+                "$.source",
+                "source must contain only url",
             )
         )
         return None
@@ -314,8 +331,8 @@ def _object_url(
     if not isinstance(url, str) or not _HTTPS_RE.fullmatch(url):
         errors.append(
             PluginIssue(
-                f"PLUGIN_{name.upper()}_URL_INVALID",
-                f"$.{name}.url",
+                url_invalid_code,
+                "$.source.url",
                 "URL must be absolute HTTPS",
             )
         )
@@ -338,7 +355,11 @@ def _license(
         return None, None
     expression = value.get("spdx_expression")
     evidence = value.get("evidence")
-    if not isinstance(expression, str) or not _SPDX_RE.fullmatch(expression):
+    if (
+        not isinstance(expression, str)
+        or not expression.strip()
+        or not _SPDX_RE.fullmatch(expression)
+    ):
         errors.append(
             PluginIssue(
                 "PLUGIN_LICENSE_EXPRESSION_INVALID",
