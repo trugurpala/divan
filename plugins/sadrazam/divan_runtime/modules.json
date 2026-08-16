@@ -163,6 +163,7 @@
         "execution_recovery",
         "orchestrator",
         "task_learning",
+        "failure_learning",
         "knowledge_contract",
         "knowledge_capture",
         "knowledge_store",
@@ -194,7 +195,9 @@
         "first_class_execution_attempt",
         "pid_reuse_safe_worker_liveness",
         "bounded_stall_and_orphan_detection",
-        "attempt_replacement_with_preserved_history"
+        "attempt_replacement_with_preserved_history",
+        "bounded_failure_lesson_candidates",
+        "no_auto_promotion_from_failure"
       ],
       "depends_on": [
         "kernel",

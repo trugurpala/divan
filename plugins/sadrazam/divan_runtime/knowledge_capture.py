@@ -17,8 +17,8 @@ def lesson_from_failure(
     evidence_sha256: str | None = None,
     observed_at: str | None = None,
 ) -> KnowledgeItem:
-    problem_text = _bounded(problem)
-    solution_text = _bounded(solution)
+    problem_text = bounded_text(problem)
+    solution_text = bounded_text(solution)
     if not problem_text or not solution_text:
         raise ValueError("problem and solution are required")
     problem_signature = _digest(problem_text)
@@ -49,8 +49,8 @@ def pattern_from_project(
     evidence_sha256: str | None = None,
     observed_at: str | None = None,
 ) -> KnowledgeItem:
-    title = _bounded(name, limit=160)
-    description = _bounded(summary)
+    title = bounded_text(name, limit=160)
+    description = bounded_text(summary)
     if not title or not description:
         raise ValueError("pattern name and summary are required")
     normalized_stack = normalized_terms(stack)
@@ -75,7 +75,7 @@ def _digest(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def _bounded(value: str, *, limit: int = 2000) -> str:
+def bounded_text(value: str, *, limit: int = 2000) -> str:
     """Collapse, redact and bound one captured text field.
 
     Captured text is failure output and operator prose, so it carries home
@@ -83,6 +83,10 @@ def _bounded(value: str, *, limit: int = 2000) -> str:
     runtime redacts before writing; knowledge capture must too. Redacting
     before the digest also keeps item_id stable across machines, because a
     home path no longer leaks into the fingerprint.
+
+    Public on purpose: failure_learning builds candidates from attempt
+    history, review findings and gate reasons, and those must go through this
+    one rule rather than a second copy of it.
     """
     return redact_text(" ".join(value.split()))[:limit].strip()
 

@@ -53,6 +53,7 @@ RUNTIME_FILES = (
     "execution_contract.py",
     "execution_recovery.py",
     "execution_router.py",
+    "failure_learning.py",
     "frameworks.json",
     "git_guard.py",
     "goal_archive.py",
