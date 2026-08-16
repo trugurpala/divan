@@ -111,6 +111,8 @@ RUNTIME_FILES = (
     "worker_certification.py",
     "worker_execution.py",
     "worker_process.py",
+    "worker_review.py",
+    "worktree_reading.py",
     "worker_discovery.py",
     "timeouts.py",
     "data/timeout-benchmarks.json",

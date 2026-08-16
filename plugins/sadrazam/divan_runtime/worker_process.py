@@ -6,10 +6,19 @@ second says it produced output since the last look.
 
 Output is drained on its own threads rather than after the wait. A worker that
 talks more than a pipe buffer holds would otherwise block forever on a write
-nobody is reading, and Divan would record that deadlock as a stall.
+nobody is reading, and Divan would record that deadlock as a stall. The
+instructions are written on a thread for the same reason in reverse: a worker
+that never reads its stdin must not be able to block the caller.
+
+When the bound expires the whole process tree is stopped, not just the child
+Divan started. A coding agent spawns compilers and test runners, and a
+descendant left alive can still change the worktree after the attempt has been
+recorded failed, which would put another attempt's work under this one's name.
 """
 from __future__ import annotations
 
+import os
+import signal
 import subprocess
 import threading
 import time
@@ -27,24 +36,38 @@ class ProcessOutcome:
     stdout: str
     stderr: str
     timed_out: bool
+    #: Set when the instructions could not be delivered in full.
+    stdin_error: str | None = None
 
 
 class _Drain:
-    """Collect one stream on its own thread, noting when anything arrives."""
+    """Collect one stream on its own thread, counting what has arrived.
+
+    A count rather than a flag: clearing a flag races with the thread setting
+    it, and the lost signal would silently under-report a worker's progress.
+    """
 
     def __init__(self) -> None:
         self._chunks: list[str] = []
-        self.arrived = threading.Event()
+        self._lock = threading.Lock()
+        self._count = 0
 
     def pump(self, stream: IO[str]) -> None:
         with stream:
             for line in stream:
-                self._chunks.append(line)
-                self.arrived.set()
+                with self._lock:
+                    self._chunks.append(line)
+                    self._count += 1
+
+    @property
+    def count(self) -> int:
+        with self._lock:
+            return self._count
 
     @property
     def text(self) -> str:
-        return "".join(self._chunks)
+        with self._lock:
+            return "".join(self._chunks)
 
 
 def _require(stream: IO[str] | None, name: str) -> IO[str]:
@@ -53,10 +76,53 @@ def _require(stream: IO[str] | None, name: str) -> IO[str]:
     return stream
 
 
-def _start_drain(stream: IO[str], drain: _Drain) -> threading.Thread:
-    thread = threading.Thread(target=drain.pump, args=(stream,), daemon=True)
+def _start(target: Callable[..., None], *args: object) -> threading.Thread:
+    thread = threading.Thread(target=target, args=args, daemon=True)
     thread.start()
     return thread
+
+
+class _Feeder:
+    """Deliver the instructions without letting the worker block the caller."""
+
+    def __init__(self, stream: IO[str], text: str) -> None:
+        self._stream = stream
+        self._text = text
+        self.error: str | None = None
+
+    def write(self) -> None:
+        try:
+            with self._stream:
+                self._stream.write(self._text)
+        except (BrokenPipeError, OSError) as problem:
+            # The worker closed its input or died mid-write. That is a fact
+            # about the attempt, not an exception for the caller to handle.
+            self.error = f"the worker did not take its instructions: {problem}"
+
+
+def _kill_process_group(pid: int) -> None:
+    """Stop a POSIX process group. Absent on Windows, hence the lookups."""
+    kill_group = getattr(os, "killpg", None)
+    group_of = getattr(os, "getpgid", None)
+    if kill_group is None or group_of is None:
+        return
+    try:
+        kill_group(group_of(pid), getattr(signal, "SIGKILL", signal.SIGTERM))
+    except (ProcessLookupError, PermissionError, OSError):
+        pass
+
+
+def _kill_tree(process: subprocess.Popen[str]) -> None:
+    """Stop the worker and everything it started."""
+    if os.name == "nt":
+        subprocess.run(
+            ["taskkill", "/F", "/T", "/PID", str(process.pid)],
+            capture_output=True,
+            check=False,
+        )
+    else:
+        _kill_process_group(process.pid)
+    process.kill()
 
 
 def _wait(
@@ -68,22 +134,26 @@ def _wait(
     on_alive: Callable[[], None] | None,
     on_progress: Callable[[], None] | None,
 ) -> bool:
-    """Wait for the process. Returns True when it had to be stopped."""
+    """Wait for the process. Returns True when the bound expired first."""
+    seen = [drain.count for drain in drains]
     while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return True
+        # Never sleep past the bound: a worker that finishes late would
+        # otherwise be waved through simply because the poll was longer.
         try:
-            process.wait(timeout=poll_seconds)
+            process.wait(timeout=min(poll_seconds, remaining))
             return False
         except subprocess.TimeoutExpired:
             pass
         if on_alive is not None:
             on_alive()
-        if any(drain.arrived.is_set() for drain in drains):
-            for drain in drains:
-                drain.arrived.clear()
+        counts = [drain.count for drain in drains]
+        if counts != seen:
+            seen = counts
             if on_progress is not None:
                 on_progress()
-        if time.monotonic() >= deadline:
-            return True
 
 
 def run_bounded(
@@ -98,6 +168,7 @@ def run_bounded(
     poll_seconds: float = DEFAULT_POLL_SECONDS,
 ) -> ProcessOutcome:
     """Start a process, feed it its instructions, and bound how long it may run."""
+    deadline = time.monotonic() + timeout_seconds
     process = subprocess.Popen(
         list(argv),
         cwd=str(cwd),
@@ -108,30 +179,30 @@ def run_bounded(
         encoding="utf-8",
         errors="replace",
         bufsize=1,
+        # So the bound can reach the whole tree the worker builds under itself.
+        start_new_session=os.name != "nt",
     )
     if on_start is not None:
         on_start(process)
 
     out, err = _Drain(), _Drain()
+    feeder = _Feeder(_require(process.stdin, "stdin"), stdin_text)
     threads = [
-        _start_drain(_require(process.stdout, "stdout"), out),
-        _start_drain(_require(process.stderr, "stderr"), err),
+        _start(out.pump, _require(process.stdout, "stdout")),
+        _start(err.pump, _require(process.stderr, "stderr")),
+        _start(feeder.write),
     ]
-    # Written only once the readers are running, so a worker that answers
-    # immediately cannot fill a pipe nobody is draining.
-    with _require(process.stdin, "stdin") as stdin:
-        stdin.write(stdin_text)
 
     timed_out = _wait(
         process,
-        deadline=time.monotonic() + timeout_seconds,
+        deadline=deadline,
         poll_seconds=poll_seconds,
         drains=(out, err),
         on_alive=on_alive,
         on_progress=on_progress,
     )
     if timed_out:
-        process.kill()
+        _kill_tree(process)
         process.wait()
     for thread in threads:
         thread.join(timeout=poll_seconds)
@@ -141,4 +212,5 @@ def run_bounded(
         stdout=out.text,
         stderr=err.text,
         timed_out=timed_out,
+        stdin_error=feeder.error,
     )

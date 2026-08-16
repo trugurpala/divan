@@ -16,13 +16,29 @@ from divan_runtime.attempt_contract import FailureClass  # noqa: E402
 from divan_runtime.worker_execution import (  # noqa: E402
     WORKER_COMMANDS,
     ExecutionResult,
-    WorktreeReading,
     _classify,
-    _commit_result,
     _notes_for,
-    _unreadable_paths,
-    worktree_changes,
+    build_argv,
 )
+from divan_runtime.worker_process import ProcessOutcome  # noqa: E402
+from divan_runtime.worktree_reading import (  # noqa: E402
+    WorktreeReading,
+    commit_result,
+    unreadable_paths,
+    worktree_changes,
+    worktree_snapshot,
+)
+
+
+def _ran(exit_code: int | None = 0, **kwargs: object) -> ProcessOutcome:
+    base: dict[str, object] = {
+        "exit_code": exit_code,
+        "stdout": "",
+        "stderr": "",
+        "timed_out": False,
+    }
+    base.update(kwargs)
+    return ProcessOutcome(**base)  # type: ignore[arg-type]
 
 
 def _reading(**kwargs: object) -> WorktreeReading:
@@ -34,36 +50,89 @@ def _reading(**kwargs: object) -> WorktreeReading:
 class ClassifyTests(unittest.TestCase):
     def test_clean_exit_that_changed_nothing_is_not_a_result(self):
         # The worker was happy to report success; it produced no work.
-        verdict = _classify(0, False, _reading(changed=(), diff=""))
+        verdict = _classify(_ran(0), _reading(changed=(), diff=""), produced=False)
         self.assertIs(verdict, FailureClass.WORK_REJECTED)
 
     def test_clean_exit_with_real_changes_is_accepted(self):
-        self.assertIsNone(_classify(0, False, _reading()))
+        self.assertIsNone(_classify(_ran(0), _reading(), produced=True))
+
+    def test_work_left_by_an_earlier_attempt_is_not_this_ones(self):
+        # The tree still lists files, but this attempt changed nothing. Reading
+        # the file list alone would credit it with another attempt's work.
+        verdict = _classify(_ran(0), _reading(), produced=False)
+        self.assertIs(verdict, FailureClass.WORK_REJECTED)
+
+    def test_instructions_that_never_arrived_are_environmental(self):
+        outcome = _ran(0, stdin_error="the worker did not take its instructions")
+        self.assertIs(
+            _classify(outcome, _reading(), produced=True), FailureClass.ENVIRONMENT
+        )
 
     def test_unreadable_output_is_not_a_result(self):
         # Files exist and git listed them, but the host cannot open them.
-        verdict = _classify(0, False, _reading(unreadable=("a.py",)))
+        verdict = _classify(_ran(0), _reading(unreadable=("a.py",)), produced=True)
         self.assertIs(verdict, FailureClass.ENVIRONMENT)
 
     def test_unstageable_worktree_is_not_a_result(self):
-        verdict = _classify(0, False, _reading(read_error="fatal: not a git repository"))
+        verdict = _classify(
+            _ran(0), _reading(read_error="fatal: not a git repository"), produced=True
+        )
         self.assertIs(verdict, FailureClass.ENVIRONMENT)
 
     def test_timeout_outranks_everything_else(self):
         self.assertIs(
-            _classify(0, True, _reading()),
+            _classify(_ran(0, timed_out=True), _reading(), produced=True),
             FailureClass.WORKER_STALLED,
         )
 
     def test_missing_exit_code_is_a_lost_worker(self):
-        self.assertIs(_classify(None, False, _reading()), FailureClass.WORKER_LOST)
+        self.assertIs(
+            _classify(_ran(None), _reading(), produced=True), FailureClass.WORKER_LOST
+        )
 
     def test_failed_exit_with_changes_is_rejected_work(self):
-        self.assertIs(_classify(1, False, _reading()), FailureClass.WORK_REJECTED)
+        self.assertIs(
+            _classify(_ran(1), _reading(), produced=True), FailureClass.WORK_REJECTED
+        )
 
     def test_failed_exit_with_nothing_written_is_environmental(self):
-        verdict = _classify(1, False, _reading(changed=(), diff=""))
+        verdict = _classify(_ran(1), _reading(changed=(), diff=""), produced=False)
         self.assertIs(verdict, FailureClass.ENVIRONMENT)
+
+
+class SnapshotTests(unittest.TestCase):
+    def test_a_snapshot_changes_when_the_tree_does(self):
+        with tempfile.TemporaryDirectory() as raw:
+            worktree = Path(raw)
+            subprocess.run(
+                ["git", "-C", str(worktree), "init", "-q"],
+                check=True,
+                capture_output=True,
+            )
+            before = worktree_snapshot(worktree)
+            (worktree / "made.py").write_text("value = 1\n", encoding="utf-8")
+
+            self.assertNotEqual(worktree_snapshot(worktree), before)
+
+    def test_a_snapshot_is_read_only(self):
+        # Taken before the worker runs, so it must not stage anything itself.
+        with tempfile.TemporaryDirectory() as raw:
+            worktree = Path(raw)
+            subprocess.run(
+                ["git", "-C", str(worktree), "init", "-q"],
+                check=True,
+                capture_output=True,
+            )
+            (worktree / "made.py").write_text("value = 1\n", encoding="utf-8")
+            worktree_snapshot(worktree)
+
+            staged = subprocess.run(
+                ["git", "-C", str(worktree), "diff", "--cached", "--name-only"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout
+            self.assertEqual(staged.strip(), "")
 
 
 class UnreadablePathTests(unittest.TestCase):
@@ -73,17 +142,17 @@ class UnreadablePathTests(unittest.TestCase):
             "error: unable to index file 'jsoncheck.py'\n"
             "fatal: adding files failed\n"
         )
-        self.assertEqual(_unreadable_paths(stderr), ("jsoncheck.py",))
+        self.assertEqual(unreadable_paths(stderr), ("jsoncheck.py",))
 
     def test_reads_every_refused_file(self):
         stderr = (
             'error: open("a.py"): Permission denied\n'
             'error: open("b/c.py"): Permission denied\n'
         )
-        self.assertEqual(_unreadable_paths(stderr), ("a.py", "b/c.py"))
+        self.assertEqual(unreadable_paths(stderr), ("a.py", "b/c.py"))
 
     def test_ordinary_git_noise_names_nothing(self):
-        self.assertEqual(_unreadable_paths("warning: LF will be replaced by CRLF\n"), ())
+        self.assertEqual(unreadable_paths("warning: LF will be replaced by CRLF\n"), ())
 
 
 class WorktreeReadingTests(unittest.TestCase):
@@ -133,7 +202,7 @@ class ResultCommitTests(unittest.TestCase):
             (worktree / "made.py").write_text("value = 1\n", encoding="utf-8")
             worktree_changes(worktree)
 
-            sha = _commit_result(worktree, "T-A001")
+            sha = commit_result(worktree, "T-A001")
 
             self.assertIsNotNone(sha)
             described = subprocess.run(
@@ -154,7 +223,7 @@ class ResultCommitTests(unittest.TestCase):
                 capture_output=True,
             )
 
-            self.assertIsNone(_commit_result(worktree, "T-A001"))
+            self.assertIsNone(commit_result(worktree, "T-A001"))
 
 
 class NoteTests(unittest.TestCase):
@@ -206,6 +275,7 @@ class ProducedWorkTests(unittest.TestCase):
             diff="",
             duration_seconds=1.0,
             unreadable_files=unreadable,
+            produced=bool(changed),
         )
 
 
@@ -219,6 +289,19 @@ class InvocationTests(unittest.TestCase):
         joined = " ".join(WORKER_COMMANDS["codex"].extra_args)
         self.assertNotIn("danger-full-access", joined)
         self.assertNotIn("bypass-approvals", joined)
+
+    def test_the_prompt_never_reaches_the_command_line(self):
+        # The invariant is about the argv actually handed to the process, not
+        # about a promise elsewhere, so the built command line is the subject.
+        secret = "build the operations case system for tenant Acme"
+        for worker_id, command in WORKER_COMMANDS.items():
+            with self.subTest(worker=worker_id):
+                argv = build_argv("codex.cmd", command)
+
+                self.assertNotIn(secret, argv)
+                self.assertNotIn(secret, " ".join(argv))
+                self.assertEqual(argv[-1], command.stdin_marker)
+                self.assertEqual(argv[0], "codex.cmd")
 
     def test_every_worker_takes_its_instructions_from_stdin(self):
         # A command line is readable by every other process on the machine and

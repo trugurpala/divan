@@ -222,7 +222,9 @@
         "worker_discovery",
         "worker_certification",
         "worker_process",
-        "worker_execution"
+        "worktree_reading",
+        "worker_execution",
+        "worker_review"
       ],
       "capabilities": [
         "local",
@@ -243,7 +245,10 @@
         "divan_started_worker_execution",
         "host_readable_result_enforcement",
         "bounded_worker_process_io",
-        "observed_worker_progress"
+        "observed_worker_progress",
+        "process_independent_review",
+        "read_only_reviewer_enforcement",
+        "host_readable_worktree_reading"
       ],
       "depends_on": [
         "kernel",

@@ -23,7 +23,13 @@ from .attempt_store import (
     utc_now,
 )
 from .worker_certification import certify_worker
-from .worker_process import run_bounded
+from .worker_process import ProcessOutcome, run_bounded
+from .worktree_reading import (
+    WorktreeReading,
+    commit_result,
+    worktree_changes,
+    worktree_snapshot,
+)
 
 EXECUTION_SCHEMA_VERSION = 1
 
@@ -60,22 +66,6 @@ WORKER_COMMANDS: dict[str, WorkerCommand] = {
 
 
 @dataclass(frozen=True)
-class WorktreeReading:
-    """What the host could actually read back out of the worktree."""
-
-    changed: tuple[str, ...]
-    diff: str
-    #: Files the worker wrote that the host is not permitted to read.
-    unreadable: tuple[str, ...] = ()
-    #: Why the read failed, when git would not name the files.
-    read_error: str | None = None
-
-    @property
-    def readable(self) -> bool:
-        return not self.unreadable and self.read_error is None
-
-
-@dataclass(frozen=True)
 class ExecutionResult:
     attempt: AttemptRecord
     exit_code: int | None
@@ -88,12 +78,16 @@ class ExecutionResult:
     unreadable_files: tuple[str, ...] = ()
     #: Immutable name for accepted work, so a result can be pointed at later.
     result_commit: str | None = None
+    #: Whether the tree changed during this attempt, not merely whether it
+    #: differs from its last commit. Work an earlier attempt left behind is
+    #: not this attempt's work.
+    produced: bool = False
     notes: tuple[str, ...] = field(default_factory=tuple)
 
     @property
     def produced_work(self) -> bool:
-        """True only when the worktree changed and the host could read it."""
-        return bool(self.changed_files) and not self.unreadable_files
+        """True only when this attempt changed the tree and it could be read."""
+        return self.produced and not self.unreadable_files
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -106,6 +100,7 @@ class ExecutionResult:
             "diff_lines": len(self.diff.splitlines()),
             "duration_seconds": round(self.duration_seconds, 3),
             "timed_out": self.timed_out,
+            "produced": self.produced,
             "produced_work": self.produced_work,
             "notes": list(self.notes),
             # stdout and stderr are kept out of the manifest; they go to
@@ -113,84 +108,44 @@ class ExecutionResult:
         }
 
 
-def _git(worktree: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["git", "-C", str(worktree), *args],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
+def build_argv(executable: str, command: WorkerCommand) -> list[str]:
+    """The exact command line a worker is started with.
 
-
-#: How git reports a file it was not allowed to open.
-_UNREADABLE_MARKER = 'error: open("'
-
-
-def _unreadable_paths(stderr: str) -> tuple[str, ...]:
-    """Names of the files git was refused access to, as git reported them."""
-    paths: list[str] = []
-    for line in stderr.splitlines():
-        start = line.find(_UNREADABLE_MARKER)
-        if start == -1:
-            continue
-        rest = line[start + len(_UNREADABLE_MARKER):]
-        end = rest.find('")')
-        paths.append(rest if end == -1 else rest[:end])
-    return tuple(paths)
-
-
-def worktree_changes(worktree: Path) -> WorktreeReading:
-    """Read back what the worker did, or report why it could not be read.
-
-    A sandboxed worker can create files the host has no permission to open.
-    Staging then silently fails and the diff comes back empty, which would
-    otherwise look exactly like a worker that produced nothing.
+    The prompt is deliberately absent. It goes down stdin instead, because a
+    command line is readable by every other process on this machine and has a
+    length limit that real compiled task context will exceed.
     """
-    status = _git(worktree, "status", "--porcelain")
-    changed = tuple(
-        line[3:].strip()
-        for line in status.stdout.splitlines()
-        if line.strip()
-    )
-    # Include untracked content so a newly created file counts as work.
-    staged = _git(worktree, "add", "-A")
-    unreadable: tuple[str, ...] = ()
-    read_error: str | None = None
-    if staged.returncode != 0:
-        unreadable = _unreadable_paths(staged.stderr)
-        if not unreadable:
-            first = staged.stderr.strip().splitlines()
-            read_error = first[0] if first else "git could not stage the worktree"
-    diff = _git(worktree, "diff", "--cached")
-    return WorktreeReading(
-        changed=changed,
-        diff=diff.stdout,
-        unreadable=unreadable,
-        read_error=read_error,
-    )
+    return [
+        executable,
+        *command.argv_prefix,
+        *command.extra_args,
+        command.stdin_marker,
+    ]
 
 
 def _classify(
-    exit_code: int | None, timed_out: bool, reading: WorktreeReading
+    outcome: ProcessOutcome, reading: WorktreeReading, *, produced: bool
 ) -> FailureClass | None:
     """Decide whether this attempt actually delivered.
 
     A clean exit code is not a result. A worker that ran happily and changed
     nothing did not do the job, and calling that COMPLETED would be exactly
     the fake pass this system exists to prevent. Work the host cannot read is
-    not a result either, however willing the worker was.
+    not a result either, however willing the worker was, and neither is work
+    that was already sitting in the worktree before this attempt started.
     """
-    if timed_out:
+    if outcome.timed_out:
         return FailureClass.WORKER_STALLED
-    if exit_code is None:
+    if outcome.exit_code is None:
         return FailureClass.WORKER_LOST
+    if outcome.stdin_error is not None:
+        # The worker never received the task, so nothing it did answers it.
+        return FailureClass.ENVIRONMENT
     if not reading.readable:
         return FailureClass.ENVIRONMENT
-    if exit_code != 0:
-        return FailureClass.WORK_REJECTED if reading.changed else FailureClass.ENVIRONMENT
-    if not reading.changed:
+    if outcome.exit_code != 0:
+        return FailureClass.WORK_REJECTED if produced else FailureClass.ENVIRONMENT
+    if not produced:
         return FailureClass.WORK_REJECTED
     return None
 
@@ -231,35 +186,16 @@ def _resolve_launcher(worker_id: str) -> tuple[WorkerCommand, str]:
     return command, certificate.executable
 
 
-#: Divan commits attempt results under its own name. The work was produced by
-#: a worker under Divan's control, not typed by the owner, and a disposable
-#: project may have no identity configured at all.
-COMMITTER_NAME = "Divan"
-COMMITTER_EMAIL = "attempt@divan.invalid"
-
-
-def _commit_result(worktree: Path, attempt_id: str) -> str | None:
-    """Give the accepted work an immutable name, or admit it has none."""
-    committed = _git(
-        worktree,
-        "-c",
-        f"user.name={COMMITTER_NAME}",
-        "-c",
-        f"user.email={COMMITTER_EMAIL}",
-        "commit",
-        "-m",
-        f"attempt {attempt_id}",
-    )
-    if committed.returncode != 0:
-        return None
-    head = _git(worktree, "rev-parse", "HEAD")
-    return head.stdout.strip() or None
-
-
 def _notes_for(
-    reading: WorktreeReading, result_commit: str | None, *, accepted: bool
+    reading: WorktreeReading,
+    result_commit: str | None,
+    *,
+    accepted: bool,
+    stdin_error: str | None = None,
 ) -> tuple[str, ...]:
     notes: list[str] = []
+    if stdin_error is not None:
+        notes.append(stdin_error)
     if reading.unreadable:
         notes.append(
             "the worker wrote files this host may not read: "
@@ -287,12 +223,7 @@ def run_worker_attempt(
     """Start one real worker attempt and read its result from the worktree."""
     command, executable = _resolve_launcher(worker_id)
     attempt_id = next_attempt_id(task_id, store.for_task(task_id))
-    argv = [
-        executable,
-        *command.argv_prefix,
-        *command.extra_args,
-        command.stdin_marker,
-    ]
+    argv = build_argv(executable, command)
 
     tracker: _AttemptTracker | None = None
 
@@ -323,6 +254,7 @@ def run_worker_attempt(
         if tracker is not None:
             tracker.progress()
 
+    before = worktree_snapshot(worktree)
     started = time.monotonic()
     outcome = run_bounded(
         argv,
@@ -337,9 +269,12 @@ def run_worker_attempt(
     if tracker is None:
         raise RuntimeError("the worker process never started")
 
+    # Read the tree before staging, so what this attempt did is separable from
+    # whatever an earlier attempt left behind.
+    produced = worktree_snapshot(worktree) != before
     reading = worktree_changes(worktree)
-    failure = _classify(outcome.exit_code, outcome.timed_out, reading)
-    result_commit = _commit_result(worktree, attempt_id) if failure is None else None
+    failure = _classify(outcome, reading, produced=produced)
+    result_commit = commit_result(worktree, attempt_id) if failure is None else None
     finished = utc_now()
     if failure is None:
         attempt = tracker.attempt.transition(
@@ -370,5 +305,11 @@ def run_worker_attempt(
         timed_out=outcome.timed_out,
         unreadable_files=reading.unreadable,
         result_commit=result_commit,
-        notes=_notes_for(reading, result_commit, accepted=failure is None),
+        produced=produced,
+        notes=_notes_for(
+            reading,
+            result_commit,
+            accepted=failure is None,
+            stdin_error=outcome.stdin_error,
+        ),
     )
