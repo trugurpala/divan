@@ -5,21 +5,17 @@ from dataclasses import asdict, replace
 from typing import Any
 from uuid import uuid4
 
-from .agency_status import build_project_agency_status
-from .desktop_api import DesktopApi, handle_goal_create, handle_goal_preview
+from .desktop_api import (
+    DesktopApi,
+    handle_goal_create,
+    handle_goal_preview,
+    handle_project_agency_status,
+)
 from .desktop_protocol_support import ProtocolValidationError
-from .desktop_protocol_support import (
-    error_response as _error,
-)
-from .desktop_protocol_support import (
-    ok_response as _ok,
-)
-from .desktop_protocol_support import (
-    optional_string as _optional_string,
-)
-from .desktop_protocol_support import (
-    required_string as _required_string,
-)
+from .desktop_protocol_support import error_response as _error
+from .desktop_protocol_support import ok_response as _ok
+from .desktop_protocol_support import optional_string as _optional_string
+from .desktop_protocol_support import required_string as _required_string
 from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
@@ -116,19 +112,6 @@ def _handle_project_register(
     del router
     root = _required_string(payload, "root", "DESKTOP_PROJECT_ROOT_REQUIRED")
     return _ok(asdict(ProjectRegistry().register(root)))
-
-
-def _handle_project_agency_status(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    root = _resolve_project_root(payload)
-    if not root:
-        raise ProtocolValidationError(
-            "DESKTOP_PROJECT_REQUIRED",
-            "agency status requires project_id or project_root",
-        )
-    return _ok(build_project_agency_status(root, _tasks()))
 
 
 def _handle_task_list(
@@ -360,7 +343,7 @@ _HANDLERS: dict[str, Handler] = {
     "readiness": _handle_readiness,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
-    "project.agency.status": _handle_project_agency_status,
+    "project.agency.status": handle_project_agency_status,
     "goal.preview": handle_goal_preview,
     "goal.create": handle_goal_create,
     "task.list": _handle_task_list,

@@ -17,29 +17,45 @@ from .task_store import TaskStore
 _COMPLETED = {TaskState.MERGED.value, TaskState.RELEASED.value}
 _ACTIVE = {TaskState.RUNNING.value, TaskState.REVIEW.value, TaskState.RETRY.value}
 _VERIFYING = {TaskState.REVIEW.value, TaskState.PASSED.value}
+_GOAL_PHASES = {
+    "OBSERVED": "LEARNING",
+    "RELEASED": "RELEASED",
+    "PREVIEWED": "STAGING_ACCEPTANCE",
+}
 
 
-def _phase(goal_state: str | None, states: Counter[str], task_count: int) -> str:
-    if goal_state in {"BLOCKED", "FAILED"} or states[TaskState.BLOCKED.value]:
-        return "BLOCKED"
-    if goal_state == "OBSERVED":
-        return "LEARNING"
-    if goal_state == "RELEASED":
-        return "RELEASED"
-    if goal_state == "PREVIEWED":
-        return "STAGING_ACCEPTANCE"
+def _has_state(states: Counter[str], names: set[str]) -> bool:
+    return any(states[name] for name in names)
+
+
+def _task_phase(states: Counter[str], task_count: int) -> str | None:
     if states[TaskState.APPROVAL.value]:
         return "OWNER_DECISION"
-    if states[TaskState.REVIEW.value] or states[TaskState.PASSED.value]:
+    if _has_state(states, _VERIFYING):
         return "VERIFICATION"
-    if states[TaskState.RUNNING.value] or states[TaskState.RETRY.value]:
+    if _has_state(states, _ACTIVE):
         return "IMPLEMENTATION"
-    if task_count and sum(states[name] for name in _COMPLETED) == task_count:
-        return "DELIVERY_READY"
-    if goal_state == "VERIFIED":
+    completed = sum(states[name] for name in _COMPLETED)
+    if task_count and completed == task_count:
         return "DELIVERY_READY"
     if task_count:
         return "READY_FOR_EXECUTION"
+    return None
+
+
+def _phase(goal_state: str | None, states: Counter[str], task_count: int) -> str:
+    blocked = goal_state in {"BLOCKED", "FAILED"} or bool(
+        states[TaskState.BLOCKED.value]
+    )
+    if blocked:
+        return "BLOCKED"
+    if goal_state in _GOAL_PHASES:
+        return _GOAL_PHASES[goal_state]
+    task_phase = _task_phase(states, task_count)
+    if task_phase is not None:
+        return task_phase
+    if goal_state == "VERIFIED":
+        return "DELIVERY_READY"
     if goal_state is not None:
         return "PLAN_REVIEW"
     return "INTAKE"
