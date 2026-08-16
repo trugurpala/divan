@@ -73,6 +73,12 @@ def _candidate_roots(environ: dict[str, str]) -> list[Path]:
     if local:
         roots.append(Path(local) / "Programs")
         roots.append(Path(local) / "pnpm")
+        # winget installs each package into its own directory and only adds it
+        # to the user PATH, so a process started before that refresh cannot see
+        # it. Searching here turns a stale-PATH miss into a correct find.
+        winget = Path(local) / "Microsoft" / "WinGet" / "Packages"
+        roots.append(winget)
+        roots.extend(_winget_package_dirs(winget))
     if home:
         roots.append(Path(home) / ".local" / "bin")
         roots.append(Path(home) / "scoop" / "shims")
@@ -80,9 +86,30 @@ def _candidate_roots(environ: dict[str, str]) -> list[Path]:
     return roots
 
 
+def _winget_package_dirs(winget: Path) -> list[Path]:
+    """Return winget package directories, and one level inside each.
+
+    Some packages nest their launchers one directory deeper, as the Node
+    package does. The walk stops there so this stays a bounded lookup rather
+    than a sweep of the user profile.
+    """
+    if not winget.is_dir():
+        return []
+    found: list[Path] = []
+    for package in sorted(winget.iterdir()):
+        if not package.is_dir():
+            continue
+        found.append(package)
+        found.extend(sorted(child for child in package.iterdir() if child.is_dir()))
+    return found
+
+
 def _search_roots(command: str, roots: Iterable[Path]) -> tuple[str | None, list[str]]:
     searched: list[str] = []
-    suffixes = ("", ".cmd", ".exe", ".ps1") if os.name == "nt" else ("",)
+    # On Windows the extensionless file is a shell script that cannot run,
+    # and a .ps1 shim is a script rather than a launcher, so real launchers
+    # come first and the script forms are never preferred.
+    suffixes = (".cmd", ".exe", ".bat") if os.name == "nt" else ("",)
     for root in roots:
         searched.append(str(root))
         if not root.is_dir():

@@ -52,6 +52,45 @@ class WorkerDiscoveryTests(unittest.TestCase):
         self.assertGreater(len(probe.searched), 1)
         self.assertIn("not found", probe.detail or "")
 
+    def test_a_windows_script_shim_is_never_preferred_over_a_launcher(self) -> None:
+        import os
+
+        if os.name != "nt":
+            self.skipTest("Windows launcher preference")
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory) / "bin"
+            root.mkdir()
+            # A bare file and a .ps1 are scripts, not runnable launchers.
+            (root / "codex").write_text("#!/bin/sh\n", encoding="utf-8")
+            (root / "codex.ps1").write_text("# shim\n", encoding="utf-8")
+            (root / "codex.cmd").write_text("@echo off\n", encoding="utf-8")
+
+            probe = probe_worker(
+                "codex",
+                environ={"USERPROFILE": directory},
+                locator=lambda names: None,
+            )
+
+        self.assertTrue((probe.executable or "").endswith("codex.cmd"))
+
+    def test_a_winget_package_is_found_when_path_is_stale(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            local = pathlib.Path(directory)
+            nested = local / "Microsoft" / "WinGet" / "Packages" / "Vendor.Tool" / "bin"
+            nested.mkdir(parents=True)
+            (nested / "claude.exe").write_bytes(b"MZ")
+
+            probe = probe_worker(
+                "claude",
+                environ={"LOCALAPPDATA": directory},
+                locator=lambda names: None,
+            )
+
+        # winget only edits the user PATH, so a process started earlier misses
+        # it; that is an environment boundary, not a missing install.
+        self.assertIs(probe.finding, WorkerFinding.RESOLVED)
+        self.assertIn("environment boundary", " ".join(probe.notes))
+
     def test_an_unknown_worker_is_absent_rather_than_guessed(self) -> None:
         probe = probe_worker("gemini")
         self.assertIs(probe.finding, WorkerFinding.ABSENT)
