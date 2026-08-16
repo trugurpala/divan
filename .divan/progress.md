@@ -17,12 +17,25 @@
     `validated`/0.95 kaydını `candidate`/0.5'e düşürüyor ve `created_at`
     ilk-görülme geçmişini yok ediyordu. Artık kimlik, ilk-görülme ve
     küratörlük sütunlarına dokunmuyor; terfi için ayrı `curate()` var.
-- Açık kalan P1: yakalama yolunun test dışı çağıranı yok. Üretimde defter
-  boş kalır, buna karşın `modules.json` `local_knowledge_fabric` ve üç
-  ilgili yeteneği ilan eder. Bu yama değil bağlama işidir; PASS 3'ün asıl
-  işi olarak açık bırakıldı.
-- Regresyon farkı: main 1020 test / 87 başarısız, bu dal 1035 test / 87
+- Üçüncü P1 de kapatıldı: yakalama yolunun test dışı çağıranı yoktu, yani
+  defter üretimde boş kalırdı. Artık görev kapanışına bağlıdır. `review()`
+  her reddin nedenini kaydeder; `approve_merge()` bu geçmişi, sonunda
+  merge olan diff ile birleştirip tek bir bilgi kaydına çevirir.
+- İlk seferde teftişi geçen görev hiçbir şey yazmaz: hiç başarısız olmamış
+  işte ders yoktur ve temiz koşumlar defteri doldurup gerçek hataları
+  gömerdi.
+- Hafıza yazımı, bütün kapıları geçmiş bir merge'i asla düşüremez. Defter
+  bozuksa hata yakalanır ve başarısız `knowledge` kanıt kaydına dönüşür;
+  sonuç iki yönde de dürüst kalır ve kanıttan yeniden kurulabilir.
+- `modules.json` artık yalnız kodun karşıladığını ilan eder.
+  `cross_project_reuse_analytics` ve `generated_knowledge_projection`
+  kaldırıldı: `observe()` üretimde hiç çağrılmıyor ve `render_book`
+  ulaşılabilir değil. Modüller test edildiği ve projeksiyon yüzeyi
+  geldiğinde gerekeceği için silinmedi.
+- Regresyon farkı: main 1020 test / 87 başarısız, bu dal 1043 test / 87
   başarısız. Yeni regresyon yok.
+- Açık kalan: projeksiyon yüzeyi (`render_book`) ve yeniden-kullanım
+  sinyali (`observe()`) hâlâ bağlı değil. Bunlar sonraki dilimdir.
 
 ## Agency OS: Plugin SDK portu (2026-08-16)
 
