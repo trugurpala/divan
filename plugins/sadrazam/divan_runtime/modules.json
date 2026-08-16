@@ -168,8 +168,7 @@
         "task_orchestration",
         "local_knowledge_fabric",
         "deterministic_failure_lessons",
-        "cross_project_reuse_analytics",
-        "generated_knowledge_projection",
+        "task_close_failure_learning",
         "project_context_memory_ranking"
       ],
       "depends_on": [

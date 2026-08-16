@@ -4,6 +4,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from .desktop_state import knowledge_database
 from .evidence import EvidenceStore, build_evidence
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_recovery import (
@@ -19,6 +20,8 @@ from .git_guard import (
     snapshot_from_metadata,
     stage_review_snapshot,
 )
+from .knowledge_capture import lesson_from_failure
+from .knowledge_store import KnowledgeStore
 from .review_gate import (
     CheckResult,
     GateVerdict,
@@ -45,12 +48,14 @@ class DivanOrchestrator:
         *,
         reviewer: AutomatedReviewer | None = None,
         git_runner: GitRunner | None = None,
+        knowledge: KnowledgeStore | None = None,
     ) -> None:
         self.router = router
         self.tasks = TaskStore(state_root)
         self.evidence = EvidenceStore(evidence_root)
         self.reviewer = reviewer or AutomatedReviewer()
         self.git_runner = git_runner
+        self.knowledge = knowledge or KnowledgeStore(knowledge_database())
 
     def create_task(
         self,
@@ -147,6 +152,22 @@ class DivanOrchestrator:
             "checks": serialized_checks,
             "reasons": list(decision.reasons),
         }
+        if decision.verdict is not GateVerdict.PASS:
+            # Remember why review rejected this attempt. On its own a rejection
+            # is only half a lesson; the merge that finally lands supplies the
+            # other half.
+            metadata["failed_reviews"] = [
+                *_failed_reviews(reviewing),
+                {
+                    "verdict": decision.verdict.value,
+                    "reasons": list(decision.reasons),
+                    "failed_checks": [
+                        check["name"]
+                        for check in serialized_checks
+                        if check.get("passed") is not True
+                    ],
+                },
+            ]
         reviewing = replace(reviewing, metadata=metadata)
         target = (
             TaskState.PASSED
@@ -255,8 +276,77 @@ class DivanOrchestrator:
                 },
             )
         )
+        self._capture_merge_lesson(approved_task, merged.diff_sha256)
         return self._save(
             approved_task.transition(TaskState.MERGED, "reviewed snapshot fast-forwarded")
+        )
+
+    def _capture_merge_lesson(self, task: DivanTask, diff_sha256: str) -> None:
+        """Record what review rejected and what finally landed, at task close.
+
+        Only tasks that actually failed review carry a lesson: a task that
+        passed first time teaches nothing worth storing. Memory capture is
+        never allowed to fail a merge that already passed every gate, so a
+        broken knowledge store degrades to an honest evidence entry.
+        """
+        failures = _failed_reviews(task)
+        if not failures:
+            return
+        reasons = [
+            reason
+            for failure in failures
+            for reason in failure.get("reasons", [])
+            if isinstance(reason, str)
+        ]
+        checks = sorted(
+            {
+                name
+                for failure in failures
+                for name in failure.get("failed_checks", [])
+                if isinstance(name, str)
+            }
+        )
+        problem = (
+            f"Review rejected {task.title} {len(failures)} time(s). "
+            f"Failing checks: {', '.join(checks) or 'unnamed'}. "
+            f"Reasons: {'; '.join(reasons) or 'not recorded'}"
+        )
+        solution = (
+            f"The change that passed every required check merged as {diff_sha256}."
+        )
+        try:
+            lesson = lesson_from_failure(
+                problem=problem,
+                solution=solution,
+                tags=("review", *checks),
+                source_project=task.project_root,
+                evidence_sha256=diff_sha256,
+            )
+            self.knowledge.upsert(lesson)
+        except Exception as error:  # noqa: BLE001 - memory must not fail a merge
+            self.evidence.append(
+                build_evidence(
+                    task.task_id,
+                    "knowledge",
+                    "fail",
+                    "task-close lesson capture failed",
+                    {"error": type(error).__name__},
+                )
+            )
+            return
+        self.evidence.append(
+            build_evidence(
+                task.task_id,
+                "knowledge",
+                "pass",
+                "task-close lesson captured",
+                {
+                    "item_id": lesson.item_id,
+                    "failed_review_count": len(failures),
+                    "failed_checks": checks,
+                    "evidence_sha256": diff_sha256,
+                },
+            )
         )
 
     def release(self, task: DivanTask) -> DivanTask:
@@ -344,3 +434,11 @@ def _review_from_task(task: DivanTask) -> ReviewDecision:
         else ()
     )
     return ReviewDecision(GateVerdict(verdict_raw), tuple(checks), reasons)
+
+
+def _failed_reviews(task: DivanTask) -> list[dict[str, Any]]:
+    """Return the recorded review rejections for one task."""
+    recorded = task.metadata.get("failed_reviews")
+    if not isinstance(recorded, list):
+        return []
+    return [entry for entry in recorded if isinstance(entry, dict)]
