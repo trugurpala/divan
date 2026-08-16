@@ -1,5 +1,66 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası — durum (2026-08-16)
+
+Bu kayıt kampanyanın nerede kaldığını sonraki oturuma taşır. Hiçbir merge,
+tag veya release yapılmadı; force push kullanılmadı.
+
+### Canlı zincir
+
+| Dal | Head | CI |
+|---|---|---|
+| `main` | `68e91fd` | — |
+| `feat/patron-goal-plan-flow` (#158) | `7277186` | yeşil |
+| `feat/agency-project-lifecycle-v1` (#160) | `4343cae` | yeşil |
+| `feat/spec-compiler-v1` | `fac0fed` | yeni |
+| `feat/agency-memory-current` | `414ef79` | yeni |
+| `feat/plugin-sdk-current` | `8ee8fe0` | yeni |
+
+`#158`, `#160`'ın atasıdır. `#161` Ottoman kimlik hattıdır ve Agency OS
+kanonik yönü sayılmamıştır.
+
+### Tamamlanan
+
+1. **Spec Kit kararı kanıta bağlandı.** v0.16.4 izole tek seferlik spike ile
+   incelendi, kurulmadı. Karar ADAPT olarak kaldı; aday kaydı yeni commit ve
+   kanıtla tazelendi. `spec_compiler` bir Fermanı PROJECT_CONTRACT,
+   UX_ACCEPTANCE_CONTRACT, ARCHITECTURE_DECISIONS, WORK_PACKAGE_DAG ve
+   QUALITY_REQUIREMENTS sözleşmelerine derler; execution yetkisi vermez.
+2. **Memory-first gerçek.** `memory_first.recall` sınırlı bir paket döndürür,
+   cevaplayamadığını açıkça bildirir; yalnız bu boşluklar araştırma tetikler.
+3. **Projeksiyon ve yeniden-kullanım bağlandı.** `knowledge.book`,
+   `knowledge.recall` ve `knowledge.observe` komutları canlı; Markdown yalnız
+   projeksiyon, SQLite otorite. Yeniden kullanım sayısı terfi yetkisi değil.
+4. **Çelişkiler açık durum.** `SUPERSEDED`, `QUARANTINED`, `STALE` eklendi;
+   `resolve_contradiction` hiçbir tarafı silmez, karantinadaki iddia
+   planlayıcıya verilmez.
+5. **Plugin girdisi sınırlandı.** Manifest 64 KB, capability 32, hata listesi
+   sınırlı; yinelenen JSON anahtarı fail-closed reddediliyor.
+
+### Açık kalanlar
+
+- Plugin Trust Center gerçek render/component testi (kaynak metni grep'i
+  yetersiz). Vitest gibi bir test koşucusu değerlendirilmeli.
+- Worker güvenilirliği: attempt kimliği, heartbeat, stall, replacement ve
+  kontrollü process kill testleri.
+- Context Compiler ve token bütçesi.
+- Teftiş Factory profil bağlama ve browser QA yeteneği.
+- Deep Doctor tek okuma yüzeyi.
+- Patron Masası'nın `project.agency.status` verisini üç derinlikli insan
+  diline bağlaması.
+- AgencyBench-01 uçtan uca kanıtı.
+
+### Bilinen engel
+
+Kanonik `scripts/verify.py` bu makinede engellidir. 87 hata `main` ile
+birebir aynıdır ve tek nedeni `C:\Users\User\AppData` üzerindeki
+capability-SID'in tüm ağaca tam yetki vermesidir. PASS sayılmamıştır ve ACL
+değiştirilmemiştir.
+
+`scripts/verify.py` tek başına CI değildir: ruff, mypy, clean-code, naming,
+prose ve standards ayrı quality-gate adımlarıdır ve her PASS'ta ayrıca
+çalıştırılmalıdır.
+
 ## Hedef Güncellemesi (2026-08-04)
 
 - `v1.3.8` adayı host recovery, typed continuation, host-bağımsız
