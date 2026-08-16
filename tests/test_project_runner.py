@@ -89,6 +89,7 @@ RUNTIME_FILES = (
     "project_state.py",
     "project_transactions.py",
     "providers.py",
+    "quality_factory.py",
     "receipts.py",
     "release.py",
     "review_gate.py",

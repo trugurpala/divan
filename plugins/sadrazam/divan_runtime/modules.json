@@ -30,7 +30,8 @@
         "governance",
         "review_gate",
         "reviewer_runner",
-        "git_guard"
+        "git_guard",
+        "quality_factory"
       ],
       "capabilities": [
         "authority_chain",
@@ -39,7 +40,10 @@
         "release_approval_gate",
         "independent_agent_review",
         "review_snapshot_binding",
-        "guarded_fast_forward_merge"
+        "guarded_fast_forward_merge",
+        "quality_profile_gates",
+        "fail_closed_gate_evaluation",
+        "bound_evidence_manifest"
       ],
       "depends_on": [
         "kernel"
