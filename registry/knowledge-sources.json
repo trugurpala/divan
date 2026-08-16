@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "id": "backstage",
+      "url": "https://github.com/backstage/backstage",
+      "decision": "ADAPT",
+      "purpose": ["software-catalog-model", "techdocs-model", "software-template-model"],
+      "code_license": "Apache-2.0",
+      "data_license": null,
+      "cache_policy": "reference-only",
+      "ingest_policy": "Do not vendor Backstage into Divan Core; adapt catalog and template concepts behind Divan contracts."
+    },
+    {
+      "id": "deps-dev",
+      "url": "https://github.com/google/deps.dev",
+      "decision": "ADAPT",
+      "purpose": ["package-metadata", "dependency-graphs", "licenses", "security-signals"],
+      "code_license": "Apache-2.0",
+      "data_license": "CC-BY-4.0 generated data; upstream-source terms may also apply",
+      "cache_policy": "local-cache-with-attribution",
+      "ingest_policy": "Persist normalized metadata and provenance, never treat remote popularity or security data as release authority."
+    },
+    {
+      "id": "ecosyste-ms",
+      "url": "https://github.com/ecosyste-ms",
+      "decision": "REFERENCE",
+      "purpose": ["package-ecosystem-metadata", "repository-metadata", "dependency-research"],
+      "code_license": "AGPL-3.0",
+      "data_license": "CC-BY-SA-4.0",
+      "cache_policy": "review-before-persistent-ingest",
+      "ingest_policy": "Do not vendor the service code. Any persisted API data must retain attribution and share-alike obligations where applicable."
+    },
+    {
+      "id": "openssf-scorecard",
+      "url": "https://github.com/ossf/scorecard",
+      "decision": "ADAPT",
+      "purpose": ["open-source-security-health", "dependency-selection-signal"],
+      "code_license": "Apache-2.0",
+      "data_license": "CDLA-Permissive-2.0 for REST API data",
+      "cache_policy": "local-cache-with-provenance",
+      "ingest_policy": "Store individual checks and timestamped provenance; never reduce adoption to a single score."
+    },
+    {
+      "id": "osv",
+      "url": "https://github.com/google/osv.dev",
+      "decision": "ADAPT",
+      "purpose": ["vulnerability-metadata", "dependency-security-evidence"],
+      "code_license": "verify-at-adoption-pin",
+      "data_license": "record-specific and upstream-dependent",
+      "cache_policy": "metadata-with-source-attribution",
+      "ingest_policy": "Keep advisory identity and source provenance; do not copy arbitrary vulnerability prose into reusable project recipes."
+    },
+    {
+      "id": "copier",
+      "url": "https://github.com/copier-org/copier",
+      "decision": "ADAPT",
+      "purpose": ["project-blueprints", "template-lifecycle", "template-updates"],
+      "code_license": "MIT",
+      "data_license": null,
+      "cache_policy": "pinned-template-metadata",
+      "ingest_policy": "Use as an optional recipe engine later; templates require explicit source, license and immutable revision."
+    },
+    {
+      "id": "madr",
+      "url": "https://github.com/adr/madr",
+      "decision": "ADOPT",
+      "purpose": ["decision-memory", "architecture-decision-shape"],
+      "code_license": "MIT OR CC0-1.0",
+      "data_license": null,
+      "cache_policy": "template-reference",
+      "ingest_policy": "Adapt the decision-record shape into structured Knowledge Fabric records; Markdown remains a projection."
+    },
+    {
+      "id": "duckdb",
+      "url": "https://github.com/duckdb/duckdb",
+      "decision": "REFERENCE",
+      "purpose": ["large-local-analytics"],
+      "code_license": "MIT",
+      "data_license": null,
+      "cache_policy": "not-applicable",
+      "ingest_policy": "Keep v1 on stdlib SQLite; evaluate DuckDB only when cross-project analytics volume justifies another runtime dependency."
+    },
+    {
+      "id": "sqlite-vec",
+      "url": "https://github.com/asg017/sqlite-vec",
+      "decision": "REFERENCE",
+      "purpose": ["future-semantic-search"],
+      "code_license": "MIT OR Apache-2.0",
+      "data_license": null,
+      "cache_policy": "not-applicable",
+      "ingest_policy": "Do not adopt while the extension is pre-v1 unless semantic search has a measured need and compatibility gate."
+    }
+  ]
+}

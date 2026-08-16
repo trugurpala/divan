@@ -152,7 +152,14 @@
         "task_store",
         "agency_status",
         "execution_recovery",
-        "orchestrator"
+        "orchestrator",
+        "task_learning",
+        "knowledge_contract",
+        "knowledge_capture",
+        "knowledge_store",
+        "knowledge_projection",
+        "knowledge_relevance",
+        "memory_first"
       ],
       "capabilities": [
         "goal_state",
@@ -166,7 +173,15 @@
         "atomic_task_persistence",
         "agency_project_status",
         "fail_closed_execution_recovery",
-        "task_orchestration"
+        "task_orchestration",
+        "local_knowledge_fabric",
+        "deterministic_failure_lessons",
+        "task_close_failure_learning",
+        "project_context_memory_ranking",
+        "generated_knowledge_projection",
+        "cross_project_reuse_analytics",
+        "memory_first_bounded_recall",
+        "explicit_knowledge_contradiction_states"
       ],
       "depends_on": [
         "kernel",
@@ -239,7 +254,9 @@
         "local_server",
         "desktop_api",
         "desktop_protocol_support",
-        "desktop_protocol"
+        "desktop_protocol",
+        "knowledge_desktop",
+        "knowledge_protocol"
       ],
       "capabilities": [
         "cli",
@@ -252,7 +269,8 @@
         "loopback_status_server",
         "desktop_api",
         "desktop_goal_planning",
-        "desktop_json_protocol"
+        "desktop_json_protocol",
+        "agency_memory_read_model"
       ],
       "depends_on": [
         "kernel",

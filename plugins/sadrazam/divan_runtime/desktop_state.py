@@ -34,3 +34,7 @@ def worktree_root() -> Path:
 
 def projects_file() -> Path:
     return desktop_data_root() / "projects.json"
+
+
+def knowledge_database() -> Path:
+    return desktop_data_root() / "knowledge" / "knowledge.sqlite3"

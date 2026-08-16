@@ -19,6 +19,7 @@ from .desktop_protocol_support import optional_string as _optional_string
 from .desktop_protocol_support import required_string as _required_string
 from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
+from .knowledge_protocol import KNOWLEDGE_HANDLERS
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
@@ -115,6 +116,17 @@ def _handle_project_register(
     return _ok(asdict(ProjectRegistry().register(root)))
 
 
+def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
+    project_id = _optional_string(payload, "project_id", "DESKTOP_PROJECT_ID_INVALID")
+    if project_id:
+        return ProjectRegistry().get(project_id).root
+    return _optional_string(
+        payload,
+        "project_root",
+        "DESKTOP_PROJECT_ROOT_INVALID",
+    )
+
+
 def _handle_task_list(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -127,17 +139,6 @@ def _handle_task_get(
 ) -> dict[str, Any]:
     del router
     return _ok(_load_task(payload).to_dict())
-
-
-def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
-    project_id = _optional_string(payload, "project_id", "DESKTOP_PROJECT_ID_INVALID")
-    if project_id:
-        return ProjectRegistry().get(project_id).root
-    return _optional_string(
-        payload,
-        "project_root",
-        "DESKTOP_PROJECT_ROOT_INVALID",
-    )
 
 
 def _handle_task_create(
@@ -356,6 +357,7 @@ _HANDLERS: dict[str, Handler] = {
     "goal.preview": handle_goal_preview,
     "goal.create": handle_goal_create,
     "goal.tasks": handle_goal_tasks,
+    **KNOWLEDGE_HANDLERS,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,
