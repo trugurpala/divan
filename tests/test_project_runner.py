@@ -109,6 +109,8 @@ RUNTIME_FILES = (
     "task_model.py",
     "task_learning.py",
     "task_store.py",
+    "update_governor.py",
+    "update_pipeline.py",
     "verification_guard.py",
     "worker_certification.py",
     "worker_execution.py",

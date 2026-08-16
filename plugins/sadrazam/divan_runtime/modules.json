@@ -230,7 +230,9 @@
         "worker_process",
         "worktree_reading",
         "worker_execution",
-        "worker_review"
+        "worker_review",
+        "update_governor",
+        "update_pipeline"
       ],
       "capabilities": [
         "local",
@@ -254,7 +256,12 @@
         "observed_worker_progress",
         "process_independent_review",
         "read_only_reviewer_enforcement",
-        "host_readable_worktree_reading"
+        "host_readable_worktree_reading",
+        "smart_update_governor",
+        "no_blind_latest",
+        "update_concurrency_safety",
+        "proven_rollback_only",
+        "contract_smoke_certification"
       ],
       "depends_on": [
         "kernel",
