@@ -1,5 +1,69 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası II — integration head (2026-08-16)
+
+### Tek integration head
+
+`feat/agency-os-turnkey-v1` artık tüm Agency OS yeteneklerini tek dalda
+taşıyor. Zincir: `#158` → `#160` → spec compiler → Agency Memory →
+Plugin Trust.
+
+Bütün çakışmalar semantik çözüldü, taraf seçilmedi: iki protokol çakışması
+da iki dalın aynı satıra ayrı yüzey eklemesiydi, ikisi de korundu;
+`modules.json` modül bazında birleştirildi; progress defteri iki kaydı da
+tuttu. Dispatcher 29 komut taşıyor ve hiçbiri kaybolmadı — bu varsayılmadı,
+test edildi.
+
+Üç handler tablosunun birleşmesi `desktop_protocol.py`'yi 409 satıra
+çıkardı. Yine sıkıştırmak yerine `plugin.inspect` kendi
+`plugin_protocol.py` modülüne alındı; `knowledge_protocol.py` zaten aynı
+deseni kullanıyordu.
+
+### CI hatası sınıflandırması
+
+PR #162 iki kırmızı check ile geldi. **İkisinin de tek kök nedeni vardı**:
+aday defterini güncelleyip `tests/test_meclis.py` içindeki sabit pin'i
+güncellememiştim. `verify.py` tüm süiti koştuğu için quality-gate de aynı
+testten düştü. Pin'ler tam da sessiz kaymayı önlemek için var; bilinçli
+güncellendi. Coverage sorun değildi: %68, taban %64.
+
+### Patron Masası gerçek ürün UX'i
+
+`humanStatus.ts` saf bir sunum katmanıdır ve Core'un karar vermediği hiçbir
+şeyi türetmez. Sahibin altı sorusunu insan diliyle yanıtlar.
+
+"Kod yazıldı" ile "Hazır" artık karıştırılamaz iki durumdur. Hazır yalnız
+Core `DELIVERY_READY` veya `RELEASED` dediğinde çıkar. Bütün iş paketleri
+tamamlanmış ama hâlâ `IMPLEMENTATION` olan proje "Yapılıyor" görünür;
+`BLOCKED` proje asla "Hazır" görünemez. İkisi de test edilmiştir.
+
+`ProjectStatusCard` üç derinlik render eder ve varsayılan Padişah'tır.
+Padişah görünümünde hiç teknik kelime yoktur; test worktree yolu veya çıkış
+kodunun orada görünmediğini doğrular.
+
+### Gerçek frontend testleri
+
+Kaynak metni grep'i bırakıldı. Vitest 4.1.10 (Vite 8 destekli),
+`@testing-library/react` 16.3.2 (React 19 destekli) ve jsdom
+proje-kapsamlı ve lockfile'a pinli kuruldu; global kurulum yapılmadı.
+14 test gerçek render edilmiş DOM üzerinde çalışır, etkileşim `fireEvent`
+ile tetiklenir ve derinlik seçicinin klavye/etiket sözleşmesi doğrulanır.
+
+### Ölçüm
+
+| | Test | Başarısız | Yeni regresyon |
+|---|---|---|---|
+| `main` | 1020 | 87 | — |
+| integration head | 1128 | 84 | **0** |
+
+Frontend: 14/14. Yerel quality-gate adımlarının tamamı yeşil.
+
+### Sıradaki kesin adım
+
+PASS 6'dan devam: attempt modelini first-class yapmak, ardından fault
+injection ile kontrollü worker kill kanıtı. Sonra Context Compiler,
+Teftiş Factory, Deep Doctor ve AgencyBench-01.
+
 ## Agency OS kampanyası — durum (2026-08-16)
 
 Bu kayıt kampanyanın nerede kaldığını sonraki oturuma taşır. Hiçbir merge,
