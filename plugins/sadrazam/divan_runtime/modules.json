@@ -160,6 +160,7 @@
         "agency_status",
         "attempt_contract",
         "attempt_store",
+        "verification_guard",
         "execution_recovery",
         "orchestrator",
         "task_learning",
@@ -197,7 +198,9 @@
         "bounded_stall_and_orphan_detection",
         "attempt_replacement_with_preserved_history",
         "bounded_failure_lesson_candidates",
-        "no_auto_promotion_from_failure"
+        "no_auto_promotion_from_failure",
+        "verification_mutation_guard",
+        "pid_reuse_safe_lock_recovery"
       ],
       "depends_on": [
         "kernel",

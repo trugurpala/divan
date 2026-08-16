@@ -11,3 +11,4 @@ apps/desktop/dist/
 .coverage
 htmlcov/
 .superpowers/
+.divan/verification.lock
