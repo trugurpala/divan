@@ -1,5 +1,68 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası III — worker keşfi (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ccc865e`
+
+### Engelin gerçek nedeni kanıtlandı
+
+Önceki koşum Codex ve Claude'u yalnız PATH aramasına dayanarak `OFFLINE`
+bildirmişti. "PATH'te yok" ile "kurulu değil" farklı bulgulardır.
+
+Bu oturumda kesin arama yapıldı: PATH, `where.exe`, npm global kökü ve bin
+dizini, scoop shims, chocolatey bin, Program Files, `LOCALAPPDATA\Programs`
+ve kullanıcı profili kökleri. **Hiçbirinde `codex` veya `claude`
+çalıştırılabiliri yok.**
+
+`C:\Users\User\.claude`, `.codex` ve `AppData\Roaming\claude` dizinleri var
+ama bunlar Claude Desktop uygulamasının ve Codex'in yapılandırma/durum
+dizinleridir; CLI kurulumu değildir.
+
+Sonuç değişmedi ama artık varsayım değil kanıt: **worker'lar gerçekten
+kurulu değil.**
+
+### `worker_discovery`
+
+Bulgu kalıcı yeteneğe çevrildi. Mevcut resolver önce kullanılır, sonra
+belgelenmiş kurulum kökleri taranır. `ABSENT` sonucu **aranan her konumu
+taşır**, böylece iddia kontrol edilebilir. PATH dışında bulunan bir worker
+"environment sınırı" notuyla `RESOLVED` bildirilir.
+
+Kimlik dosyası hiçbir zaman açılmaz; bir test probe'un credential dizinine
+girmediğini doğrular.
+
+### Tarayıcı yeteneği
+
+Doctor'da eksikti ama **repoda zaten vardı**: `site-tests` workflow'u
+`playwright==1.61.0` ve chromium kuruyor, `ui-pack` altında
+`webapp-testing` skill'i mevcut. Yeni araç eklenmedi; Doctor aynı yeteneği
+yokluyor. Yoklama alt süreçte çalışır çünkü çekirdek stdlib-only'dir —
+ilk denemede playwright'ı doğrudan import ettiğimde sözleşme doğrulayıcısı
+bunu yakaladı.
+
+Bu makinede tarayıcı yeteneği `OFFLINE` / `BROWSER_NOT_INSTALLED`; CI
+hattında kuruludur.
+
+### Açık hard gate
+
+AgencyBench hâlâ `TURNKEY_BLOCKED` / `WORKERS_OFFLINE`. Tek engel budur ve
+sahip kararıdır: ücretli kodlama CLI'ını kurmak ve oturum açmak kimlik
+işlemidir. Divan bunu kendi başına yapmaz.
+
+Kurulum yapılsa bile oturum açılmadan Doctor `DEGRADED` /
+`AUTH_NOT_VERIFIED` bildirir ve benchmark yine bloke kalır.
+
+### Sıradaki kesin adım
+
+Kampanya III'ün 2-15 arası bölümleri (worker sertifikasyonu, routing,
+gerçek attempt yürütme, gerçek fault injection, tarayıcı/güvenlik kampanyası,
+AgencyBench-02, onarım döngüsü, final teftiş) kurulu bir worker olmadan
+kanıtlanamaz. Worker sağlandığında sıra budur.
+
+Worker'sız yapılabilecek kalan işler: worker sertifikasyon sözleşmesi ve
+routing politikası modelleri, Ferman öncesi worker hazırlık uyarısı,
+doğrulama sırasında worktree mutation guard.
+
 ## Agency OS kampanyası II — PASS 9 ve 10 (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `df17551`
