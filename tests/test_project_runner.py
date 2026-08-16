@@ -133,6 +133,67 @@ def git(root: pathlib.Path, *arguments: str) -> str:
     ).strip()
 
 
+class RuntimeRegistrationTests(unittest.TestCase):
+    """A runtime module has to be registered in both places or neither.
+
+    modules.json declares what the runtime contains and this file lists what
+    the deterministic build copies. Registering in one and forgetting the
+    other leaves a module the contract knows about but the build omits, or a
+    file the build ships that the contract never declared. Both were reached
+    by hand three times while the worker execution modules landed, so the
+    mismatch is checked rather than remembered.
+    """
+
+    #: Package machinery, not a declared runtime module.
+    NOT_DECLARED = frozenset({"__init__"})
+
+    def _declared(self) -> set[str]:
+        contract = json.loads(
+            (RUNTIME / "modules.json").read_text(encoding="utf-8")
+        )
+        return {
+            name
+            for entry in contract["modules"]
+            for name in entry["python_modules"]
+        }
+
+    @staticmethod
+    def _python_modules() -> set[str]:
+        """Only the Python files. The build also ships data and UI assets."""
+        return {
+            name[:-3]
+            for name in RUNTIME_FILES
+            if name.endswith(".py") and "/" not in name
+        }
+
+    def test_every_declared_module_is_built_into_the_runner(self) -> None:
+        listed = self._python_modules()
+        missing = sorted(self._declared() - listed)
+
+        self.assertEqual(
+            missing,
+            [],
+            "declared in modules.json but not copied by the build: " + ", ".join(missing),
+        )
+
+    def test_every_built_python_module_is_declared_in_the_contract(self) -> None:
+        listed = self._python_modules() - self.NOT_DECLARED
+        undeclared = sorted(listed - self._declared())
+
+        self.assertEqual(
+            undeclared,
+            [],
+            "copied by the build but never declared: " + ", ".join(undeclared),
+        )
+
+    def test_every_declared_module_exists_on_disk(self) -> None:
+        absent = sorted(
+            name for name in self._declared() if not (RUNTIME / f"{name}.py").exists()
+        )
+
+        self.assertEqual(absent, [], "declared but missing: " + ", ".join(absent))
+
+
 class ProjectRunnerTests(unittest.TestCase):
     def _fixture(self, root: pathlib.Path) -> str:
         runtime = root / "plugins" / "sadrazam" / "divan_runtime"
