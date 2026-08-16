@@ -163,9 +163,21 @@ try {
     $agentMarker = Join-Path $root "fake-codex-started.txt"
     @"
 @echo off
-> "%DIVAN_FAKE_AGENT_MARKER%" echo started
-powershell.exe -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 120"
-exit /b 0
+if /I "%~1"=="--version" (
+  echo codex-lifecycle-test 1.0.0
+  exit /b 0
+)
+if /I "%~1"=="login" if /I "%~2"=="status" (
+  echo Logged in using ChatGPT
+  exit /b 0
+)
+if /I "%~1"=="exec" (
+  > "%DIVAN_FAKE_AGENT_MARKER%" echo started
+  powershell.exe -NoProfile -NonInteractive -Command "Start-Sleep -Seconds 120"
+  exit /b 0
+)
+echo unexpected fake Codex arguments: %* 1>&2
+exit /b 2
 "@ | Set-Content -Path $fakeCodex -Encoding Ascii
     $env:DIVAN_FAKE_AGENT_MARKER = $agentMarker
     $env:PATH = "$fakeBin;$previousPath"
