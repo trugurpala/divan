@@ -218,7 +218,8 @@
         "plugin_discovery",
         "plugin_approval",
         "plugin_desktop",
-        "plugin_sdk"
+        "plugin_sdk",
+        "worker_discovery"
       ],
       "capabilities": [
         "local",
@@ -232,7 +233,9 @@
         "privacy_bounded_plugin_inspection",
         "sidecar_plugin_sdk",
         "bounded_plugin_manifest_input",
-        "plugin_license_provenance"
+        "plugin_license_provenance",
+        "evidence_backed_worker_discovery",
+        "browser_qa_capability_probe"
       ],
       "depends_on": [
         "kernel",
@@ -270,6 +273,7 @@
       "en": "Command API",
       "tr": "Komut Arayüzü",
       "python_modules": [
+        "browser_capability",
         "doctor_checks",
         "doctor",
         "compatibility",

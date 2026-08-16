@@ -13,6 +13,7 @@ from typing import Any, Callable, Mapping
 
 from .agency_status import build_project_agency_status
 from .attempt_store import classify_quiet_attempt
+from .browser_capability import browser_capability
 from .context_compiler import compile_context
 from .doctor import (
     LOCAL_STATE_DACL_POLICY,
@@ -25,6 +26,7 @@ from .evidence import build_evidence
 from .memory_first import recall
 from .plugin_desktop import inspect_plugin_manifest
 from .quality_factory import evaluate as evaluate_gates
+from .worker_discovery import WorkerFinding, probe_worker
 
 Which = Callable[[str], str | None]
 
@@ -225,6 +227,46 @@ def _tool_check(
     )
 
 
+def _worker_check(worker_id: str, display_name: str) -> CapabilityReport:
+    """Report a coding worker with the evidence behind the finding.
+
+    "Not on PATH" and "not installed" are different findings, so an ABSENT
+    result records every location that was actually examined.
+    """
+    probe = probe_worker(worker_id)
+    affects = "Kod yazan çalışanlardan biri; yoksa uygulama üretilemez."
+    if probe.finding is WorkerFinding.ABSENT:
+        return CapabilityReport(
+            capability_id=worker_id,
+            display_name=display_name,
+            state=CapabilityState.OFFLINE,
+            affects=affects,
+            code="TOOL_NOT_INSTALLED",
+            detail=probe.detail,
+            evidence=f"{len(probe.searched)} konum arandı: " + ", ".join(probe.searched),
+        )
+    if probe.finding is WorkerFinding.UNUSABLE:
+        return CapabilityReport(
+            capability_id=worker_id,
+            display_name=display_name,
+            state=CapabilityState.INCOMPATIBLE,
+            affects=affects,
+            code="TOOL_UNUSABLE",
+            detail=probe.detail,
+            evidence=probe.executable,
+        )
+    # Found is not authenticated. Divan never opens a credential file to guess.
+    return CapabilityReport(
+        capability_id=worker_id,
+        display_name=display_name,
+        state=CapabilityState.DEGRADED,
+        affects=affects,
+        code="AUTH_NOT_VERIFIED",
+        detail="çalıştırılabilir bulundu; oturum doğrulanmadı",
+        evidence=probe.executable,
+    )
+
+
 def build_report(
     *,
     state_root: Path,
@@ -238,12 +280,9 @@ def build_report(
         lambda: _tool_check(
             "git", "Git", "Worktree izolasyonu ve güvenli birleştirme.", "git", which
         ),
-        lambda: _tool_check(
-            "codex", "Codex", "Kod yazan çalışanlardan biri.", "codex", which
-        ),
-        lambda: _tool_check(
-            "claude", "Claude Code", "Kod yazan çalışanlardan biri.", "claude", which
-        ),
+        lambda: _worker_check("codex", "Codex"),
+        lambda: _worker_check("claude", "Claude Code"),
+        browser_capability,
         _spec_compiler_check,
         lambda: _memory_store_check(knowledge_database),
         lambda: _entry_check(
