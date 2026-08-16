@@ -1,5 +1,69 @@
 # Divan İlerleme Defteri
 
+## Agency OS kampanyası III — worker'lar sahaya indi (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `bd9ae2f`
+
+### Kurulum tamam
+
+| Bileşen | Sürüm | Yöntem |
+|---|---|---|
+| Claude Code | 2.1.229 | `winget install Anthropic.ClaudeCode` |
+| Codex CLI | 0.147.0 | `npm install -g @openai/codex` |
+| Playwright | 1.61.0 + chromium | CI ile aynı pin |
+
+Yeni tarayıcı çatısı kurulmadı; repoda zaten kullanılan sürüm hizalandı.
+
+### Codex sertifikalı
+
+Tek kullanımlık bir git deposunda sınırlı headless `codex exec` çalıştırıldı
+ve beklenen belirteci döndürdü; model ve token kullanımı raporlandı. Bu,
+kimliği doğrulanmış ve çağrılabilir bir çalışandır — yalnız kurulu değil.
+
+`codex login status` mevcut ChatGPT oturumunun kullanılabilir olduğunu
+gösterdi; yeni bir giriş akışı başlatılmadı.
+
+### Claude oturum açmadı
+
+`claude doctor` kurulum sorunu bulmuyor, ancak "Not logged in" diyor.
+Headless çağrı `Please run /login` döndürüyor. Giriş sahibin hesabını
+gerektirir; **tek kalan kapı budur** ve etrafından dolaşılmadı.
+
+### Keşifte iki gerçek kusur bulundu ve düzeltildi
+
+1. **winget köprüsü**: winget her paketi kendi dizinine kurar ve yalnız
+   kullanıcı PATH'ini değiştirir; daha önce başlamış bir süreç bunu göremez.
+   Keşif ne bu kökü ne de bir kademe altını arıyordu, bu yüzden Claude
+   kurulu olduğu hâlde eski PATH'li süreçte `TOOL_NOT_INSTALLED` okunuyordu.
+   Artık winget paket kökü ve bir kademe altı aranıyor; yürüyüş sınırlıdır.
+2. **Windows launcher tercihi**: arama uzantısız dosyayı tercih ediyordu;
+   Codex için bu çalışmayan bir shell script'tir, ayrıca `.ps1` shim'i de
+   kabul edilebiliyordu. Artık gerçek launcher'lar önce gelir.
+
+### Deep Doctor şimdi
+
+| Yetenek | Önce | Şimdi |
+|---|---|---|
+| codex | OFFLINE / TOOL_NOT_INSTALLED | DEGRADED / AUTH_NOT_VERIFIED |
+| claude | OFFLINE / TOOL_NOT_INSTALLED | DEGRADED / AUTH_NOT_VERIFIED |
+| browser-qa | OFFLINE | **CERTIFIED** |
+| local-state-security | BLOCKED | BLOCKED (değişmedi, ACL'e dokunulmadı) |
+
+Binary bulunması hâlâ CERTIFIED değildir.
+
+### Açık kapı
+
+`HARD_OWNER_AUTH_GATE`: Claude Code oturumu. Codex authenticated olduğu
+için tek worker ile ilerlenebilir, ancak bağımsız hakem ayrımı
+(writer ≠ reviewer) iki farklı sağlayıcı ister.
+
+### Sıradaki kesin adım
+
+1. Claude oturumu açıldığında Doctor'ı yeniden koş; iki worker da
+   sertifikalanmalı.
+2. Worker sertifikasyon sözleşmesi ve routing politikasını tamamla.
+3. AgencyBench-02'yi gerçek attempt'larla koş.
+
 ## Agency OS kampanyası III — worker keşfi (2026-08-16)
 
 Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ccc865e`
