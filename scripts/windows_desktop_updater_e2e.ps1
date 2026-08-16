@@ -20,7 +20,7 @@ New-Item -ItemType Directory -Path $keyRoot, $artifactRoot, $feedRoot, $stateRoo
 $privateKeyPath = Join-Path $keyRoot "updater.key"
 $keyPassword = "divan-ci-updater-e2e"
 $server = $null
-$installedApp = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
+$installedApp = Join-Path $env:LOCALAPPDATA "Ottoman/Ottoman.exe"
 
 function Set-ExactWorkflowSource {
     $eventPath = $env:GITHUB_EVENT_PATH
@@ -169,7 +169,7 @@ function Set-TestFeed {
     }
     $feed = [ordered]@{
         version = $Artifact.Version
-        notes = "Divan updater runtime e2e"
+        notes = "Ottoman updater runtime e2e"
         pub_date = [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
         platforms = [ordered]@{
             "windows-x86_64" = [ordered]@{
@@ -271,7 +271,7 @@ function Wait-InstalledBinaryVersion {
         Start-Sleep -Milliseconds 500
     }
 
-    throw "Installed Divan binary version did not become $Expected within $TimeoutSeconds seconds"
+    throw "Installed Ottoman binary version did not become $Expected within $TimeoutSeconds seconds"
 }
 
 function Clear-VerifiedUpdaterInstaller {
@@ -287,21 +287,21 @@ function Clear-VerifiedUpdaterInstaller {
     # freshly launched Tauri runtime have independently proven $Expected.
     $graceDeadline = [DateTime]::UtcNow.AddSeconds($GraceSeconds)
     while ([DateTime]::UtcNow -lt $graceDeadline) {
-        $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
+        $installers = @(Get-Process -Name "Ottoman-*-installer" -ErrorAction SilentlyContinue)
         if ($installers.Count -eq 0) {
             return
         }
         Start-Sleep -Milliseconds 500
     }
 
-    $installers = @(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue)
+    $installers = @(Get-Process -Name "Ottoman-*-installer" -ErrorAction SilentlyContinue)
     foreach ($installer in $installers) {
         Stop-Process -Id $installer.Id -Force -ErrorAction SilentlyContinue
     }
 
     $cleanupDeadline = [DateTime]::UtcNow.AddSeconds($CleanupTimeoutSeconds)
     while ([DateTime]::UtcNow -lt $cleanupDeadline) {
-        if (@(Get-Process -Name "Divan-*-installer" -ErrorAction SilentlyContinue).Count -eq 0) {
+        if (@(Get-Process -Name "Ottoman-*-installer" -ErrorAction SilentlyContinue).Count -eq 0) {
             return
         }
         Start-Sleep -Milliseconds 250
@@ -375,7 +375,7 @@ function Wait-InstalledVersion {
         }
         Start-Sleep -Seconds 2
     }
-    throw "Installed Divan version did not become $Expected within $TimeoutSeconds seconds"
+    throw "Installed Ottoman version did not become $Expected within $TimeoutSeconds seconds"
 }
 
 function Invoke-SignedUpgrade {
@@ -466,7 +466,7 @@ try {
         throw "Could not install updater e2e baseline $versionN"
     }
     if (-not (Test-Path $installedApp -PathType Leaf)) {
-        throw "Installed Divan.exe was not found after baseline install"
+        throw "Installed Ottoman.exe was not found after baseline install"
     }
     Wait-InstalledBinaryVersion -Expected $versionN -TimeoutSeconds 30 | Out-Null
     Wait-InstalledVersion -Expected $versionN -TimeoutSeconds 45 | Out-Null

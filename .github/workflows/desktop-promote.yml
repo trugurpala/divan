@@ -314,7 +314,7 @@ jobs:
 
           $installer = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "*-setup.exe" -File -Recurse)
           $feed = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "latest.json" -File -Recurse)
-          $manifest = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "divan-update-manifest.json" -File -Recurse)
+          $manifest = @(Get-ChildItem $env:DIVAN_CANDIDATE_DIR -Filter "ottoman-update-manifest.json" -File -Recurse)
           if ($installer.Count -ne 1 -or $feed.Count -ne 1 -or $manifest.Count -ne 1) { throw "candidate promotion file identity is ambiguous" }
           $signature = "$($installer[0].FullName).sig"
           if (-not (Test-Path $signature -PathType Leaf)) { throw "paired updater signature is missing" }
@@ -392,7 +392,7 @@ jobs:
 
           $notes = Join-Path $env:RUNNER_TEMP "desktop-release-notes.md"
           @"
-          # Divan Desktop v$env:DIVAN_DESKTOP_VERSION
+          # Ottoman Desktop v$env:DIVAN_DESKTOP_VERSION
 
           Stable Windows candidate promoted only after exact-main production signing readiness, real-user acceptance, signed updater E2E, Authenticode verification, provenance verification and immutable-release checks.
 
@@ -408,7 +408,7 @@ jobs:
           if (-not $releaseExists) {
             $assets = @(Get-ChildItem $env:DIVAN_PROMOTION_DIR -File | ForEach-Object { $_.FullName })
             if ($assets.Count -ne 5) { throw "promotion bundle must contain exactly five release assets" }
-            & gh release create $tag @assets --repo $env:GITHUB_REPOSITORY --verify-tag --title "Divan Desktop v$env:DIVAN_DESKTOP_VERSION" --notes-file $notes
+            & gh release create $tag @assets --repo $env:GITHUB_REPOSITORY --verify-tag --title "Ottoman Desktop v$env:DIVAN_DESKTOP_VERSION" --notes-file $notes
             if ($LASTEXITCODE -ne 0) { throw "immutable Desktop GitHub Release creation failed" }
           }
 

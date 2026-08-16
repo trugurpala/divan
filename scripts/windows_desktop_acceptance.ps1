@@ -10,11 +10,11 @@ Set-StrictMode -Version Latest
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $sourceCommit = (& git -C $RepoRoot rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $sourceCommit -notmatch '^[0-9a-f]{40}$') {
-    throw "Divan source commit could not be resolved"
+    throw "Ottoman source commit could not be resolved"
 }
 $sourceTree = (& git -C $RepoRoot rev-parse 'HEAD^{tree}').Trim()
 if ($LASTEXITCODE -ne 0 -or $sourceTree -notmatch '^[0-9a-f]{40}$') {
-    throw "Divan source tree could not be resolved"
+    throw "Ottoman source tree could not be resolved"
 }
 if (-not $Version) {
     $Version = (Get-Content (Join-Path $RepoRoot "VERSION") -Raw).Trim()
@@ -23,15 +23,15 @@ if (-not $Output) {
     $Output = Join-Path $RepoRoot ".divan/evidence/windows-desktop-acceptance-v$Version.json"
 }
 if (-not $CorePath) {
-    $installRoot = Join-Path $env:LOCALAPPDATA "Divan"
+    $installRoot = Join-Path $env:LOCALAPPDATA "Ottoman"
     $core = Get-ChildItem $installRoot -Filter "divan-core*.exe" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $core) {
-        throw "Installed Divan Core sidecar was not found. Install the current NSIS bundle first."
+        throw "Installed Ottoman Core sidecar was not found. Install the current NSIS bundle first."
     }
     $CorePath = $core.FullName
 }
 if (-not (Test-Path $CorePath)) {
-    throw "Divan Core sidecar not found: $CorePath"
+    throw "Ottoman Core sidecar not found: $CorePath"
 }
 
 $acceptanceRoot = Join-Path ([System.IO.Path]::GetTempPath()) ("divan-acceptance-" + [guid]::NewGuid().ToString("N"))
@@ -45,15 +45,15 @@ function Invoke-Core([hashtable]$Request) {
     $json = $Request | ConvertTo-Json -Depth 20 -Compress
     $lines = $json | & $CorePath
     if ($LASTEXITCODE -ne 0) {
-        throw "Divan Core exited with code $LASTEXITCODE for command $($Request.command)"
+        throw "Ottoman Core exited with code $LASTEXITCODE for command $($Request.command)"
     }
     $raw = ($lines -join "`n").Trim()
     if (-not $raw) {
-        throw "Divan Core returned no output for command $($Request.command)"
+        throw "Ottoman Core returned no output for command $($Request.command)"
     }
     $envelope = $raw | ConvertFrom-Json
     if (-not $envelope.ok) {
-        throw "Divan Core command $($Request.command) failed: $($envelope.error.code) $($envelope.error.message)"
+        throw "Ottoman Core command $($Request.command) failed: $($envelope.error.code) $($envelope.error.message)"
     }
     return $envelope.result
 }
@@ -69,18 +69,18 @@ try {
     $capabilities = Invoke-Core @{ command = "capabilities" }
     $build = $capabilities.build_provenance
     if (-not $build -or $build.source_commit -notmatch '^[0-9a-f]{40}$' -or $build.source_tree -notmatch '^[0-9a-f]{40}$') {
-        throw "Installed Divan Core does not expose release build provenance"
+        throw "Installed Ottoman Core does not expose release build provenance"
     }
     if ($build.source_commit -ne $sourceCommit -or $build.source_tree -ne $sourceTree) {
-        throw "Installed Divan Core source identity does not match the acceptance checkout"
+        throw "Installed Ottoman Core source identity does not match the acceptance checkout"
     }
 
     git init $projectRoot | Out-Null
-    Invoke-Git @("config", "user.name", "Divan Acceptance")
+    Invoke-Git @("config", "user.name", "Ottoman Acceptance")
     Invoke-Git @("config", "user.email", "acceptance@invalid.local")
-    Set-Content -Path (Join-Path $projectRoot "README.md") -Value "# Divan acceptance fixture" -Encoding utf8
+    Set-Content -Path (Join-Path $projectRoot "README.md") -Value "# Ottoman acceptance fixture" -Encoding utf8
     Invoke-Git @("add", "README.md")
-    Invoke-Git @("commit", "-m", "test: seed Divan acceptance fixture")
+    Invoke-Git @("commit", "-m", "test: seed Ottoman acceptance fixture")
 
     $readiness = Invoke-Core @{ command = "readiness" }
     $tools = @{}
@@ -91,12 +91,14 @@ try {
         throw "Git is required for Windows acceptance"
     }
 
-    $releaseAgents = @(@("codex", "claude") | Where-Object { $tools.ContainsKey($_) -and $tools[$_].available })
-    if ($releaseAgents.Count -lt 2) {
-        throw "Stable release acceptance requires both installed Codex and Claude Code so worker and reviewer are different agents"
-    }
+$releaseAgents = @(@("codex", "claude") | Where-Object {
+    $tools.ContainsKey($_) -and $tools[$_].available -and $tools[$_].auth -eq "connected"
+})
+if ($releaseAgents.Count -lt 2) {
+        throw "Stable release acceptance requires both installed and authenticated Codex and Claude Code sessions so worker and reviewer are different agents"
+}
     $worker = "codex"
-    if (-not $tools[$worker].available) {
+    if (-not $tools[$worker].available -or $tools[$worker].auth -ne "connected") {
         $worker = "claude"
     }
 
@@ -182,7 +184,7 @@ try {
 
     $result = [ordered]@{
         schema_version = 3
-        product = "Divan"
+        product = "Ottoman"
         version = $Version
         platform = "windows"
         source_commit = $sourceCommit

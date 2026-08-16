@@ -20,7 +20,7 @@ class DesktopCapabilities:
 
 
 class DesktopApi:
-    """Stable facade between the desktop shell and Divan Core."""
+    """Stable facade between the Ottoman desktop shell and local core."""
 
     API_VERSION = 1
 
@@ -29,7 +29,7 @@ class DesktopApi:
 
     def capabilities(self) -> dict[str, Any]:
         value = DesktopCapabilities(
-            product="Divan",
+            product="Ottoman",
             api_version=self.API_VERSION,
             engines=self.router.available_engines(),
             task_states=tuple(state.value for state in TaskState),

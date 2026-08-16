@@ -92,7 +92,7 @@ fn divan_capabilities() -> Capabilities {
         features.push("signed-updater");
     }
     Capabilities {
-        product: "Divan",
+        product: "Ottoman",
         version: env!("CARGO_PKG_VERSION"),
         api_version: 1,
         shell: "tauri-2",
@@ -162,17 +162,11 @@ async fn install_update(
             "no checked update is pending; run an explicit update check first".to_string()
         })?
     };
-    let version = update.version.to_string();
     update
         .download_and_install(|_, _| {}, || {})
         .await
         .map_err(|error| error.to_string())?;
-    let result = UpdateInstallStatus {
-        installed: true,
-        version: Some(version),
-    };
-    app.restart();
-    Ok(result)
+    app.restart()
 }
 
 #[cfg(not(feature = "signed-updater"))]
@@ -216,7 +210,7 @@ async fn core_request(app: tauri::AppHandle, request: String) -> Result<String, 
     if stdout.is_empty() {
         let message = String::from_utf8_lossy(&stderr).trim().to_string();
         return Err(if message.is_empty() {
-            "Divan Core returned no output".to_string()
+            "Ottoman Core returned no output".to_string()
         } else {
             message
         });
@@ -238,6 +232,8 @@ fn main() {
         .setup(|app| {
             #[cfg(feature = "updater-e2e")]
             updater_e2e::maybe_start(app.handle());
+            #[cfg(not(feature = "updater-e2e"))]
+            let _ = app;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -248,5 +244,5 @@ fn main() {
             core_request
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Divan Desktop");
+        .expect("error while running Ottoman Desktop");
 }

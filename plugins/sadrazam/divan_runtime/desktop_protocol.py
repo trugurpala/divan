@@ -6,6 +6,51 @@ from typing import Any
 from uuid import uuid4
 
 from .desktop_api import DesktopApi
+from .desktop_protocol_extensions import (
+    handle_local_ai_draft as _handle_local_ai_draft,
+)
+from .desktop_protocol_extensions import (
+    handle_local_ai_status as _handle_local_ai_status,
+)
+from .desktop_protocol_extensions import (
+    handle_ordu_plan as _handle_ordu_plan,
+)
+from .desktop_protocol_extensions import (
+    handle_project_list as _handle_project_list,
+)
+from .desktop_protocol_extensions import (
+    handle_project_register as _handle_project_register,
+)
+from .desktop_protocol_extensions import (
+    handle_prompt_get as _handle_prompt_get,
+)
+from .desktop_protocol_extensions import (
+    handle_prompt_search as _handle_prompt_search,
+)
+from .desktop_protocol_extensions import (
+    handle_task_create as _handle_task_create,
+)
+from .desktop_protocol_extensions import (
+    handle_task_create_from_prompt as _handle_task_create_from_prompt,
+)
+from .desktop_protocol_review import (
+    handle_approval_request as _handle_approval_request,
+)
+from .desktop_protocol_review import (
+    handle_evidence_list as _handle_evidence_list,
+)
+from .desktop_protocol_review import (
+    handle_task_approve as _handle_task_approve,
+)
+from .desktop_protocol_review import (
+    handle_task_release as _handle_task_release,
+)
+from .desktop_protocol_review import (
+    handle_task_review as _handle_task_review,
+)
+from .desktop_protocol_review import (
+    handle_task_review_auto as _handle_task_review_auto,
+)
 from .desktop_protocol_support import ProtocolValidationError
 from .desktop_protocol_support import (
     error_response as _error,
@@ -23,13 +68,12 @@ from .desktop_state import evidence_root, task_root
 from .execution_router import ExecutionRouter
 from .orchestrator import DivanOrchestrator
 from .project_readiness import discover_tools
-from .project_registry import ProjectRegistry
-from .review_gate import CheckResult, ReviewDecision
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
 API_VERSION = 1
 _AGENT_IDS = {"codex", "claude", "opencode", "cursor-agent"}
+_AGENT_PREFERENCE = ("codex", "claude", "opencode", "cursor-agent")
 Handler = Callable[[Mapping[str, Any], ExecutionRouter | None], dict[str, Any]]
 
 
@@ -87,7 +131,9 @@ def _handle_readiness(
     agents = [
         tool["id"]
         for tool in tools
-        if tool["id"] in _AGENT_IDS and tool["available"]
+        if tool["id"] in _AGENT_IDS
+        and tool["available"]
+        and tool["auth"] == "connected"
     ]
     engines = list(router.available_engines()) if router is not None else []
     return _ok(
@@ -100,21 +146,6 @@ def _handle_readiness(
             "api_keys_required": False,
         }
     )
-
-
-def _handle_project_list(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del payload, router
-    return _ok([asdict(item) for item in ProjectRegistry().list()])
-
-
-def _handle_project_register(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    root = _required_string(payload, "root", "DESKTOP_PROJECT_ROOT_REQUIRED")
-    return _ok(asdict(ProjectRegistry().register(root)))
 
 
 def _handle_task_list(
@@ -131,42 +162,6 @@ def _handle_task_get(
     return _ok(_load_task(payload).to_dict())
 
 
-def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
-    project_id = _optional_string(payload, "project_id", "DESKTOP_PROJECT_ID_INVALID")
-    if project_id:
-        return ProjectRegistry().get(project_id).root
-    return _optional_string(
-        payload,
-        "project_root",
-        "DESKTOP_PROJECT_ROOT_INVALID",
-    )
-
-
-def _handle_task_create(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    del router
-    title = _required_string(payload, "title", "DESKTOP_TASK_TITLE_REQUIRED")
-    raw_task_id = payload.get("task_id")
-    if raw_task_id is None:
-        task_id = f"DIV-{uuid4().hex[:8].upper()}"
-    elif isinstance(raw_task_id, str) and raw_task_id.strip():
-        task_id = raw_task_id.strip()
-    else:
-        raise ProtocolValidationError(
-            "DESKTOP_TASK_ID_INVALID",
-            "task_id must be a string",
-        )
-    task = DivanTask(
-        task_id=task_id,
-        title=title,
-        project_root=_resolve_project_root(payload),
-        engine_id=_optional_string(payload, "engine_id", "DESKTOP_ENGINE_ID_INVALID"),
-    )
-    _tasks().save(task)
-    return _ok(task.to_dict())
-
-
 def _handle_task_plan(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -176,7 +171,55 @@ def _handle_task_plan(
     return _ok(_orchestrator(active_router).plan(task, reason).to_dict())
 
 
-def _execution_task(payload: Mapping[str, Any], task: DivanTask) -> DivanTask:
+def _execution_agent(agent: str | None) -> tuple[str, dict[str, object]]:
+    readiness = discover_tools()
+    tools = {tool.id: tool for tool in readiness.tools}
+    candidates: tuple[str, ...]
+    if agent is not None:
+        candidates = (agent,)
+    else:
+        candidates = _AGENT_PREFERENCE
+    for candidate in candidates:
+        if candidate not in _AGENT_IDS:
+            raise ProtocolValidationError(
+                "DESKTOP_AGENT_UNSUPPORTED",
+                f"agent is not supported: {candidate}",
+            )
+        tool = tools.get(candidate)
+        if tool is None or not tool.available:
+            if agent is not None:
+                raise ProtocolValidationError(
+                    "DESKTOP_AGENT_UNAVAILABLE",
+                    f"agent is not available: {candidate}",
+                )
+            continue
+        if tool.auth != "connected":
+            if agent is not None:
+                raise ProtocolValidationError(
+                    "DESKTOP_AGENT_NOT_AUTHENTICATED",
+                    f"agent is not authenticated: {candidate}",
+                )
+            continue
+        return candidate, {
+            "agent": candidate,
+            "version": tool.version,
+            "auth": tool.auth,
+            "auth_detail": tool.auth_detail,
+            "api_key_configured": tool.api_key_configured,
+        }
+    raise ProtocolValidationError(
+        "DESKTOP_AGENT_UNAVAILABLE",
+        "no supported authenticated local coding agent is available",
+    )
+
+
+def _execution_task(
+    payload: Mapping[str, Any],
+    task: DivanTask,
+    *,
+    agent: str | None,
+    router: ExecutionRouter,
+) -> tuple[DivanTask, str]:
     if payload.get("approve_execution") is not True:
         raise ProtocolValidationError(
             "DESKTOP_EXECUTION_APPROVAL_REQUIRED",
@@ -188,16 +231,36 @@ def _execution_task(payload: Mapping[str, Any], task: DivanTask) -> DivanTask:
             "task must be planned or retry before execution",
         )
     engine_id = _optional_string(payload, "engine_id", "DESKTOP_ENGINE_ID_INVALID")
+    selected_engine = router.select(engine_id or task.engine_id).engine_id
+    selected_agent, preflight = _execution_agent(agent)
     mandate_id = task.mandate_id or f"mandate-{uuid4().hex}"
-    return replace(task, engine_id=engine_id or task.engine_id, mandate_id=mandate_id)
+    metadata = dict(task.metadata)
+    metadata["execution_preflight"] = {
+        "engine": selected_engine,
+        **preflight,
+    }
+    return (
+        replace(
+            task,
+            engine_id=selected_engine,
+            mandate_id=mandate_id,
+            metadata=metadata,
+        ),
+        selected_agent,
+    )
 
 
 def _handle_task_start(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
     active_router = _require_router(router)
-    task = _execution_task(payload, _load_task(payload))
     agent = _optional_string(payload, "agent", "DESKTOP_AGENT_INVALID")
+    task, agent = _execution_task(
+        payload,
+        _load_task(payload),
+        agent=agent,
+        router=active_router,
+    )
     prompt = _optional_string(payload, "prompt", "DESKTOP_TASK_PROMPT_INVALID")
     worktree_name = (
         _optional_string(payload, "worktree_name", "DESKTOP_WORKTREE_NAME_INVALID")
@@ -236,104 +299,6 @@ def _handle_task_diff(
     return _ok(DesktopApi(active_router).task_diff(task, worktree=worktree, path=path))
 
 
-def _parse_review_checks(payload: Mapping[str, Any]) -> list[CheckResult]:
-    checks_raw = payload.get("checks")
-    if not isinstance(checks_raw, list) or not checks_raw:
-        raise ProtocolValidationError(
-            "DESKTOP_REVIEW_CHECKS_REQUIRED",
-            "checks must be a non-empty list",
-        )
-    checks: list[CheckResult] = []
-    for row in checks_raw:
-        if not isinstance(row, Mapping):
-            raise ProtocolValidationError(
-                "DESKTOP_REVIEW_CHECK_INVALID",
-                "review check must be an object",
-            )
-        name = row.get("name")
-        passed = row.get("passed")
-        if not isinstance(name, str) or type(passed) is not bool:
-            raise ProtocolValidationError(
-                "DESKTOP_REVIEW_CHECK_INVALID",
-                "review check requires name and boolean passed",
-            )
-        checks.append(
-            CheckResult(
-                name=name,
-                passed=passed,
-                required=bool(row.get("required", True)),
-                summary=str(row.get("summary", "")),
-            )
-        )
-    return checks
-
-
-def _review_result(task: DivanTask, decision: ReviewDecision) -> dict[str, Any]:
-    return {
-        "task": task.to_dict(),
-        "review": {
-            "verdict": decision.verdict.value,
-            "checks": [asdict(item) for item in decision.checks],
-            "reasons": list(decision.reasons),
-        },
-    }
-
-
-def _handle_task_review(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    active_router = _require_router(router)
-    updated, decision = _orchestrator(active_router).review(
-        _load_task(payload),
-        _parse_review_checks(payload),
-    )
-    return _ok(_review_result(updated, decision))
-
-
-def _handle_task_review_auto(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    active_router = _require_router(router)
-    updated, decision = _orchestrator(active_router).review_automated(_load_task(payload))
-    return _ok(_review_result(updated, decision))
-
-
-def _handle_approval_request(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    active_router = _require_router(router)
-    task = _orchestrator(active_router).request_approval(_load_task(payload))
-    return _ok(task.to_dict())
-
-
-def _handle_task_approve(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    active_router = _require_router(router)
-    if payload.get("approved") is not True:
-        raise ProtocolValidationError(
-            "DESKTOP_MERGE_APPROVAL_REQUIRED",
-            "merge requires explicit approved=true",
-        )
-    task = _orchestrator(active_router).approve_merge(_load_task(payload), approved=True)
-    return _ok(task.to_dict())
-
-
-def _handle_task_release(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    task = _orchestrator(_require_router(router)).release(_load_task(payload))
-    return _ok(task.to_dict())
-
-
-def _handle_evidence_list(
-    payload: Mapping[str, Any], router: ExecutionRouter | None
-) -> dict[str, Any]:
-    task_id = _task_id(payload)
-    active_router = router or ExecutionRouter([])
-    return _ok(list(_orchestrator(active_router).evidence.list(task_id)))
-
-
 def _handle_engine_status(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -349,6 +314,9 @@ _HANDLERS: dict[str, Handler] = {
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,
+    "prompt.search": _handle_prompt_search,
+    "prompt.get": _handle_prompt_get,
+    "task.create_from_prompt": _handle_task_create_from_prompt,
     "task.plan": _handle_task_plan,
     "task.start": _handle_task_start,
     "task.recover.interrupted": _handle_task_recover_interrupted,
@@ -360,6 +328,9 @@ _HANDLERS: dict[str, Handler] = {
     "task.release": _handle_task_release,
     "evidence.list": _handle_evidence_list,
     "engine.status": _handle_engine_status,
+    "local_ai.status": _handle_local_ai_status,
+    "local_ai.draft": _handle_local_ai_draft,
+    "ordu.plan": _handle_ordu_plan,
 }
 
 

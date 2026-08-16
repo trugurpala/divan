@@ -11,12 +11,11 @@ from typing import Any, Callable, Mapping, Sequence
 from .desktop_state import worktree_root
 from .executable_locator import locate_executable
 from .execution_contract import ExecutionAction, ExecutionReceipt, ExecutionRequest
+from .native_engine_preflight import stale_capability_receipt
 
 ENGINE_ID = "native"
 _SLUG_RE = re.compile(r"[^a-zA-Z0-9._-]+")
-AgentRunner = Callable[
-    [Sequence[str], Path, float, str | None], tuple[int, str, str]
-]
+AgentRunner = Callable[[Sequence[str], Path, float, str | None], tuple[int, str, str]]
 GitRunner = Callable[[Sequence[str], Path | None, float], tuple[int, str, str]]
 
 
@@ -73,6 +72,8 @@ class NativeExecutionEngine:
     ) -> None:
         self.git_runner = git_runner or _run
         self.agent_runner = agent_runner or _run_in_directory
+        self._which = which
+        self._requires_current_probe = agent_binaries is None
         self.agent_binaries = dict(agent_binaries or _discover_agents(which))
 
     def execute(self, request: ExecutionRequest) -> ExecutionReceipt:
@@ -126,6 +127,13 @@ class NativeExecutionEngine:
         prompt = _required(request.args, "prompt")
         agent = _select_agent(request.args.get("agent"), self.agent_binaries)
         binary = self.agent_binaries[agent]
+        if self._requires_current_probe:
+            current_binary = _discover_agents(self._which).get(agent)
+            receipt = stale_capability_receipt(
+                request, ENGINE_ID, agent, binary, current_binary
+            )
+            if receipt is not None:
+                return receipt
         slug = _slug(name)
         branch = f"divan/{slug}"
         destination = worktree_root() / slug

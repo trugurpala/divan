@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 
@@ -97,6 +97,57 @@ type TaskDiff = {
   diff: string;
 };
 
+type PromptSummary = {
+  id: string;
+  title: string;
+  preview: string;
+  for_developers: boolean;
+  type: string;
+  contributor: string;
+};
+
+type PromptDetail = PromptSummary & {
+  prompt: string;
+  source: { repository: string; commit: string; license: string; dataset: string };
+};
+
+type PromptSearchResult = {
+  items: PromptSummary[];
+  total: number;
+  source: PromptDetail["source"];
+};
+
+type LocalAiStatus = {
+  available: boolean;
+  endpoint: string;
+  default_model: string;
+  models: Array<{ name: string; size: string; modified_at: string }>;
+  message: string | null;
+};
+
+type LocalAiDraft = {
+  model: string;
+  draft: string;
+  executed: boolean;
+};
+
+type OrduPlan = {
+  title: string;
+  max_parallel_workers: number;
+  units: Array<{ id: string; role: string; title: string; depends_on: string[] }>;
+  execution: string;
+  approval_required_before_mutation: boolean;
+};
+
+function taskInstruction(task: CoreTask): string {
+  const promptLibrary = task.metadata.prompt_library;
+  if (typeof promptLibrary === "object" && promptLibrary !== null) {
+    const value = (promptLibrary as { prompt?: unknown }).prompt;
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return task.title;
+}
+
 type ReviewResult = {
   task: CoreTask;
   review: {
@@ -107,7 +158,7 @@ type ReviewResult = {
 };
 
 type UiState = "PLAN" | "WORKING" | "REVIEW" | "PASS" | "APPROVAL";
-type ActiveTab = "summary" | "evidence" | "diff" | "releases" | "settings";
+type ActiveTab = "summary" | "library" | "workbench" | "ordu" | "evidence" | "diff" | "releases" | "settings";
 
 const stateMap: Record<string, UiState> = {
   draft: "PLAN",
@@ -125,14 +176,102 @@ const stateMap: Record<string, UiState> = {
 
 const agentIds = new Set(["codex", "claude", "opencode", "cursor-agent"]);
 
+function isDesktopRuntime() {
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+}
+
+function mockCoreRequest<T>(request: Record<string, unknown>): T {
+  switch (request.command) {
+    case "capabilities":
+      return {
+        product: "Ottoman",
+        api_version: 1,
+        features: ["browser-preview"],
+        commands: [],
+      } as T;
+    case "readiness":
+      return {
+        ready: false,
+        tools: [],
+        engines: [],
+        recommended_engine: null,
+        recommended_agent: null,
+        api_keys_required: false,
+      } as T;
+    case "project.list":
+    case "task.list":
+    case "evidence.list":
+      return [] as T;
+    case "prompt.search":
+      return {
+        items: [
+          {
+            id: "browser-preview",
+            title: "Prompt kütüphanesi masaüstünde açılır",
+            preview: "Gerçek prompt araması Ottoman Core ile yapılır.",
+            for_developers: true,
+            type: "TEXT",
+            contributor: "Ottoman preview",
+          },
+        ],
+        total: 0,
+        source: {
+          repository: "https://github.com/f/prompts.chat",
+          commit: "browser-preview",
+          license: "CC0-1.0",
+          dataset: "prompts.csv",
+        },
+      } as T;
+    case "local_ai.status":
+      return {
+        available: false,
+        endpoint: "http://127.0.0.1:11434",
+        default_model: "qwen3:8b",
+        models: [],
+        message: "Tarayıcı önizlemesinde yerel AI servisi okunmaz.",
+      } as T;
+    case "local_ai.draft":
+      return {
+        model: "qwen3:8b",
+        draft: "Tarayıcı önizlemesinde örnek taslak: kapsamı çıkar, küçük değişikliklerle ilerle, sonra test ve build kanıtını kontrol et.",
+        executed: false,
+      } as T;
+    case "ordu.plan":
+      return {
+        title: String(request.title ?? "Örnek Ottoman görevi"),
+        max_parallel_workers: 4,
+        units: [],
+        execution: "planned-only",
+        approval_required_before_mutation: true,
+      } as T;
+    default:
+      throw new Error("Bu işlem için Ottoman masaüstü runtime gerekir.");
+  }
+}
+
+async function invokeCommand<T>(command: string, args?: Record<string, unknown>): Promise<T> {
+  if (!isDesktopRuntime() && command === "divan_capabilities") {
+    return {
+      product: "Ottoman",
+      version: "1.3.8",
+      apiVersion: 1,
+      shell: "browser-preview",
+      features: [],
+    } as T;
+  }
+  return invoke<T>(command, args);
+}
+
 async function coreRequest<T>(request: Record<string, unknown>): Promise<T> {
-  const raw = await invoke<string>("core_request", { request: JSON.stringify(request) });
+  if (!isDesktopRuntime()) return mockCoreRequest<T>(request);
+
+  const raw = await invokeCommand<string>("core_request", { request: JSON.stringify(request) });
   const envelope = JSON.parse(raw) as CoreEnvelope<T>;
   if (!envelope.ok || envelope.result === undefined) {
     throw new Error(
       envelope.error
         ? `${envelope.error.code}: ${envelope.error.message}`
-        : "Divan Core isteği başarısız",
+        : "Ottoman Core isteği başarısız",
     );
   }
   return envelope.result;
@@ -151,6 +290,11 @@ function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [evidence, setEvidence] = useState<EvidenceRecord[]>([]);
   const [taskDiff, setTaskDiff] = useState<TaskDiff | null>(null);
+  const [promptQuery, setPromptQuery] = useState("");
+  const [promptResults, setPromptResults] = useState<PromptSearchResult | null>(null);
+  const [selectedPrompt, setSelectedPrompt] = useState<PromptDetail | null>(null);
+  const [localAi, setLocalAi] = useState<LocalAiStatus | null>(null);
+  const [orduPlan, setOrduPlan] = useState<OrduPlan | null>(null);
   const [agent, setAgent] = useState<string>("");
   const [engine, setEngine] = useState<string>("");
   const [activeTab, setActiveTab] = useState<ActiveTab>("summary");
@@ -178,14 +322,16 @@ function App() {
   useEffect(() => {
     Promise.all([
       coreRequest<Capabilities>({ command: "capabilities" }),
-      invoke<ShellCapabilities>("divan_capabilities"),
+      invokeCommand<ShellCapabilities>("divan_capabilities"),
       refreshReadiness(),
       refreshProjects(),
       refreshTasks(),
+      coreRequest<LocalAiStatus>({ command: "local_ai.status" }),
     ])
-      .then(([capabilities, shellCapabilities]) => {
+      .then(([capabilities, shellCapabilities, , , , localAiStatus]) => {
         setCaps(capabilities);
         setShellCaps(shellCapabilities);
+        setLocalAi(localAiStatus);
       })
       .catch((value: unknown) => setError(String(value)));
   }, []);
@@ -206,6 +352,13 @@ function App() {
       : "";
   const selectedEngine =
     operatorEngine || persistedTaskEngine || readiness?.recommended_engine || "";
+  const selectedAgent = agent || readiness?.recommended_agent || "";
+  const selectedAgentTool = readiness?.tools.find((tool) => tool.id === selectedAgent);
+  const executionAgentReady = Boolean(
+    selectedAgentTool?.available && selectedAgentTool.auth === "connected",
+  );
+  const executionStartBlocked =
+    busy !== null || !selectedEngine || !executionAgentReady;
   const selectedState = selected ? stateMap[selected.state] ?? "PLAN" : "PLAN";
   const canReadDiff = Boolean(
     selected && !["draft", "planned"].includes(selected.state),
@@ -239,11 +392,21 @@ function App() {
       .catch(() => setTaskDiff(null));
   }, [selectedId, selected?.state, canReadDiff, interruptedExecution]);
 
-  const run = async (label: string, action: () => Promise<void>) => {
+  useEffect(() => {
+    if (!selected) {
+      setOrduPlan(null);
+      return;
+    }
+    coreRequest<OrduPlan>({ command: "ordu.plan", title: selected.title })
+      .then(setOrduPlan)
+      .catch(() => setOrduPlan(null));
+  }, [selected?.task_id, selected?.title]);
+
+  const run = async <T,>(label: string, action: () => Promise<T>): Promise<T | undefined> => {
     setBusy(label);
     setError(null);
     try {
-      await action();
+      return await action();
     } catch (value) {
       setError(String(value));
     } finally {
@@ -256,7 +419,7 @@ function App() {
       const selectedFolder = await open({
         directory: true,
         multiple: false,
-        title: "Divan için Git proje klasörünü seç",
+        title: "Ottoman için Git proje klasörünü seç",
       });
       if (typeof selectedFolder !== "string" || !selectedFolder.trim()) return;
       const project = await coreRequest<ProjectRecord>({
@@ -269,7 +432,7 @@ function App() {
 
   const createTask = () =>
     run("create", async () => {
-      const title = window.prompt("Divan ne yapsın?");
+      const title = window.prompt("Ottoman ne yapsın?");
       if (!title?.trim()) return;
       const created = await coreRequest<CoreTask>({
         command: "task.create",
@@ -295,22 +458,65 @@ function App() {
   const startTask = () =>
     selected &&
     run("start", async () => {
-      const executionEngine =
-        operatorEngine || persistedTaskEngine || readiness?.recommended_engine || "";
+      if (!executionAgentReady) {
+        throw new Error("Seçilen ajan kurulu ve oturum açmış değil; worktree oluşturulmadı.");
+      }
+      if (!selectedEngine) {
+        throw new Error("Kullanılabilir bir execution engine seçilmedi; worktree oluşturulmadı.");
+      }
       const confirmed = window.confirm(
-        `Divan bu görevi izole bir Git worktree içinde çalıştıracak.\n\nGörev: ${selected.title}\nAjan: ${agent || "otomatik"}\nMotor: ${executionEngine || "otomatik"}\n\nBir kez çalıştırmayı onaylıyor musun?`,
+        `Ottoman bu görevi izole bir Git worktree içinde çalıştıracak.\n\nGörev: ${selected.title}\nAjan: ${selectedAgent}\nMotor: ${selectedEngine}\n\nBir kez çalıştırmayı onaylıyor musun?`,
       );
       if (!confirmed) return;
       await coreRequest<CoreTask>({
         command: "task.start",
         task_id: selected.task_id,
         approve_execution: true,
-        agent: agent || undefined,
-        engine_id: executionEngine || undefined,
-        prompt: selected.title,
+        agent: selectedAgent,
+        engine_id: selectedEngine,
+        prompt: taskInstruction(selected),
       });
       await refreshTasks();
     });
+
+  const searchPrompts = (query = promptQuery) =>
+    run("prompt-search", async () => {
+      const result = await coreRequest<PromptSearchResult>({
+        command: "prompt.search",
+        query,
+        limit: 30,
+      });
+      setPromptResults(result);
+      setSelectedPrompt(null);
+    });
+
+  const openPrompt = (promptId: string) =>
+    run("prompt-detail", async () => {
+      const result = await coreRequest<PromptDetail>({ command: "prompt.get", prompt_id: promptId });
+      setSelectedPrompt(result);
+    });
+
+  const createTaskFromPrompt = () =>
+    selectedPrompt &&
+    run("prompt-create", async () => {
+      const created = await coreRequest<CoreTask>({
+        command: "task.create_from_prompt",
+        prompt_id: selectedPrompt.id,
+        project_id: selectedProject?.project_id ?? undefined,
+        engine_id: operatorEngine || undefined,
+      });
+      await refreshTasks();
+      setSelectedId(created.task_id);
+      setActiveTab("summary");
+    });
+
+  const draftWithLocalAi = (prompt: string) =>
+    run("local-ai-draft", () =>
+      coreRequest<LocalAiDraft>({
+        command: "local_ai.draft",
+        prompt,
+      }),
+    );
 
   const recoverInterruptedTask = () =>
     selected &&
@@ -403,7 +609,7 @@ function App() {
     run("update-install", async () => {
       if (!updateStatus?.available) return;
       const confirmed = window.confirm(
-        `İmzalı Divan ${updateStatus.version ?? "güncellemesi"} indirilecek, doğrulanacak, kurulacak ve uygulama yeniden başlatılacak. Devam edilsin mi?`,
+        `İmzalı Ottoman ${updateStatus.version ?? "güncellemesi"} indirilecek, doğrulanacak, kurulacak ve uygulama yeniden başlatılacak. Devam edilsin mi?`,
       );
       if (!confirmed) return;
       setUpdateNotice(null);
@@ -422,8 +628,8 @@ function App() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="seal">D</span>
-          <strong>DİVAN</strong>
+          <span className="seal">O</span>
+          <strong>OTTOMAN</strong>
         </div>
         <div className="project-pill">{selectedProject?.root ?? "Proje seçilmedi"}</div>
         <div className="engine-pill">
@@ -436,7 +642,10 @@ function App() {
         <div>
           <nav>
             <button className="nav-item" onClick={addProject}>Projeler</button>
-            <button className="nav-item active" onClick={() => setActiveTab("summary")}>Görevler</button>
+            <button className={activeTab === "summary" ? "nav-item active" : "nav-item"} onClick={() => setActiveTab("summary")}>Görevler</button>
+            <button className="nav-item" onClick={() => setActiveTab("library")}>Prompt kütüphanesi</button>
+            <button className="nav-item" onClick={() => setActiveTab("workbench")}>Yerel AI</button>
+            <button className="nav-item" onClick={() => setActiveTab("ordu")}>Ordu planı</button>
             <button className="nav-item" onClick={() => setActiveTab("settings")}>Ajanlar</button>
             <button className="nav-item" onClick={() => setActiveTab("evidence")}>Kanıtlar</button>
             <button
@@ -493,14 +702,35 @@ function App() {
       </aside>
 
       <section className="workspace">
-        {activeTab === "settings" ? (
+        {activeTab === "library" ? (
+          <PromptLibrary
+            query={promptQuery}
+            setQuery={setPromptQuery}
+            result={promptResults}
+            selected={selectedPrompt}
+            busy={busy}
+            hasProject={Boolean(selectedProject)}
+            onSearch={() => searchPrompts()}
+            onSelect={openPrompt}
+            onCreate={createTaskFromPrompt}
+          />
+        ) : activeTab === "workbench" ? (
+          <LocalAiWorkbench
+            localAi={localAi}
+            busy={busy === "local-ai-draft"}
+            onDraft={draftWithLocalAi}
+          />
+        ) : activeTab === "settings" ? (
           <Settings
             readiness={readiness}
+            localAi={localAi}
             agent={agent}
             setAgent={setAgent}
             engine={engine}
             setEngine={setEngine}
           />
+        ) : activeTab === "ordu" ? (
+          <OrduView plan={orduPlan} task={selected} evidence={evidence} />
         ) : activeTab === "releases" ? (
           <ReleaseView
             shellCaps={shellCaps}
@@ -536,7 +766,7 @@ function App() {
               <section className="notice-card">
                 <strong>Önce proje ekle</strong>
                 <p>
-                  Divan tüm diski taramaz. Senin seçtiğin Git klasörünü kaydeder ve yalnız o
+                  Ottoman tüm diski taramaz. Senin seçtiğin Git klasörünü kaydeder ve yalnız o
                   proje içinde çalışır.
                 </p>
                 <button className="primary" onClick={addProject}>Proje klasörü ekle</button>
@@ -606,7 +836,7 @@ function App() {
                     <section className="notice-card">
                       <strong>Kesintiye uğramış execution bulundu.</strong>
                       <p>
-                        Divan bu görevi otomatik devam ettirmedi. Önce kesintiyi RETRY durumuna
+                        Ottoman bu görevi otomatik devam ettirmedi. Önce kesintiyi RETRY durumuna
                         al; tekrar çalıştırmak istersen sonraki adımda yeniden açık onay ver.
                       </p>
                     </section>
@@ -625,7 +855,7 @@ function App() {
                       <strong>{selected.state}</strong>
                     </div>
                     <div>
-                      <span className="eyebrow">DIVAN CORE</span>
+                      <span className="eyebrow">OTTOMAN CORE</span>
                       <strong>API v{apiVersion}</strong>
                     </div>
                   </div>
@@ -636,7 +866,7 @@ function App() {
                       </button>
                     )}
                     {(selected.state === "planned" || selected.state === "retry") && (
-                      <button className="primary" onClick={startTask} disabled={busy !== null}>
+                      <button className="primary" onClick={startTask} disabled={executionStartBlocked}>
                         {busy === "start" ? "Ajan çalışıyor…" : "Çalıştır"}
                       </button>
                     )}
@@ -680,12 +910,12 @@ function App() {
         <h2>{selected?.task_id ?? "Görev seçilmedi"}</h2>
         <p>
           {selected?.title ??
-            "Bir görev oluşturduğunda burada gerçek Core durumu ve kanıtları görünecek."}
+            "Bir görev oluşturduğunda burada gerçek durum ve kanıtlar görünecek."}
         </p>
         <dl>
           <div><dt>Durum</dt><dd>{interruptedExecution ? "running / interrupted" : selected?.state ?? "—"}</dd></div>
           <div><dt>Engine</dt><dd>{selectedEngine || "—"}</dd></div>
-          <div><dt>Ajan</dt><dd>{agent || readiness?.recommended_agent || "—"}</dd></div>
+          <div><dt>Ajan</dt><dd>{selectedAgent || "—"}</dd></div>
           <div><dt>Kanıt</dt><dd>{evidence.length}</dd></div>
           <div><dt>Mandate</dt><dd>{selected?.mandate_id ? "Var" : "Gerekli"}</dd></div>
         </dl>
@@ -708,10 +938,265 @@ function App() {
         </button>
         <small>
           API anahtarı zorunlu değildir. Kurulu ajan kendi abonelik/oturumuyla çalışabiliyorsa
-          Divan o hesabı kullanır; kimlik bilgisini kopyalamaz.
+          Ottoman o hesabı kullanır; kimlik bilgisini kopyalamaz.
         </small>
       </aside>
     </main>
+  );
+}
+
+function LocalAiWorkbench({
+  localAi,
+  busy,
+  onDraft,
+}: {
+  localAi: LocalAiStatus | null;
+  busy: boolean;
+  onDraft: (prompt: string) => Promise<LocalAiDraft | undefined>;
+}) {
+  const [prompt, setPrompt] = useState("");
+  const [draft, setDraft] = useState<LocalAiDraft | null>(null);
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!prompt.trim()) return;
+    const result = await onDraft(prompt.trim());
+    if (result) setDraft(result);
+  };
+
+  return (
+    <section className="workbench-view">
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">YEREL AI ÇALIŞMA MASASI</span>
+          <h1>Taslak üret, önce sen incele</h1>
+        </div>
+      </div>
+      <section className="notice-card">
+        <strong>Bu alan bir çalışma taslağı üretir; hiçbir şey çalıştırmaz.</strong>
+        <p>
+          Metin yalnız bilgisayarındaki Ollama servisine gider. Ottoman burada terminal komutu,
+          dosya değişikliği, Git işlemi veya ajan çalıştırma yapmaz. Uygulamaya geçmek istersen
+          taslağı kendi seçtiğin göreve dönüştürüp normal plan ve açık onay akışını kullanırsın.
+        </p>
+      </section>
+      <div className="workbench-layout">
+        <form className="local-ai-form terminal-panel" onSubmit={submit}>
+          <label htmlFor="local-ai-prompt">Ne üzerinde düşünelim?</label>
+          <textarea
+            id="local-ai-prompt"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            maxLength={12000}
+            placeholder="Ör. Ottoman ayar ekranını daha anlaşılır yapmak için önce neyi incelemeli, nasıl test etmeliyim?"
+          />
+          <small>{prompt.length.toLocaleString()} / 12.000 karakter</small>
+          {!localAi?.available && (
+            <p className="error">
+              Yerel model şu an erişilebilir görünmüyor. Ollama çalıştıktan sonra tekrar dene.
+            </p>
+          )}
+          <button
+            className="primary"
+            disabled={!prompt.trim() || busy || !localAi?.available}
+            type="submit"
+          >
+            {busy ? "Yerel taslak hazırlanıyor…" : "Taslak hazırla"}
+          </button>
+        </form>
+        <section className="draft-panel terminal-panel" aria-live="polite">
+          {draft === null ? (
+            <>
+              <span className="eyebrow">SONUÇ</span>
+              <h2>Henüz taslak yok</h2>
+              <p>İsteğini yazdığında sonuç burada görünür; yürütme durumu her zaman kapalı kalır.</p>
+            </>
+          ) : (
+            <>
+              <span className="eyebrow">YEREL TASLAK</span>
+              <h2>{draft.model}</h2>
+              <pre className="prompt-text"><code>{draft.draft}</code></pre>
+              <p className="draft-safety">
+                Yürütme: {draft.executed ? "açık" : "kapalı"} · Bu yanıt tek başına görev,
+                değişiklik veya onay oluşturmaz.
+              </p>
+            </>
+          )}
+        </section>
+      </div>
+    </section>
+  );
+}
+
+function OrduView({
+  plan,
+  task,
+  evidence,
+}: {
+  plan: OrduPlan | null;
+  task: CoreTask | null;
+  evidence: EvidenceRecord[];
+}) {
+  const latestReceipt = (unitId: string) =>
+    evidence.filter(
+      (item) => item.kind === "ordu-unit" && item.data.unit_id === unitId,
+    ).at(-1);
+
+  const statusLabel = (status: string | undefined) => {
+    if (status === "pass") return "tamamlandı";
+    if (status === "retry") return "yeniden denenecek";
+    return "bekliyor";
+  };
+
+  return (
+    <section>
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">ORDU / YEREL ÇALIŞMA GRAFIĞI</span>
+          <h1>{task?.title ?? "Önce bir görev seç"}</h1>
+        </div>
+      </div>
+      <section className="notice-card">
+        <strong>Plan görünür, yürütme onaylıdır.</strong>
+        <p>
+          Ordu önce kapsamı çıkarır. Plan sonrası uygulama ve kalite haritası paralel hazırlanabilir;
+          hiçbir dosya değişikliği bu ekrandan veya bu planın kendisinden yapılmaz.
+        </p>
+      </section>
+      {!plan ? (
+        <section className="terminal-panel empty-state"><h2>Plan hazırlanıyor</h2><p>Bir görev seçildiğinde yerel çekirdek çalışma grafiğini oluşturur.</p></section>
+      ) : (
+        <section className="notice-card">
+          <strong>{plan.max_parallel_workers} yerel işçi üst sınırı</strong>
+          <p>İcra durumu: {plan.execution} · Değişiklik öncesi açık onay: {plan.approval_required_before_mutation ? "zorunlu" : "yok"}</p>
+            <ol>
+              {plan.units.map((unit) => {
+                const receipt = latestReceipt(unit.id);
+                return (
+                  <li className="ordu-unit" key={unit.id}>
+                    <div>
+                      <strong>{unit.title}</strong>
+                      <small>({unit.role}{unit.depends_on.length ? ` · önce: ${unit.depends_on.join(", ")}` : ""})</small>
+                    </div>
+                    <span className={`ordu-status ${receipt?.status ?? "pending"}`}>
+                      {statusLabel(receipt?.status)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+        </section>
+      )}
+    </section>
+  );
+}
+
+function PromptLibrary({
+  query,
+  setQuery,
+  result,
+  selected,
+  busy,
+  hasProject,
+  onSearch,
+  onSelect,
+  onCreate,
+}: {
+  query: string;
+  setQuery: (value: string) => void;
+  result: PromptSearchResult | null;
+  selected: PromptDetail | null;
+  busy: string | null;
+  hasProject: boolean;
+  onSearch: () => void;
+  onSelect: (promptId: string) => void;
+  onCreate: () => void;
+}) {
+  return (
+    <section className="library-view">
+      <div className="section-heading">
+        <div>
+          <span className="eyebrow">YEREL PROMPT KÜTÜPHANESİ</span>
+          <h1>Bul, incele, göreve dönüştür</h1>
+        </div>
+      </div>
+      <section className="notice-card">
+        <strong>Akışı bozmadan kullan.</strong>
+        <p>
+          Bir şablon seçtiğinde Ottoman onu görev metni olarak saklar. Sonrasında aynı planla,
+          aynı çalışma onayıyla ve aynı review kapısıyla devam eder.
+        </p>
+      </section>
+      <form
+        className="prompt-search"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearch();
+        }}
+      >
+        <label htmlFor="prompt-query">Ne yapmak istiyorsun?</label>
+        <div>
+          <input
+            id="prompt-query"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="ör. linux terminal, logo, react, öğretmen"
+          />
+          <button className="primary" disabled={busy !== null} type="submit">
+            {busy === "prompt-search" ? "Aranıyor…" : "Kütüphanede ara"}
+          </button>
+        </div>
+      </form>
+      {result === null ? (
+        <section className="terminal-panel empty-state">
+          <span className="eyebrow">BAŞLANGIÇ</span>
+          <h2>Arama ile başla</h2>
+          <p>Arama, yerel CC0 kütüphanesinde yapılır; prompt metni internetten çağrılmaz.</p>
+        </section>
+      ) : (
+        <div className="prompt-layout">
+          <section className="prompt-results" aria-label="Prompt arama sonuçları">
+            <p className="muted">
+              {result.total > 0 ? `${result.total.toLocaleString()} yerel şablon içinden sonuçlar` : "Tarayıcı önizlemesi"}
+            </p>
+            {result.items.map((item) => (
+              <button
+                className={selected?.id === item.id ? "prompt-row selected" : "prompt-row"}
+                key={item.id}
+                onClick={() => onSelect(item.id)}
+                disabled={busy !== null}
+              >
+                <span className="eyebrow">{item.type}{item.for_developers ? " · GELİŞTİRİCİ" : ""}</span>
+                <strong>{item.title}</strong>
+                <small>{item.preview}</small>
+              </button>
+            ))}
+            {result.items.length === 0 && (
+              <section className="notice-card"><strong>Sonuç yok</strong><p>Daha kısa veya farklı bir kelime dene.</p></section>
+            )}
+          </section>
+          <section className="prompt-detail terminal-panel">
+            {!selected ? (
+              <><span className="eyebrow">ÖNİZLEME</span><h2>Bir şablon seç</h2><p>Önce metni görürsün; görev oluşmadan hiçbir ajan çalışmaz.</p></>
+            ) : (
+              <>
+                <span className="eyebrow">SEÇİLEN ŞABLON</span>
+                <h2>{selected.title}</h2>
+                <p className="muted">Topluluk şablonu · {selected.type}</p>
+                <pre className="prompt-text"><code>{selected.prompt}</code></pre>
+                <small>
+                  Kaynak: prompts.chat · {selected.source.license} · yerel kopya
+                </small>
+                {!hasProject && <p className="error">Göreve dönüştürmek için önce bir proje seç.</p>}
+                <button className="primary" onClick={onCreate} disabled={!hasProject || busy !== null}>
+                  {busy === "prompt-create" ? "Görev hazırlanıyor…" : "Bu şablondan görev oluştur"}
+                </button>
+              </>
+            )}
+          </section>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -738,7 +1223,7 @@ function ReleaseView({
         <div className="section-heading">
           <div>
             <span className="eyebrow">SÜRÜMLER / GÜNCELLEME</span>
-            <h1>Divan Desktop</h1>
+            <h1>Ottoman Desktop</h1>
           </div>
         </div>
         <section className="notice-card">
@@ -755,7 +1240,7 @@ function ReleaseView({
       <div className="section-heading">
         <div>
           <span className="eyebrow">SÜRÜMLER / GÜNCELLEME</span>
-          <h1>Divan Desktop {shellCaps.version}</h1>
+          <h1>Ottoman Desktop {shellCaps.version}</h1>
         </div>
       </div>
 
@@ -772,7 +1257,7 @@ function ReleaseView({
           <section className="notice-card">
             <strong>İmzalı güncelleme kanalı etkin.</strong>
             <p>
-              Divan yalnız sen istediğinde güncelleme kontrolü yapar. Kurulum ayrıca açık onay
+              Ottoman yalnız sen istediğinde güncelleme kontrolü yapar. Kurulum ayrıca açık onay
               ister; Tauri imza doğrulaması geçmeden paket kurulmaz.
             </p>
           </section>
@@ -808,18 +1293,22 @@ function ReleaseView({
 
 function Settings({
   readiness,
+  localAi,
   agent,
   setAgent,
   engine,
   setEngine,
 }: {
   readiness: Readiness | null;
+  localAi: LocalAiStatus | null;
   agent: string;
   setAgent: (value: string) => void;
   engine: string;
   setEngine: (value: string) => void;
 }) {
-  const agents = readiness?.tools.filter((tool) => agentIds.has(tool.id) && tool.available) ?? [];
+  const agents = readiness?.tools.filter(
+    (tool) => agentIds.has(tool.id) && tool.available && tool.auth === "connected",
+  ) ?? [];
   const engines = readiness?.engines ?? [];
   return (
     <section>
@@ -831,10 +1320,22 @@ function Settings({
       </div>
 
       <section className="notice-card">
+        <strong>Yerel AI / Ordu</strong>
+        <p>
+          {localAi?.available
+            ? `${localAi.models.length} yerel model hazır. Varsayılan: ${localAi.default_model}. Bu katman yalnız taslak üretir; kod çalıştırmaz veya onay atlamaz.`
+            : "Yerel Ollama servisi henüz erişilebilir değil. Ottoman bulut hesabın olmadan da çalışmaya devam eder."}
+        </p>
+        {localAi?.models.map((model) => (
+          <small key={model.name}>{model.name} · {(Number(model.size) / 1_000_000_000).toFixed(1)} GB</small>
+        ))}
+      </section>
+
+      <section className="notice-card">
         <strong>API anahtarı bilmek zorunda değilsin.</strong>
         <p>
           Codex, Claude Code, Cursor Agent veya diğer desteklenen araçlarda hesabın açıksa
-          Divan önce o mevcut oturumu kullanır. API anahtarı yalnız isteyen ileri kullanıcı
+          Ottoman önce o mevcut oturumu kullanır. API anahtarı yalnız isteyen ileri kullanıcı
           için ek yöntemdir.
         </p>
       </section>
@@ -868,9 +1369,9 @@ function Settings({
           ))}
         </select>
         <p>
-          Native ve Orca aynı Divan execution contract arkasındadır. Açık bir seçim yaparsan
+          Native ve Orca aynı Ottoman execution contract arkasındadır. Açık bir seçim yaparsan
           planlanmış görevde de bu seçim önceliklidir; Otomatik seçiliyse yalnız hâlâ kullanılabilir
-          kayıtlı motor veya Divan'ın güncel önerisi kullanılır.
+          kayıtlı motor veya Ottoman'ın güncel önerisi kullanılır.
         </p>
       </section>
 
@@ -883,8 +1384,8 @@ function Settings({
           ))}
         </select>
         <p>
-          Divan Codex → Claude → OpenCode → Cursor Agent sırasını yalnız kullanılabilir
-          araçlardan seçer. Seçimi istediğin zaman değiştirebilirsin.
+          Ottoman Codex → Claude → OpenCode → Cursor Agent sırasını yalnız kurulu ve oturum
+          açmış araçlardan seçer. Seçimi istediğin zaman değiştirebilirsin.
         </p>
       </section>
     </section>
@@ -985,7 +1486,7 @@ function authLabel(tool: ToolStatus) {
     if (tool.auth_detail === "cursor-account") return "Cursor hesabı bağlı";
     if (tool.auth_detail === "github-account") return "GitHub bağlı";
     if (tool.auth_detail === "provider-auth") return "Sağlayıcı bağlı";
-    if (tool.auth_detail === "api-key-env") return "API env ile bağlı";
+    if (tool.auth_detail === "api-key-configured") return "API env doğrulanmadı";
     return "Bağlı";
   }
   if (tool.auth === "not-connected") return "Giriş gerekli";

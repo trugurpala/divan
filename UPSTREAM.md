@@ -17,6 +17,7 @@ izlenir; lisansı belirsiz içerik alınmaz.
 | ui-pack (ui-ux-pro-max) | github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT | 2026-07 |
 | react-pack | github.com/vercel-labs/agent-skills | MIT | 2026-07 |
 | zanaat-pack | github.com/anthropics/skills | Apache-2.0 | 2026-07 |
+| Ottoman prompt catalog | github.com/f/prompts.chat @ `f1c515686725fcd84a90d361b9eeb11eb15edb17` | CC0-1.0 (prompt data) | 2026-08; 2.109 prompt korunur, katkıcı e-postaları `community` ile ve üç prompt içi e-posta `[redacted]` ile anonimleştirilir; `plugins/sadrazam/divan_runtime/data/prompts-chat.csv`, SHA-256 `6a406876626549bd4353f88d2f25df52324f0df486461e279b41f42f125ff13b` |
 | sadrazam, defterdar, müşavir, ordu-nizamı, vezir-yetiştirme, temkin, kaynak-küratörü | özgün (bu repo) | MIT | — |
 
 ## Güncelleme ve nöbet politikası

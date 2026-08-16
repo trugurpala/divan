@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import pathlib
 import sys
@@ -60,7 +61,8 @@ class ProjectReadinessTests(unittest.TestCase):
         )
         codex = {tool.id: tool for tool in result.tools}["codex"]
         self.assertTrue(codex.api_key_configured)
-        self.assertEqual(codex.auth_detail, "api-key-env")
+        self.assertEqual(codex.auth, "unknown")
+        self.assertEqual(codex.auth_detail, "api-key-configured")
         self.assertNotIn("secret-value", repr(codex))
 
     def test_explicit_empty_env_does_not_read_process_api_keys(self):
@@ -82,6 +84,46 @@ class ProjectReadinessTests(unittest.TestCase):
         self.assertFalse(codex.api_key_configured)
         self.assertEqual(codex.auth, "not-connected")
         self.assertEqual(codex.auth_detail, "login-required")
+
+    def test_claude_auth_status_requires_an_explicit_logged_in_result(self):
+        paths = {"git": "C:/git.exe", "claude": "C:/claude.exe"}
+
+        def runner(argv, timeout):
+            if argv[0].endswith("claude.exe") and tuple(argv[1:]) == ("auth", "status"):
+                return 0, json.dumps({"loggedIn": False}), ""
+            return 0, "1.0", ""
+
+        result = discover_tools(paths.get, runner=runner, env={}, installed_apps=())
+        claude = {tool.id: tool for tool in result.tools}["claude"]
+        self.assertTrue(claude.available)
+        self.assertEqual(claude.auth, "not-connected")
+        self.assertEqual(claude.auth_detail, "login-required")
+
+    def test_failed_codex_probe_cannot_be_reported_as_connected(self):
+        paths = {"git": "C:/git.exe", "codex": "C:/codex.exe"}
+
+        def runner(argv, timeout):
+            if argv[0].endswith("codex.exe") and tuple(argv[1:]) == ("login", "status"):
+                return 1, "Logged in using ChatGPT", "probe failed"
+            return 0, "1.0", ""
+
+        result = discover_tools(paths.get, runner=runner, env={}, installed_apps=())
+        codex = {tool.id: tool for tool in result.tools}["codex"]
+        self.assertEqual(codex.auth, "unknown")
+        self.assertEqual(codex.auth_detail, "probe-failed")
+
+    def test_failed_claude_probe_cannot_be_reported_as_connected(self):
+        paths = {"git": "C:/git.exe", "claude": "C:/claude.exe"}
+
+        def runner(argv, timeout):
+            if argv[0].endswith("claude.exe") and tuple(argv[1:]) == ("auth", "status"):
+                return 1, json.dumps({"loggedIn": True}), "probe failed"
+            return 0, "1.0", ""
+
+        result = discover_tools(paths.get, runner=runner, env={}, installed_apps=())
+        claude = {tool.id: tool for tool in result.tools}["claude"]
+        self.assertEqual(claude.auth, "unknown")
+        self.assertEqual(claude.auth_detail, "probe-failed")
 
 
 if __name__ == "__main__":

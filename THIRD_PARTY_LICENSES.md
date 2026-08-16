@@ -13,6 +13,7 @@ metinleri ilgili paket veya skill klasörlerinde korunur. Derleme tarihi:
 | ui-pack / ui-ux-pro-max | 1 | https://github.com/nextlevelbuilder/ui-ux-pro-max-skill | MIT — native paket için `plugins/ui-pack/LICENSE-uiuxpromax-MIT.txt`, loose-skill fallback için aynı metnin `plugins/ui-pack/skills/ui-ux-pro-max/LICENSE.txt` kopyası |
 | react-pack | 8 | https://github.com/vercel-labs/agent-skills | MIT — upstream README lisans beyanı (upstream ayrı LICENSE dosyası sunmuyor) |
 | zanaat-pack | 7 | https://github.com/anthropics/skills | Apache-2.0 — her skill'in `LICENSE.txt` dosyası |
+| Ottoman yerel prompt kataloğu | prompt verisi | https://github.com/f/prompts.chat @ `f1c515686725fcd84a90d361b9eeb11eb15edb17` | CC0-1.0 — 2.109 şablonun yerel, kişisel kimliklerden arındırılmış kopyası; Ottoman arama ve görev-akışı kodu özgündür |
 
 Özgün `sadrazam`, `defterdar`, `musavir`, `ordu-nizami`, `vezir-yetistirme`,
 `arama-ustasi`, `temkin` ve `product-design-audit` içerikleri depo kökündeki MIT

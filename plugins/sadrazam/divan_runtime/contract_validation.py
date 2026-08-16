@@ -16,6 +16,7 @@ RUNTIME_DATA_FILES = (
     "roles.json", "workflows.json", "messages.json",
     "version.txt",
     "data/timeout-policy.json", "data/timeout-benchmarks.json",
+    "data/prompts-chat.csv",
     "studio/index.html", "studio/studio.css", "studio/studio.js",
 )
 REQUIRED_MODULE_IDS = (
@@ -237,7 +238,6 @@ def _validate_dependencies(modules: list[dict[str, Any]]) -> None:
             visit(dependency)
         visiting.remove(identifier)
         visited.add(identifier)
-
     for identifier in sorted(graph):
         visit(identifier)
 

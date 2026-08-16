@@ -4,6 +4,7 @@ import App from "./App";
 import PatronDesk from "./PatronDesk";
 import "./styles.css";
 import "./patron.css";
+import "./prompt-library.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -129,6 +129,12 @@ class DesktopAcceptanceWorkflowTests(unittest.TestCase):
         self.assertIn("--source-tree $sourceTree", self.text)
         self.assertIn("$env:RUNNER_TEMP", self.text)
 
+    def test_acceptance_script_requires_authenticated_agents_before_task_start(self) -> None:
+        script = ACCEPTANCE_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('$tools[$_].auth -eq "connected"', script)
+        self.assertIn('$tools[$worker].auth -ne "connected"', script)
+        self.assertIn("installed and authenticated Codex and Claude Code sessions", script)
+
     def test_acceptance_uses_protocol_review_verdict_casing(self) -> None:
         script = ACCEPTANCE_SCRIPT.read_text(encoding="utf-8")
         self.assertIn('$review.review.verdict -ne "pass"', script)

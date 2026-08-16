@@ -116,7 +116,7 @@ def inspect_production_readiness_evidence(
         {
             "schema_version": 1,
             "status": "pass",
-            "product": "Divan Desktop",
+            "product": "Ottoman Desktop",
             "version": expected_version,
             "production_environment": "production-release",
             "release_overlay_valid": True,
@@ -204,7 +204,7 @@ def _acceptance_identity(
         "acceptance merged_commit_sha",
     )
     if core_commit != source_commit or core_tree != source_tree:
-        raise DesktopReleaseError("installed Divan Core does not match the accepted source identity")
+        raise DesktopReleaseError("installed Ottoman Core does not match the accepted source identity")
     return source_commit, source_tree, core_commit, core_tree, review_diff, merged_commit
 
 
@@ -229,7 +229,7 @@ def inspect_acceptance_evidence(
         evidence,
         {
             "schema_version": 3,
-            "product": "Divan",
+            "product": "Ottoman",
             "version": expected_version,
             "platform": "windows",
             "result": "PASS",

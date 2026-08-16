@@ -19,6 +19,7 @@ from .git_guard import (
     snapshot_from_metadata,
     stage_review_snapshot,
 )
+from .ordu_orchestration import plan_ordu, record_unit, set_unit_status
 from .review_gate import (
     CheckResult,
     GateVerdict,
@@ -74,7 +75,8 @@ class DivanOrchestrator:
         return task
 
     def plan(self, task: DivanTask, reason: str | None = None) -> DivanTask:
-        return self._save(task.transition(TaskState.PLANNED, reason))
+        planned = task.transition(TaskState.PLANNED, reason)
+        return self._save(plan_ordu(planned, self.evidence.append))
 
     def start(
         self,
@@ -103,6 +105,21 @@ class DivanOrchestrator:
         receipt = self.router.execute(request, pending.running.engine_id)
         self.evidence.append(execution_attempt_evidence(pending, receipt))
         running = complete_execution_attempt(pending, receipt)
+        unit_status = "pass" if receipt.ok else "retry"
+        running = set_unit_status(running, "implement", unit_status)
+        record_unit(
+            running,
+            "implement",
+            unit_status,
+            phase="execution",
+            data={
+                "engine": receipt.engine,
+                "exit_code": receipt.exit_code,
+                "attempt": running.metadata.get("execution", {}).get("attempt"),
+                "mandate_id": receipt.mandate_id,
+            },
+            append_evidence=self.evidence.append,
+        )
         self.tasks.save(running)
         if receipt.ok:
             return running
@@ -207,7 +224,27 @@ class DivanOrchestrator:
             ),
             automated.check(),
         )
-        return self.review(prepared, checks)
+        updated, decision = self.review(prepared, checks)
+        unit_status = "pass" if decision.verdict is GateVerdict.PASS else "retry"
+        updated = set_unit_status(updated, "verify", unit_status)
+        updated = set_unit_status(updated, "review", unit_status)
+        record_unit(
+            updated,
+            "verify",
+            unit_status,
+            phase="verification",
+            data={"diff_sha256": snapshot.diff_sha256},
+            append_evidence=self.evidence.append,
+        )
+        record_unit(
+            updated,
+            "review",
+            unit_status,
+            phase="review",
+            data={"reviewer": automated.reviewer, "verdict": automated.verdict},
+            append_evidence=self.evidence.append,
+        )
+        return self._save(updated), decision
 
     def request_approval(self, task: DivanTask) -> DivanTask:
         return self._save(
@@ -276,7 +313,6 @@ class DivanOrchestrator:
     def _save(self, task: DivanTask) -> DivanTask:
         self.tasks.save(task)
         return task
-
 
 def _execution_worktree(task: DivanTask) -> str:
     execution = task.metadata.get("execution")

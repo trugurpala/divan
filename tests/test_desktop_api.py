@@ -26,7 +26,7 @@ class DesktopApiTests(unittest.TestCase):
     def test_capabilities_is_stable_json_shape(self):
         api = DesktopApi(ExecutionRouter([FakeEngine()]))
         value = api.capabilities()
-        self.assertEqual(value["product"], "Divan")
+        self.assertEqual(value["product"], "Ottoman")
         self.assertEqual(value["api_version"], 1)
         self.assertEqual(value["engines"], ("orca",))
         self.assertIn("approval-gate", value["features"])

@@ -122,6 +122,36 @@ class NativeExecutionEngineTests(unittest.TestCase):
             self.assertEqual(agent_calls[0][1], "private task text")
             self.assertNotIn("private task text", receipt.argv)
 
+    def test_stale_agent_capability_is_rejected_before_worktree_creation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            project = pathlib.Path(directory) / "repo"
+            project.mkdir()
+            available = {"codex": "C:/bin/codex.exe"}
+            git_runner = FakeGitRunner(project)
+            engine = NativeExecutionEngine(
+                which=available.get,
+                git_runner=git_runner,
+                agent_runner=lambda argv, cwd, timeout, stdin_text: (0, "", ""),
+            )
+            available.clear()
+
+            receipt = engine.execute(
+                ExecutionRequest(
+                    ExecutionAction.WORKTREE_CREATE,
+                    project_root=str(project),
+                    mandate_id="m-stale",
+                    args={
+                        "name": "Stale Agent",
+                        "agent": "codex",
+                        "prompt": "keep this isolated",
+                    },
+                )
+            )
+
+            self.assertFalse(receipt.ok)
+            self.assertIn("capability changed", receipt.stderr)
+            self.assertFalse(git_runner.calls)
+
     def test_file_diff_is_read_only(self):
         with tempfile.TemporaryDirectory() as directory:
             project = pathlib.Path(directory)

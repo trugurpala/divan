@@ -476,6 +476,10 @@ jobs:
 
       - name: Enforce stable release gate before build
         shell: pwsh
+        env:
+          # The guard only checks presence; it must run with the same signing
+          # authority that the immediately following signed build will use.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
           python scripts/desktop_release_guard.py --release-config $env:DIVAN_RELEASE_CONFIG --production-readiness-evidence $env:DIVAN_PRODUCTION_READINESS_EVIDENCE --acceptance-evidence $env:DIVAN_ACCEPTANCE_EVIDENCE --updater-e2e-evidence $env:DIVAN_UPDATER_E2E_EVIDENCE --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --stable-release
           if ($LASTEXITCODE -ne 0) { throw "stable release gate failed" }
@@ -551,9 +555,9 @@ jobs:
         run: |
           $bundle = "apps/desktop/src-tauri/target/release/bundle/nsis"
           $feed = Join-Path $bundle "latest.json"
-          $manifest = Join-Path $bundle "divan-update-manifest.json"
+          $manifest = Join-Path $bundle "ottoman-update-manifest.json"
           $version = (Get-Content "apps/desktop/src-tauri/tauri.conf.json" -Raw | ConvertFrom-Json).version
-          python scripts/desktop_update_feed.py --installer $env:DIVAN_SIGNED_INSTALLER --signature $env:DIVAN_UPDATER_SIGNATURE --version $version --artifact-base-url $env:DIVAN_UPDATER_ARTIFACT_BASE_URL --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --output $feed --manifest $manifest --notes "Divan Desktop $version stable candidate"
+          python scripts/desktop_update_feed.py --installer $env:DIVAN_SIGNED_INSTALLER --signature $env:DIVAN_UPDATER_SIGNATURE --version $version --artifact-base-url $env:DIVAN_UPDATER_ARTIFACT_BASE_URL --source-commit $env:DIVAN_SOURCE_COMMIT --source-tree $env:DIVAN_SOURCE_TREE --output $feed --manifest $manifest --notes "Ottoman Desktop $version stable candidate"
           if ($LASTEXITCODE -ne 0) { throw "signed updater feed generation failed" }
 
           $feedPayload = Get-Content $feed -Raw | ConvertFrom-Json
@@ -580,15 +584,15 @@ jobs:
           $installer = Get-ChildItem "apps/desktop/src-tauri/target/release/bundle/nsis/*-setup.exe" | Select-Object -First 1
           $install = Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "signed NSIS install failed with $($install.ExitCode)" }
-          $appExe = Join-Path $env:LOCALAPPDATA "Divan/Divan.exe"
-          if (-not (Test-Path $appExe)) { throw "installed signed Divan.exe was not found" }
+          $appExe = Join-Path $env:LOCALAPPDATA "Ottoman/Ottoman.exe"
+          if (-not (Test-Path $appExe)) { throw "installed signed Ottoman.exe was not found" }
           $installedSignature = Get-AuthenticodeSignature $appExe
           if ($installedSignature.Status -ne "Valid") {
-            throw "installed Divan.exe Authenticode signature is not valid: $($installedSignature.Status)"
+            throw "installed Ottoman.exe Authenticode signature is not valid: $($installedSignature.Status)"
           }
           $app = Start-Process -FilePath $appExe -PassThru
           Start-Sleep -Seconds 5
-          if ($app.HasExited) { throw "installed signed Divan.exe exited during launch smoke test" }
+          if ($app.HasExited) { throw "installed signed Ottoman.exe exited during launch smoke test" }
           Stop-Process -Id $app.Id -Force
 
       - name: Attest signed desktop candidate

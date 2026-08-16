@@ -25,10 +25,10 @@ class DesktopUpdateFeedTests(unittest.TestCase):
     def test_generate_binds_feed_to_exact_installer_signature_and_source(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            installer = root / "Divan_1.3.8_x64-setup.exe"
-            signature = root / "Divan_1.3.8_x64-setup.exe.sig"
+            installer = root / "Ottoman_1.3.8_x64-setup.exe"
+            signature = root / "Ottoman_1.3.8_x64-setup.exe.sig"
             output = root / "latest.json"
-            manifest = root / "divan-update-manifest.json"
+            manifest = root / "ottoman-update-manifest.json"
             installer.write_bytes(b"signed-installer-bytes")
             signature.write_text("tauri-signature-value\n", encoding="utf-8")
 
@@ -42,14 +42,14 @@ class DesktopUpdateFeedTests(unittest.TestCase):
                 output=output,
                 manifest=manifest,
                 pub_date="2026-08-07T16:00:00Z",
-                notes="Divan stable candidate",
+                notes="Ottoman stable candidate",
             )
 
             windows = feed["platforms"]["windows-x86_64"]
             self.assertEqual(windows["signature"], "tauri-signature-value")
             self.assertEqual(
                 windows["url"],
-                "https://updates.example.test/divan/Divan_1.3.8_x64-setup.exe",
+                "https://updates.example.test/divan/Ottoman_1.3.8_x64-setup.exe",
             )
             self.assertEqual(evidence["source_commit"], "a" * 40)
             self.assertEqual(evidence["source_tree"], "b" * 40)
@@ -68,7 +68,7 @@ class DesktopUpdateFeedTests(unittest.TestCase):
         def candidate() -> dict[str, Any]:
             return build_feed(
                 version="1.3.8",
-                installer_name="Divan_1.3.8_x64-setup.exe",
+                installer_name="Ottoman_1.3.8_x64-setup.exe",
                 artifact_base_url="https://updates.example.test/divan/",
                 signature="expected-signature",
                 pub_date="2026-08-07T16:00:00Z",
@@ -80,20 +80,20 @@ class DesktopUpdateFeedTests(unittest.TestCase):
             validate_feed(
                 feed,
                 version="1.3.8",
-                installer_name="Divan_1.3.8_x64-setup.exe",
+                installer_name="Ottoman_1.3.8_x64-setup.exe",
                 artifact_base_url="https://updates.example.test/divan/",
                 signature="expected-signature",
             )
 
         feed = candidate()
         feed["platforms"]["windows-x86_64"]["url"] = (
-            "https://updates.example.test/divan/Divan_1.3.9_x64-setup.exe"
+            "https://updates.example.test/divan/Ottoman_1.3.9_x64-setup.exe"
         )
         with self.assertRaisesRegex(UpdateFeedError, "URL"):
             validate_feed(
                 feed,
                 version="1.3.8",
-                installer_name="Divan_1.3.8_x64-setup.exe",
+                installer_name="Ottoman_1.3.8_x64-setup.exe",
                 artifact_base_url="https://updates.example.test/divan/",
                 signature="expected-signature",
             )
@@ -104,7 +104,7 @@ class DesktopUpdateFeedTests(unittest.TestCase):
             validate_feed(
                 feed,
                 version="1.3.8",
-                installer_name="Divan_1.3.8_x64-setup.exe",
+                installer_name="Ottoman_1.3.8_x64-setup.exe",
                 artifact_base_url="https://updates.example.test/divan/",
                 signature="expected-signature",
             )
@@ -118,7 +118,7 @@ class DesktopUpdateFeedTests(unittest.TestCase):
                 with self.assertRaises(UpdateFeedError):
                     build_feed(
                         version="1.3.8",
-                        installer_name="Divan.exe",
+                        installer_name="Ottoman.exe",
                         artifact_base_url=value,
                         signature="signature",
                         pub_date="2026-08-07T16:00:00Z",
@@ -128,7 +128,7 @@ class DesktopUpdateFeedTests(unittest.TestCase):
         with self.assertRaisesRegex(UpdateFeedError, "SemVer"):
             build_feed(
                 version="stable",
-                installer_name="Divan.exe",
+                installer_name="Ottoman.exe",
                 artifact_base_url="https://updates.example.test/divan",
                 signature="signature",
                 pub_date="2026-08-07T16:00:00Z",
@@ -136,8 +136,8 @@ class DesktopUpdateFeedTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
-            installer = root / "Divan.exe"
-            signature = root / "Divan.exe.sig"
+            installer = root / "Ottoman.exe"
+            signature = root / "Ottoman.exe.sig"
             installer.write_bytes(b"installer")
             signature.write_text("\n", encoding="utf-8")
             with self.assertRaisesRegex(UpdateFeedError, "signature"):

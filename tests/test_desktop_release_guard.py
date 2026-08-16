@@ -30,7 +30,7 @@ MERGED_COMMIT = "d" * 40
 def _acceptance(version: str, **overrides: object) -> dict[str, object]:
     value: dict[str, object] = {
         "schema_version": 3,
-        "product": "Divan",
+        "product": "Ottoman",
         "version": version,
         "platform": "windows",
         "source_commit": SOURCE_COMMIT,
@@ -58,7 +58,7 @@ def _production_readiness(version: str, **overrides: object) -> dict[str, object
     value: dict[str, object] = {
         "schema_version": 1,
         "status": "pass",
-        "product": "Divan Desktop",
+        "product": "Ottoman Desktop",
         "source_commit": SOURCE_COMMIT,
         "source_tree": SOURCE_TREE,
         "version": version,
@@ -135,7 +135,7 @@ class DesktopReleaseGuardTests(unittest.TestCase):
 
         self.assertEqual(report["status"], "PASS")
         self.assertEqual(report["version"], (ROOT / "VERSION").read_text().strip())
-        self.assertEqual(report["main_binary"], "Divan.exe")
+        self.assertEqual(report["main_binary"], "Ottoman.exe")
         self.assertTrue(report["core_sidecar"])
         self.assertFalse(report["updater_configured"])
         self.assertFalse(report["windows_signing_configured"])
@@ -398,7 +398,7 @@ class DesktopReleaseGuardTests(unittest.TestCase):
                 json.dumps(_acceptance(version, core_source_commit="e" * 40)),
                 encoding="utf-8",
             )
-            with self.assertRaisesRegex(DesktopReleaseError, "installed Divan Core"):
+            with self.assertRaisesRegex(DesktopReleaseError, "installed Ottoman Core"):
                 inspect_desktop(ROOT, acceptance_evidence=evidence)
 
     def test_acceptance_evidence_rejects_same_worker_and_reviewer(self) -> None:
