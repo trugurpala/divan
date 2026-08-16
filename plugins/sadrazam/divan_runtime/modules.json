@@ -220,7 +220,8 @@
         "plugin_desktop",
         "plugin_sdk",
         "worker_discovery",
-        "worker_certification"
+        "worker_certification",
+        "worker_execution"
       ],
       "capabilities": [
         "local",
@@ -237,7 +238,9 @@
         "plugin_license_provenance",
         "evidence_backed_worker_discovery",
         "browser_qa_capability_probe",
-        "capability_based_worker_certification"
+        "capability_based_worker_certification",
+        "divan_started_worker_execution",
+        "host_readable_result_enforcement"
       ],
       "depends_on": [
         "kernel",
