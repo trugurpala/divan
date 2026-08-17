@@ -18,6 +18,7 @@ RUNTIME = ROOT / "plugins" / "sadrazam" / "divan_runtime"
 CURRENT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 RUNTIME_FILES = (
     "__init__.py",
+    "agencybench.py",
     "adoption.py",
     "adoption_common.py",
     "adoption_legacy.py",
@@ -30,13 +31,21 @@ RUNTIME_FILES = (
     "cli.py",
     "cli_dispatch.py",
     "cli_parser.py",
+    "attempt_contract.py",
+    "attempt_store.py",
+    "browser_capability.py",
     "ci_guard.py",
     "compatibility.py",
+    "context_compiler.py",
     "contract_validation.py",
     "desktop_api.py",
     "desktop_protocol.py",
     "desktop_protocol_support.py",
     "desktop_state.py",
+    "doctor.py",
+    "doctor_checks.py",
+    "doctor_delivery.py",
+    "doctor_protocol.py",
     "engine.py",
     "engine_registry.py",
     "evidence.py",
@@ -45,6 +54,8 @@ RUNTIME_FILES = (
     "execution_contract.py",
     "execution_recovery.py",
     "execution_router.py",
+    "failure_learning.py",
+    "first_run_remedy.py",
     "frameworks.json",
     "git_guard.py",
     "goal_archive.py",
@@ -53,6 +64,14 @@ RUNTIME_FILES = (
     "governance.py",
     "impact-graph.json",
     "kernel.py",
+    "knowledge_capture.py",
+    "knowledge_contract.py",
+    "knowledge_desktop.py",
+    "knowledge_projection.py",
+    "knowledge_protocol.py",
+    "knowledge_relevance.py",
+    "knowledge_store.py",
+    "memory_first.py",
     "local_server.py",
     "locales.py",
     "messages.json",
@@ -63,6 +82,14 @@ RUNTIME_FILES = (
     "orchestrator.py",
     "planning.py",
     "planning_policy.py",
+    "plugin_approval.py",
+    "plugin_contract.py",
+    "plugin_desktop.py",
+    "plugin_discovery.py",
+    "plugin_manifest_validation.py",
+    "plugin_protocol.py",
+    "plugin_provenance.py",
+    "plugin_sdk.py",
     "project_lifecycle.py",
     "project_os.py",
     "project_readiness.py",
@@ -70,6 +97,7 @@ RUNTIME_FILES = (
     "project_state.py",
     "project_transactions.py",
     "providers.py",
+    "quality_factory.py",
     "receipts.py",
     "release.py",
     "review_gate.py",
@@ -81,7 +109,18 @@ RUNTIME_FILES = (
     "spec_contract.py",
     "status.py",
     "task_model.py",
+    "task_learning.py",
     "task_store.py",
+    "update_adapters.py",
+    "update_governor.py",
+    "update_pipeline.py",
+    "verification_guard.py",
+    "worker_certification.py",
+    "worker_execution.py",
+    "worker_process.py",
+    "worker_review.py",
+    "worktree_reading.py",
+    "worker_discovery.py",
     "timeouts.py",
     "data/timeout-benchmarks.json",
     "data/timeout-policy.json",
@@ -99,6 +138,67 @@ def git(root: pathlib.Path, *arguments: str) -> str:
         text=True,
         encoding="utf-8",
     ).strip()
+
+
+class RuntimeRegistrationTests(unittest.TestCase):
+    """A runtime module has to be registered in both places or neither.
+
+    modules.json declares what the runtime contains and this file lists what
+    the deterministic build copies. Registering in one and forgetting the
+    other leaves a module the contract knows about but the build omits, or a
+    file the build ships that the contract never declared. Both were reached
+    by hand three times while the worker execution modules landed, so the
+    mismatch is checked rather than remembered.
+    """
+
+    #: Package machinery, not a declared runtime module.
+    NOT_DECLARED = frozenset({"__init__"})
+
+    def _declared(self) -> set[str]:
+        contract = json.loads(
+            (RUNTIME / "modules.json").read_text(encoding="utf-8")
+        )
+        return {
+            name
+            for entry in contract["modules"]
+            for name in entry["python_modules"]
+        }
+
+    @staticmethod
+    def _python_modules() -> set[str]:
+        """Only the Python files. The build also ships data and UI assets."""
+        return {
+            name[:-3]
+            for name in RUNTIME_FILES
+            if name.endswith(".py") and "/" not in name
+        }
+
+    def test_every_declared_module_is_built_into_the_runner(self) -> None:
+        listed = self._python_modules()
+        missing = sorted(self._declared() - listed)
+
+        self.assertEqual(
+            missing,
+            [],
+            "declared in modules.json but not copied by the build: " + ", ".join(missing),
+        )
+
+    def test_every_built_python_module_is_declared_in_the_contract(self) -> None:
+        listed = self._python_modules() - self.NOT_DECLARED
+        undeclared = sorted(listed - self._declared())
+
+        self.assertEqual(
+            undeclared,
+            [],
+            "copied by the build but never declared: " + ", ".join(undeclared),
+        )
+
+    def test_every_declared_module_exists_on_disk(self) -> None:
+        absent = sorted(
+            name for name in self._declared() if not (RUNTIME / f"{name}.py").exists()
+        )
+
+        self.assertEqual(absent, [], "declared but missing: " + ", ".join(absent))
 
 
 class ProjectRunnerTests(unittest.TestCase):
@@ -331,20 +431,20 @@ class ProjectRunnerTests(unittest.TestCase):
             result = self._build(repository, output, source_commit)
             self.assertEqual(result.returncode, 0, result.stderr)
             project = base / "site"
-            state_path = pathlib.Path(tempfile.mkdtemp(
-                prefix="divan-pyz-state-",
-                dir=(
-                    os.environ.get("LOCALAPPDATA")
-                    if os.name == "nt"
-                    else temporary
-                ),
-            ))
+            state_path = pathlib.Path(
+                tempfile.mkdtemp(
+                    prefix="divan-pyz-state-",
+                    dir=(
+                        os.environ.get("LOCALAPPDATA")
+                        if os.name == "nt"
+                        else temporary
+                    ),
+                )
+            )
             if os.name == "nt":
                 state_path.rmdir()
             self.addCleanup(
-                lambda: shutil.rmtree(state_path)
-                if state_path.exists()
-                else None
+                lambda: shutil.rmtree(state_path) if state_path.exists() else None
             )
             environment = os.environ.copy()
             environment["DIVAN_STATE_HOME"] = str(state_path)
@@ -395,9 +495,7 @@ class ProjectRunnerTests(unittest.TestCase):
                 env=environment,
                 check=False,
             )
-            self.assertEqual(
-                applied.returncode, 0, applied.stderr + applied.stdout
-            )
+            self.assertEqual(applied.returncode, 0, applied.stderr + applied.stdout)
             self.assertEqual(json.loads(applied.stdout)["status"], "applied")
             expected_status = {
                 "audit": {"PASS"},

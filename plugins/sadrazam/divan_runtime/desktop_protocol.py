@@ -18,8 +18,11 @@ from .desktop_protocol_support import ok_response as _ok
 from .desktop_protocol_support import optional_string as _optional_string
 from .desktop_protocol_support import required_string as _required_string
 from .desktop_state import evidence_root, task_root
+from .doctor_protocol import DOCTOR_HANDLERS
 from .execution_router import ExecutionRouter
+from .knowledge_protocol import KNOWLEDGE_HANDLERS
 from .orchestrator import DivanOrchestrator
+from .plugin_protocol import PLUGIN_HANDLERS
 from .project_readiness import discover_tools
 from .project_registry import ProjectRegistry
 from .review_gate import CheckResult, ReviewDecision
@@ -115,6 +118,15 @@ def _handle_project_register(
     return _ok(asdict(ProjectRegistry().register(root)))
 
 
+def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
+    project_id = _optional_string(payload, "project_id", "DESKTOP_PROJECT_ID_INVALID")
+    if project_id:
+        return ProjectRegistry().get(project_id).root
+    return _optional_string(
+        payload,
+        "project_root",
+        "DESKTOP_PROJECT_ROOT_INVALID",
+    )
 def _handle_task_list(
     payload: Mapping[str, Any], router: ExecutionRouter | None
 ) -> dict[str, Any]:
@@ -127,17 +139,6 @@ def _handle_task_get(
 ) -> dict[str, Any]:
     del router
     return _ok(_load_task(payload).to_dict())
-
-
-def _resolve_project_root(payload: Mapping[str, Any]) -> str | None:
-    project_id = _optional_string(payload, "project_id", "DESKTOP_PROJECT_ID_INVALID")
-    if project_id:
-        return ProjectRegistry().get(project_id).root
-    return _optional_string(
-        payload,
-        "project_root",
-        "DESKTOP_PROJECT_ROOT_INVALID",
-    )
 
 
 def _handle_task_create(
@@ -350,12 +351,15 @@ def _handle_engine_status(
 _HANDLERS: dict[str, Handler] = {
     "capabilities": _handle_capabilities,
     "readiness": _handle_readiness,
+    **DOCTOR_HANDLERS,
     "project.list": _handle_project_list,
     "project.register": _handle_project_register,
     "project.agency.status": handle_project_agency_status,
     "goal.preview": handle_goal_preview,
     "goal.create": handle_goal_create,
     "goal.tasks": handle_goal_tasks,
+    **KNOWLEDGE_HANDLERS,
+    **PLUGIN_HANDLERS,
     "task.list": _handle_task_list,
     "task.get": _handle_task_get,
     "task.create": _handle_task_create,

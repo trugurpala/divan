@@ -4,6 +4,7 @@ from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from .desktop_state import knowledge_database
 from .evidence import EvidenceStore, build_evidence
 from .execution_contract import ExecutionAction, ExecutionRequest
 from .execution_recovery import (
@@ -19,6 +20,7 @@ from .git_guard import (
     snapshot_from_metadata,
     stage_review_snapshot,
 )
+from .knowledge_store import KnowledgeStore
 from .review_gate import (
     CheckResult,
     GateVerdict,
@@ -27,6 +29,7 @@ from .review_gate import (
     require_release_ready,
 )
 from .reviewer_runner import AutomatedReview, AutomatedReviewer, ReviewerUnavailable
+from .task_learning import capture_merge_lesson, failed_reviews
 from .task_model import DivanTask, TaskState
 from .task_store import TaskStore
 
@@ -45,12 +48,14 @@ class DivanOrchestrator:
         *,
         reviewer: AutomatedReviewer | None = None,
         git_runner: GitRunner | None = None,
+        knowledge: KnowledgeStore | None = None,
     ) -> None:
         self.router = router
         self.tasks = TaskStore(state_root)
         self.evidence = EvidenceStore(evidence_root)
         self.reviewer = reviewer or AutomatedReviewer()
         self.git_runner = git_runner
+        self.knowledge = knowledge or KnowledgeStore(knowledge_database())
 
     def create_task(
         self,
@@ -147,6 +152,22 @@ class DivanOrchestrator:
             "checks": serialized_checks,
             "reasons": list(decision.reasons),
         }
+        if decision.verdict is not GateVerdict.PASS:
+            # Remember why review rejected this attempt. On its own a rejection
+            # is only half a lesson; the merge that finally lands supplies the
+            # other half.
+            metadata["failed_reviews"] = [
+                *failed_reviews(reviewing),
+                {
+                    "verdict": decision.verdict.value,
+                    "reasons": list(decision.reasons),
+                    "failed_checks": [
+                        check["name"]
+                        for check in serialized_checks
+                        if check.get("passed") is not True
+                    ],
+                },
+            ]
         reviewing = replace(reviewing, metadata=metadata)
         target = (
             TaskState.PASSED
@@ -254,6 +275,9 @@ class DivanOrchestrator:
                     "diff_sha256": merged.diff_sha256,
                 },
             )
+        )
+        capture_merge_lesson(
+            approved_task, merged.diff_sha256, self.knowledge, self.evidence
         )
         return self._save(
             approved_task.transition(TaskState.MERGED, "reviewed snapshot fast-forwarded")

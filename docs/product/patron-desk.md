@@ -26,15 +26,57 @@ Patron Masası planlama aşamasında şu komutları kullanır:
 - `goal.preview`
 - `goal.create`
 
+TAHT özeti ve SİSTEM/ARŞİV ekranları ek olarak salt okunur
+`project.agency.status` ve `doctor` komutlarını okur.
+
 `goal.preview` salt okunurdur; proje içinde plan artifact'ı veya yerel task state yazmaz ve `execution_authority` vermez.
 
 `goal.create` yalnız `approve_plan_write=true` ile çalışır. Onay verildiğinde mevcut goal sözleşmesi üzerinden `spec.md`, `plan.md`, `tasks.md`, `route.json` ve receipt/evidence kayıtları yazılır; receipt-doğrulanmış route aynı anda yerel `planned` Divan iş paketlerine materialize edilir. Bu iş paketlerinin `mandate_id` değeri yoktur ve kaynak kod execution'ı başlamaz.
 
 Bu yüzey doğrudan `task.start`, `task.approve`, merge veya release çağırmaz. Mutating execution mevcut Desktop akışındaki açık `approve_execution=true` onayını gerektirir. Merge de bağımsız review ve açık owner onayı olmadan gerçekleşmez.
 
+## İlk açılış sihirbazı
+
+Divan Desktop ilk açılışta "DİVAN'A HOŞ GELDİNİZ" başlıklı dokuz adımlı bir
+sihirbaz gösterir. Her adım Core `doctor` yanıtındaki bir yeteneğe karşılık
+gelir: Divan Core, Git, Codex, Claude Code, tarayıcı testi, hafıza (depo ve
+geri çağırma), kalite ve kanıt, yerel güvenlik; dokuzuncu adım çalışma
+klasörünü seçtirir.
+
+- Satırlar yalnız Core'un `state` ve `code` alanlarından çevrilir:
+  `CERTIFIED` → "✓ … hazır.", `DEGRADED` → "⚠ … kurulu ancak …",
+  `OFFLINE` → "✗ … bulunamadı.", `INCOMPATIBLE` → "⚠ … uyumsuz sürüm.",
+  `BLOCKED` yerel güvenlikte → "⚠ … Windows politikası nedeniyle engelli."
+- Patron görünümünde hata kodu, yol veya JSON görünmez; "Teknik ayrıntı"
+  düğmesi kodu isteyene gösterir.
+- Eksik bir adımda Core `action_hint` göndermişse o cümle aynen gösterilir;
+  göndermemişse "Divan bunu kendisi hazırlamayı deneyecek." denir. Sihirbaz
+  hiçbir kurulum yapmaz.
+- Klasör seçilince kabuk `project.register` çağırır ve "ilk açılış tamam"
+  bilgisini kendisi saklar; sihirbaz bu bilgiyi kendi başına yazmaz.
+
+## Yedi durak ve ayrıntı düzeyi
+
+Kenar çubuğu yedi durak sunar: 👑 TAHT (Patron Masası ve proje özeti),
+🏛 DİVAN (iş paketleri), ⚔ EKİP (ajanlar ve motorlar), 🕵 TEFTİŞ (kanıtlar),
+🧠 ARŞİV (yalnız hafıza yeteneklerinin Doctor satırları), 🧰 CEPHANELİK
+(eklentiler ve yönetilen araçlar), 🩺 SİSTEM (Doctor ve sürümler).
+
+Üst çubuktaki "Ayrıntı düzeyi" seçici (Patron / Divan / Teknik) kabuk
+genelinde geçerlidir. Patron düzeyi dosya yolu, ham durum kodu, API sürümü ve
+SHA-256 gibi teknik ayrıntıları gizler; Divan ve Teknik düzeyleri gösterir.
+
+TAHT özeti yalnız `project.agency.status` yanıtında bulunan alanları
+listeler: proje adı, aşama, ilerleme, şu anki etkinlik, çalışan ve durmuş iş
+paketi sayısı, sizi bekleyen sayısı, sıradaki adım. Çalışan ajan sayısı,
+kritik sorun sayısı, "Divan çözüyor" sayısı ve son olay cümlesi Core
+yanıtında henüz yoktur; bu alanlar ancak Core gönderdiğinde görünür,
+arayüzde hesaplanmaz.
+
 ## Kullanıcı deneyimi
 
-- `Ctrl+K` / `Cmd+K`: Patron Masası'nı açar.
+- `Ctrl+K` / `Cmd+K`: Patron Masası'nı açar; aynı masa TAHT ekranında da
+  gömülü durur, ikinci bir masa yoktur.
 - `Esc`: kapatır.
 - Üç hazır ferman başlangıcı sunulur: **Anahtar teslim**, **Hata çöz**, **Özellik ekle**.
 - Kullanıcı önce **Planı önizle** ile hiçbir şey yazmadan gerçek Nizâm-ı Sefer kırılımını görür.

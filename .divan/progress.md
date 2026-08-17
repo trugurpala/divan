@@ -1,5 +1,581 @@
 # Divan İlerleme Defteri
 
+## Desktop: ilk açılış sihirbazı ve Patron gezintisi (2026-08-17)
+
+Dal: `feat/agency-os-turnkey-v1` üzerine yerel çalışma · push edilmedi
+
+### Ne değişti
+
+- `FirstRunWizard.tsx`: dokuz adım, her biri bir Doctor `capability_id`'sine
+  bağlı (`divan-core`, `git`, `codex`, `claude`, `browser-qa`,
+  `memory-store`+`memory-recall`, `quality-factory`+`evidence`,
+  `local-state-security`, çalışma klasörü). Satırlar yalnız Core `state` ve
+  `code` alanından çevrilir; kod ve yol "Teknik ayrıntı" arkasında kalır.
+  Klasör seçimi kabuğa `onComplete(path)` ile bildirilir; "ilk açılış tamam"
+  bilgisini kabuk saklar.
+- `App.tsx`: yedi durak (TAHT, DİVAN, EKİP, TEFTİŞ, ARŞİV, CEPHANELİK,
+  SİSTEM), kabuk düzeyinde Patron/Divan/Teknik seçici. Diff ve Sürümler
+  ekranları kaldırılmadı; DİVAN ve SİSTEM gruplarının içinden erişilir.
+  Doctor artık `doctor` komutuyla kabuğa bağlı; ARŞİV yalnız iki hafıza
+  yeteneğinin Doctor satırını gösterir.
+- `PatronDesk.tsx`: gövde `PatronDeskPanel` olarak ayrıldı; TAHT ekranı ve
+  Ctrl+K diyaloğu aynı paneli kullanır.
+- `humanStatus.ts`: `patronSummary()` yalnız `project.agency.status`
+  yanıtında bulunan alanları sıralar; `phaseLabel()` eklendi.
+
+### Core'un henüz göndermediği Patron alanları
+
+`project.agency.status` yanıtında şu alanlar yok; arayüz bunları
+hesaplamaz, ancak Core gönderirse (`agents_working`, `critical_problems`,
+`divan_resolving`, `last_event`) gösterir:
+
+- çalışan ajan sayısı (şimdilik yalnız çalışan iş paketi sayısı var);
+- kritik sorun sayısı (yalnız durmuş iş paketi sayısı var);
+- "Divan çözüyor" sayısı;
+- son olay cümlesi.
+
+Doctor yanıtında `action_hint` alanı da yok; sihirbaz o zaman "Divan bunu
+kendisi hazırlamayı deneyecek." der.
+
+### Doğrulama
+
+| Ölçüm | Sonuç |
+|---|---|
+| arayüz (vitest) | 20 → 45 test, geçti |
+| `tsc --noEmit` | temiz |
+| `vite build` | 27 modül, temiz |
+| App.tsx'i okuyan Python testleri | 32 test, geçti |
+| prose, naming, handoff | temiz |
+
+## Bağımsız denetim ve yürütme zinciri (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `5eb7d37`
+
+### Bağımsız hakem yedi kusur buldu
+
+Yazan oturumun geçmişini taşımayan, yazma yetkisi olmayan ikinci bir Codex
+süreci yürütme zincirini okudu. Bağımsızlık iddia edilmedi, ölçüldü: hakemin
+pid'i kaydedildi ve worktree öncesi/sonrası parmak izi alındı, böylece bir şey
+değiştiren hakem "salt okunur" diye anılamaz. Sağlayıcı bağımsızlığı
+`unavailable` olarak dürüstçe kaydedildi; bu makinede kimliği doğrulanmış tek
+sağlayıcı Codex.
+
+Yedi bulgunun yedisi de gerçekti. En ağırı şuydu: stage işlemi worker
+çıktıktan sonra yapıldığı için, aynı worktree'de hiçbir şey değiştirmeyen bir
+tekrar denemesi, önceki denemenin reddedilmiş dosyalarını kendi işi sanıp
+COMPLETED yazılabiliyordu. Artık ağaç deneme öncesi ve sonrası parmaklanıyor;
+yalnız deneme sırasında değişen şey o denemenin işi sayılıyor.
+
+Diğerleri: süre sınırı ancak tam bir yoklama turu sonrası kontrol ediliyordu;
+talimat ana iş parçacığında korumasız yazılıyordu; zaman aşımında yalnız
+başlatılan süreç öldürülüyor, onun başlattığı derleyici veya test koşucusu
+worktree'ye yazmaya devam edebiliyordu; ilerleme sinyali okununca siliniyor ve
+o aralıkta gelen çıktı sayılmıyordu. Hakem modülünde de çöken veya süresi dolan
+bir hakem yine "denetim yaptı" sayılıyor, okunamayan ağaç ise "değişmemiş"
+ağaçla aynı görünüyordu.
+
+Her düzeltme tek tek geri alındı ve kendi testi tekrar koşuldu. **Yedide yedi**
+düzeltmesiz halde kırmızıya dönüyor.
+
+### Sekiz yürütme değişmezi adlı testlere bağlandı
+
+Reddedilen denemenin bıraktığı iş sonrakinin başarısı sayılamaz · hiçbir şey
+değiştirmeyen koşu COMPLETED sayılamaz · okunamayan veya stage edilemeyen çıktı
+üretilmiş iş sayılamaz · prompt komut satırına sızmaz, stdin taşır · konuşkan
+çıktı kilitlenme yaratamaz · heartbeat ilerleme değildir · kabul edilen sonuç
+değişmez bir commit'e bağlanır · yazan kendi hakemi değildir.
+
+Komut satırı değişmezi artık `build_argv`'nin gerçekten ürettiği argv üzerinde
+sınanıyor; hem worker hem hakem yolu aynı kurucuyu kullanıyor.
+
+### Sınırı gevşetmek yerine dosya bölündü
+
+`worker_execution` 400 satır tavanına karşı 426'ya çıktı. Tavan yükseltilmedi;
+worktree soruları `worktree_reading`'e taşındı: ne değişti, bu host okuyabilir
+mi, kabul edilen işin adı ne. Süreç başlatmak ile diff yargılamak farklı işler.
+
+### Doğrulama
+
+| Ölçüm | Sonuç |
+|---|---|
+| worker süitleri (execution, process, review, discovery) | 65 test, geçti |
+| yedi bulgunun RED kanıtı | 7/7 düzeltmesiz kırmızı |
+| temiz-commit regresyon farkı | **0 yeni hata** (84 / 85) |
+| ruff, mypy, temiz-kod, isimlendirme, metin, standartlar, wiki, adaylar | temiz |
+| arayüz (vitest) | 20 test, geçti |
+
+Fark analizinde bir hata *kayboldu*
+(`test_missing_reviewer_is_explicit_failure`). Bu bir düzeltme değil: test
+izole olarak beş kez geçiyor, tam süitte sıraya bağlı kararsız davranıyor.
+
+Kanıt: `.divan/evidence/teftis-20260816-independent-review.md`.
+
+## Üretim seferi — Divan gerçek worker çalıştırdı (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ed60b21`
+
+### Kabul edilen kontrat koşusu
+
+Divan, sertifikalı Codex 0.147.0'ı kendi açtığı worktree'de başlattı ve
+sonucu worker'ın beyanından değil worktree'den okudu.
+
+```
+attempt state : completed      changed files : jsoncheck.py, test_jsoncheck.py
+exit code     : 0              diff lines    : 90
+duration      : 162.0 s        produced work : True
+worker'ın yazdığı 3 test, Divan tarafından koşuldu: exit 0, OK
+```
+
+### Kontrat koşusunun ortaya çıkardığı üç kusur
+
+Üçü de "başarılı görünen ama başarılı olmayan attempt" biçimleriydi.
+
+1. **Temiz çıkış tek başına başarı sayılıyordu.** Hiçbir şey değiştirmeyen
+   ilk koşu COMPLETED yazıldı. Artık boş değişiklik kümesiyle temiz çıkış
+   `WORK_REJECTED`.
+2. **Okunamayan iş, iş sayılıyordu.** `git add` çıkış kodu yutuluyordu;
+   sonuç `produced_work: True` ile `diff lines: 0` oldu. Artık reddedilen
+   dosyalar adlandırılıyor, okunamayan çıktı `ENVIRONMENT`.
+3. **Worker'ın yazma yolu yoktu.** Codex öntanımlı olarak read-only.
+   Artık `--sandbox workspace-write` veriliyor: yalnız verilen worktree'ye
+   yazabilir. `danger-full-access` ve onay atlama kullanılmıyor; bir test
+   bunların hiç görünmediğini sabitliyor.
+
+18 yeni test; üç düzeltme geri alınınca 5'i kırmızıya dönüyor.
+
+### Yol boyunca bulunan iki ortam nedeni
+
+İkisi de aynı belirtiyi veriyordu ve ikisi de Divan kusuru değildi.
+
+**Codex kurulu olduğu yerden yazamıyordu.** npm global prefix'i winget
+Node.js paket dizininin içindeydi; Codex'in kendi sandbox helper'ı 270
+karaktere çıkıyordu ve Windows 260 sınırını aşıyordu. Her sandbox açılışı
+`os error 3` ile düşüyor, `apply_patch` reddediliyordu. Codex
+`C:\divan-tools` altına kuruldu (helper yolu 156 karakter) ve kullanıcı
+PATH'inin başına alındı.
+
+**Sonda betiği, sandbox'ın zehirleyebileceği bir worktree yaratıyordu.**
+`tempfile.mkdtemp` dizini kalıtıma karşı korur: yalnız SYSTEM, Administrators
+ve OWNER RIGHTS kalır, kullanıcı ACE'i olmaz. Sandbox'ın yazdığı dosyaların
+sahibi sandbox hesabı olunca kullanıcının hiç hakkı kalmıyordu. Olağan
+biçimde açılan dizin proje ağacından sahip hesabın tam yetki girdisini
+devralıyor ve aynı koşu geçiyor.
+
+Hiçbir ACL değiştirilmedi, hiçbir güvenlik ayarı gevşetilmedi. Codex'in
+write root'a kendi ACE'lerini eklerken kalıtımı bozmadığı, aynı dizinin
+öncesi/sonrası okunarak doğrulandı.
+
+Kanıt: `.divan/evidence/teftis-20260816-worker-execution.md`.
+
+## Agency OS kampanyası III — Codex sertifikalı (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ac55893`
+
+### Doctor yanlış negatifi kapandı
+
+Doctor, Codex'i `DEGRADED / AUTH_NOT_VERIFIED` gösteriyordu; oysa sınırlı
+headless `codex exec` onun kimliği doğrulanmış ve çağrılabilir olduğunu
+zaten kanıtlamıştı. Kontrol yalnız çalıştırılabiliri çözüyor ve oturum
+hakkında hiçbir şey söyleyemeyeceğini varsayıyordu.
+
+`worker_certification` her CLI'a iki sınırlı ve etkileşimsiz soru sorar:
+kendi sürümü ve kendini oturum açmış sayıp saymadığı. Kimlik dosyası
+açılmaz, giriş akışı başlatılmaz, her yoklama zaman aşımı korumalıdır.
+
+Oturum-kapalı ifadesi her zaman kazanır; konuşmayan CLI `UNKNOWN` olur,
+oturum açmış sayılmaz. Sertifika hem bildirilmiş sürüm hem bildirilmiş
+oturum ister, yani varlık tek başına hâlâ sertifikalamaz.
+
+### Bu makinede güncel durum
+
+| Yetenek | Durum |
+|---|---|
+| divan-core | CERTIFIED |
+| **codex** | **CERTIFIED** (0.147.0, oturum doğrulandı) |
+| claude | DEGRADED / `AUTH_REQUIRED` |
+| browser-qa | CERTIFIED (playwright 1.61.0 + chromium) |
+| spec-compiler, memory, plugin-trust, context-compiler, attempt-recovery, quality-factory, evidence, agency-status | CERTIFIED |
+| local-state-security | BLOCKED / `LOCAL_STATE_DACL_POLICY` |
+
+Claude için kod artık `AUTH_NOT_VERIFIED` değil `AUTH_REQUIRED`: CLI
+kendini açıkça oturum-kapalı bildiriyor, sessiz kalmıyor.
+
+### Açık borç
+
+`CLAUDE_CROSS_PROVIDER_REVIEW_UNAVAILABLE`. Codex tek başına writer olarak
+çalışabilir; bağımsız hakem için ayrı ve yazma yetkisiz ikinci bir Codex
+süreci kullanılacaktır (`provider_independence: unavailable`,
+`process_independence: proven`). Claude oturumu açılırsa aynı diff için
+cross-provider yeniden inceleme eklenecektir.
+
+### Sıradaki kesin adım
+
+1. Worker execution adapter: Divan'ın kendi başlattığı Codex Attempt'ı —
+   fresh worktree, sınırlı bağlam, TaskContract, attempt kaydı, diff.
+2. Ayrı ve yazma yetkisiz ikinci Codex süreciyle bağımsız hakem.
+3. AgencyBench-02'yi gerçek Attempt'larla koş.
+
+## Agency OS kampanyası III — worker'lar sahaya indi (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `bd9ae2f`
+
+### Kurulum tamam
+
+| Bileşen | Sürüm | Yöntem |
+|---|---|---|
+| Claude Code | 2.1.229 | `winget install Anthropic.ClaudeCode` |
+| Codex CLI | 0.147.0 | `npm install -g @openai/codex` |
+| Playwright | 1.61.0 + chromium | CI ile aynı pin |
+
+Yeni tarayıcı çatısı kurulmadı; repoda zaten kullanılan sürüm hizalandı.
+
+### Codex sertifikalı
+
+Tek kullanımlık bir git deposunda sınırlı headless `codex exec` çalıştırıldı
+ve beklenen belirteci döndürdü; model ve token kullanımı raporlandı. Bu,
+kimliği doğrulanmış ve çağrılabilir bir çalışandır — yalnız kurulu değil.
+
+`codex login status` mevcut ChatGPT oturumunun kullanılabilir olduğunu
+gösterdi; yeni bir giriş akışı başlatılmadı.
+
+### Claude oturum açmadı
+
+`claude doctor` kurulum sorunu bulmuyor, ancak "Not logged in" diyor.
+Headless çağrı `Please run /login` döndürüyor. Giriş sahibin hesabını
+gerektirir; **tek kalan kapı budur** ve etrafından dolaşılmadı.
+
+### Keşifte iki gerçek kusur bulundu ve düzeltildi
+
+1. **winget köprüsü**: winget her paketi kendi dizinine kurar ve yalnız
+   kullanıcı PATH'ini değiştirir; daha önce başlamış bir süreç bunu göremez.
+   Keşif ne bu kökü ne de bir kademe altını arıyordu, bu yüzden Claude
+   kurulu olduğu hâlde eski PATH'li süreçte `TOOL_NOT_INSTALLED` okunuyordu.
+   Artık winget paket kökü ve bir kademe altı aranıyor; yürüyüş sınırlıdır.
+2. **Windows launcher tercihi**: arama uzantısız dosyayı tercih ediyordu;
+   Codex için bu çalışmayan bir shell script'tir, ayrıca `.ps1` shim'i de
+   kabul edilebiliyordu. Artık gerçek launcher'lar önce gelir.
+
+### Deep Doctor şimdi
+
+| Yetenek | Önce | Şimdi |
+|---|---|---|
+| codex | OFFLINE / TOOL_NOT_INSTALLED | DEGRADED / AUTH_NOT_VERIFIED |
+| claude | OFFLINE / TOOL_NOT_INSTALLED | DEGRADED / AUTH_NOT_VERIFIED |
+| browser-qa | OFFLINE | **CERTIFIED** |
+| local-state-security | BLOCKED | BLOCKED (değişmedi, ACL'e dokunulmadı) |
+
+Binary bulunması hâlâ CERTIFIED değildir.
+
+### Açık kapı
+
+`HARD_OWNER_AUTH_GATE`: Claude Code oturumu. Codex authenticated olduğu
+için tek worker ile ilerlenebilir, ancak bağımsız hakem ayrımı
+(writer ≠ reviewer) iki farklı sağlayıcı ister.
+
+### Sıradaki kesin adım
+
+1. Claude oturumu açıldığında Doctor'ı yeniden koş; iki worker da
+   sertifikalanmalı.
+2. Worker sertifikasyon sözleşmesi ve routing politikasını tamamla.
+3. AgencyBench-02'yi gerçek attempt'larla koş.
+
+## Agency OS kampanyası III — worker keşfi (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `ccc865e`
+
+### Engelin gerçek nedeni kanıtlandı
+
+Önceki koşum Codex ve Claude'u yalnız PATH aramasına dayanarak `OFFLINE`
+bildirmişti. "PATH'te yok" ile "kurulu değil" farklı bulgulardır.
+
+Bu oturumda kesin arama yapıldı: PATH, `where.exe`, npm global kökü ve bin
+dizini, scoop shims, chocolatey bin, Program Files, `LOCALAPPDATA\Programs`
+ve kullanıcı profili kökleri. **Hiçbirinde `codex` veya `claude`
+çalıştırılabiliri yok.**
+
+`C:\Users\User\.claude`, `.codex` ve `AppData\Roaming\claude` dizinleri var
+ama bunlar Claude Desktop uygulamasının ve Codex'in yapılandırma/durum
+dizinleridir; CLI kurulumu değildir.
+
+Sonuç değişmedi ama artık varsayım değil kanıt: **worker'lar gerçekten
+kurulu değil.**
+
+### `worker_discovery`
+
+Bulgu kalıcı yeteneğe çevrildi. Mevcut resolver önce kullanılır, sonra
+belgelenmiş kurulum kökleri taranır. `ABSENT` sonucu **aranan her konumu
+taşır**, böylece iddia kontrol edilebilir. PATH dışında bulunan bir worker
+"environment sınırı" notuyla `RESOLVED` bildirilir.
+
+Kimlik dosyası hiçbir zaman açılmaz; bir test probe'un credential dizinine
+girmediğini doğrular.
+
+### Tarayıcı yeteneği
+
+Doctor'da eksikti ama **repoda zaten vardı**: `site-tests` workflow'u
+`playwright==1.61.0` ve chromium kuruyor, `ui-pack` altında
+`webapp-testing` skill'i mevcut. Yeni araç eklenmedi; Doctor aynı yeteneği
+yokluyor. Yoklama alt süreçte çalışır çünkü çekirdek stdlib-only'dir —
+ilk denemede playwright'ı doğrudan import ettiğimde sözleşme doğrulayıcısı
+bunu yakaladı.
+
+Bu makinede tarayıcı yeteneği `OFFLINE` / `BROWSER_NOT_INSTALLED`; CI
+hattında kuruludur.
+
+### Açık hard gate
+
+AgencyBench hâlâ `TURNKEY_BLOCKED` / `WORKERS_OFFLINE`. Tek engel budur ve
+sahip kararıdır: ücretli kodlama CLI'ını kurmak ve oturum açmak kimlik
+işlemidir. Divan bunu kendi başına yapmaz.
+
+Kurulum yapılsa bile oturum açılmadan Doctor `DEGRADED` /
+`AUTH_NOT_VERIFIED` bildirir ve benchmark yine bloke kalır.
+
+### Sıradaki kesin adım
+
+Kampanya III'ün 2-15 arası bölümleri (worker sertifikasyonu, routing,
+gerçek attempt yürütme, gerçek fault injection, tarayıcı/güvenlik kampanyası,
+AgencyBench-02, onarım döngüsü, final teftiş) kurulu bir worker olmadan
+kanıtlanamaz. Worker sağlandığında sıra budur.
+
+Worker'sız yapılabilecek kalan işler: worker sertifikasyon sözleşmesi ve
+routing politikası modelleri, Ferman öncesi worker hazırlık uyarısı,
+doğrulama sırasında worktree mutation guard.
+
+## Agency OS kampanyası II — PASS 9 ve 10 (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `df17551`
+
+### PASS 9 — Deep Doctor
+
+Tek kanonik Core sağlık modeli üretildi; CLI ve Desktop aynı modeli okur,
+ikinci bir sağlık gerçeği yoktur. On dört yetenek denetlenir ve binary
+varlığı asla hazırlık sayılmaz: çekirdek kendi sözleşmesini geri okur, spec
+derleyici örnek bir ferman derler, hafıza deposu açılıp analitiğini
+raporlar. Çözümlenen bir çalıştırılabilir `AUTH_NOT_VERIFIED` koduyla
+`DEGRADED` bildirilir, çünkü `codex.exe` bulmak oturumun çalıştığını
+kanıtlamaz.
+
+Her yetenek, sertifikalı değilken sahibin neyi kaybettiğini yazmak
+zorundadır; `CERTIFIED` olmayan her durum neden kodu taşımak zorundadır.
+Çöken bir probe `BLOCKED` bulguya dönüşür ve asla kullanılabilir sayılmaz.
+
+Bu makinedeki AppData capability SID'i tam istendiği gibi raporlanır:
+`BLOCKED`, kod `LOCAL_STATE_DACL_POLICY`, ve yalnız yerel kanıtın son
+doğrulamasını engellediği, geliştirmeyi durdurmadığı açıkça yazılır. ACL'e
+dokunulmadı, kapı zayıflatılmadı.
+
+Panel üç derinlik render eder; Padişah varsayılandır. Test, Padişah
+görünümüne hiçbir neden kodunun veya DACL sözcüğünün ulaşmadığını ve
+engelli bir yeteneğin asla hazır gösterilmediğini doğrular.
+
+Bu iş sırasında üç mimari kural gerçek hatalarımı yakaladı ve üçü de
+çözüldü: bildirilmemiş modüller, sınırsız dinamik import, ve kernel-project
+katman ters çevrimi. Doctor artık ait olduğu `api` katmanındadır.
+
+### PASS 10 — AgencyBench-01
+
+Sonuç: **TURNKEY_BLOCKED**, neden `WORKERS_OFFLINE`.
+
+Divan kendi hattını Ferman'dan iş paketi grafiğine kadar gerçekten yürüttü:
+ürün sözleşmesi, UX kabul sözleşmesi, mimari kararlar ve dört iş paketi
+üretildi, paket başına sınırlı bağlam derlendi. Çalışan atama adımında
+durdu; bu makinede ne Codex ne Claude kurulu.
+
+**Uygulama elle yazılmadı.** Yazılsaydı arkasında ölçüm olmayan bir `READY`
+üretilirdi; bu sınav Divan'ın ne yapabildiğini ölçer. Ücretli bir kodlama
+CLI'ını kurup oturum açmak kimlik işlemidir ve hard gate'tir.
+
+On yedi kabul kapısının tamamı `BLOCKED` ve her biri nedenini taşır.
+`HUMAN_INTERVENTION_COUNT` sıfırdır: koşu yardım isteği yüzünden değil
+makine gerçeği yüzünden durdu.
+
+Kanıt: `.divan/evidence/teftis-20260816-agencybench-01.md`.
+
+### Teslim sonrası ürün zekâsı
+
+Teslim edilmiş uygulama olmadığı için kullanım verisi yoktur ve öyleymiş
+gibi davranılmadı. Altı öneri bu kampanyada fiilen gözlenen kanıta
+dayandırıldı: çalışanların geç fark edilmesi, doğrulama sırasında worktree
+düzenlemenin ürettiği beş sahte hata, yeni modül kaydının tekrarlanan
+sürtünmesi, eksik tarayıcı yeteneği, kalibre edilmemiş token tahmini ve
+yalnız merge yolunda tetiklenen öğrenme.
+
+Kanıt: `.divan/evidence/teftis-20260816-product-intelligence.md`.
+
+### Ölçüm
+
+| | Test | Başarısız | Yeni regresyon |
+|---|---|---|---|
+| `main` | 1020 | 87 | — |
+| PASS 10 head | **1181** | 84 | **0** |
+
+Frontend 20/20 render testi. validate, ruff, mypy, clean-code, naming,
+prose, standards, candidates, hijyen — hepsi yeşil.
+
+### Sıradaki kesin adım
+
+AgencyBench'i `TURNKEY_READY`'ye taşımak için tek engel kurulu ve kimliği
+doğrulanmış bir kodlama çalışanıdır. Bu sahip kararıdır. Çalışan
+sağlandığında benchmark aynı komutla yeniden koşulur ve kapı matrisi gerçek
+sonuçlarla dolar.
+
+## Agency OS kampanyası II — PASS 6, 7 ve 8 (2026-08-16)
+
+Dal: `feat/agency-os-turnkey-v1` · PR #165 · head `514e15e`
+
+PR #165 CI'ı bu oturuma girerken temizdi: 0 hata, 11 başarılı.
+
+### PASS 6 — Worker güvenilirliği
+
+`AttemptRecord` artık first-class. Task ile Attempt kesin ayrıdır: Task
+ajansın verdiği söz, Attempt bir çalışanın o söze tek denemesidir. Mevcut
+retry/recovery kodu yeniden yazılmadı, üzerine inşa edildi.
+
+Canlılık ile ilerleme ayrı sinyaldir. Bir süreç canlı olup takılabilir, bu
+yüzden atmaya devam eden ama hiçbir şey ilerletmeyen bir heartbeat yine
+stall sayılır. PID de sağlık değildir: kayıtlı process start token, PID
+yeniden kullanımına karşı korur.
+
+Stall politikası sıralıdır ve yavaş çalışan asla ölü sanılmaz. Ölü süreç
+zamanlayıcıdan bağımsız `ORPHANED`; canlı ama sessiz olan önce
+`SUSPECTED_STALLED`, ancak stall sınırını aşınca `RECOVERY_PENDING` olur.
+
+Kurtarma önce sınıflandırır. Esasen reddedilmiş iş körlemesine tekrar
+denenmez; checkpoint'i olan kayıp çalışan resume, olmayan replace edilir;
+attempt bütçesi sonsuz döngüyü keser.
+
+**Fault injection gerçek**: test tek kullanımlık bir alt süreç başlatır,
+çalışırken öldürür ve zinciri kanıtlar — attempt gerçekten çalışıyordu,
+kill "sessizlik" değil "süreç yok" olarak algılandı, `ORPHANED` →
+`RECOVERY_PENDING`, aynı task altında farklı sağlayıcıyla yeni attempt, ve
+öldürülen attempt evidence/failure class/history'sini korudu. Canlılık
+kontrolü devre dışı bırakılınca iki fault injection testi de kırmızıya
+döner, yani totolojik değildir.
+
+### PASS 7 — Context Compiler
+
+Bütün repo ve bütün hafıza gönderilmiyor. Paket öncelik sırasıyla dolar:
+önce task contract, kabul ölçütleri, güncel hata ve diff; sonra ürün/UX
+sözleşmesi, mimari kararlar, hafıza, olaylar, testler ve kaynak sembolleri.
+
+**Hiçbir şey sessizce düşmez**: her aday ya pakette ya da gerekçesi ve
+tahmini maliyetiyle omission listesinde; testler iki kümenin adayları tam
+olarak böldüğünü doğrular. Hiçbir şeyin sığmadığı bütçe yarım paket
+göndermek yerine `budget_exceeded` olarak bildirilir.
+
+Token sayısı güveniyle taşınır: tahmin `estimated`, ölçüm `exact`, kullanım
+bildirmeyen sağlayıcı `unknown`. Uydurma sayı yok.
+
+Dış bağımlılık eklenmedi. Mevcut project inspector, Agency Memory ve Spec
+Compiler tüm girdileri sağladığı için Serena/Repomix spike'ı çalıştırılmadı
+ve yapılmamış bir inceleme aday defterine yazılmadı.
+
+### PASS 8 — Teftiş Factory
+
+`QualityProfile` first-class. Altı profil modellendi, hepsi baseline
+kapıları devralır ve profil yalnız yükümlülük ekleyebilir.
+
+**Çalışmayan kapı asla geçmiş sayılmaz**: `SKIPPED`, `TIMEOUT`, `UNKNOWN`,
+`NOT_INSTALLED` ve `BLOCKED` fail-closed'dır; hiç raporlanmamış kapı
+"eksik" sayılır, "geçti" değil. İki kez raporlanan kapı en kötü sonucunu
+korur. `PASS`/`FAIL` dışındaki her durum nedenini kaydetmek zorundadır.
+
+`EvidenceManifest` sonucu yeniden kurulabilir kılar: proje, ferman, task,
+attempt, çalışan, sağlayıcı, base/result commit, worktree, değişen
+dosyalar, diff digest, komutlar ve çıkış kodları, kapı sonuçları, hakem ve
+kararı, raporlar, politika kararları, hafıza gözlemleri, zaman damgaları ve
+güveniyle token kullanımı. `delivery_state` kapı kararından türer, yani
+çalışanın kendine "başarılı" demesi tek başına asla `READY` üretemez.
+
+### Ölçüm
+
+| | Test | Başarısız | Yeni regresyon |
+|---|---|---|---|
+| `main` | 1020 | 87 | — |
+| PASS 6+7+8 head | **1164** | 84 | **0** |
+
+Yerel quality-gate adımlarının tamamı yeşil: validate, ruff, mypy,
+clean-code, naming, prose, standards, candidates, hijyen. Frontend 14/14.
+
+### Süreç dersi
+
+Bir doğrulama koşarken aynı worktree düzenlenmemeli. Deterministik runner
+testi fixture ağacını canlı çalışma ağacından kopyaladığı için, koşu
+sırasında yapılan düzenleme 5 sahte hata üretti. Temiz commit üzerinde
+yeniden koşulunca sıfır regresyon çıktı.
+
+### Sıradaki kesin adım
+
+PASS 9 (Deep Doctor) ve PASS 10 (AgencyBench-01) yapılmadı. Deep Doctor
+tek Core read modelini CLI ve UI'a vermeli; bu makinedeki AppData DACL
+sorunu `BLOCKED` / `LOCAL_STATE_DACL_POLICY` olarak dürüst gösterilmeli ve
+ACL değiştirilmemelidir.
+
+## Agency OS kampanyası II — integration head (2026-08-16)
+
+### Tek integration head
+
+`feat/agency-os-turnkey-v1` artık tüm Agency OS yeteneklerini tek dalda
+taşıyor. Zincir: `#158` → `#160` → spec compiler → Agency Memory →
+Plugin Trust.
+
+Bütün çakışmalar semantik çözüldü, taraf seçilmedi: iki protokol çakışması
+da iki dalın aynı satıra ayrı yüzey eklemesiydi, ikisi de korundu;
+`modules.json` modül bazında birleştirildi; progress defteri iki kaydı da
+tuttu. Dispatcher 29 komut taşıyor ve hiçbiri kaybolmadı — bu varsayılmadı,
+test edildi.
+
+Üç handler tablosunun birleşmesi `desktop_protocol.py`'yi 409 satıra
+çıkardı. Yine sıkıştırmak yerine `plugin.inspect` kendi
+`plugin_protocol.py` modülüne alındı; `knowledge_protocol.py` zaten aynı
+deseni kullanıyordu.
+
+### CI hatası sınıflandırması
+
+PR #162 iki kırmızı check ile geldi. **İkisinin de tek kök nedeni vardı**:
+aday defterini güncelleyip `tests/test_meclis.py` içindeki sabit pin'i
+güncellememiştim. `verify.py` tüm süiti koştuğu için quality-gate de aynı
+testten düştü. Pin'ler tam da sessiz kaymayı önlemek için var; bilinçli
+güncellendi. Coverage sorun değildi: %68, taban %64.
+
+### Patron Masası gerçek ürün UX'i
+
+`humanStatus.ts` saf bir sunum katmanıdır ve Core'un karar vermediği hiçbir
+şeyi türetmez. Sahibin altı sorusunu insan diliyle yanıtlar.
+
+"Kod yazıldı" ile "Hazır" artık karıştırılamaz iki durumdur. Hazır yalnız
+Core `DELIVERY_READY` veya `RELEASED` dediğinde çıkar. Bütün iş paketleri
+tamamlanmış ama hâlâ `IMPLEMENTATION` olan proje "Yapılıyor" görünür;
+`BLOCKED` proje asla "Hazır" görünemez. İkisi de test edilmiştir.
+
+`ProjectStatusCard` üç derinlik render eder ve varsayılan Padişah'tır.
+Padişah görünümünde hiç teknik kelime yoktur; test worktree yolu veya çıkış
+kodunun orada görünmediğini doğrular.
+
+### Gerçek frontend testleri
+
+Kaynak metni grep'i bırakıldı. Vitest 4.1.10 (Vite 8 destekli),
+`@testing-library/react` 16.3.2 (React 19 destekli) ve jsdom
+proje-kapsamlı ve lockfile'a pinli kuruldu; global kurulum yapılmadı.
+14 test gerçek render edilmiş DOM üzerinde çalışır, etkileşim `fireEvent`
+ile tetiklenir ve derinlik seçicinin klavye/etiket sözleşmesi doğrulanır.
+
+### Ölçüm
+
+| | Test | Başarısız | Yeni regresyon |
+|---|---|---|---|
+| `main` | 1020 | 87 | — |
+| integration head | 1128 | 84 | **0** |
+
+Frontend: 14/14. Yerel quality-gate adımlarının tamamı yeşil.
+
+### Sıradaki kesin adım
+
+PASS 6'dan devam: attempt modelini first-class yapmak, ardından fault
+injection ile kontrollü worker kill kanıtı. Sonra Context Compiler,
+Teftiş Factory, Deep Doctor ve AgencyBench-01.
+
 ## Agency OS kampanyası — durum (2026-08-16)
 
 Bu kayıt kampanyanın nerede kaldığını sonraki oturuma taşır. Hiçbir merge,
@@ -60,6 +636,84 @@ değiştirilmemiştir.
 `scripts/verify.py` tek başına CI değildir: ruff, mypy, clean-code, naming,
 prose ve standards ayrı quality-gate adımlarıdır ve her PASS'ta ayrıca
 çalıştırılmalıdır.
+## Agency OS: Agency Memory portu (2026-08-16)
+
+- PR #121 ve #123 main'den 20 commit geride kalmıştı. #123, #121'in üst
+  kümesi olduğu için ikisi tek tutarlı değişiklik olarak current main'e
+  port edildi; bayat yığın merge edilmedi. Port çakışmasız uygulandı.
+- Portlanan kod Windows'ta çalışmıyordu. `KnowledgeStore._connect`
+  bağlantıyı hiç kapatmıyordu; `sqlite3.Connection.__exit__` yalnız
+  transaction'ı bitirir. 13 knowledge testinden 12'si `WinError 32` ile
+  düşüyordu. POSIX açık dosyayı silebildiği için Linux CI'da görünmüyordu.
+- Bağımsız teftiş üç P1 buldu ve BLOCK verdi. İkisi kapatıldı:
+  - yakalanan metin redaksiyondan geçmiyordu; `OPENAI_API_KEY=...` ve tam
+    ev yolu deftere ham giriyordu. Artık `receipts.redact_text` uygulanıyor
+    ve redaksiyon digest'ten önce olduğu için `item_id` makineden bağımsız.
+  - `upsert` küratörlüğü siliyordu; aynı hatayı tekrar yakalamak
+    `validated`/0.95 kaydını `candidate`/0.5'e düşürüyor ve `created_at`
+    ilk-görülme geçmişini yok ediyordu. Artık kimlik, ilk-görülme ve
+    küratörlük sütunlarına dokunmuyor; terfi için ayrı `curate()` var.
+- Üçüncü P1 de kapatıldı: yakalama yolunun test dışı çağıranı yoktu, yani
+  defter üretimde boş kalırdı. Artık görev kapanışına bağlıdır. `review()`
+  her reddin nedenini kaydeder; `approve_merge()` bu geçmişi, sonunda
+  merge olan diff ile birleştirip tek bir bilgi kaydına çevirir.
+- İlk seferde teftişi geçen görev hiçbir şey yazmaz: hiç başarısız olmamış
+  işte ders yoktur ve temiz koşumlar defteri doldurup gerçek hataları
+  gömerdi.
+- Hafıza yazımı, bütün kapıları geçmiş bir merge'i asla düşüremez. Defter
+  bozuksa hata yakalanır ve başarısız `knowledge` kanıt kaydına dönüşür;
+  sonuç iki yönde de dürüst kalır ve kanıttan yeniden kurulabilir.
+- `modules.json` artık yalnız kodun karşıladığını ilan eder.
+  `cross_project_reuse_analytics` ve `generated_knowledge_projection`
+  kaldırıldı: `observe()` üretimde hiç çağrılmıyor ve `render_book`
+  ulaşılabilir değil. Modüller test edildiği ve projeksiyon yüzeyi
+  geldiğinde gerekeceği için silinmedi.
+- Regresyon farkı: main 1020 test / 87 başarısız, bu dal 1043 test / 87
+  başarısız. Yeni regresyon yok.
+- Açık kalan: projeksiyon yüzeyi (`render_book`) ve yeniden-kullanım
+  sinyali (`observe()`) hâlâ bağlı değil. Bunlar sonraki dilimdir.
+
+## Agency OS: Plugin SDK portu (2026-08-16)
+
+- PR #119 main'den 22 commit geride kalmıştı; current main'e çakışmasız
+  port edildi. `App.tsx` iki hattın da dokunduğu tek dosya olduğu için
+  sonuç doğrulandı: `main.tsx` App'i hâlâ PatronDesk ile sarıyor, App
+  hâlâ PluginTrustCenter render ediyor; iki yüzey birlikte yaşıyor.
+- Plugin SDK, desktop protokol, Trust Center UI ve reflow testleri geçti;
+  frontend iki yüzeyle birlikte derlendi (23 modül).
+- Regresyon farkı: 1044 test / 87 başarısız; yeni regresyon yok.
+- Bu port henüz bağımsız teftişten geçmedi; "hazır" değil, "portlandı ve
+  derleniyor" olarak kayıtlıdır.
+## Agency OS: Plugin SDK portu ve teftişi (2026-08-16)
+
+- PR #119 main'den 22 commit geride kalmıştı; current main'e çakışmasız port
+  edildi. `App.tsx` iki hattın da dokunduğu tek dosyaydı, sonuç doğrulandı:
+  `main.tsx` App'i hâlâ PatronDesk ile sarıyor, App hâlâ PluginTrustCenter
+  render ediyor.
+- Bağımsız teftiş BLOCK verdi, P0 yok. Güvenlik çekirdeği sağlam çıktı:
+  eklenti kodu hiçbir zaman import edilmiyor veya çalıştırılmıyor, hiçbir
+  şey aktive edilemiyor, ve teftişin kurduğu hiçbir manifest doğrulamadan
+  kaçamadı.
+- P1 kapsam boşluğuydu: 32 ret nedeninden 24'ünün testi yoktu; kaçışı
+  önleyen iki kontrolün ikisi de kapsamsızdı. Artık her ret nedeninin
+  negatif testi var.
+- Üç kontrol fazla kabul ediyordu ve üçü de düzeltilmeden önce koşularak
+  doğrulandı: yalnız boşluktan oluşan SPDX ifadesi geçerli lisans olarak
+  gösteriliyordu; `schema_version` ve `api_version` `True` kabul ediyordu
+  (`bool`, `int` alt sınıfı); executable deseni `.`, `..` ve `CON`, `COM1`
+  gibi Windows aygıt adlarını kabul ediyordu.
+- İki ret kodu f-string ile üretiliyordu, bu yüzden grep'lenemiyordu ve
+  teftişin ilk kapsam sayımından da bu yüzden kaçmışlardı; literal oldular.
+- `modules.json` `bounded_plugin_discovery` ve `hash_bound_plugin_approval`
+  yeteneklerini ilan ediyordu ama `approve_candidate`, `validate_activation`
+  ve `discover_plugins` üretimde çağrılmıyor; tek canlı giriş
+  `plugin.inspect`. İddialar kaldırıldı, modüller korundu.
+- Regresyon farkı: main 1020 test / 87 başarısız, bu dal 1059 test / 87
+  başarısız. Yeni regresyon yok.
+- Açık kalan: reflow işi bu porta yapışmış durumda ve kendi değişikliğine
+  ait; Trust Center UI testleri render yerine kaynak metni arıyor; manifest
+  okuması ve hata listesi sınırsız; yinelenen JSON anahtarları sessizce son
+  değeri alıyor.
 
 ## Hedef Güncellemesi (2026-08-04)
 
