@@ -77,10 +77,22 @@ class UpdateGovernorCapabilityTests(unittest.TestCase):
 
 
 class CanonicalReportTests(unittest.TestCase):
+    def _disposable_database(self) -> pathlib.Path:
+        """A knowledge database outside the checkout.
+
+        The doctor creates this file when it looks at it. Pointing it inside the
+        repository left an untracked database behind, which dirtied the checkout
+        and made every later Project OS test fail closed on a guard that was
+        working exactly as intended.
+        """
+        holder = tempfile.TemporaryDirectory()
+        self.addCleanup(holder.cleanup)
+        return pathlib.Path(holder.name) / "knowledge.sqlite3"
+
     def test_the_report_carries_both_new_capabilities(self):
         report = build_report(
             state_root=trusted_state_root(),
-            knowledge_database=ROOT / ".divan" / "knowledge.db",
+            knowledge_database=self._disposable_database(),
         )
         named = {item.capability_id for item in report.capabilities}
 
@@ -90,7 +102,7 @@ class CanonicalReportTests(unittest.TestCase):
     def test_the_report_covers_seventeen_capabilities(self):
         report = build_report(
             state_root=trusted_state_root(),
-            knowledge_database=ROOT / ".divan" / "knowledge.db",
+            knowledge_database=self._disposable_database(),
         )
 
         self.assertGreaterEqual(len(report.capabilities), 17)

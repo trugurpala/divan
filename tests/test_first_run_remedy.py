@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import pathlib
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "plugins" / "sadrazam"))
@@ -94,11 +95,23 @@ class NoCredentialAutomationTests(unittest.TestCase):
 
 
 class CanonicalPayloadTests(unittest.TestCase):
+    def _disposable_database(self) -> pathlib.Path:
+        """A knowledge database outside the checkout.
+
+        The doctor creates this file when it looks at it. Pointing it inside the
+        repository left an untracked database behind, which dirtied the checkout
+        and made every later Project OS test fail closed on a guard that was
+        working exactly as intended.
+        """
+        holder = tempfile.TemporaryDirectory()
+        self.addCleanup(holder.cleanup)
+        return pathlib.Path(holder.name) / "knowledge.sqlite3"
+
     def _payload(self):
         return report_payload(
             build_report(
                 state_root=trusted_state_root(),
-                knowledge_database=ROOT / ".divan" / "knowledge.db",
+                knowledge_database=self._disposable_database(),
             )
         )
 
