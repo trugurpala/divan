@@ -14,11 +14,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "plugins" / "sadraz
 
 from divan_runtime.attempt_contract import FailureClass  # noqa: E402
 from divan_runtime.worker_execution import (  # noqa: E402
+    UNATTENDED_CONTRACT,
     WORKER_COMMANDS,
     ExecutionResult,
     _classify,
     _notes_for,
     build_argv,
+    contracted_prompt,
 )
 from divan_runtime.worker_process import ProcessOutcome  # noqa: E402
 from divan_runtime.worktree_reading import (  # noqa: E402
@@ -315,3 +317,43 @@ class InvocationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class UnattendedContractTests(unittest.TestCase):
+    """A worker that asks a question asks into a closed pipe.
+
+    Observed rather than imagined: a repair attempt produced a correct plan,
+    ended with "do you approve applying this plan?", and wrote no files. Divan
+    recorded it as rejected work, which is the wrong story — the work was never
+    attempted. The prompt now states the circumstances so the worker knows no
+    answer can arrive.
+    """
+
+    def test_the_contract_tells_the_worker_nobody_can_answer(self):
+        contract = UNATTENDED_CONTRACT.casefold()
+
+        self.assertIn("unattended", contract)
+        self.assertIn("closed", contract)
+        self.assertIn("do not ask", contract)
+
+    def test_the_contract_still_allows_reporting_impossible_work(self):
+        # Refusing to ask must not become refusing to say a task cannot be done.
+        contract = UNATTENDED_CONTRACT.casefold()
+
+        self.assertIn("impossible", contract)
+        self.assertIn("already done", contract)
+
+    def test_the_task_is_delivered_behind_the_contract(self):
+        contracted = contracted_prompt("close the ledger defect")
+
+        self.assertTrue(contracted.startswith(UNATTENDED_CONTRACT))
+        self.assertIn("close the ledger defect", contracted)
+
+    def test_the_contract_does_not_bypass_the_sandbox(self):
+        # The boundary stays the sandbox. If this ever needs an approval-bypass
+        # flag to work, the fix has gone wrong.
+        arguments = WORKER_COMMANDS["codex"].extra_args
+
+        self.assertIn("workspace-write", arguments)
+        self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", arguments)
+        self.assertNotIn("danger-full-access", arguments)

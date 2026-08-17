@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from .worker_certification import certify_worker
-from .worker_execution import WorkerCommand, build_argv
+from .worker_execution import WorkerCommand, build_argv, contracted_prompt
 from .worker_process import run_bounded
 from .worktree_reading import git_in_worktree
 
@@ -144,7 +144,7 @@ def run_independent_review(
     outcome = run_bounded(
         build_argv(certificate.executable, command),
         cwd=worktree,
-        stdin_text=prompt,
+        stdin_text=contracted_prompt(prompt),
         timeout_seconds=timeout_seconds,
         on_start=_started,
     )

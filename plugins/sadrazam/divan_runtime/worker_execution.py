@@ -52,6 +52,34 @@ class WorkerCommand:
     stdin_marker: str = "-"
 
 
+#: What every attempt is told about the circumstances it runs in.
+#:
+#: A worker that stops to ask whether it may proceed asks into a closed pipe:
+#: Divan writes the task and closes stdin, so no answer can arrive. The worker
+#: then exits cleanly having produced nothing, and the attempt is recorded as
+#: rejected work when in truth the work was never attempted.
+#:
+#: This was observed: a repair attempt returned a correct plan, ended with "do
+#: you approve applying this plan?", and produced no files. It is stated as a
+#: fact about the environment rather than fixed with an approval-bypass flag,
+#: because the sandbox is the boundary and loosening it to stop a worker asking
+#: questions would trade a real protection for a prompt.
+UNATTENDED_CONTRACT = """You are running unattended. Nobody is reading your
+output while you work and no answer can reach you: the task was written to your
+input and the stream is closed. Do not ask for approval, confirmation or a
+choice, and do not stop at a plan and wait. Decide, act, and finish the work.
+
+If the task is genuinely impossible or already done, say so plainly and stop;
+that is a result. Asking a question is not a result, because there is nobody to
+answer it.
+"""
+
+
+def contracted_prompt(prompt: str) -> str:
+    """Put the unattended contract in front of the task."""
+    return f"{UNATTENDED_CONTRACT}\n{prompt}"
+
+
 #: Non-interactive invocation for each certified worker.
 WORKER_COMMANDS: dict[str, WorkerCommand] = {
     "codex": WorkerCommand(
@@ -259,7 +287,7 @@ def run_worker_attempt(
     outcome = run_bounded(
         argv,
         cwd=worktree,
-        stdin_text=prompt,
+        stdin_text=contracted_prompt(prompt),
         timeout_seconds=timeout_seconds,
         on_start=_started,
         on_alive=_alive,
