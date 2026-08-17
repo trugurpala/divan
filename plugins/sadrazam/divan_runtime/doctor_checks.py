@@ -22,6 +22,7 @@ from .doctor import (
     DoctorReport,
     run_checks,
 )
+from .doctor_delivery import installer_capability, update_governor_capability
 from .evidence import build_evidence
 from .memory_first import recall
 from .plugin_desktop import inspect_plugin_manifest
@@ -359,6 +360,8 @@ def build_report(
             build_project_agency_status,
             "agency_status.build_project_agency_status",
         ),
+        installer_capability,
+        update_governor_capability,
         lambda: _local_state_check(state_root),
     ]
     return run_checks(checks, checked_at=checked_at)

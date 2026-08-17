@@ -44,6 +44,7 @@ RUNTIME_FILES = (
     "desktop_state.py",
     "doctor.py",
     "doctor_checks.py",
+    "doctor_delivery.py",
     "doctor_protocol.py",
     "engine.py",
     "engine_registry.py",
