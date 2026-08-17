@@ -55,6 +55,7 @@ RUNTIME_FILES = (
     "execution_recovery.py",
     "execution_router.py",
     "failure_learning.py",
+    "first_run_remedy.py",
     "frameworks.json",
     "git_guard.py",
     "goal_archive.py",

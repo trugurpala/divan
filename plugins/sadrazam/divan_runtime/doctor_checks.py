@@ -205,6 +205,8 @@ def _tool_check(
     affects: str,
     command: str,
     which: Which,
+    *,
+    needs_session: bool = True,
 ) -> CapabilityReport:
     resolved = which(command)
     if resolved is None:
@@ -215,6 +217,14 @@ def _tool_check(
             affects=affects,
             code="TOOL_NOT_INSTALLED",
             detail=f"{command} bulunamadı",
+        )
+    if not needs_session:
+        return CapabilityReport(
+            capability_id=capability_id,
+            display_name=display_name,
+            state=CapabilityState.CERTIFIED,
+            affects=affects,
+            evidence=resolved,
         )
     return CapabilityReport(
         capability_id=capability_id,
@@ -304,7 +314,12 @@ def build_report(
     checks = [
         _core_check,
         lambda: _tool_check(
-            "git", "Git", "Worktree izolasyonu ve güvenli birleştirme.", "git", which
+            "git",
+            "Git",
+            "Worktree izolasyonu ve güvenli birleştirme.",
+            "git",
+            which,
+            needs_session=False,
         ),
         lambda: _worker_check("codex", "Codex"),
         lambda: _worker_check("claude", "Claude Code"),
@@ -370,7 +385,8 @@ def build_report(
 def report_payload(report: DoctorReport) -> Mapping[str, Any]:
     """The single payload both the CLI and the Desktop read."""
     from .doctor import human_lines
+    from .first_run_remedy import annotate_report
 
     payload = dict(report.to_dict())
     payload["human_summary"] = human_lines(report)
-    return payload
+    return annotate_report(payload)

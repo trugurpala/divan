@@ -129,14 +129,53 @@ class RealMachineDoctorTests(unittest.TestCase):
         ):
             self.assertEqual(states[capability], "CERTIFIED", capability)
 
-    def test_a_resolved_executable_is_degraded_not_certified(self) -> None:
-        # Finding a binary is not proof it is authenticated, so it must not
-        # be reported as fully ready.
-        payload = self._payload(pathlib.Path(tempfile.gettempdir()))
-        git = next(c for c in payload["capabilities"] if c["capability_id"] == "git")
+    def test_a_resolved_executable_that_needs_a_session_is_degraded(self) -> None:
+        # Finding a binary is not proof it is authenticated, so a tool that has
+        # a session to verify must not be reported as fully ready on the
+        # strength of being found. Asserted on the check itself rather than on
+        # whichever tool happens to be installed on the machine running this.
+        from divan_runtime.doctor_checks import _tool_check
 
-        self.assertIn(git["state"], {"DEGRADED", "OFFLINE"})
-        self.assertTrue(git["code"])
+        report = _tool_check(
+            "probe", "Probe", "nothing", "probe", lambda _name: "C:/probe/probe.exe"
+        )
+
+        self.assertIs(report.state, CapabilityState.DEGRADED)
+        self.assertEqual(report.code, "AUTH_NOT_VERIFIED")
+
+    def test_a_tool_with_no_session_is_certified_when_it_is_found(self) -> None:
+        # Git has no credential to verify. Reporting it degraded for a session
+        # it never has told the owner something was wrong when nothing was.
+        from divan_runtime.doctor_checks import _tool_check
+
+        report = _tool_check(
+            "probe",
+            "Probe",
+            "nothing",
+            "probe",
+            lambda _name: "C:/probe/probe.exe",
+            needs_session=False,
+        )
+
+        self.assertIs(report.state, CapabilityState.CERTIFIED)
+        self.assertIsNone(report.code)
+
+    def test_a_tool_that_is_absent_is_offline_either_way(self) -> None:
+        from divan_runtime.doctor_checks import _tool_check
+
+        for needs_session in (True, False):
+            with self.subTest(needs_session=needs_session):
+                report = _tool_check(
+                    "probe",
+                    "Probe",
+                    "nothing",
+                    "probe",
+                    lambda _name: None,
+                    needs_session=needs_session,
+                )
+
+                self.assertIs(report.state, CapabilityState.OFFLINE)
+                self.assertEqual(report.code, "TOOL_NOT_INSTALLED")
 
     @unittest.skipUnless(os.name == "nt", "Windows local state policy")
     def test_the_windows_state_policy_is_reported_blocked_and_never_repaired(self) -> None:

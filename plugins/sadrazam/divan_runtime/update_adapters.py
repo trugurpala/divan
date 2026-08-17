@@ -218,12 +218,34 @@ def _certify_worker(
 def _certify_browser(
     states: dict[str, GateState], worktree: Path
 ) -> dict[str, GateState]:
-    from .browser_capability import browser_capability
+    """Observe the browser from inside this layer.
 
-    report = browser_capability()
-    ready = report.state.value.casefold() == "certified"
-    for name in ("auth", "headless", "cwd", "git-worktree"):
-        states[name] = GateState.PASS if ready else GateState.FAIL
+    The obvious move is to ask browser_capability, but that lives above the
+    providers layer and importing it upward breaks the runtime contract. The
+    adapter therefore reads what it can see for itself: which builds Playwright
+    has fetched, and whether the CLI answers in the directory it is handed.
+
+    A browser has no session to verify, so auth is reported as skipped rather
+    than as a pass. Certification requires every check to pass, so this keeps
+    the browser honestly uncertified instead of quietly promoting it on a check
+    that does not apply.
+    """
+    home = Path(os.environ.get("USERPROFILE") or Path.home())
+    root = home / "AppData" / "Local" / "ms-playwright"
+    headless_builds = (
+        [item for item in root.iterdir() if item.name.startswith("chromium_headless_shell-")]
+        if root.is_dir()
+        else []
+    )
+    states["auth"] = GateState.SKIPPED
+    states["headless"] = GateState.PASS if headless_builds else GateState.FAIL
+
+    npx = shutil.which("npx")
+    if npx is None:
+        states["cwd"] = GateState.FAIL
+        return states
+    code, _ = _run([npx, "--no-install", "playwright", "--version"], cwd=worktree)
+    states["cwd"] = GateState.PASS if code == 0 else GateState.FAIL
     return states
 
 
