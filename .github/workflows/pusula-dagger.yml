@@ -3,14 +3,14 @@ name: pusula-dagger
 on:
   push:
     paths:
-      - 'incubator/pusula/pipeline/**'
+      - 'incubator/pusula/pipeline-python/**'
       - 'incubator/pusula/backend/**'
       - 'incubator/pusula/web/**'
       - 'scripts/pusula_app_verify.py'
       - '.github/workflows/pusula-dagger.yml'
   pull_request:
     paths:
-      - 'incubator/pusula/pipeline/**'
+      - 'incubator/pusula/pipeline-python/**'
       - 'incubator/pusula/backend/**'
       - 'incubator/pusula/web/**'
       - 'scripts/pusula_app_verify.py'
@@ -42,4 +42,4 @@ jobs:
           DAGGER_NO_NAG: '1'
         run: |
           set -euo pipefail
-          dagger -y -m incubator/pusula/pipeline call check --source=.
+          dagger -y -m incubator/pusula/pipeline-python call check --source=.
