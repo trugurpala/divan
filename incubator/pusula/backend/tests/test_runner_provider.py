@@ -91,8 +91,26 @@ class RunnerProviderTests(unittest.TestCase):
         lease = provider.allocate(spec(trust=TrustLevel.UNTRUSTED))
         evidence = provider.destroy(lease)
         self.assertTrue(evidence.destroyed)
+        self.assertTrue(evidence.allocated)
+        self.assertFalse(evidence.execution_observed)
         self.assertEqual(evidence.source_sha, "a" * 40)
         self.assertEqual(evidence.workspace_id, lease.workspace_id)
+
+    def test_destroy_revokes_workspace_and_credential_scope(self) -> None:
+        provider = FirecrackerCandidateProvider(True, True, True, True)
+        lease = provider.allocate(spec(trust=TrustLevel.UNTRUSTED))
+        self.assertTrue(provider.workspace_active(lease.workspace_id))
+        self.assertTrue(provider.credential_scope_active(lease.credential_scope_id))
+        provider.destroy(lease)
+        self.assertFalse(provider.workspace_active(lease.workspace_id))
+        self.assertFalse(provider.credential_scope_active(lease.credential_scope_id))
+
+    def test_destroyed_lease_cannot_be_destroyed_or_reused_again(self) -> None:
+        provider = FirecrackerCandidateProvider(True, True, True, True)
+        lease = provider.allocate(spec(trust=TrustLevel.UNTRUSTED))
+        provider.destroy(lease)
+        with self.assertRaisesRegex(RuntimeError, "not active"):
+            provider.destroy(lease)
 
     def test_invalid_source_sha_is_rejected_before_allocation(self) -> None:
         bad = RunnerSpec(
