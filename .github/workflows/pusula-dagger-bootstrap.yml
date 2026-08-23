@@ -1,0 +1,63 @@
+name: pusula-dagger-bootstrap
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/pusula-dagger-bootstrap.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install exact Dagger stable CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/dagger-bin"
+          curl -fsSL https://dl.dagger.io/dagger/install.sh \
+            | DAGGER_VERSION=0.21.8 BIN_DIR="$RUNNER_TEMP/dagger-bin" sh
+          echo "$RUNNER_TEMP/dagger-bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/dagger-bin/dagger" version
+
+      - name: Scaffold pipeline with official Go SDK generator
+        shell: bash
+        run: |
+          set -euo pipefail
+          dagger -y -m github.com/dagger/go-sdk@v0.21.8 call init \
+            --name pusula-pipeline \
+            --path ./incubator/pusula/pipeline
+          test -f incubator/pusula/pipeline/dagger.json
+          test -f incubator/pusula/pipeline/main.go
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("incubator/pusula/pipeline/dagger.json")
+          data = json.loads(path.read_text())
+          if data.get("name") != "pusula-pipeline":
+              raise SystemExit("unexpected Dagger module name")
+          if data.get("sdk", {}).get("source") != "go":
+              raise SystemExit("unexpected Dagger SDK")
+          print(json.dumps(data, indent=2, sort_keys=True))
+          PY
+
+      - name: Package generated module
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C incubator/pusula -czf "$RUNNER_TEMP/pusula-pipeline-generated.tgz" pipeline
+          sha256sum "$RUNNER_TEMP/pusula-pipeline-generated.tgz"
+
+      - name: Upload generated Dagger module
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pusula-dagger-generated
+          path: ${{ runner.temp }}/pusula-pipeline-generated.tgz
+          if-no-files-found: error
+          retention-days: 1
