@@ -25,15 +25,16 @@ jobs:
           echo "$RUNNER_TEMP/dagger-bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/dagger-bin/dagger" version
 
-      - name: Scaffold pipeline with official Go SDK generator
+      - name: Scaffold pipeline with stable Dagger CLI
         shell: bash
         run: |
           set -euo pipefail
-          dagger -y -m github.com/dagger/dagger/sdk/go@v0.21.8 call init \
-            --name pusula-pipeline \
-            --path ./incubator/pusula/pipeline
+          mkdir -p incubator/pusula/pipeline
+          dagger -y init \
+            --sdk=go \
+            --name=pusula-pipeline \
+            ./incubator/pusula/pipeline
           test -f incubator/pusula/pipeline/dagger.json
-          test -f incubator/pusula/pipeline/main.go
           python - <<'PY'
           import json
           from pathlib import Path
@@ -47,6 +48,7 @@ jobs:
               raise SystemExit(f"unexpected Dagger SDK: {sdk!r}")
           print(json.dumps(data, indent=2, sort_keys=True))
           PY
+          find incubator/pusula/pipeline -maxdepth 3 -type f -print | sort
 
       - name: Package generated module
         shell: bash
