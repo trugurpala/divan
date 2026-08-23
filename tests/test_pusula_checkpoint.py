@@ -7,14 +7,13 @@ import unittest
 from pathlib import Path
 
 from scripts.pusula_checkpoint import (
-    CapsuleError,
     MAX_CAPSULE_CHARS,
+    CapsuleError,
     compute_digest,
     render_markdown,
     seal_capsule,
     validate_capsule,
 )
-
 
 BASELINE_SHA = "68e91fdf48dbcc385be567f4b525a682eeb9af05"
 
