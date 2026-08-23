@@ -28,6 +28,7 @@ CORE_COMMANDS: tuple[Command, ...] = (
     ("scripts/prose.py", "--check"),
     ("scripts/handoff.py", "--check"),
     ("scripts/catalog.py", "--check"),
+    ("-m", "scripts.pusula_contract", "--check"),
     ("scripts/v1.py", "--check"),
     ("scripts/release.py", "--check"),
     ("evals/run.py", "--check"),
