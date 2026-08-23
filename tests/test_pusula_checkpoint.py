@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.pusula_checkpoint import (
+from scripts.pusula_checkpoint_core import (
     MAX_CAPSULE_CHARS,
     CapsuleError,
     compute_digest,
