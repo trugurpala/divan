@@ -3,7 +3,6 @@ from __future__ import annotations
 import uuid
 
 from django.test import TestCase
-
 from pusula.domain.goal_scope import ScopeCategory, ScopeUnit
 from pusula.domain.workforce import WorkforceRole
 from pusula.mizan.goal_services import append_goal_revision, create_goal
