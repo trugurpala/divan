@@ -12,6 +12,7 @@ from pusula.integrations.runner.contract import (
     RunnerLease,
     RunnerSpec,
 )
+from pusula.integrations.runner.host_probe import MicrovmHostFacts
 
 
 def _opaque_id(prefix: str, run_id: str) -> str:
@@ -113,38 +114,28 @@ class TrustedLocalRunnerProvider(_LeaseRegistry):
 
 @dataclass(slots=True)
 class FirecrackerCandidateProvider(_LeaseRegistry):
-    """Contract-level KVM/microVM candidate; does not execute guest code.
+    """Evidence-driven KVM/microVM candidate; does not execute guest code.
 
-    Production availability requires a separate worker host with KVM,
-    Firecracker jailer, default seccomp filtering and per-run resource/network
-    isolation. Until those facts are independently probed, allocation fails
-    closed.
+    Untrusted support is derived exclusively from probed host facts. Callers
+    cannot enable the boundary with ad-hoc boolean switches. Production still
+    requires a real worker implementation and execution/leakage battle tests.
     """
 
-    kvm_available: bool = False
-    jailer_enabled: bool = False
-    seccomp_enabled: bool = True
-    dedicated_worker_host: bool = False
+    host_facts: MicrovmHostFacts
     name: str = "firecracker-candidate"
     _active: dict[str, RunnerLease] = field(default_factory=dict, init=False, repr=False)
 
     def capabilities(self) -> RunnerCapabilities:
-        hardened = (
-            self.kvm_available
-            and self.jailer_enabled
-            and self.seccomp_enabled
-            and self.dedicated_worker_host
-        )
         return RunnerCapabilities(
             backend=RunnerBackend.ISOLATED,
             isolation_class=IsolationClass.MICROVM,
-            supports_untrusted=hardened,
+            supports_untrusted=self.host_facts.ready_for_untrusted,
             disposable_workspace=True,
             ephemeral_credentials=True,
             tenant_isolation=True,
             network_restrictions=True,
             evidence=True,
-            hardware_virtualization=True,
+            hardware_virtualization=self.host_facts.kvm_available,
             max_cpu_cores=8,
             max_memory_mb=16384,
             max_disk_mb=32768,
@@ -157,7 +148,8 @@ class FirecrackerCandidateProvider(_LeaseRegistry):
             raise ValueError("firecracker candidate is reserved for untrusted workloads")
         capabilities = self.capabilities()
         if not capabilities.supports_untrusted:
-            raise RuntimeError("Firecracker candidate is not hardened/available")
+            reasons = ",".join(self.host_facts.blocking_reasons())
+            raise RuntimeError(f"Firecracker candidate unavailable: {reasons}")
         if spec.network_enabled:
             raise PermissionError(
                 "untrusted network access remains disabled until restricted egress is implemented"
