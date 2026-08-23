@@ -135,8 +135,7 @@ def validate_plan(value: Mapping[str, Any]) -> dict[str, Any]:
         value["constitution_version"], "constitution_version"
     )
     baseline = _validate_baseline(value["baseline"])
-    checkpoints = value["checkpoints"]
-    if checkpoints != [0, 25, 50, 75, 100]:
+    if value["checkpoints"] != [0, 25, 50, 75, 100]:
         raise ContractError("checkpoints must be exactly 0, 25, 50, 75, 100")
     tasks = _validate_tasks(value["tasks"])
     _validate_layers(value["layers"], set(tasks))
@@ -166,7 +165,7 @@ def _checkpoint_percent_from_name(path: Path) -> int:
     return int(match.group(1))
 
 
-def validate_checkpoints(root: Path, plan: Mapping[str, Any]) -> list[dict[str, Any]]:
+def _checkpoint_files(root: Path) -> list[Path]:
     continuity = root / CONTINUITY_DIR
     try:
         files = sorted(path for path in continuity.glob("checkpoint-*.json") if path.is_file())
@@ -174,38 +173,47 @@ def validate_checkpoints(root: Path, plan: Mapping[str, Any]) -> list[dict[str, 
         raise ContractError(f"cannot enumerate continuity checkpoints: {exc}") from exc
     if not files:
         raise ContractError("at least one continuity checkpoint is required")
+    return files
 
+
+def _validate_checkpoint(
+    root: Path,
+    path: Path,
+    percent: int,
+    plan: Mapping[str, Any],
+) -> dict[str, Any]:
+    try:
+        capsule = checkpoint_core.validate_capsule(_read_object(path))
+    except checkpoint_core.CapsuleError as exc:
+        raise ContractError(f"invalid checkpoint {path.name}: {exc}") from exc
+    if capsule["checkpoint_percent"] != percent:
+        raise ContractError(f"checkpoint filename and payload disagree: {path.name}")
+    if capsule["baseline_sha"] != plan["baseline"]["sha"]:
+        raise ContractError(f"checkpoint baseline drift: {path.name}")
+    if capsule["plan_version"] != plan["plan_version"]:
+        raise ContractError(f"checkpoint plan version drift: {path.name}")
+    if capsule["constitution_version"] != plan["constitution_version"]:
+        raise ContractError(f"checkpoint constitution drift: {path.name}")
+    completed = set(capsule["completed_tasks"])
+    if not completed <= plan["task_ids"]:
+        raise ContractError(f"checkpoint contains unknown task ids: {path.name}")
+    if not (root / capsule["active_spec"]).is_file():
+        raise ContractError(f"checkpoint active spec does not exist: {path.name}")
+    return capsule
+
+
+def validate_checkpoints(root: Path, plan: Mapping[str, Any]) -> list[dict[str, Any]]:
     validated: list[dict[str, Any]] = []
-    seen_percent: set[int] = set()
     previous_completed: set[int] = set()
     previous_percent = -1
-    for path in files:
+    for path in _checkpoint_files(root):
         percent = _checkpoint_percent_from_name(path)
-        if percent in seen_percent:
-            raise ContractError(f"duplicate checkpoint percent: {percent}")
-        seen_percent.add(percent)
-        try:
-            capsule = checkpoint_core.validate_capsule(_read_object(path))
-        except checkpoint_core.CapsuleError as exc:
-            raise ContractError(f"invalid checkpoint {path.name}: {exc}") from exc
-        if capsule["checkpoint_percent"] != percent:
-            raise ContractError(f"checkpoint filename and payload disagree: {path.name}")
         if percent <= previous_percent:
             raise ContractError("checkpoint percentages must be strictly increasing")
-        if capsule["baseline_sha"] != plan["baseline"]["sha"]:
-            raise ContractError(f"checkpoint baseline drift: {path.name}")
-        if capsule["plan_version"] != plan["plan_version"]:
-            raise ContractError(f"checkpoint plan version drift: {path.name}")
-        if capsule["constitution_version"] != plan["constitution_version"]:
-            raise ContractError(f"checkpoint constitution drift: {path.name}")
+        capsule = _validate_checkpoint(root, path, percent, plan)
         completed = set(capsule["completed_tasks"])
-        if not completed <= plan["task_ids"]:
-            raise ContractError(f"checkpoint contains unknown task ids: {path.name}")
         if not previous_completed <= completed:
             raise ContractError("completed tasks must be monotonic across checkpoints")
-        spec_path = root / capsule["active_spec"]
-        if not spec_path.is_file():
-            raise ContractError(f"checkpoint active spec does not exist: {path.name}")
         validated.append(capsule)
         previous_completed = completed
         previous_percent = percent
