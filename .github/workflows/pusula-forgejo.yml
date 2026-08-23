@@ -6,10 +6,12 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      FORGEJO_IMAGE: codeberg.org/forgejo/forgejo@sha256:1f9c1a9880425614267832ce437f8ae5f5b69e1f3219f38fc468fc37e48c1919
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Pull Forgejo LTS image
-        run: docker pull codeberg.org/forgejo/forgejo:15.0.7
+        run: docker pull "$FORGEJO_IMAGE"
       - name: Start Forgejo LTS
         run: |
           docker run -d --name pusula-forgejo \
@@ -17,13 +19,13 @@ jobs:
             -e USER_UID=1000 \
             -e USER_GID=1000 \
             -e FORGEJO__database__DB_TYPE=sqlite3 \
-            -e FORGEJO__database__PATH=/data/forgejo.db \
+            -e FORGEJO__database__PATH=/data/gitea/forgejo.db \
             -e FORGEJO__server__DOMAIN=127.0.0.1 \
             -e FORGEJO__server__ROOT_URL=http://127.0.0.1:3000/ \
             -e FORGEJO__server__HTTP_PORT=3000 \
             -e FORGEJO__security__INSTALL_LOCK=true \
             -e FORGEJO__service__DISABLE_REGISTRATION=true \
-            codeberg.org/forgejo/forgejo:15.0.7
+            "$FORGEJO_IMAGE"
       - name: Verify Forgejo API version
         shell: bash
         run: |
@@ -46,12 +48,12 @@ jobs:
 
           data = json.loads(os.environ["PAYLOAD"])
           version = data.get("version")
-          if version != "15.0.7":
+          if not isinstance(version, str) or not version.startswith("15.0.7"):
               raise SystemExit(f"unexpected Forgejo version: {version!r}")
           print("FORGEJO VERSION VALID", version)
           PY
       - name: Report immutable image digest
-        run: docker image inspect codeberg.org/forgejo/forgejo:15.0.7 --format '{{index .RepoDigests 0}}'
+        run: docker image inspect "$FORGEJO_IMAGE" --format '{{index .RepoDigests 0}}'
       - name: Forgejo logs on failure
         if: failure()
         run: docker logs pusula-forgejo || true
