@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dagger -y -m github.com/dagger/go-sdk@v0.21.8 call init \
+          dagger -y -m github.com/dagger/dagger/sdk/go@v0.21.8 call init \
             --name pusula-pipeline \
             --path ./incubator/pusula/pipeline
           test -f incubator/pusula/pipeline/dagger.json
@@ -42,8 +42,9 @@ jobs:
           data = json.loads(path.read_text())
           if data.get("name") != "pusula-pipeline":
               raise SystemExit("unexpected Dagger module name")
-          if data.get("sdk", {}).get("source") != "go":
-              raise SystemExit("unexpected Dagger SDK")
+          sdk = data.get("sdk")
+          if sdk != "go" and (not isinstance(sdk, dict) or sdk.get("source") != "go"):
+              raise SystemExit(f"unexpected Dagger SDK: {sdk!r}")
           print(json.dumps(data, indent=2, sort_keys=True))
           PY
 
