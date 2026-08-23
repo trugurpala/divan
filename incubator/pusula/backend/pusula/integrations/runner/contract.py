@@ -70,7 +70,8 @@ class RunnerEvidence:
     source_sha: str
     workspace_id: str
     isolation_class: IsolationClass
-    started: bool
+    allocated: bool
+    execution_observed: bool
     destroyed: bool
     exit_code: int | None
 
