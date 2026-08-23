@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "indexes": [models.Index(fields=["identity_subject", "team"], name="teams_membe_identit_643a3d_idx")],
+                "indexes": [models.Index(fields=["identity_subject", "team"], name="teams_membe_identit_b549da_idx")],
                 "constraints": [
                     models.UniqueConstraint(
                         fields=("team", "identity_subject"),
