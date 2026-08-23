@@ -1,0 +1,60 @@
+name: pusula-forgejo
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Pull Forgejo LTS image
+        run: docker pull codeberg.org/forgejo/forgejo:15.0.7
+      - name: Start Forgejo LTS
+        run: |
+          docker run -d --name pusula-forgejo \
+            -p 3000:3000 \
+            -e USER_UID=1000 \
+            -e USER_GID=1000 \
+            -e FORGEJO__database__DB_TYPE=sqlite3 \
+            -e FORGEJO__database__PATH=/data/forgejo.db \
+            -e FORGEJO__server__DOMAIN=127.0.0.1 \
+            -e FORGEJO__server__ROOT_URL=http://127.0.0.1:3000/ \
+            -e FORGEJO__server__HTTP_PORT=3000 \
+            -e FORGEJO__security__INSTALL_LOCK=true \
+            -e FORGEJO__service__DISABLE_REGISTRATION=true \
+            codeberg.org/forgejo/forgejo:15.0.7
+      - name: Verify Forgejo API version
+        shell: bash
+        run: |
+          set -euo pipefail
+          payload=""
+          for _ in $(seq 1 30); do
+            if payload="$(curl --fail --silent --show-error http://127.0.0.1:3000/api/v1/version 2>/dev/null)"; then
+              break
+            fi
+            sleep 2
+          done
+          if [ -z "$payload" ]; then
+            docker logs pusula-forgejo || true
+            exit 1
+          fi
+          printf '%s\n' "$payload"
+          PAYLOAD="$payload" python - <<'PY'
+          import json
+          import os
+
+          data = json.loads(os.environ["PAYLOAD"])
+          version = data.get("version")
+          if version != "15.0.7":
+              raise SystemExit(f"unexpected Forgejo version: {version!r}")
+          print("FORGEJO VERSION VALID", version)
+          PY
+      - name: Report immutable image digest
+        run: docker image inspect codeberg.org/forgejo/forgejo:15.0.7 --format '{{index .RepoDigests 0}}'
+      - name: Forgejo logs on failure
+        if: failure()
+        run: docker logs pusula-forgejo || true
+      - name: Remove Forgejo smoke container
+        if: always()
+        run: docker rm -f pusula-forgejo || true
