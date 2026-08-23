@@ -4,7 +4,6 @@ import uuid
 from unittest.mock import patch
 
 from django.test import Client, TestCase
-
 from pusula.domain.identity import IdentityClaims
 from pusula.mizan.models import DomainEvent, OutboxMessage
 from pusula.mizan.services import record_mutation
