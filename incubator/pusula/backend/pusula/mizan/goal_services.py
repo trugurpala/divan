@@ -8,6 +8,8 @@ from django.db import transaction
 
 from pusula.domain.goal_scope import (
     GoalRevision as DomainGoalRevision,
+)
+from pusula.domain.goal_scope import (
     ScopeCategory,
     ScopeSlice,
     ScopeUnit,
