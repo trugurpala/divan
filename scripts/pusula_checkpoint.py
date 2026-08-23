@@ -8,10 +8,12 @@ import json
 import sys
 from pathlib import Path
 
-try:
-    from scripts import pusula_checkpoint_core as core
-except ModuleNotFoundError:  # Direct execution: python scripts/pusula_checkpoint.py
-    import pusula_checkpoint_core as core
+if __package__ in {None, ""}:
+    repository_root = str(Path(__file__).resolve().parents[1])
+    if repository_root not in sys.path:
+        sys.path.insert(0, repository_root)
+
+from scripts import pusula_checkpoint_core as core  # noqa: E402
 
 
 def _command_seal(args: argparse.Namespace) -> int:
