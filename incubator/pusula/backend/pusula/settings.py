@@ -38,9 +38,10 @@ USE_TZ = True
 TIME_ZONE = "UTC"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Logto is the identity provider. These values describe the expected OIDC/API-resource boundary;
-# JWT signature validation is added as a separate acceptance-tested adapter, never hand-rolled here.
+# Logto is identity only. Pusula team membership remains canonical in PostgreSQL.
 LOGTO_ENDPOINT = os.environ.get("PUSULA_LOGTO_ENDPOINT", "")
+LOGTO_ISSUER = os.environ.get("PUSULA_LOGTO_ISSUER", "")
+LOGTO_JWKS_URL = os.environ.get("PUSULA_LOGTO_JWKS_URL", "")
 LOGTO_API_RESOURCE = os.environ.get("PUSULA_LOGTO_API_RESOURCE", "https://pusula.local/api")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
