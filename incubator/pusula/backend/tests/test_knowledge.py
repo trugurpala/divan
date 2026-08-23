@@ -18,7 +18,6 @@ from pusula.domain.knowledge import (
     sha256_text,
 )
 
-
 NOW = datetime(2026, 8, 24, tzinfo=timezone.utc)
 
 
