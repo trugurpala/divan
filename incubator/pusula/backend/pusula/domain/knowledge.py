@@ -92,7 +92,6 @@ class KnowledgeClaim:
     materiality: Materiality
     evidence_ids: tuple[str, ...] = ()
     contradicts_claim_ids: tuple[str, ...] = ()
-    resolved: bool = False
 
     def validate(self) -> None:
         _require_text(self.claim_id, "claim_id")
@@ -106,6 +105,21 @@ class KnowledgeClaim:
                 raise ValueError("contradiction must reference at least two claims")
         elif self.contradicts_claim_ids:
             raise ValueError("only contradiction records may reference contradicted claims")
+
+
+@dataclass(frozen=True, slots=True)
+class ContradictionResolution:
+    resolution_id: str
+    contradiction_claim_id: str
+    summary: str
+    evidence_ids: tuple[str, ...]
+
+    def validate(self) -> None:
+        _require_text(self.resolution_id, "resolution_id")
+        _require_text(self.contradiction_claim_id, "contradiction_claim_id")
+        _require_text(self.summary, "resolution summary")
+        if not self.evidence_ids:
+            raise ValueError("contradiction resolution requires evidence")
 
 
 class NodeType(StrEnum):
@@ -152,6 +166,7 @@ class KnowledgeSnapshot:
     claims: tuple[KnowledgeClaim, ...]
     capability_nodes: tuple[CapabilityNode, ...] = ()
     capability_relationships: tuple[CapabilityRelationship, ...] = ()
+    contradiction_resolutions: tuple[ContradictionResolution, ...] = ()
 
     def validate(self) -> None:
         source_by_id = _unique_by_id(self.sources, lambda row: row.source_id, "source")
@@ -167,6 +182,11 @@ class KnowledgeSnapshot:
             lambda row: row.relationship_id,
             "capability relationship",
         )
+        _unique_by_id(
+            self.contradiction_resolutions,
+            lambda row: row.resolution_id,
+            "contradiction resolution",
+        )
         for row in self.sources:
             row.validate()
         for row in self.evidence:
@@ -181,6 +201,14 @@ class KnowledgeSnapshot:
             for claim_id in row.contradicts_claim_ids:
                 if claim_id not in claim_by_id:
                     raise ValueError("contradiction references unknown claim")
+        for row in self.contradiction_resolutions:
+            row.validate()
+            claim = claim_by_id.get(row.contradiction_claim_id)
+            if claim is None or claim.kind is not ClaimKind.CONTRADICTION:
+                raise ValueError("resolution references unknown contradiction")
+            for evidence_id in row.evidence_ids:
+                if evidence_id not in evidence_by_id:
+                    raise ValueError("resolution references unknown evidence")
         for row in self.capability_nodes:
             row.validate()
         for row in self.capability_relationships:
@@ -196,11 +224,14 @@ class KnowledgeSnapshot:
         _validate_aware(at)
         source_by_id = {row.source_id: row for row in self.sources}
         evidence_by_id = {row.evidence_id: row for row in self.evidence}
+        resolved_contradictions = {
+            row.contradiction_claim_id for row in self.contradiction_resolutions
+        }
         blockers: list[str] = []
         for claim in self.claims:
             if (
                 claim.kind is ClaimKind.CONTRADICTION
-                and not claim.resolved
+                and claim.claim_id not in resolved_contradictions
                 and claim.materiality in {Materiality.HIGH, Materiality.CRITICAL}
             ):
                 blockers.append(f"unresolved-contradiction:{claim.claim_id}")

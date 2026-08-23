@@ -7,6 +7,7 @@ from pusula.domain.knowledge import (
     CapabilityNode,
     CapabilityRelationship,
     ClaimKind,
+    ContradictionResolution,
     DataClass,
     EvidenceRef,
     KnowledgeClaim,
@@ -45,15 +46,57 @@ def evidence(*, valid_for_days: int | None = 1) -> EvidenceRef:
     )
 
 
-def fact(*, materiality: Materiality = Materiality.MEDIUM) -> KnowledgeClaim:
+def fact(
+    *,
+    claim_id: str = "fact-1",
+    materiality: Materiality = Materiality.MEDIUM,
+) -> KnowledgeClaim:
     return KnowledgeClaim(
-        claim_id="fact-1",
+        claim_id=claim_id,
         kind=ClaimKind.FACT,
         subject="provider-x",
         predicate="supports",
         value="canary",
         materiality=materiality,
         evidence_ids=("evidence-1",),
+    )
+
+
+def contradictory_snapshot(*, resolved: bool) -> KnowledgeSnapshot:
+    a = fact()
+    b = KnowledgeClaim(
+        claim_id="fact-2",
+        kind=ClaimKind.FACT,
+        subject="provider-x",
+        predicate="supports",
+        value="no-canary",
+        materiality=Materiality.MEDIUM,
+        evidence_ids=("evidence-1",),
+    )
+    contradiction = KnowledgeClaim(
+        claim_id="contradiction-1",
+        kind=ClaimKind.CONTRADICTION,
+        subject="provider-x",
+        predicate="supports",
+        value="conflicting canary support",
+        materiality=Materiality.HIGH,
+        contradicts_claim_ids=("fact-1", "fact-2"),
+    )
+    resolutions = ()
+    if resolved:
+        resolutions = (
+            ContradictionResolution(
+                resolution_id="resolution-1",
+                contradiction_claim_id="contradiction-1",
+                summary="Primary docs resolve the conflict",
+                evidence_ids=("evidence-1",),
+            ),
+        )
+    return KnowledgeSnapshot(
+        (source(),),
+        (evidence(),),
+        (a, b, contradiction),
+        contradiction_resolutions=resolutions,
     )
 
 
@@ -80,54 +123,42 @@ class KnowledgeTests(unittest.TestCase):
         ).validate()
 
     def test_unresolved_material_contradiction_blocks_critical_decision(self) -> None:
-        a = fact()
-        b = KnowledgeClaim(
-            claim_id="fact-2",
-            kind=ClaimKind.FACT,
-            subject="provider-x",
-            predicate="supports",
-            value="no-canary",
-            materiality=Materiality.MEDIUM,
-            evidence_ids=("evidence-1",),
-        )
-        contradiction = KnowledgeClaim(
-            claim_id="contradiction-1",
-            kind=ClaimKind.CONTRADICTION,
-            subject="provider-x",
-            predicate="supports",
-            value="conflicting canary support",
-            materiality=Materiality.HIGH,
-            contradicts_claim_ids=("fact-1", "fact-2"),
-        )
-        snapshot = KnowledgeSnapshot((source(),), (evidence(),), (a, b, contradiction))
         self.assertEqual(
-            snapshot.critical_decision_blockers(at=NOW),
+            contradictory_snapshot(resolved=False).critical_decision_blockers(at=NOW),
             ("unresolved-contradiction:contradiction-1",),
         )
 
-    def test_resolved_contradiction_does_not_block(self) -> None:
-        a = fact()
-        b = KnowledgeClaim(
-            claim_id="fact-2",
-            kind=ClaimKind.FACT,
-            subject="provider-x",
-            predicate="supports",
-            value="no-canary",
-            materiality=Materiality.MEDIUM,
-            evidence_ids=("evidence-1",),
+    def test_append_only_resolution_clears_contradiction(self) -> None:
+        self.assertEqual(
+            contradictory_snapshot(resolved=True).critical_decision_blockers(at=NOW),
+            (),
         )
-        contradiction = KnowledgeClaim(
-            claim_id="contradiction-1",
-            kind=ClaimKind.CONTRADICTION,
-            subject="provider-x",
-            predicate="supports",
-            value="resolved",
-            materiality=Materiality.HIGH,
-            contradicts_claim_ids=("fact-1", "fact-2"),
-            resolved=True,
+
+    def test_resolution_requires_evidence(self) -> None:
+        row = ContradictionResolution(
+            "resolution",
+            "contradiction-1",
+            "resolved",
+            (),
         )
-        snapshot = KnowledgeSnapshot((source(),), (evidence(),), (a, b, contradiction))
-        self.assertEqual(snapshot.critical_decision_blockers(at=NOW), ())
+        with self.assertRaisesRegex(ValueError, "requires evidence"):
+            row.validate()
+
+    def test_resolution_must_reference_a_contradiction(self) -> None:
+        resolution = ContradictionResolution(
+            "resolution",
+            "fact-1",
+            "resolved",
+            ("evidence-1",),
+        )
+        snapshot = KnowledgeSnapshot(
+            (source(),),
+            (evidence(),),
+            (fact(),),
+            contradiction_resolutions=(resolution,),
+        )
+        with self.assertRaisesRegex(ValueError, "unknown contradiction"):
+            snapshot.validate()
 
     def test_stale_critical_evidence_blocks(self) -> None:
         snapshot = KnowledgeSnapshot(
