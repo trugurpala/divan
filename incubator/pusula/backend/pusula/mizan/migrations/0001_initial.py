@@ -29,9 +29,9 @@ class Migration(migrations.Migration):
                 "indexes": [
                     models.Index(
                         fields=["team_id", "aggregate_type", "aggregate_id"],
-                        name="mizan_domai_team_id_08aaf3_idx",
+                        name="mizan_domai_team_id_d68cec_idx",
                     ),
-                    models.Index(fields=["correlation_id"], name="mizan_domai_correla_44dc04_idx"),
+                    models.Index(fields=["correlation_id"], name="mizan_domai_correla_1a3ae3_idx"),
                 ],
                 "constraints": [
                     models.UniqueConstraint(
