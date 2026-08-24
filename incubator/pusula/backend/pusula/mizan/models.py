@@ -106,3 +106,133 @@ class ScopeSliceRecord(AppendOnlyModel):
                 name="pusula_unique_revision_slice",
             ),
         ]
+
+
+class KnowledgeSource(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team_id = models.UUIDField()
+    source_key = models.CharField(max_length=255)
+    locator = models.TextField()
+    authority = models.CharField(max_length=120)
+    observed_at = models.DateTimeField()
+    valid_until = models.DateTimeField(null=True, blank=True)
+    content_sha256 = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_id", "source_key"],
+                name="pusula_unique_team_source_key",
+            ),
+        ]
+
+
+class EvidenceArtifact(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team_id = models.UUIDField()
+    evidence_key = models.CharField(max_length=255)
+    source = models.ForeignKey(
+        KnowledgeSource,
+        on_delete=models.PROTECT,
+        related_name="evidence_artifacts",
+    )
+    summary = models.TextField()
+    captured_at = models.DateTimeField()
+    valid_until = models.DateTimeField(null=True, blank=True)
+    data_class = models.CharField(max_length=24)
+    retention_days = models.PositiveIntegerField(null=True, blank=True)
+    payload_sha256 = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_id", "evidence_key"],
+                name="pusula_unique_team_evidence_key",
+            ),
+        ]
+
+
+class KnowledgeClaimRecord(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team_id = models.UUIDField()
+    claim_key = models.CharField(max_length=255)
+    kind = models.CharField(max_length=24)
+    subject = models.CharField(max_length=255)
+    predicate = models.CharField(max_length=255)
+    value = models.TextField()
+    materiality = models.CharField(max_length=24)
+    evidence_keys = models.JSONField(default=list)
+    contradicts_claim_keys = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_id", "claim_key"],
+                name="pusula_unique_team_claim_key",
+            ),
+        ]
+
+
+class ContradictionResolutionRecord(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team_id = models.UUIDField()
+    resolution_key = models.CharField(max_length=255)
+    contradiction_claim_key = models.CharField(max_length=255)
+    summary = models.TextField()
+    evidence_keys = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_id", "resolution_key"],
+                name="pusula_unique_team_resolution_key",
+            ),
+        ]
+
+
+class CapabilityGraphNode(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team_id = models.UUIDField()
+    node_key = models.CharField(max_length=255)
+    node_type = models.CharField(max_length=24)
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_id", "node_key"],
+                name="pusula_unique_team_capability_node",
+            ),
+        ]
+
+
+class CapabilityGraphRelationship(AppendOnlyModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    team_id = models.UUIDField()
+    relationship_key = models.CharField(max_length=255)
+    source_node = models.ForeignKey(
+        CapabilityGraphNode,
+        on_delete=models.PROTECT,
+        related_name="outgoing_relationships",
+    )
+    kind = models.CharField(max_length=24)
+    target_node = models.ForeignKey(
+        CapabilityGraphNode,
+        on_delete=models.PROTECT,
+        related_name="incoming_relationships",
+    )
+    evidence_keys = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_id", "relationship_key"],
+                name="pusula_unique_team_capability_rel",
+            ),
+        ]
