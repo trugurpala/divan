@@ -1,0 +1,70 @@
+{
+  "active_spec": "specs/003-divan-pusula-web/spec.md",
+  "baseline_sha": "68e91fdf48dbcc385be567f4b525a682eeb9af05",
+  "budget": {
+    "ai_development_usd_planning_ceiling": "2500",
+    "baseline_tests": 1020,
+    "canonical_license_target": "open-source-first",
+    "capsule_max_chars": 12000,
+    "current_coverage_percent": 75,
+    "current_tests": 1035,
+    "monthly_infra_eur_planning": "40-100 before optional hosted upgrades"
+  },
+  "checkpoint_percent": 0,
+  "completed_tasks": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "constitution_version": "2.0.0",
+  "decisions": [
+    "Incubate Pusula on feat/pusula-bootstrap-20260823; do not merge or release from the bootstrap PR.",
+    "Keep Divan Engine as the protected core and target trugurpala/divan-pusula as the product repository.",
+    "Use quarter-boundary continuity capsules as compact restart authority instead of relying on chat history.",
+    "Keep provider services replaceable; GitHub and Vercel are adapters, not canonical state.",
+    "Use Dagger as the planned portable canonical pipeline and PostgreSQL/Mizan as planned canonical product memory."
+  ],
+  "digest": "6036c4c261f0ec725ac308d9a52ec8c3bf6aa1ba79b9cdc7dc1c6c7ef0e6b119",
+  "evidence_refs": [
+    "github:trugurpala/divan#169",
+    "github-actions:32633929501",
+    "github-actions-job:97180740198",
+    "git:base:68e91fdf48dbcc385be567f4b525a682eeb9af05",
+    "git:head:bb86f051328c7fb16bc8c3fcd8193678abfc63d3",
+    "upstream:affaan-m/ECC@d8409a4b0813771235555e32e3d8046a73988bfa",
+    "upstream:github/spec-kit:v1.0.0-observed-2026-08-23",
+    "upstream:nextlevelbuilder/ui-ux-pro-max-skill:observed-2026-08-23",
+    "vercel:team_Ag8dOA6I8OG8tGULDkBJdmcy:hobby"
+  ],
+  "next_actions": [
+    "Add a first-party Pusula contract validator to the canonical scripts/verify.py sequence.",
+    "Seal this checkpoint in the repository and make CI validate it.",
+    "Complete the live top-20 UI candidate scorecard with exact repository metadata.",
+    "Audit ECC 2.2, Spec Kit 1.0+, and UI UX Pro Max exact upstream SHAs before any adoption change.",
+    "Start the identity and application spine only after the bootstrap contract is green again."
+  ],
+  "open_risks": [
+    "The target trugurpala/divan-pusula repository has not been created through the current tool surface.",
+    "ECC main has moved beyond the pinned 2.0 snapshot; 2.2 adoption needs an exact SHA and regression review before changing the pin.",
+    "The UI top-20 benchmark is not yet fully scored by maintenance, license, accessibility, bundle cost, and React compatibility.",
+    "Production canary capability must be detected per deployment adapter; it cannot be assumed for every provider."
+  ],
+  "plan_version": "2026-08-23.1",
+  "project": "Divan Pusula",
+  "schema": 1,
+  "verified_facts": [
+    "PR 169 head bb86f051328c7fb16bc8c3fcd8193678abfc63d3 is open, draft, mergeable, and based on main 68e91fdf48dbcc385be567f4b525a682eeb9af05.",
+    "GitHub Actions quality-gate run 32633929501 completed successfully.",
+    "Canonical verification ran 1035 tests with 11 skipped.",
+    "Canonical coverage is 75 percent.",
+    "Mypy reported no issues in 148 source files.",
+    "Ruff, clean-code, actionlint, Agent Skills validation, and Claude plugin validation all passed.",
+    "The Pusula checkpoint contract contributes 15 passing tests to the canonical suite.",
+    "Notion workspace search found no existing Divan Pusula or Mizan planning page.",
+    "The connected Vercel team is on the Hobby plan.",
+    "Current Vercel documentation exposes preview promotion, rollback, and rolling-release traffic stages.",
+    "Current Dagger documentation supports the same containerized checks from local and GitHub CI triggers.",
+    "Firecrawl verified ECC 2.0 as a cross-harness system with session adapters, MCP inventory, worktree lifecycle, and orchestrator skills."
+  ]
+}

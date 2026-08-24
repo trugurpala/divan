@@ -1,0 +1,21 @@
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo@sha256:1f9c1a9880425614267832ce437f8ae5f5b69e1f3219f38fc468fc37e48c1919
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      FORGEJO__database__DB_TYPE: sqlite3
+      FORGEJO__database__PATH: /data/gitea/forgejo.db
+      FORGEJO__server__DOMAIN: 127.0.0.1
+      FORGEJO__server__ROOT_URL: http://127.0.0.1:3000/
+      FORGEJO__server__HTTP_PORT: "3000"
+      FORGEJO__security__INSTALL_LOCK: "true"
+      FORGEJO__service__DISABLE_REGISTRATION: "true"
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    volumes:
+      - forgejo-data:/data
+
+volumes:
+  forgejo-data:

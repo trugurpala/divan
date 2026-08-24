@@ -1,0 +1,50 @@
+name: pusula-app
+on:
+  push:
+    paths:
+      - 'incubator/pusula/backend/**'
+      - 'scripts/pusula_app_verify.py'
+      - '.github/workflows/pusula-app.yml'
+  pull_request:
+    paths:
+      - 'incubator/pusula/backend/**'
+      - 'scripts/pusula_app_verify.py'
+      - '.github/workflows/pusula-app.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.10
+        env:
+          POSTGRES_DB: pusula
+          POSTGRES_USER: pusula
+          POSTGRES_PASSWORD: pusula-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pusula -d pusula"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PUSULA_DB_NAME: pusula
+      PUSULA_DB_USER: pusula
+      PUSULA_DB_PASSWORD: pusula-test
+      PUSULA_DB_HOST: 127.0.0.1
+      PUSULA_DB_PORT: '5432'
+      PUSULA_DJANGO_SECRET_KEY: ci-test-only
+      PUSULA_ALLOWED_HOSTS: testserver,localhost,127.0.0.1
+      PUSULA_DEBUG: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+      - name: Install Pusula backend dependencies
+        run: pip install --disable-pip-version-check -r incubator/pusula/backend/requirements.txt
+      - name: Verify Pusula application contract
+        run: python scripts/pusula_app_verify.py
