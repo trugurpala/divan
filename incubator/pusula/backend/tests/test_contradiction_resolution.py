@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from django.test import TestCase
-
 from pusula.domain.knowledge import ContradictionResolution
 from pusula.mizan.contradiction_services import append_contradiction_resolution
 from pusula.mizan.knowledge_services import (
@@ -12,7 +11,6 @@ from pusula.mizan.knowledge_services import (
     persist_knowledge_snapshot,
 )
 from pusula.mizan.models import ContradictionResolutionRecord, DomainEvent, KnowledgeClaimRecord
-
 from tests.test_knowledge_persistence import snapshot
 
 NOW = datetime(2026, 8, 24, tzinfo=timezone.utc)
