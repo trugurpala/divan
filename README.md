@@ -2,35 +2,19 @@
 
 **Vibe coding, engineered.**
 
-Divan is a Codex-first engineering plugin for builders who want simple natural-language control without giving up planning, code quality, debugging discipline, and evidence-based delivery.
-
-## Status
-
-`2.0.0-alpha.1` is the Codex-native rewrite line.
-
-The active package lives at:
-
-```text
-plugins/divan/
-```
-
-The previous Divan implementation remains available in Git history and published legacy releases. It is not carried forward into the active rewrite tree.
+Divan is a Codex-first engineering plugin for builders who want simple natural-language control without giving up planning, debugging discipline, product quality, and evidence-based delivery.
 
 ## Install
 
-After this rewrite is merged to `main`, add the repository marketplace:
+Add the repository marketplace:
 
 ```bash
-codex plugin marketplace add trugurpala/divan
+codex plugin marketplace add trugurpala/divan --ref main
 ```
 
-Restart the ChatGPT desktop app, open the Plugins Directory, choose the Divan marketplace, and install **Divan**. Daily use is natural language; no Divan-specific CLI is required.
+Then install **Divan** from the plugin marketplace in a supported Codex surface. Daily use is natural language; there is no Divan-specific command language to learn.
 
-For the alpha branch, append `--ref rewrite/codex-native` while testing.
-
-## What Divan does
-
-You can speak normally:
+## Use
 
 ```text
 Divan, bu projeyi incele.
@@ -39,19 +23,22 @@ Divan, bu bug'ın kök nedenini bul ve düzelt.
 Divan, gerçekten bitti mi kontrol et.
 ```
 
-Internally Divan uses a small set of focused skills to inspect the repository, plan bounded work, debug root causes, review engineering quality, and verify completion. You do not need to learn the internal skill names.
+Divan keeps the workflow behind the scenes: repository inspection, bounded planning, root-cause debugging, engineering review, and completion evidence.
 
-## V2 alpha architecture
+## Architecture
 
-- one plugin;
-- seven core skills;
-- engineering-taste references loaded only when relevant;
-- standard-library validation and packaging;
-- no MCP server;
-- no custom agent runtime;
-- no hosted backend;
-- no UI;
-- no published lifecycle hooks.
+- one Codex plugin;
+- seven focused core skills;
+- progressive-disclosure engineering references loaded only when relevant;
+- deterministic validation and packaging;
+- no MCP server, hosted backend, custom agent runtime, or bundled UI;
+- no published lifecycle hooks in the current line.
+
+The publishable package lives at `plugins/divan/`.
+
+## Quality model
+
+Divan treats product quality as more than code style. When relevant it checks correctness, security, reliability, type and API boundaries, database integrity, i18n, responsive behavior, accessibility, loading/empty/error states, network resilience, performance, observability, dependency discipline, tests, and evidence-based definition of done.
 
 ## Validate
 
@@ -61,16 +48,13 @@ python -m unittest discover -s tests -p "test_divan_v2*.py" -v
 python scripts/package_divan_v2.py
 ```
 
-Mechanical checks prove package consistency. They do not by themselves prove that a model becomes more accurate or faster.
+Mechanical checks prove repository and package consistency. They do not by themselves prove that a model becomes more accurate or faster.
 
-## Repository policy
+## Maintenance
 
-Read `AGENTS.md` before changing the project.
+Read `AGENTS.md` before changing Divan. Keep the public repository focused on product source, tests, validation, and user documentation. Internal implementation-session artifacts are not part of the shipped product.
 
-The V2 design and implementation plan are in:
-
-- `docs/superpowers/specs/2026-09-02-codex-native-divan-design.md`
-- `docs/superpowers/plans/2026-09-02-codex-native-divan.md`
+Previous Divan implementations remain recoverable from Git history and published legacy releases, but they are not part of the active package.
 
 ## License
 
