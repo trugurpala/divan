@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://trugurpala.github.io/divan/sitemap.xml
