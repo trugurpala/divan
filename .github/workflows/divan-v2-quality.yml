@@ -10,6 +10,17 @@ on:
       - "tests/test_divan_v2*.py"
       - "evals/divan-v2-routing.json"
       - ".github/workflows/divan-v2-quality.yml"
+  push:
+    branches:
+      - "rewrite/codex-native"
+    paths:
+      - "plugins/divan/**"
+      - ".agents/plugins/marketplace.json"
+      - "scripts/divan_v2_validate.py"
+      - "scripts/package_divan_v2.py"
+      - "tests/test_divan_v2*.py"
+      - "evals/divan-v2-routing.json"
+      - ".github/workflows/divan-v2-quality.yml"
 
 concurrency:
   group: divan-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
