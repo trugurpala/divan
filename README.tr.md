@@ -2,23 +2,19 @@
 
 **Vibe coding, engineered.**
 
-Divan; Codex ile yazılım geliştiren kullanıcıların teknik ayrıntıya boğulmadan, doğal dille daha disiplinli kod üretmesini amaçlayan bir mühendislik eklentisidir.
+Divan; Codex ile yazılım geliştiren kullanıcıların teknik ayrıntıya boğulmadan, doğal dille daha disiplinli ve doğrulanabilir ürün geliştirmesine yardımcı olan bir mühendislik eklentisidir.
 
-## Durum
+## Kurulum
 
-Aktif geliştirme hattı `2.0.0-alpha.1` Codex-native yeniden yazımıdır.
+Repo marketplace'ini ekle:
 
-Yayınlanabilir paket:
-
-```text
-plugins/divan/
+```bash
+codex plugin marketplace add trugurpala/divan --ref main
 ```
 
-Eski Divan uygulaması aktif ağaçtan çıkarılmıştır; Git geçmişi ve eski release'ler korunur.
+Ardından desteklenen Codex yüzeyinde marketplace üzerinden **Divan** eklentisini kur. Günlük kullanım doğal dildir; ayrı bir Divan komut dili öğrenmen gerekmez.
 
-## Kullanım fikri
-
-Şöyle konuşman yeterlidir:
+## Kullanım
 
 ```text
 Divan, bu projeyi incele.
@@ -27,19 +23,22 @@ Divan, bu hatanın kök nedenini bul ve düzelt.
 Divan, gerçekten bitti mi kontrol et.
 ```
 
-Divan içeride repo inceleme, planlama, root-cause debugging, kalite review ve completion proof akışlarını kullanır. Kullanıcı bunların teknik isimlerini öğrenmek zorunda değildir.
+Divan arka planda repo inceleme, sınırlı planlama, kök neden analizi, mühendislik kalite kontrolü ve tamamlanma kanıtını yürütür.
 
-## V2 alpha sınırı
+## Mimari
 
-- tek plugin;
-- 7 çekirdek skill;
-- gerektiğinde yüklenen engineering-taste referansları;
-- standard-library doğrulama ve paketleme;
-- MCP yok;
-- özel agent runtime yok;
-- backend yok;
-- UI yok;
-- yayınlanan hook yok.
+- tek Codex plugin;
+- 7 odaklı çekirdek skill;
+- yalnız gerektiğinde yüklenen progressive-disclosure mühendislik referansları;
+- deterministik doğrulama ve paketleme;
+- MCP server, hosted backend, özel agent runtime veya paketlenmiş UI yok;
+- mevcut hatta yayınlanan lifecycle hook yok.
+
+Yayınlanabilir paket `plugins/divan/` altındadır.
+
+## Kalite modeli
+
+Divan kaliteyi yalnız kod stili olarak görmez. İlgili işlerde correctness, security, reliability, type/API sınırları, database bütünlüğü, i18n, responsive davranış, accessibility, loading/empty/error durumları, network resilience, performance, observability, dependency disiplini, testler ve kanıta dayalı definition of done kontrol edilir.
 
 ## Doğrulama
 
@@ -49,7 +48,13 @@ python -m unittest discover -s tests -p "test_divan_v2*.py" -v
 python scripts/package_divan_v2.py
 ```
 
-Bu mekanik testler paket bütünlüğünü kanıtlar; model kalitesinde artış iddiası değildir.
+Bu mekanik kontroller repo ve paket bütünlüğünü kanıtlar; model doğruluğu veya hız artışı iddiası değildir.
+
+## Bakım
+
+Divan'ı değiştirmeden önce `AGENTS.md` dosyasını oku. Aktif repo ürün kodu, testler, doğrulama ve kullanıcı dokümantasyonuna odaklı tutulur; oturuma özel geliştirme süreci çıktıları yayınlanan ürünün parçası değildir.
+
+Eski Divan sürümleri Git geçmişi ve yayımlanmış legacy release'lerden geri getirilebilir; aktif paketin parçası değildir.
 
 ## Lisans
 
