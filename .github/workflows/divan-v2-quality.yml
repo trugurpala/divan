@@ -1,0 +1,68 @@
+name: Divan V2 Quality
+
+on:
+  pull_request:
+    paths:
+      - "plugins/divan/**"
+      - ".agents/plugins/marketplace.json"
+      - "scripts/divan_v2_validate.py"
+      - "scripts/package_divan_v2.py"
+      - "tests/test_divan_v2*.py"
+      - "evals/divan-v2-routing.json"
+      - ".github/workflows/divan-v2-quality.yml"
+  push:
+    branches:
+      - "rewrite/codex-native"
+    paths:
+      - "plugins/divan/**"
+      - ".agents/plugins/marketplace.json"
+      - "scripts/divan_v2_validate.py"
+      - "scripts/package_divan_v2.py"
+      - "tests/test_divan_v2*.py"
+      - "evals/divan-v2-routing.json"
+      - ".github/workflows/divan-v2-quality.yml"
+
+concurrency:
+  group: divan-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate plugin contract
+        run: python scripts/divan_v2_validate.py
+
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Run Divan V2 tests
+        run: python -m unittest discover -s tests -p "test_divan_v2*.py" -v
+
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check patch whitespace
+        run: git diff --check
+      - name: Build deterministic package
+        run: python scripts/package_divan_v2.py
