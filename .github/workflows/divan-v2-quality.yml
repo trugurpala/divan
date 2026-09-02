@@ -38,9 +38,31 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Validate Divan plugin contract
+      - name: Validate plugin contract
         run: python scripts/divan_v2_validate.py
+
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
       - name: Run Divan V2 tests
         run: python -m unittest discover -s tests -p "test_divan_v2*.py" -v
-      - name: Build deterministic Divan package
+
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check patch whitespace
+        run: git diff --check
+      - name: Build deterministic package
         run: python scripts/package_divan_v2.py
