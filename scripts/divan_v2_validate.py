@@ -16,6 +16,8 @@ MAX_CAPABILITIES = 20
 MAX_DEFAULT_PROMPTS = 3
 MAX_DEFAULT_PROMPT_LENGTH = 128
 EXPECTED_ALPHA_SKILLS = 7
+REQUIRED_QUALITY_REFERENCE = "plugins/divan/skills/quality-review/references/product-engineering.md"
+FORBIDDEN_PROCESS_PATHS = ("docs/superpowers",)
 
 
 def _load_json(path: Path, errors: list[str]) -> dict:
@@ -168,6 +170,14 @@ def _validate_marketplace(repo: Path, errors: list[str]) -> None:
         errors.append("marketplace Divan source must be local ./plugins/divan")
 
 
+def _validate_repo_hygiene(repo: Path, errors: list[str]) -> None:
+    for relative in FORBIDDEN_PROCESS_PATHS:
+        if (repo / relative).exists():
+            errors.append(f"internal process artifact must not ship: {relative}")
+    if not (repo / REQUIRED_QUALITY_REFERENCE).is_file():
+        errors.append(f"missing required product quality reference: {REQUIRED_QUALITY_REFERENCE}")
+
+
 def validate_repository(repo: Path) -> list[str]:
     repo = repo.resolve()
     errors: list[str] = []
@@ -211,6 +221,7 @@ def validate_repository(repo: Path) -> list[str]:
         errors.append(f"skills-only published alpha must not contain: {', '.join(present)}")
 
     _validate_marketplace(repo, errors)
+    _validate_repo_hygiene(repo, errors)
     return errors
 
 
