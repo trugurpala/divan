@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Reject malformed SemVer manifest versions, including leading-zero numeric
+  identifiers, empty dot-separated labels, and non-ASCII digits.
 - Declare the local executor required by the Codex skills-only workflow and
   validate it in the package contract. Clarify that installation cannot grant
   project file or command permissions.

@@ -6,7 +6,15 @@ from pathlib import Path, PureWindowsPath
 from urllib.parse import unquote, urlsplit
 
 PLUGIN_NAME_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
-SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
+# SemVer 2.0.0: https://semver.org/spec/v2.0.0.html
+SEMVER_NUMERIC = r"(?:0|[1-9][0-9]*)"
+SEMVER_PRERELEASE = r"(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)"
+SEMVER_BUILD = r"[0-9A-Za-z-]+"
+SEMVER_RE = re.compile(
+    rf"{SEMVER_NUMERIC}\.{SEMVER_NUMERIC}\.{SEMVER_NUMERIC}"
+    rf"(?:-{SEMVER_PRERELEASE}(?:\.{SEMVER_PRERELEASE})*)?"
+    rf"(?:\+{SEMVER_BUILD}(?:\.{SEMVER_BUILD})*)?"
+)
 SKILL_DISCOVERY_SOFT_BUDGET = 6000
 MAX_SKILL_DESCRIPTION = 1024
 MAX_PLUGIN_DESCRIPTION = 1024
