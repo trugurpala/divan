@@ -6,6 +6,13 @@ Divan has one source: seven Agent Skills in `plugins/divan/skills/`. Codex also
 has a native plugin wrapper. Install one route for a given host and project;
 duplicate plugin and skill installations can create ambiguous routing.
 
+Because the workflow must inspect and change local project files, the Codex
+skills-only manifest declares `requires_local_executor: true`. This labels a
+public-directory submission as Desktop only; it does not grant local execution
+permissions. Portable skills remain available for other compatible coding agents
+in their own project workspaces. See the [official OpenAI desktop-only plugin
+guidance](https://developers.openai.com/plugins/deploy/desktop-only).
+
 ## Choose an installation
 
 | Host | Project route | What the host documentation establishes |

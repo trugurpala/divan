@@ -172,6 +172,9 @@ def _validate_manifest(manifest: dict, errors: list[str]) -> None:
     if manifest.get("skills") != "./skills/":
         errors.append("Divan skills path must be ./skills/")
 
+    if manifest.get("requires_local_executor") is not True:
+        errors.append("requires_local_executor must be true")
+
     forbidden = [field for field in ("mcpServers", "apps", "hooks") if field in manifest]
     if forbidden:
         errors.append(f"skills-only Divan must not include MCP/app fields: {', '.join(forbidden)}")

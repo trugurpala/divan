@@ -14,6 +14,12 @@ delege edilebilir; son inceleme ve bütünleştirme kanıtını ana ajan sahiple
 
 ## Tek kaynakla farklı ajanlara dağıtım
 
+Codex skills-only manifesti `requires_local_executor: true` bildirir. Gerçek
+repo inceleme, dosya değişikliği ve test çalıştırma yerel çalışma alanı gerektirir;
+resmi dizindeki görünürlük genel web sohbetine dosya erişimi kazandırmaz.
+Bu bayrak oturumun komut politikasını gevşetmez. Farklı makine ve ajanlarda
+taşınabilir beceriler kendi erişim koşullarıyla ayrıca kurulur.
+
 Codex'in yerel plugin paketi korunur. Aynı yedi `SKILL.md` ve referansları Agent
 Skills destekleyen uygulamalara ayrıca kurulabilir. Her editör için ayrı beceri
 kopyası, özel runtime veya MCP sunucusu eklenmez. Yardımcı beceriler göreli

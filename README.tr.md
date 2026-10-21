@@ -18,6 +18,10 @@ sohbette çalışır. "Divan, bu projeyi incele ve sonraki yararlı değişikli�
 diye başlayabilirsin. Aynı beceriler uyumlu kodlama ajanlarına proje bazında da
 kurulur. Kaynak deposu ayrı bir uygulama veya canlı servis değildir.
 
+Codex eklentisi yerel proje dosyaları ve komut çalıştırma erişimi gerektirir;
+tarayıcıdaki genel ChatGPT sohbetinde bu erişim varmış gibi davranmaz. Kurulu
+olması da oturumun dosya ve komut izinlerini değiştirmez.
+
 ## Kurulum
 
 ### Codex eklentisi
