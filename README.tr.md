@@ -2,7 +2,7 @@
 
 **Vibe coding, engineered.**
 
-[English](README.md) · [İlk kullanım](docs/getting-started.md) · [Editör ve ajanlar](docs/compatibility.md) · [Güncel ön sürüm](https://github.com/trugurpala/divan/releases/tag/v2.0.0-alpha.4) · [Geliştirme](docs/development.md)
+[Tanıtım sitesi](https://trugurpala.github.io/divan/) · [English](README.md) · [İlk kullanım](docs/getting-started.md) · [Editör ve ajanlar](docs/compatibility.md) · [Güncel ön sürüm](https://github.com/trugurpala/divan/releases/tag/v2.0.0-alpha.4) · [Geliştirme](docs/development.md)
 
 Divan, doğal dille anlattığın yazılım işini projeyi anlayarak uygulama, hata giderme,
 inceleme ve doğrulanmış teslime taşır. Codex eklentisi olarak veya aynı yedi Agent
