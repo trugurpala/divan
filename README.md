@@ -16,6 +16,10 @@ and tell me the next useful change." The same skills can run in compatible codin
 agents after project installation. The source repository is not a separate app or
 a live service.
 
+The Codex plugin needs local project-file and command access. A generic ChatGPT
+web chat does not gain that access from installation, and the plugin cannot
+override the host session's file or command policy.
+
 ## Install
 
 ### Codex plugin

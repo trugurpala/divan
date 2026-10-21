@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Declare the local executor required by the Codex skills-only workflow and
+  validate it in the package contract. Clarify that installation cannot grant
+  project file or command permissions.
+
 ## 2.0.0-alpha.5 — 2026-10-22
 
 - A public task-report form collects sanitized real-world outcomes and checks.

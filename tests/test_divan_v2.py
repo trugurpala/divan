@@ -20,6 +20,7 @@ def write_minimal_repo(repo: Path, *, skill_folder: str = "divan", skill_name: s
         "version": "2.0.0-alpha.1",
         "description": "x",
         "skills": "./skills/",
+        "requires_local_executor": True,
         "interface": {
             "displayName": "Divan",
             "shortDescription": "Vibe coding, engineered.",
@@ -56,6 +57,22 @@ class DivanV2ValidationTests(unittest.TestCase):
 
     def test_reference_package_is_valid(self):
         self.assertEqual(validate_repository(ROOT), [])
+
+    def test_rejects_missing_or_disabled_local_executor_requirement(self):
+        for value in (None, False):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as tmp:
+                repo = self.copy_repository(Path(tmp) / "repo")
+                manifest_path = repo / "plugins/divan/.codex-plugin/plugin.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                if value is None:
+                    manifest.pop("requires_local_executor", None)
+                else:
+                    manifest["requires_local_executor"] = value
+                manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+
+                errors = validate_repository(repo)
+
+                self.assertIn("requires_local_executor must be true", errors)
 
     def test_rejects_missing_or_changed_skill_license(self):
         skills = sorted(path.name for path in (ROOT / "plugins/divan/skills").iterdir() if path.is_dir())
