@@ -13,6 +13,11 @@ Skills becerisini destekleyen başka bir kodlama ajanında kullanabilirsin.
 Sonucu kendi dilinle anlat. Teslimde çalışan değişikliği, gerçekten yapılan testleri
 ve varsa kalan engeli gör. İçeride hangi becerinin veya alt ajanın seçileceğini bilmen gerekmez.
 
+**Divan nerede?** Eklenti kurulduktan sonra Codex'te proje klasöründe açtığın yeni
+sohbette çalışır. "Divan, bu projeyi incele ve sonraki yararlı değişikliği söyle"
+diye başlayabilirsin. Aynı beceriler uyumlu kodlama ajanlarına proje bazında da
+kurulur. Kaynak deposu ayrı bir uygulama veya canlı servis değildir.
+
 ## Kurulum
 
 ### Codex eklentisi

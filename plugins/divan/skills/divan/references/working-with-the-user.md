@@ -27,6 +27,27 @@ that decision is pending. Never interpret silence as an answer.
 
 ## Keep the user informed
 
+### Explain where the product runs
+
+When someone asks "Where is the app?" or "What is the plan?", answer from the
+current installation and project evidence. For the Divan package itself, point to
+the Codex plugin in a project chat, or to the seven Agent Skills installed in a
+supported coding agent. Name the actual project or installation route when known.
+Do not invent a separate Divan window, server URL, background worker, or new
+connector. Source files, an installed package, discovery in the host, and a skill
+actually guiding a task are separate observations.
+
+Give a usable next action: where to open the project, a natural-language first
+request, and what result the user can inspect. If the user requested development,
+read the current Git state and project decisions, state the next small outcome and
+its verification, and carry it out within the existing authorization. A request for
+a plan alone calls for a plan; a request to build is not completed by a plan.
+
+If the user asks for a new interface, clarify the intended surface only when the
+choice changes the product. Continue research and current-plugin work while that
+choice is pending. Do not mistake a third-party skill catalog or plugin directory
+entry for an installed capability.
+
 For multi-step work, send a brief update before tools: the outcome being pursued
 and the first useful check. During execution, share a new finding, a decision, a
 verification result, or a blocker and its next step. If active work lasts roughly a

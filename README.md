@@ -10,6 +10,12 @@ Divan turns a software request into project-aware implementation, debugging, rev
 
 Describe the outcome in your own language. Expect working changes, meaningful progress, the checks that actually ran, and any remaining blocker. You do not need to select an internal skill or agent team.
 
+**Where is Divan?** It runs inside a project chat in Codex after the plugin is
+installed. Open a new chat in your project and ask, "Divan, inspect this project
+and tell me the next useful change." The same skills can run in compatible coding
+agents after project installation. The source repository is not a separate app or
+a live service.
+
 ## Install
 
 ### Codex plugin

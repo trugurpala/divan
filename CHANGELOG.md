@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- First-use guidance identifies the project chat, offers a concrete starting
+  request, and directs authorized development requests from plan to implementation
+  and current checks. Model behavior still needs a real task trial.
+
 ## 2.0.0-alpha.3 — Current source
 
 - One Codex plugin with seven focused skills for understanding a repository,

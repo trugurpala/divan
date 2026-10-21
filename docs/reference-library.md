@@ -119,6 +119,20 @@ kurulum, ilk iş, destek, katkı ve lisans sırası
 [GitHub'ın README rehberine](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
 göre sadeleştirildi.
 
+### Mindrally karşılaştırması (2026-10-22)
+
+[Mindrally/skills](https://github.com/Mindrally/skills) deposu, Cursor kurallarından
+dönüştürülmüş 265'ten fazla konu becerisi sunuyor. İncelenen README ve depo verisi:
+Apache-2.0, 281 yıldız, arşivlenmemiş durum, son commit 2026-10-08.
+[README best practices](https://github.com/Mindrally/skills/blob/main/readme-best-practices/SKILL.md)
+becerisindeki ilk ekranda değeri ve çalışır başlangıç örneğini gösterme fikri,
+Divan'ın mevcut README'sine uygun. `python-testing` becerisi `pytest` merkezli;
+Divan'ın standart kütüphane `unittest` hattını değiştirmek için gerekçe sağlamıyor.
+Tekil becerinin kurulum sayısı doğrulanmadı. Mindrally paketi kurulmadı veya
+içeriği kopyalanmadı; 265 beceriyi Divan'ın yedi çekirdek becerisine eklemek
+keşif ve bakım yükünü artırır. Gerektiğinde projeye uygun tekil aday yeniden
+değerlendirilir.
+
 ### Önceki kaynak doğrulamasının kapsamı
 
 Numaralı maddelerdeki bağlantılar başvuru listesidir. Açılan ve ilgili bölümleri okunan kaynak grupları: OpenAI'nin AGENTS.md, Build skills, Memories, plugin paketleme/beceri yazımı ve eval rehberleri; Agent Skills biçim, yazım, tetikleme, script ve eval belgeleri; Python `unittest`, `unittest.mock`, `pathlib`, `json`, `zipfile`; Git/GitHub CI, artifact, release ve lisans sayfaları; CommonMark, SemVer, Changelog, SPDX, REUSE; seçilen ekosistem sayfaları, depo metadata'sı ve lisans dosyaları.

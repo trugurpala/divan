@@ -44,7 +44,15 @@ seçilir; belirsiz bir “her şeyi geliştir” kapsamı açılmaz.
 
 ## Sonraki geliştirmeler
 
-- Yönlendirme senaryolarını izinli gerçek Codex oturumlarında karşılaştırmalı ölçmek.
-- Paket biçimini değiştirirken Codex uyumluluğunu resmi plugin belgelerine göre sınamak.
-- Yeni kullanıcı geri bildiriminden tekrar eden bir boşluk çıkarsa mevcut beceriyi
-  düzeltmek; her boşluk için yeni ana beceri veya bağımlılık eklememek.
+1. **İlk kullanım:** Divan'ın proje sohbetinde nerede çalıştığını, ilk isteği ve
+   sonraki somut geliştirme adımını açık anlatan beceri rehberini ve README'leri
+   güncelle. Validator, tüm testler, paketleme ve yerel eklenti önbelleğini doğrula.
+2. **Gerçek görev ölçümü:** İzinli yeni Codex oturumlarında "uygulama nerede?",
+   "plan nedir, geliştir" ve mevcut karma dilli hata senaryolarını çalıştır.
+   Kurulu eklenti ve eşdeğer eklentisiz oturumun çıktısını, uygulanan diff'i,
+   çalıştırılan kontrolleri ve gereksiz soru sayısını kaydet. Yapısal eval JSON'u
+   model davranış kanıtı yerine geçmez.
+3. **Kanıta göre düzeltme:** Tekrarlanan gerçek başarısızlığı ilgili mevcut
+   beceride düzelt, aynı görevleri ve CI'ı yeniden çalıştır. Paket biçimi
+   değişirse Codex uyumluluğunu resmi plugin belgelerine göre ayrıca sına.
+   Geri bildirim göstermedikçe yeni ana beceri, arayüz veya servis ekleme.
