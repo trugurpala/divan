@@ -2,16 +2,16 @@
 
 **Vibe coding, engineered.**
 
-[Website](https://trugurpala.github.io/divan/) · [Türkçe](README.tr.md) · [Start here](docs/getting-started.md) · [Editors and agents](docs/compatibility.md) · [Latest prerelease](https://github.com/trugurpala/divan/releases/tag/v2.0.0-alpha.5) · [Development](docs/development.md)
+[Website](https://trugurpala.github.io/divan/) · [Türkçe](README.tr.md) · [Start here](docs/getting-started.md) · [Editors and agents](docs/compatibility.md) · [Releases](https://github.com/trugurpala/divan/releases) · [Development](docs/development.md)
 
 Divan turns a software request into project-aware implementation, debugging, review, and verified delivery. Use it as a Codex plugin or install the same seven Agent Skills in another compatible coding agent.
 
-> Divan, people can submit this order twice. Find the cause, fix it, and show how you checked it.
+> People can submit this order twice. Find the cause, fix it, and show how you checked it.
 
 Describe the outcome in your own language. Expect working changes, meaningful progress, the checks that actually ran, and any remaining blocker. You do not need to select an internal skill or agent team.
 
 **Where is Divan?** It runs inside a project chat in Codex after the plugin is
-installed. Open a new chat in your project and ask, "Divan, inspect this project
+installed. Open a new chat in your project and ask, "Inspect this project
 and tell me the next useful change." The same skills can run in compatible coding
 agents after project installation. The source repository is not a separate app or
 a live service.
@@ -64,20 +64,21 @@ This repository does not claim that every editor, chat surface, or model has bee
 ## Use
 
 ```text
-Divan, bu projeyi incele.
-Divan, bu özelliği en küçük doğru değişiklikle yap.
-Divan, bu bug'ın kök nedenini bul ve düzelt.
-Divan, gerçekten bitti mi kontrol et.
+Bu projeyi incele.
+Bu özelliği en küçük doğru değişiklikle yap.
+Bu bug'ın kök nedenini bul ve düzelt.
+Gerçekten bitti mi kontrol et.
 ```
 
-Describe the result you want in your own language. You can use everyday words,
-mixed technical terms, or imperfect spelling. Divan works with your current project,
-chooses relevant tools, explains meaningful progress, and checks the result.
+Describe the result you want in your own language; you do not need to address
+Divan by name. You can use everyday words, mixed technical terms, or imperfect
+spelling. When active, Divan works with your current project, chooses relevant
+tools, explains meaningful progress, and checks the result.
 
 ```text
-Divan, this checkout sometimes loses the address. Fix it and show how you tested it.
-Divan, mejora este formulario sin cambiar el diseño; comprueba que funciona.
-Divan, kaldığımız yerden devam et. Ne çalışıyor, ne eksik, sade anlat.
+This checkout sometimes loses the address. Fix it and show how you tested it.
+Mejora este formulario sin cambiar el diseño; comprueba que funciona.
+Kaldığımız yerden devam et. Ne çalışıyor, ne eksik, sade anlat.
 ```
 
 You do not need to choose a skill or an agent team. Divan asks when an answer changes

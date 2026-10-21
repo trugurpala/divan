@@ -1,8 +1,8 @@
 # Divan ile ilk işin
 
 Divan, Codex eklentisi veya uyumlu bir kodlama ajanında taşınabilir beceriler olarak
-çalışır. Proje klasörünü aç, Divan'ı etkinleştir ve istediğin
-sonucu anlat. Beceri adlarını veya hangi aracın kullanılacağını bilmen gerekmez.
+çalışır. Proje klasörünü açıp istediğin sonucu kendi dilinle anlat; isteğinin başına
+“Divan” yazman gerekmez. Beceri adlarını veya hangi aracın kullanılacağını bilmen gerekmez.
 English instructions and examples follow below.
 
 Claude Code, Cursor, GitHub Copilot ve diğer uygulamalar için
@@ -38,12 +38,12 @@ kanıtlamaz. Günlük isteğini yine doğal dille verebilirsin; etkinleşmeden
 
 | İhtiyacın | Yazabileceğin istek |
 | --- | --- |
-| Mevcut projeyi anlama | Divan, bu projede ne çalışıyor, ne eksik? İncele ve önceliği sade anlat. |
-| Özellik geliştirme | Divan, müşterileri isimle arayabileyim. Mevcut ekranı koru ve aramayı çalışır halde dene. |
-| Hata giderme | Divan, kayıt düğmesine iki kez basınca iki sipariş oluşuyor. Kök nedeni bul ve düzelt. |
-| Devam etme | Divan, önceki kararları ve bugünkü kodu okuyup kaldığımız yerden devam et. |
-| Yalnız değerlendirme | Divan, kodu değiştirmeden bu yaklaşımı değerlendir. |
-| Başka dil | Divan, fix this bug and explain the result in English. |
+| Mevcut projeyi anlama | Bu projede ne çalışıyor, ne eksik? İncele ve önceliği sade anlat. |
+| Özellik geliştirme | Müşterileri isimle arayabileyim. Mevcut ekranı koru ve aramayı çalışır halde dene. |
+| Hata giderme | Kayıt düğmesine iki kez basınca iki sipariş oluşuyor. Kök nedeni bul ve düzelt. |
+| Devam etme | Önceki kararları ve bugünkü kodu okuyup kaldığımız yerden devam et. |
+| Yalnız değerlendirme | Kodu değiştirmeden bu yaklaşımı değerlendir. |
+| Başka dil | Fix this bug and explain the result in English. |
 
 İstediğin dilde yazabilirsin. Karışık terimler veya yazım hataları anlamı değiştirmiyorsa
 Divan işi sürdürür; iki farklı ürün sonucu çıkabilecekse kısa bir soru sorar. Kod,
@@ -88,9 +88,9 @@ checkout'u güncelledikten sonra `codex plugin add divan@divan` yeterlidir.
 ## First task in English
 
 For Codex, install with the commands above, check the plugin list, and open a new session
-in your project. Tell Divan the outcome you need:
+in your project. Describe the outcome you need:
 
-> Divan, people can submit this order twice. Find the cause, fix it, and show how you checked it.
+> People can submit this order twice. Find the cause, fix it, and show how you checked it.
 
 Divan follows the language you request, keeps your existing project conventions,
 chooses relevant tools, and reports meaningful progress. Ask for status without

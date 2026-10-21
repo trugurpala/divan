@@ -40,6 +40,9 @@ sonraki gerçek kullanıcı akışı bunu gerektirdiğinde yeniden değerlendiri
 
 ## Doğrulanacak varsayımlar
 
+- [ ] Kullanıcı ana beceriyi çağırmak için “Divan” adını yazmak zorunda kalmıyor:
+  yeni Codex sohbetinde markasız bir kod isteği dene, hangi becerinin gerçekten
+  yüklendiğini ve görev sonucunu kaydet; statik eval senaryosunu tek başına başarı sayma.
 - [ ] Yazım hatalı ve karışık dilli istekten doğru sonuç çıkarılabiliyor: aynı küçük
   repo görevini farklı ifadelerle izole oturumlarda uygulat, gerçek diff ve testi incele.
 - [ ] Durum sorusu ve dil değişikliği işi koparmıyor: uygulama sırasında bir takip
