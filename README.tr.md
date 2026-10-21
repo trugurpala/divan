@@ -22,6 +22,9 @@ Codex eklentisi yerel proje dosyaları ve komut çalıştırma erişimi gerektir
 tarayıcıdaki genel ChatGPT sohbetinde bu erişim varmış gibi davranmaz. Kurulu
 olması da oturumun dosya ve komut izinlerini değiştirmez.
 
+İlk kez kullanırken becerinin gerçekten açıldığını doğrulama yolu
+[ilk kullanım rehberinde](docs/getting-started.md) var.
+
 ## Kurulum
 
 ### Codex eklentisi

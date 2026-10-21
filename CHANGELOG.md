@@ -5,6 +5,8 @@
 - Declare the local executor required by the Codex skills-only workflow and
   validate it in the package contract. Clarify that installation cannot grant
   project file or command permissions.
+- Explain how to verify first-use skill activation and record the current
+  execution-policy blocker separately from model task success.
 
 ## 2.0.0-alpha.5 — 2026-10-22
 
