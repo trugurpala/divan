@@ -1,0 +1,29 @@
+# Changelog
+
+## 2.0.0-alpha.3 — Current source
+
+- One Codex plugin with seven focused skills for understanding a repository,
+  implementing changes, debugging, reviewing, verifying, and continuing work.
+- Natural-language guidance handles mixed technical terms, meaningful progress
+  updates, status interruptions, and questions that change the result or scope.
+- Bilingual getting-started instructions cover installation, first tasks, updates,
+  and troubleshooting without making users select internal skills.
+- The same seven Agent Skills can be installed in compatible coding agents through
+  a pinned optional installer. Host-neutral instructions, relative companion links,
+  and per-skill MIT notices keep the portable source usable outside Codex.
+- A compatibility guide distinguishes installation checks, host discovery, and
+  real task execution rather than claiming universal model or editor support.
+- Capability discovery distinguishes installed skills, configured connections,
+  callable tools, live services, and candidates. Existing integrations and low-code
+  options are evaluated by project fit and ongoing maintenance cost.
+- Concise project records and an on-demand 50-point reference library support
+  continuation and source-based decisions.
+- Standard-library validation and deterministic packaging check file boundaries,
+  supported local Markdown links, required notices, and unexpected package content.
+- A repeatable isolated check verifies an exact Git tree in a temporary workspace,
+  reporting source identity, test output, and package hashes.
+- Linux and Windows CI cover the full mechanical test suite.
+
+The package is a maintained development prerelease. Mechanical checks and bounded
+task trials are reported separately; they do not establish comparative model quality,
+equal performance in every language, or an OS/network sandbox for untrusted code.

@@ -1,0 +1,78 @@
+name: Divan V2 Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+concurrency:
+  group: divan-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate plugin contract
+        run: python scripts/divan_v2_validate.py
+
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Run all repository tests
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check patch whitespace
+        shell: bash
+        env:
+          DIVAN_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          DIVAN_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            git diff --check "$DIVAN_BASE_SHA...$DIVAN_HEAD_SHA"
+          elif [[ "$DIVAN_BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+            git diff --check "$(git hash-object -t tree /dev/null)" "$DIVAN_HEAD_SHA"
+          else
+            git diff --check "$DIVAN_BASE_SHA" "$DIVAN_HEAD_SHA"
+          fi
+      - name: Build deterministic package
+        run: python scripts/package_divan_v2.py
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate plugin contract
+        run: python scripts/divan_v2_validate.py
+      - name: Run all repository tests
+        run: python -m unittest discover -s tests -p "test_*.py" -v
+      - name: Build deterministic package
+        run: python scripts/package_divan_v2.py

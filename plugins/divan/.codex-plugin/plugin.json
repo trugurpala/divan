@@ -1,0 +1,19 @@
+{
+  "name": "divan",
+  "version": "2.0.0-alpha.3",
+  "description": "Codex-native engineering workflows for scoped implementation, quality review, debugging, and evidence-based delivery.",
+  "author": {"name": "Uğur Pala"},
+  "repository": "https://github.com/trugurpala/divan",
+  "license": "MIT",
+  "keywords": ["codex", "engineering", "code-review", "developer-tools"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Divan",
+    "shortDescription": "Vibe coding, engineered.",
+    "longDescription": "Describe the software outcome in your own language. Divan helps Codex understand the project, implement changes, fix root causes, report meaningful progress, and verify the result. It chooses relevant capabilities while keeping the workflow simple for builders.",
+    "developerName": "Uğur Pala",
+    "category": "Developer Tools",
+    "capabilities": ["Inspect repository conventions and risks", "Plan bounded implementation work", "Debug root causes systematically", "Review engineering quality", "Verify completion with evidence"],
+    "defaultPrompt": ["Inspect this repository and identify the highest-value engineering risks.", "Plan and implement the smallest correct change for this task.", "Review this change and verify whether it is actually ready to ship."]
+  }
+}
