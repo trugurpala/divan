@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Make the order-race grader catch the same unsafe read-modify-write pattern
+  through `read_text`, `read_bytes`, and built-in `open`; test red and green controls.
 - Add a reproducible order-concurrency task and independent grader; publish the
   measured parity with a no-skill control and the automatic-activation limit.
 - Reject malformed SemVer manifest versions, including leading-zero numeric
