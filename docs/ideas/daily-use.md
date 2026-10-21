@@ -31,6 +31,13 @@ bitişte kullanılabilir sonuç ve kanıt gösterilir. Kullanıcı bir karar ver
 zorundaysa soru somut sonuçlara dayanır. Aynı kapsamda verilmiş yetki korunur;
 yıkıcı bir işlemin hedefi belirsizse önce kapsam netleştirilir.
 
+Kullanıcı ayrı bir arayüz yerine önce eklentinin güçlendirilmesini seçti. İlk
+karşılaşmada "uygulama nerede?" sorusuna gerçek kullanım yüzeyiyle cevap verilir:
+Codex'te proje sohbeti veya uyumlu ajana kurulan beceriler. "Plan nedir?" sorusu
+mevcut repo durumu, sonraki somut çıktı ve doğrulama ile yanıtlanır; geliştirme
+isteği varsa yalnız yol haritası teslim edilmez. Ayrı bir uygulama ihtiyacı ancak
+sonraki gerçek kullanıcı akışı bunu gerektirdiğinde yeniden değerlendirilir.
+
 ## Doğrulanacak varsayımlar
 
 - [ ] Yazım hatalı ve karışık dilli istekten doğru sonuç çıkarılabiliyor: aynı küçük

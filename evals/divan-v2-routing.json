@@ -3,6 +3,18 @@
   "purpose": "Mechanical routing contract for Divan V2. These cases do not claim model-quality improvement.",
   "positive": [
     {
+      "id": "where-is-the-app",
+      "prompt": "Divan'ı kurduk, uygulama nerede? Bu projede nasıl çağırırım, ne gerçekten çalışıyor?",
+      "skills": ["divan", "repo-audit"],
+      "expected": "Verify the current host and installation. Explain that Divan is a Codex plugin or portable Agent Skills in a project chat, with a concrete first request; distinguish repository source, installed files, host discovery, and actual task behavior. Do not invent a separate UI, service URL, or completed model trial."
+    },
+    {
+      "id": "plan-then-build",
+      "prompt": "Divan, plan nedir? Bu repodaki en önemli sonraki adımı seç ve geliştir; kurduğumuz eklentiyi güçlendirelim.",
+      "skills": ["divan", "repo-audit", "implementation-plan", "quality-review", "completion-proof"],
+      "expected": "Read current project and Git evidence, explain the next bounded outcome and verification, then implement the authorized change. Review and run current checks; do not stop after listing a roadmap or ask again for approval to do routine work."
+    },
+    {
       "id": "informal-mixed-language",
       "prompt": "Divan, siparis kaydoluyo ama iki kez basınca duplicate oluyo. Fix it, mevcut API kalsın. Sonucu Türkçe anlat.",
       "skills": ["divan", "root-cause-debug", "quality-review", "completion-proof"],

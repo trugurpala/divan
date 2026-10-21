@@ -9,6 +9,8 @@ Turn the user's desired outcome into working, verified changes. Preserve their l
 
 For multi-step work, unclear intent, or a language/status change mid-task, read [working with the user](references/working-with-the-user.md). Give a brief start update, meaningful progress, and a self-contained result. Ask only for a missing decision that changes the outcome or authorized scope; continue independent work while waiting.
 
+When asked where Divan runs or what the plan is, read the same reference. State the observed installation and current work surface, explain the next concrete milestone, then continue an authorized build or repair. Do not imply that a separate app, running service, or model task trial exists because the skill files are present.
+
 1. Read the host's applicable project instructions, including `AGENTS.md` where used, and inspect the current Git state before changing code.
 2. Preserve user-authored changes and established conventions; choose routine implementation details yourself.
 3. Use [repo-audit](../repo-audit/SKILL.md) when the repository, affected area, or a capability required by the task is not yet understood.
