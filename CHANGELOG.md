@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+## 2.0.0-alpha.5 — 2026-10-22
+
 - A public task-report form collects sanitized real-world outcomes and checks.
 - Editable Turkish overview and first-use cards with a launch kit provide accurate, reusable promotion assets.
-- The launch kit installation link now targets the actual README heading; the remote portable-skill installation path is documented with a fresh-project check.
+- The launch kit installation link targets the actual README heading; the remote portable-skill installation path has a fresh-project check.
+- The GitHub Pages project site explains both installation routes. Listing metadata now links to the live site, support, and the published data-handling notice.
 
 ## 2.0.0-alpha.4 — 2026-10-22
 
