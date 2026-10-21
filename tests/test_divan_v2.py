@@ -58,6 +58,40 @@ class DivanV2ValidationTests(unittest.TestCase):
     def test_reference_package_is_valid(self):
         self.assertEqual(validate_repository(ROOT), [])
 
+    def test_manifest_version_requires_semver_2_identifiers(self):
+        invalid_versions = (
+            "01.2.3",
+            "1.02.3",
+            "1.2.03",
+            "1.2.3-01",
+            "1.2.3-alpha..5",
+            "1.2.3+meta..x",
+            "1.2.3-",
+            "1.2.3+",
+            "١.2.3",
+        )
+        for version in invalid_versions:
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as tmp:
+                repo = self.copy_repository(Path(tmp) / "repo")
+                manifest_path = repo / "plugins/divan/.codex-plugin/plugin.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                manifest["version"] = version
+                manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                self.assertIn(
+                    "plugin version must be SemVer and at most 64 characters",
+                    validate_repository(repo),
+                )
+
+        valid_versions = ("0.0.0-0.3.7", "1.2.3-01a", "1.2.3+001")
+        for version in valid_versions:
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as tmp:
+                repo = self.copy_repository(Path(tmp) / "repo")
+                manifest_path = repo / "plugins/divan/.codex-plugin/plugin.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                manifest["version"] = version
+                manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+                self.assertEqual(validate_repository(repo), [])
+
     def test_rejects_missing_or_disabled_local_executor_requirement(self):
         for value in (None, False):
             with self.subTest(value=value), tempfile.TemporaryDirectory() as tmp:
