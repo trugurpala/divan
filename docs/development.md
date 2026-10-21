@@ -82,6 +82,9 @@ kullanıcının kapsamı açıkça içeriyorsa yapılır.
 
 CI validatorı, tam test kümesini, farkların whitespace kontrolünü ve paketlemeyi
 çalıştırır. Yapısal eval senaryoları model üzerinde otomatik kalite ölçümü değildir.
+[Sipariş eşzamanlılığı görevi](../evals/order-concurrency/README.md) başlangıç kodu
+ve bağımsız davranış kontrolü sunar; gerçek ajan karşılaştırması için aynı ortamda
+ayrı denemeler ve sonuç kayıtları gerekir.
 
 ## İşletim
 

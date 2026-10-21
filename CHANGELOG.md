@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a reproducible order-concurrency task and independent grader; publish the
+  measured parity with a no-skill control and the automatic-activation limit.
 - Reject malformed SemVer manifest versions, including leading-zero numeric
   identifiers, empty dot-separated labels, and non-ASCII digits.
 - Declare the local executor required by the Codex skills-only workflow and

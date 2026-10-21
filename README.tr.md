@@ -128,6 +128,11 @@ Windows'ta `./scripts/check.ps1` yeterlidir. Mevcut Python 3.12+ kurulumunu veya
 
 Bu mekanik kontroller repo ve paket bütünlüğünü kanıtlar; model doğruluğu veya hız artışı iddiası değildir.
 
+[Tekrarlanabilir sipariş yarışı görevi](evals/order-concurrency/README.md) ayrı bir
+davranış kontrolüdür. Aynı başlangıç kodunda Divan becerisini elle okuyan ajan ve
+becerisiz kontrol ajanı iki eşzamanlılık durumunu da çözdü. Bu tek görevde kalite
+üstünlüğü gözlenmedi; Codex'in beceriyi kendiliğinden açtığı da doğrulanmadı.
+
 ## Bakım
 
 [Tanıtım setinde](docs/launch-kit.md) düzenlenebilir Figma görselleri, Türkçe paylaşım kartı ve doğrulanabilir kısa metin bulunur.
