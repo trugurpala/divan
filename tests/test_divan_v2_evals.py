@@ -13,6 +13,17 @@ class DivanV2EvalContractTests(unittest.TestCase):
         self.assertIn("divan", case["skills"])
         self.assertTrue(case["expected"].strip())
 
+    def test_first_use_examples_do_not_require_divan_prefix(self):
+        examples = {
+            "README.md": "Divan, people can submit this order twice.",
+            "README.tr.md": "Divan, kayıt düğmesine iki kez basınca iki sipariş oluşuyor.",
+            "docs/index.html": "Divan, people can submit this order twice.",
+            "docs/compatibility.md": "Divan, inspect this repository,",
+        }
+        for relative_path, old_prefix in examples.items():
+            with self.subTest(path=relative_path):
+                self.assertNotIn(old_prefix, (ROOT / relative_path).read_text(encoding="utf-8"))
+
     def test_eval_contract_has_review_minimums_and_valid_skill_targets(self):
         payload=json.loads((ROOT/"evals"/"divan-v2-routing.json").read_text(encoding="utf-8")); positive=payload["positive"]; negative=payload["negative"]
         self.assertGreaterEqual(len(positive),5); self.assertGreaterEqual(len(negative),3); ids=set()

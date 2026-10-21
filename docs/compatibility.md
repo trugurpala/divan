@@ -75,7 +75,7 @@ more important than tracking the latest source.
 3. Try a small real task in a disposable project. Observe changed files and the
    actual test output; installation success is not task success.
 
-> Divan, inspect this repository, explain the most useful next fix, and implement it with evidence.
+> Inspect this repository, explain the most useful next fix, and implement it with evidence.
 
 If automatic discovery fails, use the host's documented skill invocation. In
 Claude Code, `/divan` explicitly invokes this standalone skill. A prompt containing
