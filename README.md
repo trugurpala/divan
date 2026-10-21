@@ -126,6 +126,12 @@ On Windows, run `./scripts/check.ps1`. It uses an existing Python 3.12+ interpre
 
 Mechanical checks prove repository and package consistency. They do not by themselves prove that a model becomes more accurate or faster.
 
+The [repeatable order-concurrency task](evals/order-concurrency/README.md) is a
+separate behavior check. On the same starting code, an agent explicitly given
+the Divan skill and a control agent without it both solved the two concurrency
+cases. This one task showed no quality advantage and did not verify automatic
+skill activation in Codex.
+
 ## Maintenance
 
 The [launch kit](docs/launch-kit.md) includes editable Figma assets, a Turkish share card, and accurate copy for sharing Divan.

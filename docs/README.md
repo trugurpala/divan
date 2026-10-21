@@ -19,6 +19,7 @@ oradaki bağlantılarla, yalnız ilgili iş için okunur.
 | [index.html](index.html) | GitHub Pages üzerindeki statik Divan tanıtım ve kurulum sayfası |
 | [privacy/index.html](privacy/index.html) | Divan eklentisi, site ve gönüllü geri bildirim için veri işleme açıklaması |
 | [../CHANGELOG.md](../CHANGELOG.md) | Kullanıcının gördüğü davranış değiştiğinde |
+| [../evals/order-concurrency/README.md](../evals/order-concurrency/README.md) | Gerçek görev karşılaştırmasının başlangıç kodu, kontrolü ve sınırları gerektiğinde |
 
 Makineye özel kurulum kanıtı `.local/setup-status.md` içinde tutulabilir; Git'e ve
 plugin ZIP'ine girmez. Bu klasöre de parola, token veya özel anahtar yazılmaz.

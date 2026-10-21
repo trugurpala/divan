@@ -71,6 +71,16 @@ dair kanıt değildir; ortam engeli ile ürün davranışı ayrı kaydedilmelidi
 Karşılaştırmalı ölçüm tamamlanana kadar README'deki kullanım örnekleri davranış
 garantisi veya kalite üstünlüğü olarak yorumlanmamalıdır.
 
+Aynı gün iki bağımsız ajan, başlangıçta sıralı beş testi geçen JSON sipariş kodunda
+eşzamanlı iki hatayı ayrı kopyalarda düzeltti. Birine Divan beceri dosyası açıkça
+verildi, kontrol ajanına verilmedi. İlk kod iki ayrı siparişi kaybedebiliyor ve
+aynı kimlikte çelişen iki isteği birlikte kabul edebiliyordu. Ana ajan her iki
+sonucu yedişer yerel test ve iki bağımsız yarış kontrolüyle yeniden doğruladı;
+ikisi de geçti. Bu, küçük bir görevde iki çözümün de işe yaradığını gösterir;
+Divan'ın üstünlüğünü, otomatik beceri keşfini veya başka projelerdeki kaliteyi
+göstermez. Başlangıç kodu ve yeniden çalıştırılabilir kontrol
+[evals/order-concurrency](../../evals/order-concurrency/README.md) içinde tutulur.
+
 ## Kalıcı ürün kapsamı ve sınırlar
 
 Çalışan gerçek akış, hata davranışı, mevcut mimariye uyum, güncel test ve devam
