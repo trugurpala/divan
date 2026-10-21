@@ -123,8 +123,11 @@ Bu mekanik kontroller repo ve paket bütünlüğünü kanıtlar; model doğrulu�
 
 ## Bakım
 
-Hata bildirirken uygulama/sürüm, kurulum yolu, beklenen ve gerçekleşen sonuç ile
-sır içermeyen küçük bir örnek ekle. Katkı için [AGENTS.md](AGENTS.md) ve
+[Tanıtım setinde](docs/launch-kit.md) düzenlenebilir Figma görselleri, Türkçe paylaşım kartı ve doğrulanabilir kısa metin bulunur.
+
+Gerçek görev sonucunu veya hatayı [görev bildirim formuyla](https://github.com/trugurpala/divan/issues/new/choose)
+paylaş: uygulama/sürüm, kurulum yolu, gözlenen sonuç ve sır içermeyen küçük bir örnek
+ekle. Başarılı ve başarısız denemeler değerlidir. Katkı için [AGENTS.md](AGENTS.md) ve
 [geliştirme rehberini](docs/development.md) oku; odaklı değişikliğin ardından kontrolleri çalıştır.
 
 Güncel Codex eklentisinin kurulumu için yukarıdaki repo marketplace'ini kullan.

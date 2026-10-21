@@ -121,8 +121,11 @@ Mechanical checks prove repository and package consistency. They do not by thems
 
 ## Maintenance
 
-For a bug report, include your host and version, installation route, expected result,
-actual result, and a small reproduction without credentials. For a contribution,
+The [launch kit](docs/launch-kit.md) includes editable Figma assets, a Turkish share card, and accurate copy for sharing Divan.
+
+For a real task result or bug, use the [task report form](https://github.com/trugurpala/divan/issues/new/choose)
+with your host and version, installation route, observed result, and a small
+reproduction without credentials. Completed and failed tasks are both useful. For a contribution,
 read [AGENTS.md](AGENTS.md) and [the development guide](docs/development.md), make a
 focused change, and run the checks above.
 

@@ -51,7 +51,8 @@ seçilir; belirsiz bir “her şeyi geliştir” kapsamı açılmaz.
    "plan nedir, geliştir" ve mevcut karma dilli hata senaryolarını çalıştır.
    Kurulu eklenti ve eşdeğer eklentisiz oturumun çıktısını, uygulanan diff'i,
    çalıştırılan kontrolleri ve gereksiz soru sayısını kaydet. Yapısal eval JSON'u
-   model davranış kanıtı yerine geçmez.
+   model davranış kanıtı yerine geçmez. Kamuya açık görev bildirimleri ek örnek
+   sağlar; kontrollü karşılaştırmanın yerini tutmaz.
 3. **Kanıta göre düzeltme:** Tekrarlanan gerçek başarısızlığı ilgili mevcut
    beceride düzelt, aynı görevleri ve CI'ı yeniden çalıştır. Paket biçimi
    değişirse Codex uyumluluğunu resmi plugin belgelerine göre ayrıca sına.

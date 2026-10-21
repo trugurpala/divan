@@ -1,0 +1,66 @@
+name: Task report / Görev bildirimi
+description: Share a real Divan result, successful or not. / Gerçek bir Divan sonucunu paylaş.
+title: "[Task report]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe one real task and its observed result. Remove credentials, private code, personal data, and customer information before posting.
+        Gerçek bir işi ve gözlenen sonucu anlat. Göndermeden önce sırları, özel kodu, kişisel ve müşteri bilgilerini çıkar.
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: Outcome / Sonuç
+      options:
+        - Completed with checks / Kontrollerle tamamlandı
+        - Partial result / Kısmen tamamlandı
+        - Blocked before completion / Tamamlanmadan engellendi
+        - Incorrect or unhelpful result / Yanlış veya yararsız sonuç
+    validations:
+      required: true
+  - type: input
+    id: host
+    attributes:
+      label: Coding agent and version / Ajan ve sürüm
+      description: For example, Codex CLI and its version. / Örneğin Codex CLI ve sürümü.
+      placeholder: Codex CLI 0.x
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: How was Divan installed? / Kurulum yolu
+      options:
+        - Codex plugin / Codex eklentisi
+        - Portable Agent Skills / Taşınabilir beceriler
+        - Other or unsure / Diğer veya emin değilim
+    validations:
+      required: true
+  - type: textarea
+    id: request
+    attributes:
+      label: What did you ask Divan to do? / Divan'dan ne istedin?
+      description: A short sanitized request is enough. / Kısa, özel bilgi içermeyen istek yeterli.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: What actually happened? / Ne oldu?
+      description: Include the changed behavior, blocker, or unnecessary question. / Değişikliği, engeli veya gereksiz soruyu anlat.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What checks or changes can you verify? / Hangi kontrolleri doğrulayabilirsin?
+      description: Optional test result, diff summary, or reproduction steps. Say if nothing ran. / Test, değişiklik özeti veya yeniden üretim adımı ekleyebilirsin.
+    validations:
+      required: false
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Public report check / Açık paylaşım kontrolü
+      options:
+        - label: I removed secrets, private code, and personal or customer data. / Sırları, özel kodu ve kişisel veya müşteri bilgilerini çıkardım.
+          required: true
