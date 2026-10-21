@@ -1,6 +1,6 @@
 # Divan launch kit
 
-Use the [editable Figma source](https://www.figma.com/design/dTS0t55whF4D3plRk1mLHy) for the GitHub preview, English share card, and Turkish share card. The [Turkish PNG](assets/share-card-tr.png) is ready to share; the [GitHub preview](assets/social-preview.jpg) is the repository's current social image.
+Use the [editable Figma source](https://www.figma.com/design/dTS0t55whF4D3plRk1mLHy) for the GitHub preview, English share card, Turkish share card, and first-use card. The [Turkish overview](assets/share-card-tr.png) and [three-step first-use card](assets/first-use-tr.png) are ready to share; the [GitHub preview](assets/social-preview.jpg) is the repository's current social image.
 
 ## Accurate short copy
 
