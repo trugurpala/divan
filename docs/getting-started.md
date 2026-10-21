@@ -25,6 +25,15 @@ bir Codex sohbeti** aç. Yerel geliştirme kopyasını kullanıyorsan
 Bu eklenti için ayrıca Python, Node, npx, Docker veya bir API anahtarı kurman gerekmez.
 Geliştirdiğin uygulamanın kendi gereksinimleri ayrı değerlendirilir.
 
+İlk oturumda becerinin gerçekten açıldığını görmek istersen Codex'te bir kez
+`$divan` ile çağır: “`$divan Bu projeyi incele; okuduğun Divan SKILL.md yolunu ve
+erişebildiğin dosyaları söyle.`” Codex'te beceriler [açıkça `$` ile
+çağrılabilir](https://developers.openai.com/blog/eval-skills). Eklenti listesinde
+görünmesi veya istekte “Divan” yazması, beceri dosyasının okunduğunu tek başına
+kanıtlamaz. Günlük isteğini yine doğal dille verebilirsin; etkinleşmeden
+şüphelenirsen açık çağrıyı kullan. İlk gerçek görevde yapılan değişiklik ve test
+çıktısını ayrıca kontrol et.
+
 ## Sonucu anlat
 
 | İhtiyacın | Yazabileceğin istek |

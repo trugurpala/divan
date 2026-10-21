@@ -53,6 +53,24 @@ sonraki gerçek kullanıcı akışı bunu gerektirdiğinde yeniden değerlendiri
 Bu maddeler kabul ölçütleridir; kutular test kaydı olmadan tamamlanmış sayılmaz.
 Mekanik validator geçişi model davranışını veya tüm dillerde kaliteyi kanıtlamaz.
 
+## Karşıt inceleme: ilk kullanıcı neye güvenemez?
+
+Divan'ı kendi projesinde her gün çağıracak kullanıcı için paket sayısı veya güzel
+bir tanıtım, gerçek iş sonucunun yerine geçmez. İlk karşılaşmada üç kırılma noktası
+var: ayrı bir uygulama bekleyip yalnız proje sohbetini bulmak; beceri etkin sanılırken
+yalnız dosyanın kurulu olması; “düzeldi” denirken gerçek diff ve testin olmaması.
+İlk kullanım rehberi çalışma yüzeyini ve isteğe bağlı açık beceri çağrısını gösterir.
+Ürün başarısı ise ancak izinli, tekrarlanabilir gerçek görevlerde ölçülür.
+
+2026-10-22'de izole bir çift sipariş örneğinde başlangıç testi bir hata ve bir
+geçiş verdi. Yeni Codex CLI oturumu kurulu Divan becerisinin dosyasını okumaya
+çalıştı, fakat bu makinenin komut politikası ilk dosya okumasını reddetti. Aynı
+sonuç CLI'ın belgelenmiş `workspace-write` modunda da tekrarlandı. Ajan dosya
+değiştirmedi ve test çalıştırmadı. Bu, becerinin gerçek görevi başardığına
+dair kanıt değildir; ortam engeli ile ürün davranışı ayrı kaydedilmelidir.
+Karşılaştırmalı ölçüm tamamlanana kadar README'deki kullanım örnekleri davranış
+garantisi veya kalite üstünlüğü olarak yorumlanmamalıdır.
+
 ## Kalıcı ürün kapsamı ve sınırlar
 
 Çalışan gerçek akış, hata davranışı, mevcut mimariye uyum, güncel test ve devam

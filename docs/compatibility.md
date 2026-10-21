@@ -120,6 +120,13 @@ that trial is not a passing behavior test. No Claude Code, Cursor, or Copilot
 end-to-end task result is claimed here. Machine-specific paths and raw trial
 evidence stay outside the public repository.
 
+On 2026-10-22, an isolated duplicate-order task reproduced a failing unit test.
+A fresh Codex CLI session located the installed Divan skill path but the host
+policy rejected its first file-read command. No code changed and no model task
+passed, including a retry using the documented `workspace-write` mode. The
+installed skill version and source file hash matched. The observed blocker is
+execution access; task correctness remains unmeasured.
+
 On 2026-10-22, the published GitHub `main` skills-folder URL was installed into
 a fresh temporary Codex project with `skills@1.7.4`, `--skill '*'`, `--agent codex`,
 `--copy`, and `-y`. The command found and installed seven skills. All 28 installed

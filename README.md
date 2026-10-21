@@ -20,6 +20,9 @@ The Codex plugin needs local project-file and command access. A generic ChatGPT
 web chat does not gain that access from installation, and the plugin cannot
 override the host session's file or command policy.
 
+The [first-use guide](docs/getting-started.md) shows how to confirm the skill
+actually loaded when you try it for the first time.
+
 ## Install
 
 ### Codex plugin
