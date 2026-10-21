@@ -15,6 +15,7 @@ oradaki bağlantılarla, yalnız ilgili iş için okunur.
 | [development.md](development.md) | Yerel kurulum, test, paketleme ve katkı akışında |
 | [capability-map.md](capability-map.md) | Hangi beceri, araç ve uygulama katmanı seçilecek sorusunda |
 | [reference-library.md](reference-library.md) | İlgili mühendislik sorusu için kaynak seçerken |
+| [launch-kit.md](launch-kit.md) | Tanıtım mesajı, görseller ve dağıtım kanalı durumunda |
 | [../CHANGELOG.md](../CHANGELOG.md) | Kullanıcının gördüğü davranış değiştiğinde |
 
 Makineye özel kurulum kanıtı `.local/setup-status.md` içinde tutulabilir; Git'e ve

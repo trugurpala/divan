@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- A public task-report form collects sanitized real-world outcomes and checks.
+- Editable Turkish overview and first-use cards with a launch kit provide accurate, reusable promotion assets.
+
 ## 2.0.0-alpha.4 — 2026-10-22
 
 - First-use guidance identifies the project chat, offers a concrete starting
