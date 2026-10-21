@@ -4,7 +4,7 @@ Use the [editable Figma source](https://www.figma.com/design/dTS0t55whF4D3plRk1m
 
 ## Accurate short copy
 
-**English:** Divan is an open-source Codex plugin with seven portable Agent Skills. Describe a software task in natural language; Divan guides project inspection, implementation, review, and verification. [Install and try it](../README.md#installation).
+**English:** Divan is an open-source Codex plugin with seven portable Agent Skills. Describe a software task in natural language; Divan guides project inspection, implementation, review, and verification. [Install and try it](../README.md#install).
 
 **Türkçe:** Divan, yedi taşınabilir Agent Skills içeren açık kaynak bir Codex eklentisidir. Yazılım işini doğal dille anlat; Divan proje inceleme, uygulama, gözden geçirme ve doğrulama akışına yardımcı olur. [Kur ve dene](../README.tr.md#kurulum).
 

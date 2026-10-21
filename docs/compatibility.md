@@ -113,6 +113,13 @@ that trial is not a passing behavior test. No Claude Code, Cursor, or Copilot
 end-to-end task result is claimed here. Machine-specific paths and raw trial
 evidence stay outside the public repository.
 
+On 2026-10-22, the published GitHub `main` skills-folder URL was installed into
+a fresh temporary Codex project with `skills@1.7.4`, `--skill '*'`, `--agent codex`,
+`--copy`, and `-y`. The command found and installed seven skills. All 28 installed
+files matched the current source tree by SHA-256, with no missing or extra files.
+This verifies the remote-source installation path, not host discovery or task
+behavior.
+
 ## Sources checked on 2026-10-21
 
 - [Agent Skills specification](https://agentskills.io/specification): portable format and relative resources.
