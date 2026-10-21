@@ -13,6 +13,7 @@ The plugin runs in the coding agent's project conversation. It does not ship a s
 ## Distribution
 
 - [GitHub repository](https://github.com/trugurpala/divan): source, installation, issue-based task reports, and current prerelease. The social preview is live.
+- [Divan website](https://trugurpala.github.io/divan/): English and Turkish product overview with installation routes; GitHub Pages publishes it from `main/docs`.
 - [AgenticSkills.io](https://agenticskills.io/): submitted for editorial review; listing is not yet verified. Avoid duplicate submissions.
 - [agentskill.sh](https://agentskill.sh/submit): candidate skill directory that imports a GitHub repository's `SKILL.md` files. Verify the live listing after submitting.
 - [Show HN guidance](https://news.ycombinator.com/showhn.html): consider a launch post after an independently repeatable real-task example is available.
