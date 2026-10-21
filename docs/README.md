@@ -17,6 +17,7 @@ oradaki bağlantılarla, yalnız ilgili iş için okunur.
 | [reference-library.md](reference-library.md) | İlgili mühendislik sorusu için kaynak seçerken |
 | [launch-kit.md](launch-kit.md) | Tanıtım mesajı, görseller ve dağıtım kanalı durumunda |
 | [index.html](index.html) | GitHub Pages üzerindeki statik Divan tanıtım ve kurulum sayfası |
+| [privacy/index.html](privacy/index.html) | Divan eklentisi, site ve gönüllü geri bildirim için veri işleme açıklaması |
 | [../CHANGELOG.md](../CHANGELOG.md) | Kullanıcının gördüğü davranış değiştiğinde |
 
 Makineye özel kurulum kanıtı `.local/setup-status.md` içinde tutulabilir; Git'e ve
