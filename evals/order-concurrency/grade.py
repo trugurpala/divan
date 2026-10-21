@@ -3,11 +3,13 @@
 Only run this against candidate code you trust: importing orders.py executes it.
 """
 
+import builtins
 import importlib.util
 import json
 import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
+from os import PathLike
 from pathlib import Path
 from threading import Barrier, BrokenBarrierError
 from unittest.mock import patch
@@ -28,18 +30,48 @@ def exercise(module, requests):
         path = Path(tmp) / "orders.json"
         path.write_text("[]", encoding="utf-8")
         barrier = Barrier(2)
-        original_read = Path.read_text
+        original_path_open = Path.open
+        original_builtin_open = builtins.open
 
-        def synchronize_reads(file, *args, **kwargs):
-            content = original_read(file, *args, **kwargs)
-            if file == path:
-                try:
-                    barrier.wait(timeout=0.25)
-                except BrokenBarrierError:
-                    # A correct lock serializes reads, so the second reader
-                    # cannot reach this barrier until the first has written.
-                    pass
-            return content
+        class SynchronizedReader:
+            def __init__(self, handle):
+                self.handle = handle
+                self.waited = False
+
+            def read(self, *args, **kwargs):
+                content = self.handle.read(*args, **kwargs)
+                if not self.waited:
+                    self.waited = True
+                    try:
+                        barrier.wait(timeout=0.25)
+                    except BrokenBarrierError:
+                        # A correct lock prevents the second read until the
+                        # first caller has written and released the lock.
+                        pass
+                return content
+
+            def __enter__(self):
+                self.handle.__enter__()
+                return self
+
+            def __exit__(self, *args):
+                return self.handle.__exit__(*args)
+
+            def __getattr__(self, name):
+                return getattr(self.handle, name)
+
+        def reader_for(file, handle, mode):
+            if isinstance(file, (str, PathLike)) and Path(file) == path and "r" in mode:
+                return SynchronizedReader(handle)
+            return handle
+
+        def path_open(file, *args, **kwargs):
+            mode = kwargs.get("mode", args[0] if args else "r")
+            return reader_for(file, original_path_open(file, *args, **kwargs), mode)
+
+        def builtin_open(file, *args, **kwargs):
+            mode = kwargs.get("mode", args[0] if args else "r")
+            return reader_for(file, original_builtin_open(file, *args, **kwargs), mode)
 
         def submit(request):
             try:
@@ -47,7 +79,7 @@ def exercise(module, requests):
             except Exception as error:
                 return ("error", type(error).__name__)
 
-        with patch.object(Path, "read_text", synchronize_reads):
+        with patch.object(Path, "open", path_open), patch.object(builtins, "open", builtin_open):
             with ThreadPoolExecutor(max_workers=2) as pool:
                 futures = [pool.submit(submit, request) for request in requests]
                 outcomes = [future.result(timeout=5) for future in futures]

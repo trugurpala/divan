@@ -28,8 +28,8 @@ python evals/order-concurrency/grade.py YOUR_COPY
 
 The grader reads the candidate's `orders.py`, prints two booleans, and exits
 nonzero if either behavior fails. It imports candidate Python code, so run it
-only on code you trust. It uses a
-temporary data file and forces competing reads to expose the race. A passing
+only on code you trust. It uses a temporary data file and synchronizes reads
+through common `pathlib` and built-in file APIs to expose the race. A passing
 result checks these two cases only; it is not a general concurrency guarantee or
 evidence that Divan improves model quality. Repeat on varied real tasks before
 making comparative claims.

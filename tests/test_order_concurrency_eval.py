@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import tempfile
 import unittest
 from pathlib import Path
 from threading import Lock
@@ -27,6 +28,42 @@ class OrderConcurrencyEvalTests(unittest.TestCase):
             {"distinct_requests": False, "conflicting_request": False},
             grader.evaluate(TASK),
         )
+
+    def test_grader_rejects_same_race_with_read_bytes(self):
+        grader = self.load_grader()
+        source = (TASK / "orders.py").read_text(encoding="utf-8")
+        alternate = source.replace(
+            'path.read_text(encoding="utf-8")',
+            'path.read_bytes().decode("utf-8")',
+        )
+        self.assertNotEqual(source, alternate)
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            (folder / "orders.py").write_text(alternate, encoding="utf-8")
+            self.assertEqual(
+                {"distinct_requests": False, "conflicting_request": False},
+                grader.evaluate(folder),
+            )
+
+    def test_grader_rejects_same_race_with_builtin_open(self):
+        grader = self.load_grader()
+        source = (TASK / "orders.py").read_text(encoding="utf-8")
+        alternate = source.replace(
+            '    orders = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []',
+            '    if path.exists():\n'
+            '        with open(path, encoding="utf-8") as handle:\n'
+            '            orders = json.load(handle)\n'
+            '    else:\n'
+            '        orders = []',
+        )
+        self.assertNotEqual(source, alternate)
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            (folder / "orders.py").write_text(alternate, encoding="utf-8")
+            self.assertEqual(
+                {"distinct_requests": False, "conflicting_request": False},
+                grader.evaluate(folder),
+            )
 
     def test_grader_accepts_serialized_control(self):
         grader = self.load_grader()
