@@ -2,11 +2,14 @@
 
 ## Unreleased
 
+## 2.0.0-alpha.4 — 2026-10-22
+
 - First-use guidance identifies the project chat, offers a concrete starting
   request, and directs authorized development requests from plan to implementation
   and current checks. Model behavior still needs a real task trial.
+- The source repository includes an optimized GitHub social preview image.
 
-## 2.0.0-alpha.3 — Current source
+## 2.0.0-alpha.3
 
 - One Codex plugin with seven focused skills for understanding a repository,
   implementing changes, debugging, reviewing, verifying, and continuing work.

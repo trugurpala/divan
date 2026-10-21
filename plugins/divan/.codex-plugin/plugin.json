@@ -1,6 +1,6 @@
 {
   "name": "divan",
-  "version": "2.0.0-alpha.3",
+  "version": "2.0.0-alpha.4",
   "description": "Codex-native engineering workflows for scoped implementation, quality review, debugging, and evidence-based delivery.",
   "author": {"name": "Uğur Pala"},
   "repository": "https://github.com/trugurpala/divan",
