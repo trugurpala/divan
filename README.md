@@ -2,7 +2,7 @@
 
 **Vibe coding, engineered.**
 
-[Website](https://trugurpala.github.io/divan/) · [Türkçe](README.tr.md) · [Start here](docs/getting-started.md) · [Editors and agents](docs/compatibility.md) · [Latest prerelease](https://github.com/trugurpala/divan/releases/tag/v2.0.0-alpha.5) · [Development](docs/development.md)
+[Website](https://trugurpala.github.io/divan/) · [Türkçe](README.tr.md) · [Start here](docs/getting-started.md) · [Editors and agents](docs/compatibility.md) · [Releases](https://github.com/trugurpala/divan/releases) · [Development](docs/development.md)
 
 Divan turns a software request into project-aware implementation, debugging, review, and verified delivery. Use it as a Codex plugin or install the same seven Agent Skills in another compatible coding agent.
 

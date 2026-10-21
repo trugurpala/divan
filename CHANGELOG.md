@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Clarify that the core workflow applies to substantive natural-language
-  repository requests without requiring the user to address Divan by name.
+  repository requests without requiring the user to address Divan by name; link
+  README navigation to the live release list instead of a pinned version.
 - Make the order-race grader catch the same unsafe read-modify-write pattern
   through `read_text`, `read_bytes`, and built-in `open`; test red and green controls.
 - Add a reproducible order-concurrency task and independent grader; publish the
