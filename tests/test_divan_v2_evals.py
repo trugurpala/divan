@@ -6,6 +6,13 @@ ROOT = Path(__file__).resolve().parents[1]
 VALID_SKILLS = {"divan","repo-audit","implementation-plan","root-cause-debug","quality-review","completion-proof","project-contract"}
 
 class DivanV2EvalContractTests(unittest.TestCase):
+    def test_routing_eval_covers_natural_language_without_naming_divan(self):
+        payload = json.loads((ROOT / "evals" / "divan-v2-routing.json").read_text(encoding="utf-8"))
+        case = next(item for item in payload["positive"] if item["id"] == "natural-language-no-brand")
+        self.assertNotIn("divan", case["prompt"].casefold())
+        self.assertIn("divan", case["skills"])
+        self.assertTrue(case["expected"].strip())
+
     def test_eval_contract_has_review_minimums_and_valid_skill_targets(self):
         payload=json.loads((ROOT/"evals"/"divan-v2-routing.json").read_text(encoding="utf-8")); positive=payload["positive"]; negative=payload["negative"]
         self.assertGreaterEqual(len(positive),5); self.assertGreaterEqual(len(negative),3); ids=set()

@@ -15,6 +15,12 @@
       "expected": "Read current project and Git evidence, explain the next bounded outcome and verification, then implement the authorized change. Review and run current checks; do not stop after listing a roadmap or ask again for approval to do routine work."
     },
     {
+      "id": "natural-language-no-brand",
+      "prompt": "Bu projede müşteri araması ekle. Mevcut ekranı koru ve gerçekten çalıştığını dene.",
+      "skills": ["divan", "repo-audit", "implementation-plan", "quality-review", "completion-proof"],
+      "expected": "Treat this as a substantive repository change even though the user did not name Divan. Inspect the project, preserve its UI, implement the search, and run current checks. Do not infer that standalone explanations or trivial prose edits should trigger the full workflow."
+    },
+    {
       "id": "informal-mixed-language",
       "prompt": "Divan, siparis kaydoluyo ama iki kez basınca duplicate oluyo. Fix it, mevcut API kalsın. Sonucu Türkçe anlat.",
       "skills": ["divan", "root-cause-debug", "quality-review", "completion-proof"],

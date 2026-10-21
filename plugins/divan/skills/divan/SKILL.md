@@ -1,6 +1,6 @@
 ---
 name: divan
-description: Coordinate repository work when the user asks Divan to inspect, build, change, repair, review, or finish a software task in their own language, including informal or mixed-language requests.
+description: Use when the user wants substantive work in their software project: inspect, plan, build, debug, review, or verify changes in natural language, without needing to name Divan. Skip standalone explanations and trivial prose edits.
 ---
 
 # Divan

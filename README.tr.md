@@ -8,14 +8,16 @@ Divan, doğal dille anlattığın yazılım işini projeyi anlayarak uygulama, h
 inceleme ve doğrulanmış teslime taşır. Codex eklentisi olarak veya aynı yedi Agent
 Skills becerisini destekleyen başka bir kodlama ajanında kullanabilirsin.
 
-> Divan, kayıt düğmesine iki kez basınca iki sipariş oluşuyor. Kök nedeni bul, düzelt ve nasıl denediğini göster.
+> Kayıt düğmesine iki kez basınca iki sipariş oluşuyor. Kök nedeni bul, düzelt ve nasıl denediğini göster.
 
-Sonucu kendi dilinle anlat. Teslimde çalışan değişikliği, gerçekten yapılan testleri
+Sonucu kendi dilinle anlat; isteğinin başına “Divan” yazman gerekmez. Teslimde
+çalışan değişikliği, gerçekten yapılan testleri
 ve varsa kalan engeli gör. İçeride hangi becerinin veya alt ajanın seçileceğini bilmen gerekmez.
 
 **Divan nerede?** Eklenti kurulduktan sonra Codex'te proje klasöründe açtığın yeni
-sohbette çalışır. "Divan, bu projeyi incele ve sonraki yararlı değişikliği söyle"
-diye başlayabilirsin. Aynı beceriler uyumlu kodlama ajanlarına proje bazında da
+sohbette çalışır. "Bu projeyi incele ve sonraki yararlı değişikliği söyle" diye
+başlayabilirsin; isteğin başına Divan adını yazman gerekmez. Aynı beceriler uyumlu
+kodlama ajanlarına proje bazında da
 kurulur. Kaynak deposu ayrı bir uygulama veya canlı servis değildir.
 
 Codex eklentisi yerel proje dosyaları ve komut çalıştırma erişimi gerektirir;
@@ -66,20 +68,20 @@ ayrı kontrollerdir; her editör ve modelde uçtan uca test edildiği iddia edil
 ## Kullanım
 
 ```text
-Divan, bu projeyi incele.
-Divan, bu özelliği en küçük doğru değişiklikle yap.
-Divan, bu hatanın kök nedenini bul ve düzelt.
-Divan, gerçekten bitti mi kontrol et.
+Bu projeyi incele.
+Bu özelliği en küçük doğru değişiklikle yap.
+Bu hatanın kök nedenini bul ve düzelt.
+Gerçekten bitti mi kontrol et.
 ```
 
 İstediğin sonucu kendi dilinle anlat. Yazım hatalarını düzeltmen, teknik terimleri
-bilmen veya hangi becerinin çalışacağını seçmen gerekmez. Divan mevcut projeyi okur,
+bilmen veya hangi becerinin çalışacağını seçmen gerekmez. Beceri etkin olduğunda Divan mevcut projeyi okur,
 uygun araçları seçer, çalışırken anlamlı gelişmeleri bildirir ve sonucu kontrol eder.
 
 ```text
-Divan, sipariş formunda adres bazen kayboluyo. Düzelt ve nasıl denediğini göster.
-Divan, improve this form without changing the design. Explain the result in English.
-Divan, kaldığımız yerden devam et. Ne çalışıyor, ne eksik, sade anlat.
+Sipariş formunda adres bazen kayboluyo. Düzelt ve nasıl denediğini göster.
+Improve this form without changing the design. Explain the result in English.
+Kaldığımız yerden devam et. Ne çalışıyor, ne eksik, sade anlat.
 ```
 
 Ürünün sonucunu veya dışarıda yapılacak işlemin kapsamını değiştiren eksik bilgi varsa
